@@ -62,6 +62,24 @@ Onderhoudsaanpassing:
 
 Dit moet oude fouten zoals Error 52 door ongeldige of beschermde bestandsnamen verminderen.
 
+## Compatibility Test Matrix
+
+Voor 1.74 candidate naar release:
+
+```text
+Windows XP 32-bit
+Windows 7 32/64-bit
+Windows 11 64-bit
+```
+
+Controle:
+
+- start zonder crash
+- converterlijst opent
+- `freesyscal.cfg` werkt via `%APPDATA%\Syscalculator` op Windows 7/11
+- oude euro `.nod` bestanden en nieuwe euro-bestanden openen
+- geen NOD 2.0 syntax in 1.74 bestanden
+
 ## Branding
 
 Zichtbare oude `Tcsoftware` teksten in menu's, taalbestanden en About zijn vervangen door `Tiedragon`.

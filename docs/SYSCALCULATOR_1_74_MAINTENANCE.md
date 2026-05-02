@@ -53,6 +53,23 @@ nulnul
 - 1.74 blijft VB6/NOD 1.0.
 - 2.0 blijft C#/.NET/NOD 2.0 met legacy compatibility.
 
+## Compatibility Matrix
+
+Syscalculator 1.74 moet als legacy-lijn getest worden op:
+
+```text
+Windows XP 32-bit     = legacy smoke test / oude gebruikers
+Windows 7 32/64-bit   = Program Files + AppData padtest
+Windows 11 64-bit     = moderne startup + HKCU/AppData test
+```
+
+Release-gate:
+
+- XP: applicatie start, klassieke `.nod` converters openen, geen NOD 2.0 syntax gebruiken.
+- Windows 7: `freesyscal.cfg` wordt in `%APPDATA%\Syscalculator` gemaakt/gelezen.
+- Windows 11: schone start zonder oude HKLM-migratiewaarden werkt.
+- Alle drie: euro-groep toont oude en nieuwe euro `.nod` bestanden.
+
 ## Kandidaten Voor Fixes
 
 - Windows 11 startup controleren wanneer oude HKLM-registrywaarden ontbreken en `freesyscal.cfg` nog niet in AppData staat.

@@ -477,6 +477,7 @@ Onderhoudslijn voor legacy.
 **Before final release:**
 - Test the 1.74 source.
 - Compile `Syscalculator174.local.vbp` with VB6.
+- Smoke-test on Windows XP, Windows 7 and Windows 11.
 
 Doel:
 
