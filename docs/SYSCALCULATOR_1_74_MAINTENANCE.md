@@ -55,6 +55,7 @@ nulnul
 
 ## Kandidaten Voor Fixes
 
+- Windows 11 startup controleren wanneer oude HKLM-registrywaarden ontbreken en `freesyscal.cfg` nog niet in AppData staat.
 - `chg` en `trans` legacy-volgorde vergelijken met Syscalculator 2.0.
 - Decimalen, komma/punt en digit grouping controleren.
 - Taalbestanden nalopen op kapotte tekens.
@@ -127,6 +128,16 @@ legacy/Syscalculator174.VB6/Syscalculator174.local.vbp
 ```
 
 Als `VB6.EXE` niet beschikbaar is, blijft dit een candidate en geen release.
+
+### Windows 11 Startup Fix Candidate
+
+De 1.74-bron bevat een candidate-fix voor starten op nieuwere Windows 11 installaties:
+
+- lees `first` eerst uit HKCU en pas daarna uit HKLM
+- behandel ontbrekende `Migration` als eerste start wanneer `freesyscal.cfg` ontbreekt
+- maak `freesyscal.cfg` automatisch in `%APPDATA%\Syscalculator`
+
+Ook hiervoor geldt: eerst testen en `Syscalculator174.local.vbp` compileren voordat dit release mag heten.
 
 De changelog moet per fix duidelijk vermelden:
 

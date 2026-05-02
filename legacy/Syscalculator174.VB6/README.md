@@ -75,6 +75,12 @@ De VB6 projectbestanden staan nu op `1.74.1`:
 - `Syscalculator174.local.vbp`: lokale onderhoudskopie, ook `1.74.1`
 - `SyscalEditor.vbp`: `SyscalEditor 1.74`, output `SyscalEditor174.exe`
 
+## Windows 11 Startup Candidate Fix
+
+Nieuwste Windows 11 installaties kunnen starten zonder oude HKLM-registrywaarden of schrijfbare programmamap. `Form1.frm` maakt daarom nu bij ontbrekende `freesyscal.cfg` altijd eerst een gebruikersconfiguratie aan via `%APPDATA%\Syscalculator`.
+
+Status: bronfix/candidate. Nog testen en compileren met VB6 voordat dit als 1.74 release beschreven wordt.
+
 ## Onderhoudscheck
 
 Gecontroleerd:

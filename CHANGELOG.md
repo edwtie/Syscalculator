@@ -467,6 +467,7 @@ Onderhoudslijn voor legacy.
 **Fixes:**
 - Fixed the 1.74 source tree by adding missing newer euro converters to the legacy `euro` group.
 - Kept the original grouped directory layout from `broncode.zip`.
+- Added a Windows 11 startup candidate fix for missing HKLM migration values and missing AppData `freesyscal.cfg`.
 
 **Additions:**
 - Added `BUILD_SYSCALCULATOR174_EURO_NOD_CANDIDATE.bat`.

@@ -789,8 +789,12 @@ If App.PrevInstance Then
 
 Apppaths = GetDataFolder(Form1, "Syscalculator")
 migration = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration")
-Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
+Firsttime = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
+If Firsttime = "" Then Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
 If Firsttime = "" Then Firsttime = "1"
+If migration = "" Then
+    If Dir$(UserDataFilePath("freesyscal.cfg")) = "" Then migration = "1" Else migration = "0"
+End If
 
 
 If Firsttime = "0" And migration = "1" Then
@@ -853,6 +857,13 @@ If Firsttime = "1" And migration = "1" Then
     End If
     If Firsttime = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first", "0")
     If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration", "0")
+End If
+
+If Dir$(UserDataFilePath("freesyscal.cfg")) = "" Then
+    MakeDirectory (Apppaths)
+    Call savefirstconfig
+    Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first", "0")
+    migration = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration", "0")
 End If
 
 
