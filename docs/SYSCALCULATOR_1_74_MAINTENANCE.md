@@ -76,6 +76,48 @@ Syscalculator 1.74.x = onderhoud / legacy fix
 Syscalculator 2.0 beta = moderne opvolger
 ```
 
+### Euro NOD Data Release
+
+Nieuwe euro-landen kunnen als data-only onderhoudsrelease voor 1.74 worden uitgebracht. Dit verandert geen VB6-code en voegt geen NOD 2.0 syntax toe.
+
+Gebruik:
+
+```bat
+BUILD_SYSCALCULATOR174_EURO_NOD_RELEASE.bat
+```
+
+De batch maakt:
+
+```text
+artifacts/legacy/Syscalculator174-EuroNodRelease/
+artifacts/legacy/Syscalculator174-EuroNodRelease.zip
+```
+
+Deze release bewaart de oude groepen uit `broncode.zip`:
+
+```text
+Distance
+euro
+Mass
+Pressure
+Temperature
+Volume
+```
+
+En voegt de nieuwere euro-`.nod` bestanden toe:
+
+```text
+BGN
+CYP
+EEK
+HRK
+LTL
+LVL
+MTL
+SIT
+SKK
+```
+
 De changelog moet per fix duidelijk vermelden:
 
 ```text
