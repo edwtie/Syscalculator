@@ -36,3 +36,6 @@ Desktop.ini
 
 # Legacy/source archives kept outside version control by default
 broncode.zip
+
+# Downloaded third-party installers
+tools/InnoSetup/*.exe
