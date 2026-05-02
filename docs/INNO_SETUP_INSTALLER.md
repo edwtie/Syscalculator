@@ -24,6 +24,7 @@ The installer includes:
 - NOD Editor shortcut using `-tool`
 - NOD Template Wizard shortcut using `-wizardtool`
 - `.nod` file association
+- grouped `.nod` converter directories based on the legacy `broncode.zip` structure
 - uninstall support
 
 `ISCC.exe` must be available in PATH. Install Inno Setup 6 if the command is missing.
