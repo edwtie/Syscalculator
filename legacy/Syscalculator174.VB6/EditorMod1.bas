@@ -258,7 +258,7 @@ OpenNOD = True
 Exit Function
 61:
 Close #1
-Status = MsgBox(ResolveProgramFile(name) + isNotFound, vbCritical, errorf)
+Status = MsgBox(App.Path + "\" + name + isNotFound, vbCritical, errorf)
 OpenNOD = False
 End Function
 
@@ -284,8 +284,14 @@ transn(max) = Left(Mid(transn(max), 2), n - 2)
 
 End Sub
 Public Function filenod(inv As String) As String
+Dim tel As Integer
+tel = Len(App.Path)
 If Not UCase(Right$(inv, 4)) = ".NOD" Then inv = inv + ".nod"
-filenod = ResolveProgramFile(inv)
+If Not (Left(inv, tel) = App.Path) Then
+                                        tel = InStr(1, inv, ":\")
+                                        If tel = 0 Then filenod = App.Path + "\" + inv: Exit Function
+                                        End If
+filenod = inv
 End Function
 Sub chg(Vform As String, max As Integer)
 Dim i As Integer

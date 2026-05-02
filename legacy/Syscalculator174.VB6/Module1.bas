@@ -206,11 +206,11 @@ transn(n) = ""
 Next n
 transtel = 0
 
-For n = 0 To Ichg
+For n = 0 To ichg
 chgn(n) = ""
 chgo(n) = ""
 Next n
-Ichg = 0
+ichg = 0
 For n = 0 To MaxMath
 Smath(n) = ""
 Next n
@@ -230,7 +230,7 @@ Open ename For Input As #1
  If Left(Commando, 1) = "'" Then
  'GoTo overstap 'rem only
  ElseIf UCase(Left(Commando, 3)) = "CHG" Then
-  If Not Status = 3 Then Call chg(Mid(Commando, 5), Ichg): Ichg = Ichg + 1   'reserved, Universal version
+  If Not Status = 3 Then Call chg(Mid(Commando, 5), ichg): ichg = ichg + 1   'reserved, Universal version
  ElseIf UCase(Left(Commando, 4)) = "NAME" Then
   If Not Status = 3 Then Call LetName(Mid(Commando, 6))
  ElseIf UCase(Left(Commando, 4)) = "URLN" Then
@@ -300,7 +300,7 @@ Status = MsgBox(ename + isNotFound, vbCritical, errorf)
 OpenNOD = False
 End Function
 Function Eichg() As Boolean
-If chgi > 0 Then Ichg = True Else Ichg = False
+If chgi > 0 Then ichg = True Else ichg = False
 End Function
 Sub indroprint(Indrotext As String)
 If Indrotekst = "" Then Indrotekst = Indrotext Else Indrotekst = Indrotekst & Chr(13) & Indrotext
@@ -332,8 +332,14 @@ transn(max) = Left(Mid(transn(max), 2), n - 2)
 
 End Sub
 Public Function filenod(inv As String) As String
+Dim tel As Integer
+tel = Len(App.Path)
 If Not UCase(Right(inv, 4)) = ".NOD" Then inv = inv + ".nod"
-filenod = ResolveProgramFile(inv)
+If Not (Left(inv, tel) = App.Path) Then
+                                        tel = InStr(1, inv, ":\")
+                                        If tel = 0 Then filenod = App.Path + "\" + inv: Exit Function
+                                        End If
+filenod = inv
 End Function
 Sub chg(Vform As String, max As Integer)
 Dim i As Integer
@@ -401,7 +407,7 @@ Dim xsr As Boolean
 a = Len(lndro)
 If lndro = Left(ask, a) Then ask = lndrn + Mid(ask, a + 1): xsr = True
 If inv = True Then
-    For o = 0 To Ichg - 1
+    For o = 0 To ichg - 1
     b = Len(chgo(o))
     If chgo(o) = Left(ask, b) Then
         ask = chgn(o) + Mid(ask, b)
@@ -415,7 +421,7 @@ If inv = True Then
     End If
     
 If inv = False Then
-    For o = 0 To Ichg - 1
+    For o = 0 To ichg - 1
     b = Len(chgn(o))
     If chgn(o) = Left(ask, b) Then
         ask = chgo(o) + Mid(ask, b + 2)

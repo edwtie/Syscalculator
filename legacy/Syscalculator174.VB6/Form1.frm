@@ -318,7 +318,7 @@ Begin VB.Form Form1
          Caption         =   "&Bugreports"
       End
       Begin VB.Menu urllaunch 
-         Caption         =   "Tiedragon"
+         Caption         =   "Tcsoftware.com"
       End
       Begin VB.Menu Donate 
          Caption         =   "Donate us"
@@ -789,12 +789,8 @@ If App.PrevInstance Then
 
 Apppaths = GetDataFolder(Form1, "Syscalculator")
 migration = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration")
-Firsttime = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
-If Firsttime = "" Then Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
+Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
 If Firsttime = "" Then Firsttime = "1"
-If migration = "" Then
-    If Dir$(UserDataFilePath("freesyscal.cfg")) = "" Then migration = "1" Else migration = "0"
-End If
 
 
 If Firsttime = "0" And migration = "1" Then
@@ -810,9 +806,7 @@ switch1 = False
 Call Addcombo(2)
 MakeDirectory (Apppaths)
 Call saveconfig(Lname, Combo1)
-On Error Resume Next
-If Dir$(ProgramFilePath("freesyscal.cfg")) <> "" Then Kill ProgramFilePath("freesyscal.cfg")
-On Error GoTo 0
+Kill App.Path + "\freesyscal.cfg"
 If Not decnum = "" Then decnum = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "decnum", decnum)
 If Not Switchs = "" Then Switchs = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", Switchs)
 If Not Ontop = "" Then Ontop = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", Ontop)
@@ -820,7 +814,7 @@ If Not intros = "" Then intros = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsof
 If Not digitnr = "" Then digitnr = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", digit) Else test5 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "2")
 If Not precision = "" Then precision = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", precision) Else test5 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", "1")
 If Not traysn = "" Then traysn = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", traysn)
-If Not symbtest1 = "" Then symbtest1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", symbtest1)
+If Not symbtest1 = "" Then symbtest1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", symbtest1)
 
 If Not Ontop = "" Then Ontop = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop")
 If Not intros = "" Then intros = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro")
@@ -859,13 +853,6 @@ If Firsttime = "1" And migration = "1" Then
     If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration", "0")
 End If
 
-If Dir$(UserDataFilePath("freesyscal.cfg")) = "" Then
-    MakeDirectory (Apppaths)
-    Call savefirstconfig
-    Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first", "0")
-    migration = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration", "0")
-End If
-
 
 Ontop = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Ontop")
 intros = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Intro")
@@ -891,7 +878,7 @@ If Ontop = "1" Then
                         End If
 If intros = "0" Then intro = False: Indo.Checked = False Else intro = True
 If srun = "" Then startup.Checked = False
-If srun = ProgramFilePath(App.EXEName & ".exe") + " /tray" Then startup.Checked = True Else startup.Checked = False
+If srun = App.Path + "\Freesyscal.exe /tray" Then startup.Checked = True Else startup.Checked = False
 If digitnr = "0" Then booldigit = False: Digitchek.Value = 0 Else booldigit = True: Digitchek.Value = 1
 fORMVALUE3 = False
 ActiveForm2 = False
@@ -1053,7 +1040,7 @@ Combo1.AddItem Control, max
  If UCase(Right$(newfile, 3)) = "NOD" Then newfile = Left(newfile, tel - 4)
  filestring(max) = newfile
  On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 For o = 0 To max
 If defaultID = o Then def = "*"
@@ -1138,7 +1125,7 @@ If startup.Checked = True Then
                             
 Else
                             tray = True
-                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", ProgramFilePath(App.EXEName & ".exe") + " /tray")
+                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", App.Path + "\Freesyscal.exe /tray")
                             startup.Checked = True
                             
                             End If
@@ -1262,7 +1249,7 @@ Dim OK As Integer
 Dim tel As Integer
 If LCase(Left$(Command, 4)) = "/lng" Then Lname = Mid$(Command, 6) Else Lname = "eng.lng"
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 Write #1, "Graden - Fahrenheit", "Temperature\graden fahrenheit", "*"
 Write #1, "meters - feets", "Distance\feet meter", "*"

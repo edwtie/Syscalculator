@@ -123,7 +123,7 @@ Begin VB.Form Editor
          Caption         =   "Bugreports"
       End
       Begin VB.Menu help0 
-         Caption         =   "Tiedragon"
+         Caption         =   "Tcsoftware.com"
       End
       Begin VB.Menu about 
          Caption         =   "About"

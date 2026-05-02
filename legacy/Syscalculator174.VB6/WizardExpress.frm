@@ -108,8 +108,8 @@ End Sub
 Private Sub Form_Load()
 Dim test2 As String
 Dim test1 As Boolean
-test2 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool")
-If test2 = "" Then test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
 If test2 = "1" Then
                         symbool.Checked = True
                         End If
@@ -295,10 +295,10 @@ End Sub
 Private Sub symbool_Click()
 Dim test1 As Boolean
 If symbool.Checked = True Then
-                                 test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
+                                 test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
                                  symbool.Checked = False
 Else
-                                 test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "1")
+                                 test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "1")
                                  symbool.Checked = True
                                  End If
 End Sub

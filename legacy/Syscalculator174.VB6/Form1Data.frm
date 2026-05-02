@@ -299,7 +299,7 @@ Begin VB.Form Form1
          Caption         =   "&Bugreports"
       End
       Begin VB.Menu urllaunch 
-         Caption         =   "Tiedragon"
+         Caption         =   "Tcsoftware.com"
       End
       Begin VB.Menu About 
          Caption         =   "&About"
@@ -423,7 +423,7 @@ tel = Len(App.Path + "\")
 Rem If Left(Text1.Text, tel) = App.Path + "\" Then Text1.Text = Mid(Text1.Text, tel + 1)
 
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open App.Path + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 For o = 0 To max
 If defaultID = o Then def = "*"
@@ -582,7 +582,7 @@ If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware
 If test2 = "0" Then intro = False: Indo.Checked = False Else intro = True
 test2 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal")
 If test2 = "" Then startup.Checked = False
-If test2 = ProgramFilePath(App.EXEName & ".exe") + " /tray" Then startup.Checked = True Else startup.Checked = False
+If test2 = App.Path + "\Freesyscal.exe /tray" Then startup.Checked = True Else startup.Checked = False
 test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit")
 If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "0")
 If test2 = "0" Then booldigit = False: Digitchek.Value = 0 Else booldigit = True: Digitchek.Value = 1
@@ -746,7 +746,7 @@ Combo1.AddItem control, max
  If UCase(Right$(newfile, 3)) = "NOD" Then newfile = Left(newfile, tel - 4)
  filestring(max) = newfile
  On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open App.Path + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 For o = 0 To max
 If defaultID = o Then def = "*"
@@ -831,7 +831,7 @@ If startup.Checked = True Then
                             
 Else
                             tray = True
-                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", ProgramFilePath(App.EXEName & ".exe") + " /tray")
+                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", App.Path + "\Freesyscal.exe /tray")
                             startup.Checked = True
                             
                             End If

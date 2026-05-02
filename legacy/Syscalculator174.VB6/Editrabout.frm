@@ -80,7 +80,7 @@ Begin VB.Form frmAbout
    End
    Begin VB.Label lblDescription 
       BackColor       =   &H00FFFFFF&
-      Caption         =   "Copyright (C) 1996-2026 Tiedragon"
+      Caption         =   "Copyright (C) 1996-2004  "
       ForeColor       =   &H00000000&
       Height          =   210
       Left            =   1680
@@ -144,7 +144,7 @@ Private Sub Form_Load()
   Call Languare(Lname, 3)
     Me.Caption = Me.Caption & " " & App.Title
     lblVersion.Caption = lblVersion & " " & App.Major & "." & App.Minor & "." & App.Revision & " "
-    lblDescription.Caption = "Copyright (C) 1996-2026 Tiedragon"
+    lblDescription.Caption = lblDescription & " " & "Copyright © 1996-2004"
    
 
 

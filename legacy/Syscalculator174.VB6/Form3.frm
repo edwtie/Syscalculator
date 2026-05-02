@@ -302,7 +302,7 @@ Dim comm, Data, def As String
 Dim OK As Integer
 i = 0
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Input As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Input As #1
 Do Until EOF(1)
  Input #1, comm, Data, def
  If Left$(comm, 1) = "'" Then GoTo overstap 'rem only

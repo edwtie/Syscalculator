@@ -13,15 +13,16 @@ Dim ename As String
 Dim tel As Integer
 teller = 0
 textChanged = ""
-ename = ResolveProgramFile(name)
+tel = Len(App.Path)
+If Not (Left(name, tel) = App.Path) Then If Not Left(Mid$(name, 2), 2) = ":\" Then ename = App.Path + "\" + name Else ename = name
 
-On Error GoTo resfout
 Open ename For Input As #1
+On Error GoTo resfout
 Do Until EOF(1)
 teller = teller + 1
 Input #1, ncode, comm, Data, url
 If teller = 1 Then ncode = Mid(ncode, 3)
-If Left$(url, 5) = "[App]" Then url = ResolveProgramFile(url)
+If Left$(url, 5) = "[App]" Then url = App.Path + Mid$(url, 6)
 If ncode = "end" Then Exit Do
 If ncode = "0" Then
                     Select Case comm
@@ -85,8 +86,8 @@ af = 0
 Loop
 Close #1
 Exit Sub
-resfout: Status = MsgBox(ename + " is not found", vbCritical, "ERROR !!!")
-Unload Editor
+resfout: Status = MsgBox(name + " is not found", vbCritical, "ERROR !!!")
+Unload Form1
 End Sub
 
 Sub From3(F1 As String, comm As Integer, Data As String, url As String)

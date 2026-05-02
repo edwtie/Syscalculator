@@ -83,7 +83,11 @@ If clean = 1 Then old = Form1.Combo1.ListIndex: oldname = Form1.Combo1.Text
 
 Form1.Combo1.Clear
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Input As #1
+If clean = 2 Then
+Open App.Path + "\" + "freesyscal.cfg" For Input As #1
+ Else
+Open Apppaths + "\" + "freesyscal.cfg" For Input As #1
+End If
 Do Until EOF(1)
  Input #1, comm, Data, def
  If Not Left$(comm, 1) = "'" Then
@@ -191,7 +195,7 @@ If groen = True Then
   If LCase(Left(naam, tel)) = LCase(Apppaths + "\") Then naam = Mid(naam, tel + 1)
 End If
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", naam, ""
 For o = 0 To max
 If defaultID = o Then def = "*"

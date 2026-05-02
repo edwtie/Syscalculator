@@ -770,79 +770,18 @@ Dim uProcess As Long
 uProcess = GetCurrentProcess
 TerminateProcess uProcess, 0
 End Sub
-Public Function AddSlash(ByVal PathName As String) As String
-PathName = Trim$(PathName)
-If Len(PathName) = 0 Then
-    AddSlash = ""
-ElseIf Right$(PathName, 1) = "\" Then
-    AddSlash = PathName
-Else
-    AddSlash = PathName & "\"
-End If
-End Function
+Public Function GetDataFolder(form4 As Form, Appdirectory As String)
 
-Public Function JoinPath(ByVal FolderName As String, ByVal FileName As String) As String
-JoinPath = AddSlash(FolderName) & FileName
-End Function
-
-Public Function ProgramFilePath(ByVal FileName As String) As String
-ProgramFilePath = JoinPath(App.Path, FileName)
-End Function
-
-Public Function UserDataFilePath(ByVal FileName As String) As String
-If Len(Apppaths) = 0 Then
-    Apppaths = JoinPath(UserDataRootFolder(), "Syscalculator")
-    MakeDirectory Apppaths
-End If
-UserDataFilePath = JoinPath(Apppaths, FileName)
-End Function
-
-Public Function UserDataRootFolder() As String
-Dim fallback As String
-fallback = Environ$("APPDATA")
-If Len(fallback) = 0 Then fallback = Environ$("USERPROFILE")
-If Len(fallback) = 0 Then fallback = Environ$("TEMP")
-If Len(fallback) = 0 Then fallback = App.Path
-UserDataRootFolder = fallback
-End Function
-
-Public Function ResolveProgramFile(ByVal FileName As String) As String
-Dim tel As Integer
-FileName = Trim$(FileName)
-If Len(FileName) = 0 Then
-    ResolveProgramFile = ""
-    Exit Function
-End If
-
-If Left$(FileName, 5) = "[App]" Then
-    ResolveProgramFile = App.Path & Mid$(FileName, 6)
-    Exit Function
-End If
-
-If Mid$(FileName, 2, 2) = ":\" Or Left$(FileName, 2) = "\\" Then
-    ResolveProgramFile = FileName
-Else
-    ResolveProgramFile = ProgramFilePath(FileName)
-End If
-End Function
-
-Public Function GetDataFolder(form4 As Form, Appdirectory As String) As String
 On Error GoTo GenericFolder
 Dim ReturnVal As Long
 Dim PathName As String
 PathName = String$(260, Chr$(32))
 retval = SHGetFolderPath(form4.Hwnd, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, PathName)
 PathName = Left(PathName, InStr(PathName, vbNullChar) - 1)
-If Len(Trim$(PathName)) = 0 Then GoTo GenericFolder
-GetDataFolder = JoinPath(PathName, Appdirectory)
-MakeDirectory GetDataFolder
+GetDataFolder = PathName + "\" + Appdirectory
 Exit Function
-
 GenericFolder:
-'Windows 7+ mag vaak niet schrijven naast de exe. Gebruik daarom
-'een gebruikersmap als fallback en pas als laatste de programmamap.
-Dim fallback As String
-fallback = UserDataRootFolder()
-GetDataFolder = JoinPath(fallback, Appdirectory)
-MakeDirectory GetDataFolder
+'Since Windows XP\2000 is not installed
+' we don't have this api so just use the A ' pp.path
+If Err.Number = 453 Then GetDataFolder = App.Path
 End Function

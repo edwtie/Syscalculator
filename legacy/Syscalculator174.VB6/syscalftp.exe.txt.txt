@@ -1,0 +1,8 @@
+edwtie
+effatha2
+cd www
+cd www.tcsoftware.com
+cd files
+bin
+put c:\broncode\Output\sys172.zip
+quit
