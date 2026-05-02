@@ -24,6 +24,38 @@ Converters/Temperature/
 Converters/Volume/
 ```
 
+The `euro` group has been extended beyond the old zip. The legacy zip contains:
+
+```text
+ATS
+BEF
+DEM
+ESP
+FIM
+FRF
+GRD
+IEP
+ITL
+LUF
+NLG
+NLG-FRF
+PTE
+```
+
+Syscalculator 2.0 also includes newer euro-related country/currency files:
+
+```text
+BGN
+CYP
+EEK
+HRK
+LTL
+LVL
+MTL
+SIT
+SKK
+```
+
 Syscalculator 2.0 adds new development/demo groups:
 
 ```text

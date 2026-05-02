@@ -11,6 +11,8 @@ Temperature
 Volume
 ```
 
+The `euro` group is expanded for Syscalculator 2.0. Besides the legacy files, it also includes newer country/currency files such as `BGN`, `CYP`, `EEK`, `HRK`, `LTL`, `LVL`, `MTL`, `SIT`, and `SKK`.
+
 Syscalculator 2.0 adds:
 
 ```text
