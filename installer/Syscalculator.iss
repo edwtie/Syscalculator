@@ -30,11 +30,12 @@ DefaultGroupName=Syscalculator
 OutputDir=..\artifacts\installer
 OutputBaseFilename=Syscalculator-2.0-{#MyBuildChannel}-{#MyAppVersion}
 SetupIconFile=..\src\Syscalculator.UI.WinForms\Resources\Syscalculator.ico
+PrivilegesRequired=lowest
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
 

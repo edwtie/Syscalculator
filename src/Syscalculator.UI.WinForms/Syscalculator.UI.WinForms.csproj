@@ -20,7 +20,9 @@
     <Compile Remove="Converters\Syscal.NET\**" />
     <EmbeddedResource Remove="Converters\Syscal.NET\**" />
     <None Remove="Converters\Syscal.NET\**" />
+    <None Remove="Converters\Output\**" />
     <Content Remove="Converters\Syscal.NET\**" />
+    <Content Remove="Converters\Output\**" />
   </ItemGroup>
 
   <ItemGroup>
