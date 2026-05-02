@@ -1,0 +1,4 @@
+Name Limiet sin(ans)/ans naar 0
+format ##.00
+math limit 0 sin(ans)/ans
+end

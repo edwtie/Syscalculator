@@ -1,0 +1,5 @@
+Name Complexe som
+mode numeric
+format ##.00
+math sqrt((ans^2 + 25) / 3) + log(ans,2)
+end

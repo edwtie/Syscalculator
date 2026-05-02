@@ -1,0 +1,58 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name liter Barrels(oil) Converter
+Urln liters Barrels(Oil)
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format ##.00
+Symb3 liter
+Symb4 Barrels
+input1 liter
+input2 Barrels
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans * 0,00629052
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

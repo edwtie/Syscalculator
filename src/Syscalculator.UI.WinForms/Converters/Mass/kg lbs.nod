@@ -1,0 +1,55 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name kg lbs Converter
+Urln lbs - kg
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format ##
+Symb3 kg
+Symb4 lbs
+input1 kg
+input2 lbs
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 0,454 
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

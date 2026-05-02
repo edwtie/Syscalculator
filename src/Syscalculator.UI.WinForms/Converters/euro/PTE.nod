@@ -1,0 +1,21 @@
+'Officiele omrekenkoers voor Portugese escudo is vastgesteld.
+'
+'
+
+Name Portugese escudo naar euro
+Urln PTE-Euro
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Portuguese escudo to euro
+indoprint 
+indoend
+format #.00
+Symb1 PTE
+Symb2 €
+input1 Amounts in Portuguese escudo
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 200,482
+end

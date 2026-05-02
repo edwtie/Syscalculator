@@ -1,0 +1,6 @@
+Name Sinus graden
+input1 Graden
+input2 Sinus
+format ##.00
+math sind(ans)
+end

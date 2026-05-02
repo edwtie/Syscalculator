@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Slowaakse kroon is vastgesteld.
+'
+'
+
+Name Slowaakse kroon naar euro
+Urln SKK-Euro
+indoprint Slovakia adopted the euro on 1 January 2009.
+indoprint Fixed conversion rate: 1 euro = 30,1260 Slovak koruna.
+indoprint Converting with Slovak koruna to euro
+indoprint 
+indoend
+format #.00
+Symb1 SKK
+Symb2 €
+input1 Amounts in Slovak koruna
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 30,1260
+end
+

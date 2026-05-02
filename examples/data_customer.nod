@@ -1,0 +1,19 @@
+Name Klantdata omzetting
+mode data
+table klanten
+
+field telefoon
+phoneformat country NL
+phoneformat remove_spaces true
+phoneformat remove_text_prefix true
+phoneformat normalize_international true
+chg 03402,03060
+output telefoon_nieuw
+
+field bedrag_nlg
+math ans / 2,20371
+output bedrag_eur
+
+preview true
+backup true
+end

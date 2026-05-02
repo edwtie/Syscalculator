@@ -1,0 +1,6 @@
+Name Ans maal e kwadraat
+input1 Getal
+input2 Resultaat
+format ##.00
+math ans * e^2
+end

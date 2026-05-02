@@ -1,0 +1,38 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# Visual Studio / Rider / VS Code local state
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.rsuser
+*.DotSettings.user
+
+# .NET temporary files
+.dotnet/
+TestResults/
+*.nupkg
+*.snupkg
+
+# Publish output
+publish/
+*.pubxml.user
+
+# Legacy packaged releases / installer output
+legacy/Syscalculator174.VB6/Output/
+src/Syscalculator.UI.WinForms/Converters/Output/
+
+# Logs and local crash dumps
+*.log
+*.dmp
+
+# OS noise
+Thumbs.db
+Desktop.ini
+
+# Legacy/source archives kept outside version control by default
+broncode.zip

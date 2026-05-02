@@ -1,0 +1,19 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Italiaanse lire naar euro
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Italian lira to euro
+indoend
+format #.00
+Symb1 ITL
+Symb2 €
+input1 Amounts in Italian lira
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 1936,27
+end
+

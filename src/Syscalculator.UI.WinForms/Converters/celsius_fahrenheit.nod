@@ -1,0 +1,9 @@
+Name Celsius naar Fahrenheit
+input1 Celsius
+input2 Fahrenheit
+Symb3 C
+Symb4 F
+format ##.00
+math ans * 1,8
+math ans + 32
+end

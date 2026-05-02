@@ -1,0 +1,5 @@
+Name Machtsregel animatie demo
+URLN Machtsregel animatie demo
+format ##.00
+solve diff ans^2
+end

@@ -1,0 +1,48 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Light years Converter
+Urln Light years - km
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format ##.00000
+Symb3 light years
+Symb4 kilometers
+input1 light years
+input2 kilometers
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans * 9460536207068,01536
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

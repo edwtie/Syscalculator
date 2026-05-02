@@ -1,0 +1,26 @@
+'
+'
+Name Pounds/sq inch - kg-Sq cm
+Urln Pounds/sq inch - kg-Sq cm 
+indoprint This program convert from value in pounds/ sq inch  
+indoprint to kg/ sq cm
+indoprint Converting with Portuguese escudo to euro
+indoprint 
+indoend
+format #.00
+input1 Kg/Sq. Cm
+input2 Pds/Sq Inch
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans * 14.2221
+end
+
+
+
+
+
+
+
+
+

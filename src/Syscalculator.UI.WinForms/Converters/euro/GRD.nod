@@ -1,0 +1,19 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Griekse drachme naar euro
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Greek drachma to euro
+indoprint 
+indoend
+format #.00
+Symb1 GRD
+Symb2 €
+input1 Amounts in Greek drachma
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 340.750
+end

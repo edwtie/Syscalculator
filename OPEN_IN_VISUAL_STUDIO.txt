@@ -1,0 +1,13 @@
+Open de map in Visual Studio.
+
+Projecten:
+- src/NodSystem.Core
+- src/NodSystem.Demo
+- src/NodSystem.Tests
+- Syscalculator (src/Syscalculator.UI.WinForms)
+
+Startproject voor UI:
+Syscalculator
+
+Voor commandline op Windows:
+dotnet run --project src/Syscalculator.UI.WinForms

@@ -1,0 +1,50 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Kg pound Converter
+Urln Kg pound
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format ##.000
+Symb3 kg
+Symb4 pound
+input1 Kilogram
+input2 pound
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 0,45359237 
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

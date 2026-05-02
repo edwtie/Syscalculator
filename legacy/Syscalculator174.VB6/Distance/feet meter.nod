@@ -1,0 +1,47 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Feet meter Converter
+Urln meters - feets
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format ##.000
+Symb3 meters
+Symb4 feets
+input1 Meters
+input2 Feets
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans * 3.281
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

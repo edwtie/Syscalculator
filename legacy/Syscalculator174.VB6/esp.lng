@@ -1,0 +1,99 @@
+0,100,"Error",
+0,101," no se ha encontrado",
+0,102,"Freesyscal no puede empezar sin freesyscal.cfg",
+0,103,"Estas seguro?",
+0,104,"Este nombre ya existe",
+0,105,"El nombre es necesario!",
+0,106,"Syscalculator ya esta cargado! ",
+0,107," no existe! Syscalculator no puede leer esta funcion ",
+0,108,"Sin titulo",
+0,109,"El texto en este archivo ya ha sido cambiado",
+0,109,"Guardar cambios?",
+0,110,"Lo siento, resultado no valido",
+0,201,"No encontrado",
+0,202,"Encontrar/Reemplazar",
+0,203,"El texto ha sido buscado. ",
+0,204," Reemplazo realizado.",
+0,300,"eng",
+1,100,Archivo,
+1,101,Salir,
+1,102,"Divisa :",
+1,200,Configurar,
+1,201,"Siempre por encima",
+1,202,"Opcion de Introduccion",
+1,203,"Menu de Herramientas",
+1,300,"Herramientas",
+1,301,"WizardExpress",
+1,302,"Calculadora",
+1,303,"Opciones",
+1,400,Ayuda,
+1,401,Feedback,"mailto:famtie@xs4all.nl?Subject=Syscalculcator feedback"
+1,402,Tiedragon,"http:\\www.tiedragon.nl\indexe.htm"
+1,403,Ayuda,"[App]\help\index.htm"
+1,499,Info,
+1,500,"Editar",
+1,501,"Copiar",
+1,502,"Pegar",
+1,503,"Cortar",
+1,504,"Borrar",
+1,601,"Ensenar",
+1,602,"Ocultar",
+1,603,"Salir",
+2,100,"Introduccion - ",
+2,101,OK,
+2,201,"Opciones de introducion activas",
+3,100,Sobre,
+3,101,Version,
+3,102,Copyright,
+3,103,Principio,"Este programa es una version gratuita, puedes redistribuirla y/o"
+3,103,linia,"modificalo bajo los terminos de la GNU General Public License"
+3,103,linia,"como publicado por la Free Software Foundation; incluida la version 2"
+3,103,final,"por la licencia, incluidas versiones posteriores"
+4,100,WizardExpress,""
+4,101,Ok,""
+4,200,Salida,""
+4,201,Archivo,""
+4,300,Herramientas,""
+4,301,Simbolo,""
+4,500,Estado,""
+4,501,Inicio,""
+4,502,Preparado,""
+5,100,"Calculadora",""
+5,101,"Archivo",""
+5,102,"Salida",""
+6,100,"Opciones",""
+6,101,"Idioma",""
+6,102,"Cambio",""
+6,200,"Buscar",""
+6,201,"OK",""
+6,202,"Cancelar",""
+6,203,"Aplicar",""
+6,204,"Anadir",""
+6,205,"Propiedades",""
+6,300,"",""
+7,100,"Propiedades",""
+7,101,"Nombre",""
+7,102,"Nombre del Archivo",""
+7,200,"Buscar",""
+7,201,"OK",""
+7,202,"Cancelar",""
+7,203,"Borrar",""
+7,204,"Dejar la divisa como por defecto",""
+7,205,"Editar",""
+7,300,"",""
+8,100,"Editor",""
+8,101,"Nuevo",""
+8,102,"Abrir",""
+8,103,"gravar",""
+8,104,"Guardar como",""
+8,105,"Salir",""
+8,201,"Pegar",""
+8,202,"Cortar",""
+8,203,"Copiar",""
+8,204,"Seleccionar todos",""
+8,205,"Encontrar",""
+8,206,"Reemplazar",""
+8,207,"Borrar",""
+8,200,"Editar",""
+8,300,"Archivo",""
+end,0,"",""

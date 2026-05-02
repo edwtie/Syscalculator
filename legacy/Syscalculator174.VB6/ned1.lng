@@ -1,0 +1,103 @@
+0,100,"Foutmelding",
+0,101," is niet gevonden",
+0,102,"Freesyscal kan niet zonder freesyscal.cfg",
+0,103,"Zeker weten? ",
+0,104,"Deze naam bestaat al",
+0,105,"Naam is verplicht!",
+0,106,"Syscalculator is al geactiveerd ",
+0,107," bestaat niet. Syscalculator kan deze onbekende functie niet lezen",
+0,108,"Geen titel",
+0,109,"De tekst in het bestand is veranderd",
+0,109,"Wil je dit opslaan? ",
+0,110,"Sorry, fout resultaat",
+0,201,"Niet gevonden",
+0,202,"Zoeken/Vervangen",
+0,203,"Tekst is doorzocht. ",
+0,204," items werden vervangen.",
+1,100,Bestand,
+1,101,Afsluiten,
+1,102,"Valuta:",
+1,103,"Getalgroep",
+1,200,Configuratie,
+1,201,"Altijd zichtbaar",
+1,202,"Introductie",
+1,203,"Tray",
+1,204,"Start",
+1,300,"Extra",
+1,301,"WizardExpress",
+1,302,"Rekenmachine",
+1,303,"Opties",
+1,400,Help,
+1,401,Feedback,"mailto:famtie@xs4all.nl?Subject=Syscalculcator feedback"
+1,402,Tiedragon,"www.tiedragon.nl\indexe.htm"
+1,403,Help,"[App]\help\index.htm"
+1,404,"Over Syscalculator"
+1,499,Over,
+1,500,"Bewerken",
+1,501,"Kopiëren",
+1,502,"Plakken",
+1,503,"Knippen",
+1,504,"Verwijderen",
+1,601,"Tonen",
+1,602,"Verbergen",
+1,603,"Afsluiten",
+1,505,"Alles verwijderen",
+2,100,"Introductie - ",
+2,101,OK,
+2,201,"Zet Introductie aan",
+3,100,Over,
+3,101,Versie,
+3,102,Auteursrechten,
+3,103,begin,"Dit programma is gratis. U mag het verspreiden en/of "
+3,103,line,"veranderen onder de voorwaarden van GPL,"
+3,103,line,"gepubliceerd door Free Software Foundation; versie 2"
+3,103,end,"van de licentie, of iedere latere versie."
+4,100,WizardExpress,""
+4,101,OK,""
+4,200,Afsluiten,""
+4,201,Bestand,""
+4,300,Extra,""
+4,301,Symbool,""
+4,500,Status,""
+4,501,Start,""
+4,502,Klaar,""
+5,100,"Rekenmachine",""
+5,101,"Bestand",""
+5,102,"Afsluiten",""
+6,100,"Opties",""
+6,101,"Taal",""
+6,102,"Valuta",""
+6,200,"Bladeren",""
+6,201,"OK",""
+6,202,"Annuleren",""
+6,203,"Toepassen",""
+6,204,"Toevoegen",""
+6,205,"Eigenschap",""
+6,206,"Hersorteren",""
+6,300,"",""
+7,100,"Eigenschap",""
+7,101,"Naam",""
+7,102,"Bestandsnaam",""
+7,200,"Bladeren",""
+7,201,"OK",""
+7,202,"Annuleren",""
+7,203,"Verwijderen",""
+7,204,"Als standaard valuta instellen",""
+7,205,"Wijzigen",""
+7,300,"",""
+8,100,"Editor",""
+8,101,"Nieuw",""
+8,102,"Open",""
+8,103,"Bewaar",""
+8,104,"Bewaar als",""
+8,105,"Afsluiten",""
+8,201,"Plakken",""
+8,202,"Knippen",""
+8,203,"Kopiëren",""
+8,204,"Alles selecteren",""
+8,205,"Zoeken",""
+8,206,"Vervangen",""
+8,207,"Verwijderen",""
+8,200,"Wijzigen",""
+8,300,"Bestand",""
+end,0,"",""

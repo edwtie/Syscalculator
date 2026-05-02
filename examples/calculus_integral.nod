@@ -1,0 +1,4 @@
+Name Integraal ans^2 van 0 tot 1
+format ##.00
+math integral 0,1 ans^2
+end

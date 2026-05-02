@@ -1,0 +1,19 @@
+Name Postcode naar adres demo
+URLN Postcode naar adres demo
+input1 Postcode huisnummer
+input2 Adres
+trans "2566 GB 215","Nieboerweg 215, 2566 GB Den Haag"
+trans "2566 GB 217","Nieboerweg 217, 2566 GB Den Haag"
+trans "2566 GB 219","Nieboerweg 219, 2566 GB Den Haag"
+trans "2566 GB 221","Nieboerweg 221, 2566 GB Den Haag"
+trans "2566 GB 223","Nieboerweg 223, 2566 GB Den Haag"
+trans "2566 GB 225","Nieboerweg 225, 2566 GB Den Haag"
+trans "2566 GB 227","Nieboerweg 227, 2566 GB Den Haag"
+trans "2566 GB 229","Nieboerweg 229, 2566 GB Den Haag"
+trans "2566 GB 231","Nieboerweg 231, 2566 GB Den Haag"
+trans "2566 GB 233","Nieboerweg 233, 2566 GB Den Haag"
+trans "2566 GB 235","Nieboerweg 235, 2566 GB Den Haag"
+trans "2566 GB 239","Nieboerweg 239, 2566 GB Den Haag"
+trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"
+trans "2566 GB 243","Nieboerweg 243, 2566 GB Den Haag"
+end

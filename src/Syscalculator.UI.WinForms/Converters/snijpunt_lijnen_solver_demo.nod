@@ -1,0 +1,8 @@
+Name Snijpunt lijnen solver demo
+URLN Snijpunt lijnen solver demo
+mode equation
+given y = 20
+equation y = x * 2
+solve x
+constraint x >= 0
+end

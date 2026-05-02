@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Nederlandse gulden naar Franse frank
+Urln NLG-FRF
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format #.00
+Symb1 Hfl
+Symb2 FRF
+input1 Amounts in Dutch guildens
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 2,20371
+math ans * 6,55957
+end
+

@@ -1,0 +1,4 @@
+Name Afgeleide van ans^2
+format ##.00
+math diff ans^2
+end

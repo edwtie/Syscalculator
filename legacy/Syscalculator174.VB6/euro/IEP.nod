@@ -1,0 +1,19 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name EuroCalculator
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Irish pound to euro
+indoprint 
+indoend
+format #.00
+Symb1 IEP
+Symb2 €
+input1 Amounts in Irish pound
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 0,787564
+end

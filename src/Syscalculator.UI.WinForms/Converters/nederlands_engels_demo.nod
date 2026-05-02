@@ -1,0 +1,20 @@
+Name Nederlands naar Engels demo
+URLN Nederlands naar Engels demo
+input1 Nederlands
+input2 Engels
+trans "hallo","hello"
+trans "goedemorgen","good morning"
+trans "goedenavond","good evening"
+trans "dank je","thank you"
+trans "alsjeblieft","please"
+trans "ja","yes"
+trans "nee","no"
+trans "water","water"
+trans "brood","bread"
+trans "kaas","cheese"
+trans "straat","street"
+trans "huis","house"
+trans "auto","car"
+trans "fiets","bicycle"
+trans "school","school"
+end

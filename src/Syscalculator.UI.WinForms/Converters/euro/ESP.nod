@@ -1,0 +1,19 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Spaanse peseta naar euro
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Spanisch peseta to euro
+indoprint 
+indoend
+format #.00
+Symb1 ESP
+Symb2 €
+input1 Amounts in Spanisch peseta
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 166,386
+end

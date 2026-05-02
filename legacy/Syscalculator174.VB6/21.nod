@@ -1,0 +1,28 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+
+Name EuroCalculcator
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Belgian franc  franc. 
+indoprint to euro
+indoprint 
+indoend
+format #.00
+Symb1 BEF
+Symb2 €
+Symba2 128
+input1 Amounts in Belgian franc
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 40,3399
+end
+
+
+
+
+
+

@@ -1,0 +1,59 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+Name Gallons Quarts Converter
+Urln liters gallons
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Dutch guildens to euro
+indoprint 
+indoend
+format ##.00
+Symb3 Gallons
+Symb4 Pints
+input1 Gallons
+input2 Pints
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans * 8
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

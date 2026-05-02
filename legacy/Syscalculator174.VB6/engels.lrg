@@ -1,0 +1,58 @@
+0,100,"Error",""
+0,101," is not found",""
+0,102,"There was an error during compilation",""
+0,103," is created without a problem",""
+0,104,"Compilation Done",""
+0,105,"Do you want to save your project?",""
+0,106,"Invalid format. An icon of tab must be PNG-format",""
+1,100,"&File",""
+1,101,New,""
+1,102,"Open",""
+1,103,"Save",""
+1,104,"Save as",""
+1,105,"Make exe",
+1,106,Exit,""
+1,200,"&Tools",
+1,202,"Language Option",""
+1,203,"Test",""
+1,204,"Option",""
+1,300,"&Help",""
+1,301,"Index",""
+1,303,"Feedback","mailto:famtie@xs4all.nl?Subject=Tabcompiler 2003 compiler feedback " 
+1,302,"Tiedragon","http:\\www.tiedragon.nl"
+1,304,"Donate","https://www.paypal.com/xclick/business=edwtie%40tiedragon.nl&no_note=1&tax=0&currency_code=USD"
+1,305,"About",""
+1,401,"Options",""
+1,402,"Advanced",""
+2,1,"Language Options",
+2,100,"Cancel",
+2,101,"OK",
+2,102,"Browse",
+2,103,"Save",
+2,104,"Langauge Option. You can translate from english to your own language",
+2,201,"Make Backup",
+2,202,"Cancel",
+2,203,"Add",
+2,204,"Remove",
+2,205,"MSN login",
+2,206,"This tab is already installed",
+2,207,"Your directory of msn is not found:",
+2,208,"Your personal tab is updated",
+2,209,"This tab is already deleted",
+2,210,"Error",
+2,211,"Status",
+2,212,"MSN is not installed",
+3,100,"View Code",
+3,101,"OK",
+4,100,"Options",""
+4,101,"Browse",""
+4,102,"Language Application", ""
+4,103,"Cancel",""
+4,104,"OK",""
+5,100,"About ",
+5,101,"Version ",
+5,103,begin,"Tab Manager 2003 Compiler for MSN 6,  Tiedragon is in no way affiliated with or endorsed by Microsoft Corporation. Copyright (c) 2003, Standard version.        MS Windows, MSN and MSN Messenger are registered trademarks of Microsoft Corporation."  
+5,103,end,""
+5,201,"OK",
+5,202,"System info...",
+end,0,"",""

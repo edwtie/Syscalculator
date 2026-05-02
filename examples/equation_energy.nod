@@ -1,0 +1,8 @@
+Name Bewegingsenergie
+mode equation
+given m = 80
+given v = 12
+equation E = 0,5 * m * v^2
+solve E
+constraint E >= 0
+end

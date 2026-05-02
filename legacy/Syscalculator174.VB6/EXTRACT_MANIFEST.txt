@@ -1,0 +1,135 @@
+﻿Syscalculator 1.74 VB6 legacy source/archive inventory
+Generated: 2026-04-30 09:32:25
+Source archive: broncode.zip + later toegevoegd legacy materiaal
+Warning: Output/ is archival material; do not run old exe/zip/installers.
+Files in legacy project/archive: 130
+
+21.nod
+21w.nod
+Anical1.frm
+Anical1.frx
+c_MenuXP.bas
+c_MenuXP.cls
+cat.lng
+Distance/cm inch.nod
+Distance/feet meter.nod
+Distance/inches foot.nod
+Distance/km miles.nod
+Distance/Light year - km.nod
+Distance/meter yards.nod
+Dutch.isl
+Dutch1.isl
+editor.frm
+editor.frx
+EditorMod.bas
+EditorMod1.bas
+Editrabout.frm
+Editrabout.frx
+Edmodule.bas
+eng.lng
+engels.lrg
+esp.lng
+euro/ats.nod
+euro/BEF.nod
+euro/DEM.nod
+euro/ESP.nod
+euro/FIM.nod
+euro/FRF.nod
+euro/GRD.nod
+euro/IEP.nod
+euro/ITL.nod
+euro/LUF.nod
+euro/NLG.nod
+euro/NLG-FRF.NOD
+euro/PTE.nod
+find.frm
+Form1.frm
+Form1.frx
+Form1Data.frm
+Form1Data.frx
+Form2.frm
+Form2.frx
+Form3.frm
+Form3.frx
+Form4.frm
+Form4.frx
+Freesyscal.bas
+frmAbout.frm
+frmAbout.frx
+frmMenuXP.frm
+frmMenuXP.frx
+help/index.htm
+help/index_en.htm
+help/index_nl.htm
+help/logo_phpBB.gif
+help/Logo_phpBB_med.gif
+help/syscal_1.png
+help/syscal_2.png
+help/Syscal_3.png
+help/Syscal_4.png
+help/triconvert_3.jpg
+help/WS_FTP.LOG
+iq.ico
+Languare.bas
+Languarex.bas
+m_EventXP.bas
+m_GlobeXP.bas
+m_MenuXP.bas
+m_TempXP.bas
+Mass/gram ounces.nod
+Mass/kg lbs.nod
+Mass/Kg pound.nod
+Module1.bas
+ned.lng
+ned1.lng
+new icon.ico
+Output/3w.nod
+Output/README_DO_NOT_RUN.md
+Output/setup.exe
+Output/smscity.zip
+Output/sys164.zip
+Output/sys17.zip
+Output/sys171.zip
+Output/sys172.zip
+Output/sys17b1.zip
+Output/syscal17b2-N.zip
+Output/syscal17b-N.zip
+Output/tabcomb1.zip
+Output/tabman10.zip
+Output/tabman10a.zip
+Output/tabman11.zip
+Output/tabman11a.zip
+Output/tabmanb1.zip
+Output/tabmanb2.zip
+Output/tabmanb3.zip
+Output/tabmanb3r.zip
+Output/tabmanb4.zip
+Output/tabmanb5.zip
+Output/WS_FTP.LOG
+Pressure/Pds sq inch - kg sq cm.nod
+Project1.vbp
+README.md
+resource.res
+sms.ico
+syscal.ico
+syscal1.ico
+Syscalculator174.local.vbp
+SyscalEditor.vbp
+Sysmsgbox.frm
+Temperature/graden Fahrenheit.nod
+Temperature/Graden Kelvin.nod
+toetsicon.ico
+tray.frm
+tray.frx
+Volume/Gallons Pints.nod
+Volume/Gallons Quarts.nod
+Volume/liters Barrels(oil).nod
+Volume/liters Bushels(uk).nod
+Volume/liters gallons(UK).nod
+Volume/liters gallons(US).nod
+WeditorApi.bas
+WindowsAPI.bas
+WizardExpress.frm
+WizardExpress.frx
+Zeditor.frm
+Zeditor.frx

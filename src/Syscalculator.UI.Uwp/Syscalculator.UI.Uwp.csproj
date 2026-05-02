@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <UseUwp>true</UseUwp>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <PublishAot>true</PublishAot>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Syscalculator.Uwp</AssemblyName>
+    <Title>Syscalculator 2.1</Title>
+    <Product>Syscalculator</Product>
+    <Company>Tiedragon</Company>
+    <Version>2.1.0-alpha</Version>
+    <FileVersion>2.1.0.0</FileVersion>
+    <InformationalVersion>2.1.0-alpha</InformationalVersion>
+    <ApplicationManifest>Package.appxmanifest</ApplicationManifest>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NodSystem.Core/NodSystem.Core.csproj" />
+  </ItemGroup>
+</Project>

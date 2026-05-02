@@ -1,0 +1,311 @@
+﻿# Syscalculator 2.0 taalbestand
+# Formaat: key=waarde
+
+language.name=Nederlands
+
+menu.file=Bestand
+menu.file.open_nod=NOD openen...
+menu.file.reload=Converterlijst herladen
+menu.file.exit=Afsluiten
+menu.edit=Bewerken
+menu.edit.copy_input=Invoer kopieren
+menu.edit.copy_output=Uitvoer kopieren
+menu.edit.paste_active=Plakken naar actief veld
+menu.edit.clear=Velden leegmaken
+menu.config=Config
+menu.config.digit_group=Cijfergroepen
+menu.config.decimals=Decimalen
+menu.config.live_convert=Live converteren
+menu.config.trace_control=Tracecontrole
+menu.config.language=Taal...
+menu.config.always_on_top=Altijd bovenop
+menu.config.minimize_to_tray=Minimaliseren naar systeemvak
+menu.config.catalog_manager=Catalogusbeheer
+menu.tools=Extra
+menu.tools.wizard=WizardExpress
+menu.tools.calculator=Calculator
+menu.tools.nod_editor=NOD Editor
+menu.tools.trace=Trace
+menu.tools.show_intro=Introductie opnieuw tonen
+menu.about=Over
+menu.about.syscalculator=Over Syscalculator
+
+toolbar.file=Bestand:
+
+option.digit_group=Cijfergroepen
+option.decimals=Decimalen
+option.live_convert=Live converteren
+
+language.ned=Nederlands
+language.eng=English
+language.restart_required=Taal gewijzigd. Herstart Syscalculator om alle tekst toe te passen.
+
+status.ready=Gereed
+status.catalog_loaded=Converterlijst geladen.
+status.loaded=Geladen: {0}
+status.forward=Vooruit berekend.
+status.reverse=Terug berekend.
+status.calculator_to_input1=Calculator -> invoer 1.
+status.calculator_to_input2=Calculator -> invoer 2.
+status.calculator_disabled=Calculator is alleen beschikbaar voor numerieke converters.
+status.error=Fout: {0}
+status.language_changed=Taal gewijzigd.
+
+dialog.open_nod.title=NOD openen
+dialog.open_nod.failed_title=NOD laden mislukt
+dialog.open_nod.filter=NOD files (*.nod)|*.nod|All files (*.*)|*.*
+dialog.error_title=Fout
+dialog.intro_title=Introductie
+dialog.no_intro=Deze converter heeft geen introductietekst.
+dialog.about_title=Over Syscalculator 2.0
+dialog.about_text=Syscalculator 2.0 Beta\nNOD System 2.0\n\nGebaseerd op de oude Syscalculator/NOD-gedachte.
+about.version_title=Versie informatie
+about.product_name=Productnaam:
+about.version=Versie:
+about.build=Buildnummer:
+about.release_date=Releasedatum:
+about.copyright_title=Copyright
+about.rights=Alle rechten voorbehouden.
+about.description_title=Omschrijving
+about.description_text=NOD conversie- en rekensysteem voor temperatuur, gewichten, maten, valutaconversie en meer. Snel, nauwkeurig en flexibel.
+about.website_title=Website
+about.email_title=E-mail
+about.language_title=Taal
+about.system_info=Systeem informatie...
+about.license=Licentie...
+about.license_text=Syscalculator 2.0 beta build. Interne evaluatielicentie.
+dialog.tray_title=Syscalculator
+dialog.tray_message=Syscalculator draait in het systeemvak.
+dialog.open_nod.file_not_found=Bestand niet gevonden: {0}
+dialog.language.title=Taal kiezen
+dialog.language.search=Taal zoeken...
+dialog.language.ok=OK
+dialog.language.cancel=Annuleren
+dialog.language.count={0} talen
+
+calculator.title=Calculator
+calculator.title_input1=Calculator - invoer 1
+calculator.title_input2=Calculator - invoer 2
+calculator.copy=Kopieer
+calculator.paste=Plakken
+calculator.use=Gebruik
+calculator.use_close=Gebruik+Sluit
+
+tray.show=Toon Syscalculator
+tray.hide=Verberg naar systeemvak
+tray.wizard=WizardExpress
+tray.calculator=Calculator
+tray.exit=Afsluiten
+
+find.title=Zoek / vervang
+find.find=Zoeken
+find.next=Volgende
+find.replace=Vervangen
+find.replace_button=Vervang
+find.match_case=Hoofdlettergevoelig
+find.replace_all=Alles vervangen
+find.close=Sluiten
+find.not_found=Niet gevonden.
+find.replaced_count={0} vervangingen uitgevoerd.
+
+catalog.title=Convertercatalogus
+catalog.add=Toevoegen
+catalog.new_converter=Nieuwe converter
+catalog.choose_nod=NOD kiezen...
+catalog.save=Opslaan
+
+editor.title=NOD Editor Plus
+editor.tab.new=nieuw
+editor.menu.file=Bestand
+editor.menu.file.new_tab=Nieuw tabblad
+editor.menu.file.open=Openen...
+editor.menu.file.save=Opslaan
+editor.menu.file.save_as=Opslaan als...
+editor.menu.file.close_tab=Tab sluiten
+editor.menu.file.close=Sluiten
+editor.menu.edit=Bewerken
+editor.menu.edit.undo=Ongedaan maken
+editor.menu.edit.cut=Knippen
+editor.menu.edit.copy=Kopieren
+editor.menu.edit.paste=Plakken
+editor.menu.edit.select_all=Alles selecteren
+editor.menu.edit.find_replace=Zoek / vervang
+editor.menu.tools=Extra
+editor.menu.tools.validate=Valideren
+editor.menu.tools.test=Test uitvoeren
+editor.menu.tools.repair=Regels herstellen
+editor.menu.tools.recolor=Syntax opnieuw kleuren
+editor.menu.tools.example_celsius=Voorbeeld: Celsius
+editor.menu.tools.example_e2=Voorbeeld: e^2
+editor.menu.tools.example_sine=Voorbeeld: sinus graden
+editor.menu.view=Weergave
+editor.menu.view.test_panel=Testpaneel tonen/verbergen
+editor.menu.view.live_preview=Live preview tonen/verbergen
+editor.menu.view.simulator=Simulator tonen/verbergen
+editor.menu.view.restore_panels=Panelen herstellen
+editor.menu.view.undock_test_panel=Testpaneel losmaken
+editor.menu.view.dock_test_panel=Testpaneel terugdocken
+editor.menu.view.undock_live_preview=Live preview losmaken
+editor.menu.view.dock_live_preview=Live preview terugdocken
+editor.graph.title=Graph Preview
+editor.graph.copy_points=Punten kopieren
+editor.graph.open_large=Grote grafiek openen
+editor.graph.hide_table=Tabel verbergen
+editor.graph.show_table=Tabel tonen
+editor.graph.reset_view=Weergave herstellen
+editor.graph.zoom_in=Inzoomen
+editor.graph.zoom_out=Uitzoomen
+editor.graph.points=Punten
+editor.graph.position_empty=Positie: (-, -)
+editor.graph.position=Positie: {0}
+editor.graph.step=Stap
+editor.graph.step_positive=Stap moet groter zijn dan 0.
+editor.graph.no_numeric_points=Geen numerieke punten. Overgeslagen: {0}.
+editor.graph.points_status=Punten: {0}. Overgeslagen: {1}. Bereik: {2:0.####} tot {3:0.####}.
+editor.graph.error=Grafiekfout: {0}
+editor.graph.disabled=Graph Preview uitgeschakeld
+editor.graph.disabled_chg=Graph Preview is uitgeschakeld voor chg-converters.
+editor.graph.disabled_trans=Graph Preview is uitgeschakeld voor trans-converters.
+editor.graph.disabled_math=Graph Preview is alleen beschikbaar voor numerieke math-converters.
+editor.menu.view.intro_preview=Introductie preview
+editor.menu.view.undock_simulator=Simulator losmaken
+editor.menu.view.dock_simulator=Simulator terugdocken
+editor.menu.help=Help
+editor.menu.formula_card=Formulekaart
+editor.menu.help.nod=NOD help
+
+editor.menu.help.about=Over NOD Editor
+editor.toolbar.new=Nieuw
+editor.toolbar.open=Open
+editor.toolbar.save=Opslaan
+editor.toolbar.find=Zoek
+editor.toolbar.validate=Valideren
+editor.toolbar.test=Test
+editor.toolbar.repair=Herstel
+editor.preview.title=Live preview
+editor.preview.dialog=Dialoog
+editor.preview.input1=Input1
+editor.preview.input2=Input2
+editor.preview.sample=Voorbeeld
+editor.preview.result=Resultaat
+editor.preview.format=Format
+editor.preview.intro=Introductie
+editor.sim.title=Convertersimulator
+editor.sim.window_title=Convertervoorbeeld
+editor.sim.file=Bestand:
+editor.sim.digit_group=Cijfergroepen
+editor.sim.decimals=Decimalen
+editor.sim.current_converter=Huidige converter
+editor.test.title=Convertertest
+editor.test.input=Testinvoer
+editor.test.output=Uitvoer
+editor.test.formula=Formule
+editor.test.calculation=Berekening
+editor.status.ready=Gereed
+editor.status.loaded=Geopend: {0}
+editor.status.saved=Opgeslagen: {0}
+editor.status.valid=NOD geldig.
+editor.status.test_done=Test uitgevoerd.
+editor.status.lines_repaired=Regels hersteld.
+editor.status.saved_short=Opgeslagen
+editor.status.position=Regel {0}, Kolom {1}
+editor.status.lines=Regels {0}
+editor.dialog.open_title=NOD openen
+editor.dialog.save_title=NOD opslaan als
+editor.dialog.filter=NOD files (*.nod)|*.nod|All files (*.*)|*.*
+editor.dialog.close_dirty=Tab bevat niet-opgeslagen wijzigingen. Sluiten?
+editor.dialog.close_tab_title=Tab sluiten
+editor.dialog.validation_error=Validatie fout
+editor.dialog.test_error=Test fout
+editor.dialog.no_intro=Geen indoprint/indoend introductietekst gevonden.
+
+wizard.title=WizardExpress
+wizard.forward=Vooruit
+wizard.reverse=Terug
+wizard.paste=Plakken uit Clipboard
+wizard.convert=Converteren
+wizard.copy_output=Output naar Clipboard
+wizard.hint=Links: input / rechts: output. Tabellen met tabs blijven behouden.
+wizard.status.empty=Geen input
+wizard.status.ready=Klaar
+wizard.status.done=Geconverteerd
+wizard.status.error=Klaar met fouten
+
+trace.title=Berekeningstrace
+trace.none=Geen trace beschikbaar.
+
+editor.nod_help.suggestions=Suggesties
+editor.nod_help.insert=Invoegen
+editor.nod_help.replace=Vervangen
+editor.nod_help.more=Meer help
+editor.nod_help.full.title=NOD help
+editor.nod_help.full.keyword_title=Command overzicht
+editor.nod_help.page.workflow=Werkwijze
+editor.nod_help.page.structure=Basisstructuur
+editor.nod_help.page.symbols=Symbolen
+editor.nod_help.page.commands=Belangrijke commands
+editor.nod_help.page.examples=Voorbeelden
+editor.nod_help.page.troubleshooting=Veelgemaakte fouten
+editor.nod_help.full.intro=<p><b>NOD</b> is de taal waarmee Syscalculator-converters worden beschreven. Een NOD-bestand vertelt hoe het venster heet, welke velden zichtbaar zijn, welke symbolen naast waarden staan en welke regels de omzetting uitvoeren.</p><p>De NOD editor helpt je dit niet blind te doen: tijdens typen krijg je suggesties, met rechtsklik krijg je commandouitleg, onderin kun je testen en rechts zie je de preview van het convertervenster.</p>
+editor.nod_help.full.structure=<h2>Basisstructuur</h2><pre>Name Celsius naar Fahrenheit&#13;&#10;URLN Celsius naar Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;end</pre>
+editor.nod_help.full.workflow=<h2>Werkwijze</h2><ol><li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>; dan weet de converter hoe hij heet en welke labels zichtbaar zijn.</li><li>Kies optioneel symbolen met <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> t/m <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a>. Gebruik per waarde links of rechts, niet beide.</li><li>Voeg conversieregels toe: <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> voor rekenen, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> voor exacte tekstvertaling, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> voor prefixwijziging.</li><li>Gebruik <b>Valideren</b> of F5 om syntax te controleren en <b>Test</b> of F6 om de uitkomst te zien.</li><li>Zet <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> aan het einde.</li></ol>
+editor.nod_help.full.symbols=<h2>Symbolen</h2><table><tr><th>Command</th><th>Positie</th><th>Voorbeeld</th></tr><tr><td>Symb1</td><td>links van input</td><td>DM 25</td></tr><tr><td>Symb2</td><td>links van output</td><td>EUR 25</td></tr><tr><td>Symb3</td><td>rechts van input</td><td>25 kg</td></tr><tr><td>Symb4</td><td>rechts van output</td><td>25 lb</td></tr></table><p>Kies per waarde meestal links of rechts, niet allebei, om dubbele tekst zoals <code>DM 25 DM</code> te voorkomen.</p>
+editor.nod_help.full.commands=<h2>Belangrijke commands</h2><ul><li><b>math</b>: rekent met <code>ans</code>.</li><li><b>trans</b>: vertaalt exacte tekstwaarden.</li><li><b>chg</b>: wijzigt begintekst/prefix; ondersteunt ook <code>x</code>-patronen zoals <code>050-2xxxxx</code>, waarbij de meest specifieke prefix wint.</li><li><b>indoprint ... indoend</b>: introductietekstblok. Vergeet <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a> niet.</li><li><b>end</b>: sluit het NOD-bestand af.</li></ul>
+editor.nod_help.full.examples=<h2>Voorbeelden per soort NOD</h2><p>NOD-bestanden kunnen verschillende soorten converters beschrijven. Kies het patroon dat past bij wat je wilt maken.</p><h3>1. Omrekentool met math</h3><p>Gebruik dit voor getallen: temperatuur, afstand, gewicht, valuta, percentage.</p><pre>Name Celsius naar Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;end</pre><h3>2. Vertaaltool met trans</h3><p>Gebruik dit wanneer de hele invoer exact gelijk moet zijn aan een bekende waarde. Zet oud en nieuw gescheiden door een komma. Gebruik quotes als er spaties of komma's in de waarde staan.</p><pre>Name Postcode naar adres demo&#13;&#10;input1 Postcode huisnummer&#13;&#10;input2 Adres&#13;&#10;trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;end</pre><h3>3. Prefix/patroon-tool met chg</h3><p>Gebruik <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> als alleen het begin van de tekst verandert. Oud en nieuw staan met een komma ertussen. Patronen met <code>x</code> mogen, handig voor oude telefoon-omnummeringstabellen.</p><pre>Name Operatie Decibel voorbeeld&#13;&#10;input1 Oud telefoonnummer&#13;&#10;input2 Nieuw telefoonnummer&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;chg "050-2xxxxx","050-52xxxxx"&#13;&#10;end</pre><h3>4. Tool met symbolen links/rechts</h3><p>Gebruik symbolen om waarden mooi te tonen. Kies per waarde links of rechts.</p><pre>Name Duitse mark naar euro&#13;&#10;input1 Mark&#13;&#10;input2 Euro&#13;&#10;Symb1 DM&#13;&#10;Symb2 EUR&#13;&#10;format ##.00&#13;&#10;math ans / 1,95583&#13;&#10;end</pre><h3>5. Introductietekst met indoprint</h3><p>Gebruik dit als de gebruiker eerst uitleg moet zien voordat hij de converter gebruikt.</p><pre>indoprint Deze converter rekent Celsius om naar Fahrenheit.&#13;&#10;indoprint Vul een temperatuur in graden Celsius in.&#13;&#10;indoend</pre><h3>6. Vergelijking oplossen met equation</h3><p>Gebruik dit voor formule-achtige problemen waarbij een onbekende variabele opgelost moet worden.</p><pre>Name Vergelijking oplossen&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre><h3>7. Voorbeeld zoals in het venster</h3><p>Dit laat zien hoe labels, invoer, resultaat en symbolen op het scherm terechtkomen.</p><div class="dialog-example"><div class="dialog-title">EuroCalculator</div><div class="dialog-menu"><span>File</span><span>Edit</span><span>Config</span><span>Tools</span><span>About</span></div><div class="dialog-body"><div class="dialog-row"><span></span><div class="dialog-label">Value in Deutsch Mark</div><span></span></div><div class="dialog-row"><span class="dialog-radio on"></span><div class="dialog-input">22</div><div class="dialog-symbol">DM</div></div><div class="dialog-row"><span></span><div class="dialog-label">Value in euros</div><span></span></div><div class="dialog-row"><span class="dialog-radio"></span><div class="dialog-input">11,25</div><span></span></div><div class="dialog-options"><span>&#9633; Digit group</span><span>&#9745; Decimals</span><span>2</span></div></div></div><pre>Name Duitse mark naar euro&#13;&#10;input1 Value in Deutsch Mark&#13;&#10;input2 Value in euros&#13;&#10;Symb3 DM&#13;&#10;format ##.00&#13;&#10;math ans / 1,95583&#13;&#10;end</pre>
+editor.nod_help.full.troubleshooting=<h2>Veelgemaakte fouten</h2><ul><li><b>Dubbele symbolen:</b> gebruik niet tegelijk links en rechts voor dezelfde waarde, anders krijg je bijvoorbeeld <code>DM 25 DM</code>.</li><li><b>Intro zonder einde:</b> sluit elk <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>-blok af met <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</li><li><b>Math zonder ans:</b> gebruik <code>ans</code> als huidige waarde, bijvoorbeeld <code>math ans * 100</code>.</li><li><b>Geen end:</b> zet <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> aan het einde van het bestand.</li><li><b>Komma/punt:</b> decimalen mogen vaak met komma of punt; test altijd met F6.</li></ul>
+editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius naar Fahrenheit</div><div><b>Betekenis:</b> interne naam van de converter.</div><div><b>Voorbeeld:</b> <code>Name Postcode naar adres demo</code>.</div>
+editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Titel voor gebruiker</div><div><b>Betekenis:</b> zichtbare titel of omschrijving voor de gebruiker.</div><div><b>Voorbeeld:</b> <code>URLN Telefoonnummer omnummering 1995 volledig</code>.</div>
+editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Betekenis:</b> legacy label van de invoerwaarde.</div><div><b>Vervangen door:</b> <code>input x Celsius</code>.</div><div><b>Tip:</b> oude combinatie <code>input1</code>/<code>input2</code> wordt modern <code>input x</code>/<code>inputr y</code>.</div><div><b>Voorbeeld:</b> <code>input1 Celsius</code> wordt <code>input x Celsius</code>.</div>
+editor.nod_help.input2=<div class="title">input2</div><div class="syntax">input2 Fahrenheit</div><div><b>Betekenis:</b> legacy label van de uitvoerwaarde en reverse-kant.</div><div><b>Vervangen door:</b> <code>inputr y Fahrenheit</code> of <code>output y Fahrenheit</code>.</div><div><b>Pas op:</b> gebruik <code>input y</code> alleen als het echt een tweede invoerwaarde is, bijvoorbeeld bij een 2D vector.</div><div><b>Voorbeeld:</b> <code>input2 Fahrenheit</code> wordt <code>inputr y Fahrenheit</code>.</div>
+editor.nod_help.symb1=<div class="title">Symb1</div><div class="syntax">Symb1 DM</div><div><b>Betekenis:</b> symbool links van input1.</div><div><b>Voorbeeld:</b> <code>Symb1 DM</code> toont <code>DM 25</code>.</div>
+editor.nod_help.symb2=<div class="title">Symb2</div><div class="syntax">Symb2 EUR</div><div><b>Betekenis:</b> symbool links van input2/output.</div><div><b>Voorbeeld:</b> <code>Symb2 EUR</code> toont <code>EUR 12,78</code>.</div>
+editor.nod_help.symb3=<div class="title">Symb3</div><div class="syntax">Symb3 kg</div><div><b>Betekenis:</b> symbool rechts van input1.</div><div><b>Voorbeeld:</b> <code>Symb3 kg</code> toont <code>25 kg</code>.</div>
+editor.nod_help.symb4=<div class="title">Symb4</div><div class="syntax">Symb4 lb</div><div><b>Betekenis:</b> symbool rechts van input2/output.</div><div><b>Voorbeeld:</b> <code>Symb4 lb</code> toont <code>55 lb</code>.</div>
+editor.nod_help.format=<div class="title">format</div><div class="syntax">format ##.00</div><div><b>Betekenis:</b> bepaalt hoeveel decimalen het resultaat toont.</div><div><b>Voorbeeld:</b> <code>format ##.00</code> toont <code>12.50</code>.</div>
+editor.nod_help.mode=<div class="title">mode</div><div class="syntax">mode calculator</div><div><b>Betekenis:</b> extra instelling voor het type converter.</div><div><b>Voorbeeld:</b> <code>mode calculator</code>.</div>
+editor.nod_help.math=<div class="title">math</div><div class="syntax">math ans * 1,8</div><div><b>Betekenis:</b> voert een rekenstap uit met <code>ans</code> als huidige waarde.</div><div><b>Voorbeeld:</b> <code>math ans + 32</code> telt 32 op bij de huidige waarde.</div>
+editor.nod_help.chg=<div class="title">chg</div><div class="syntax">chg "oude-prefix","nieuwe-prefix"</div><div><b>Betekenis:</b> verandert het beginstuk van tekst, bijvoorbeeld codes of telefoonnummers.</div><div><b>Voorbeeld:</b> <code>chg "01751-xxxxx","070-51xxxxx"</code> maakt van <code>01751-12345</code> de waarde <code>070-5112345</code>.</div><div><b>Patronen:</b> <code>x</code> mag als restteken. Bij meerdere matches wint de langste/meest specifieke prefix.</div>
+editor.nod_help.trans=<div class="title">trans</div><div class="syntax">trans "oude waarde","nieuwe waarde"</div><div><b>Betekenis:</b> vertaalt een complete waarde. NOD 1.0 zoekt exact; NOD 2.0 kan daarna slimmer matchen op compacte tekst.</div><div><b>Voorbeeld:</b> <code>trans "dank je","thank you"</code> vertaalt ook invoer zoals <code>dank_je</code>.</div>
+editor.nod_help.trans.improved=<h2>Verbeterde trans: slimmer dan NOD 1.0</h2><div class="notice improved"><b>Compatibel:</b> klassieke NOD 1.0 <code>trans</code> blijft eerst exact zoeken. NOD 2.0 probeert daarna pas een slimme compacte match.</div><table class="syntax-compare"><tr><th>Gedrag</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Voorbeeld</th></tr><tr><td>Exacte waarde</td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><code>trans "hallo","hello"</code></td></tr><tr><td>Hoofdletters negeren</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>Hallo</code> matcht <code>hallo</code></td></tr><tr><td>Spaties, punten, streepjes en underscore negeren</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>dank_je</code>, <code>dank je</code> en <code>dank-je</code> kunnen dezelfde trans-regel raken</td></tr><tr><td>Dubbelzinnige slimme match</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Bij twee compacte matches wordt niet stil verkeerd vertaald; de invoer blijft staan.</td></tr></table><div class="example-grid"><div class="example-card"><h3>NOD 1.0: klassiek exact</h3><pre>Name Klassieke trans&#13;&#10;input1 Nederlands&#13;&#10;input2 Engels&#13;&#10;trans "hallo","hello"&#13;&#10;end</pre><p>Bedoeld voor vaste waarden. Exacte regels blijven de voorkeur houden.</p></div><div class="example-card"><h3>NOD 2.0: verbeterde trans</h3><pre>Name Slimme trans&#13;&#10;input1 Nederlands&#13;&#10;input2 Engels&#13;&#10;trans "dank je","thank you"&#13;&#10;trans "goedemorgen","good morning"&#13;&#10;end</pre><p><code>dank_je</code>, <code>DANK-JE</code> en <code>dank je</code> kunnen allemaal <code>thank you</code> geven.</p></div></div><p><b>Vuistregel:</b> gebruik <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> voor complete waarden. Gebruik <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> wanneer alleen een beginstuk of patroon verandert.</p>
+editor.nod_help.reverse=<div class="title">reverse</div><div class="syntax">reverse ans / 1,8</div><div><b>Betekenis:</b> handmatige terugrekenregel.</div><div><b>Voorbeeld:</b> bij <code>math ans * 1,8</code> kun je <code>reverse ans / 1,8</code> gebruiken.</div>
+editor.nod_help.field=<div class="title">field</div><div class="syntax">field KolomNaam</div><div><b>Betekenis:</b> start een datavelddefinitie.</div><div><b>Voorbeeld:</b> <code>field Telefoon</code>.</div>
+editor.nod_help.table=<div class="title">table</div><div class="syntax">table TabelNaam</div><div><b>Betekenis:</b> naam van de brontabel.</div><div><b>Voorbeeld:</b> <code>table Klanten</code>.</div>
+editor.nod_help.output=<div class="title">output</div><div class="syntax">output ResultaatKolom</div><div><b>Betekenis:</b> naam van het outputveld.</div><div><b>Voorbeeld:</b> <code>output TelefoonNieuw</code>.</div>
+editor.nod_help.phoneformat=<div class="title">phoneformat</div><div class="syntax">phoneformat country NL</div><div><b>Betekenis:</b> normaliseert telefoonnummers binnen een <code>field</code> van <code>mode data</code>.</div><div><b>Voorbeeld:</b> <code>phoneformat remove_spaces true</code> verwijdert spaties; <code>phoneformat normalize_international true</code> normaliseert internationale notatie voor Nederland.</div>
+editor.nod_help.lookup=<div class="title">lookup</div><div class="syntax">lookup Landen</div><div><b>Betekenis:</b> start een lookup-definitie.</div><div><b>Voorbeeld:</b> <code>lookup Landen</code>.</div>
+editor.nod_help.match=<div class="title">match</div><div class="syntax">match code = NL</div><div><b>Betekenis:</b> beschrijft hoe een lookup gekoppeld wordt.</div><div><b>Voorbeeld:</b> <code>match postcode = 2566GB</code>.</div>
+editor.nod_help.given=<div class="title">given</div><div class="syntax">given x = 10</div><div><b>Betekenis:</b> bekende waarde voor een vergelijking.</div><div><b>Voorbeeld:</b> <code>given y = 20</code>.</div>
+editor.nod_help.equation=<div class="title">equation</div><div class="syntax">equation y = x * 2</div><div><b>Betekenis:</b> definieert een vergelijking.</div><div><b>Voorbeeld:</b> <code>equation y = x * 2</code>.</div>
+editor.nod_help.solve=<div class="title">solve</div><div class="syntax">solve x</div><div><b>Betekenis:</b> geeft aan welke variabele opgelost moet worden.</div><div><b>Voorbeeld:</b> <code>solve x</code>.</div>
+editor.nod_help.constraint=<div class="title">constraint</div><div class="syntax">constraint x >= 0</div><div><b>Betekenis:</b> voorwaarde voor een oplossing.</div><div><b>Voorbeeld:</b> <code>constraint x >= 0</code> voorkomt negatieve oplossingen.</div>
+editor.nod_help.preview=<div class="title">preview</div><div class="syntax">preview Voorbeeldtekst</div><div><b>Betekenis:</b> tekst voor voorbeeld/preview.</div><div><b>Voorbeeld:</b> <code>preview Vul 2566 GB 241 in</code>.</div>
+editor.nod_help.backup=<div class="title">backup</div><div class="syntax">backup true</div><div><b>Betekenis:</b> compatibiliteitsinstelling uit oudere NOD-bestanden.</div><div><b>Voorbeeld:</b> <code>backup true</code>.</div>
+editor.nod_help.indoprint=<div class="title">indoprint</div><div class="syntax">indoprint Introductietekst</div><div><b>Betekenis:</b> regel met introductietekst die voor gebruik getoond kan worden.</div><div><b>Voorbeeld:</b> <code>indoprint Deze converter gebruikt de Decibel-tabel.</code> Sluit daarna af met <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</div>
+editor.nod_help.indoend=<div class="title">indoend</div><div class="syntax">indoend</div><div><b>Betekenis:</b> einde van een introductietekstblok.</div><div><b>Voorbeeld:</b> <code>indoprint Uitleg</code> gevolgd door <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</div>
+editor.nod_help.end=<div class="title">end</div><div class="syntax">end</div><div><b>Betekenis:</b> einde van het NOD-bestand.</div><div><b>Voorbeeld:</b> zet <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> als laatste regel.</div>
+editor.nod_insert.indoprint=indoprint Introductietekst\nindoend
+
+editor.nod_help.chg.extra=<h2>chg voorbeelden</h2>&#13;&#10;            <p><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> verandert vooral het begin van een tekst. Dat is handig voor telefoonnummers, codes, prefixes en oude nummerplannen.</p>&#13;&#10;            <div class="notice"><b>Structuur:</b> links staat wat gevonden moet worden, rechts staat de nieuwe vorm. Gebruik aanhalingstekens als de waarde spaties, komma's of speciale tekens bevat.</div>&#13;&#10;            <details open><summary>Prefix vervangen</summary>&#13;&#10;            <table>&#13;&#10;              <tr><th>Doel</th><th>Regel</th><th>Voorbeeld</th></tr>&#13;&#10;              <tr><td>Oude prefix naar nieuw</td><td><code>chg "01751","07051"</code></td><td><code>0175112345</code> wordt <code>0705112345</code></td></tr>&#13;&#10;              <tr><td>Met streepje</td><td><code>chg "01751-","070-51"</code></td><td><code>01751-12345</code> wordt <code>070-5112345</code></td></tr>&#13;&#10;              <tr><td>Langste match wint</td><td>zet specifieke regels boven algemeen</td><td><code>01751-9xxxx</code> kan apart behandeld worden</td></tr>&#13;&#10;            </table>&#13;&#10;            <div class="example-grid">&#13;&#10;              <div class="example-card"><h3>Voorbeeld: Den Haag 070</h3><pre>Name Omnummering Den Haag&#13;&#10;            input1 Oud telefoonnummer&#13;&#10;            input2 Nieuw telefoonnummer&#13;&#10;            chg "01751-xxxxx","070-51xxxxx"&#13;&#10;            chg "01750-xxxxx","070-50xxxxx"&#13;&#10;            end</pre></div>&#13;&#10;              <div class="example-card"><h3>Voorbeeld: artikelcode</h3><pre>Name Artikelcode vernieuwen&#13;&#10;            input1 Oude code&#13;&#10;            input2 Nieuwe code&#13;&#10;            chg "OLD-","NEW-"&#13;&#10;            end</pre></div>&#13;&#10;            </div>&#13;&#10;            </details>&#13;&#10;&#13;&#10;            <details><summary>Patroon met x</summary>&#13;&#10;            <p>Gebruik <code>x</code> als plaats voor tekens die behouden moeten blijven. Dat lijkt op oude omnummeringstabellen.</p>&#13;&#10;            <pre>chg "050-2xxxxx","050-52xxxxx"</pre>&#13;&#10;            <div class="example-grid">&#13;&#10;              <div class="example-card"><h3>Voorbeeld: patroonregel</h3><pre>Name Telefoonpatroon&#13;&#10;            input1 Oud&#13;&#10;            input2 Nieuw&#13;&#10;            chg "050-2xxxxx","050-52xxxxx"&#13;&#10;            end</pre></div>&#13;&#10;            </div>&#13;&#10;            </details>&#13;&#10;&#13;&#10;            <details><summary>Veelgemaakte chg-fouten</summary>&#13;&#10;            <ul>&#13;&#10;              <li>Te algemene regel boven een specifieke regel zetten.</li>&#13;&#10;              <li>Komma vergeten tussen oud en nieuw.</li>&#13;&#10;              <li>Spaties of komma's gebruiken zonder aanhalingstekens.</li>&#13;&#10;              <li><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> gebruiken terwijl je eigenlijk een exacte vertaling nodig hebt; gebruik dan <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>.</li>&#13;&#10;            </ul>&#13;&#10;            </details>
+editor.nod_help.math.extra=<h2>Math in het kort</h2>&#13;&#10;        <p><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> rekent met <code>ans</code>. Bij de eerste regel is <code>ans</code> de invoerwaarde; bij volgende regels is <code>ans</code> het vorige resultaat.</p>&#13;&#10;        <div class="notice"><b>Structuur:</b> kies eerst het soort berekening, schrijf daarna de bijpassende syntax. Gebruik bij grotere formules liever haakjes of meerdere regels.</div>&#13;&#10;        <div class="math-flow">&#13;&#10;          <span class="math-pill">1. Basis</span>&#13;&#10;          <span class="math-pill">2. Functies</span>&#13;&#10;          <span class="math-pill">3. Complexe formule</span>&#13;&#10;          <span class="math-pill">4. Reverse of calculus</span>&#13;&#10;        </div>&#13;&#10;&#13;&#10;        <h2>Syntax per groep</h2>&#13;&#10;        <details open><summary>Basisbewerkingen</summary>&#13;&#10;        <table>&#13;&#10;          <tr><th>Doel</th><th>Syntax</th><th>Voorbeeld</th></tr>&#13;&#10;          <tr><td>Optellen</td><td><code>math ans + getal</code></td><td><code>math ans + 32</code></td></tr>&#13;&#10;          <tr><td>Aftrekken</td><td><code>math ans - getal</code></td><td><code>math ans - 10</code></td></tr>&#13;&#10;          <tr><td>Vermenigvuldigen</td><td><code>math ans * factor</code></td><td><code>math ans * 1,8</code></td></tr>&#13;&#10;          <tr><td>Delen</td><td><code>math ans / factor</code></td><td><code>math ans / 1,95583</code></td></tr>&#13;&#10;          <tr><td>Meerdere stappen</td><td>meerdere <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>-regels</td><td><code>math ans * 1,8</code><br><code>math ans + 32</code></td></tr>&#13;&#10;        </table>&#13;&#10;        <div class="example-grid">&#13;&#10;          <div class="example-card"><h3>Voorbeeld: euro naar cent</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>cent</mtext><mo>=</mo><mtext>euro</mtext><mo>&#x00D7;</mo><mn>100</mn></mrow></math></div><pre>Name Euro naar cent&#13;&#10;        input1 Euro&#13;&#10;        input2 Cent&#13;&#10;        format #.00&#13;&#10;        math ans * 100&#13;&#10;        end</pre></div>&#13;&#10;          <div class="example-card"><h3>Voorbeeld: korting eraf</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>nieuw</mtext><mo>=</mo><mtext>prijs</mtext><mo>-</mo><mn>10</mn></mrow></math></div><pre>Name Prijs min korting&#13;&#10;        input1 Prijs&#13;&#10;        input2 Na 10 korting&#13;&#10;        format #.00&#13;&#10;        math ans - 10&#13;&#10;        end</pre></div>&#13;&#10;        </div>&#13;&#10;        </details>&#13;&#10;&#13;&#10;        <details><summary>Functies en constanten</summary>&#13;&#10;        <table>&#13;&#10;          <tr><th>Groep</th><th>Syntax</th><th>Opmerking</th></tr>&#13;&#10;          <tr><td>Macht</td><td><code>math ans^2</code> of <code>math pow(ans,3)</code></td><td>Voor kwadraat, derde macht, enz.</td></tr>&#13;&#10;          <tr><td>Wortel</td><td><code>math sqrt(ans)</code></td><td>Ook bruikbaar in samengestelde formules.</td></tr>&#13;&#10;          <tr><td>Pi en e</td><td><code>math pi * ans^2</code><br><code>math e^ans</code></td><td>Voor cirkel, exponentieel, rente.</td></tr>&#13;&#10;          <tr><td>Logaritme</td><td><code>math log(ans)</code><br><code>math log(ans,2)</code><br><code>math ln(ans)</code></td><td><code>log(ans)</code> is log10.</td></tr>&#13;&#10;          <tr><td>Graden</td><td><code>math sind(ans)</code><br><code>math cosd(ans)</code><br><code>math tand(ans)</code></td><td>Gebruik <code>sin/cos/tan</code> voor radialen.</td></tr>&#13;&#10;          <tr><td>Afronden</td><td><code>math round(ans)</code><br><code>math floor(ans)</code><br><code>math ceil(ans)</code></td><td>Voor presentatie of afrondlogica.</td></tr>&#13;&#10;          <tr><td>Modulo</td><td><code>math mod(ans,2)</code><br><code>math ans % 5</code></td><td>Restwaarde, bijvoorbeeld even/oneven.</td></tr>&#13;&#10;        </table>&#13;&#10;        <div class="example-grid">&#13;&#10;          <div class="example-card"><h3>Voorbeeld: cirkel</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>A</mi><mo>=</mo><mi>&#x03C0;</mi><mo>&#x00B7;</mo><msup><mi>r</mi><mn>2</mn></msup></mrow></math></div><pre>Name Cirkeloppervlak&#13;&#10;        input1 Straal&#13;&#10;        input2 Oppervlak&#13;&#10;        format #.00&#13;&#10;        math pi * ans^2&#13;&#10;        end</pre></div>&#13;&#10;          <div class="example-card"><h3>Voorbeeld: log basis 2</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mo>log</mo><mn>2</mn></msub><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math></div><pre>Name Log basis 2&#13;&#10;        input1 Getal&#13;&#10;        input2 Log2&#13;&#10;        format #.00&#13;&#10;        math log(ans,2)&#13;&#10;        end</pre></div>&#13;&#10;        </div>&#13;&#10;        </details>&#13;&#10;&#13;&#10;        <details><summary>Complexe expressies</summary>&#13;&#10;        <p>Gebruik haakjes als de volgorde belangrijk is. Schrijf vermenigvuldiging altijd expliciet met <code>*</code>.</p>&#13;&#10;        <pre>math sqrt(ans^2 + 25)&#13;&#10;        math ((ans + 10) * 2) / 3&#13;&#10;        math ans * (1 + 0,04)^5</pre>&#13;&#10;        <div class="example-grid">&#13;&#10;          <div class="example-card"><h3>Voorbeeld: haakjes</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mfrac><mrow><mo>(</mo><mo>(</mo><mi>x</mi><mo>+</mo><mn>10</mn><mo>)</mo><mo>&#x00D7;</mo><mn>2</mn><mo>)</mo></mrow><mn>3</mn></mfrac></math></div><pre>Name Haakjes voorbeeld&#13;&#10;        input1 Waarde&#13;&#10;        input2 Resultaat&#13;&#10;        format #.00&#13;&#10;        math ((ans + 10) * 2) / 3&#13;&#10;        end</pre></div>&#13;&#10;          <div class="example-card"><h3>Voorbeeld: rente</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>waarde</mtext><mo>=</mo><mtext>start</mtext><mo>&#x00D7;</mo><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo></mrow><mn>5</mn></msup></mrow></math></div><pre>Name Rente 5 jaar&#13;&#10;        input1 Startbedrag&#13;&#10;        input2 Waarde&#13;&#10;        format #.00&#13;&#10;        math ans * (1 + 0,04)^5&#13;&#10;        end</pre></div>&#13;&#10;          <div class="example-card"><h3>Voorbeeld: Pythagoras</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>c</mi><mo>=</mo><msqrt><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></mrow></msqrt></mrow></math></div><pre>Name Schuine zijde&#13;&#10;        input1 Zijde a&#13;&#10;        input2 Zijde c&#13;&#10;        format #.00&#13;&#10;        math sqrt(ans^2 + 25)&#13;&#10;        end</pre><p>Hier is <code>ans</code> zijde <code>a</code>. De andere zijde is vast <code>5</code>, dus <code>5^2</code> is <code>25</code>.</p></div>&#13;&#10;        </div>&#13;&#10;        <p><b>Let op:</b> schrijf <code>ans * e^2</code>, niet <code>anse^2</code>.</p>&#13;&#10;        </details>&#13;&#10;&#13;&#10;        <details><summary>Calculus: diff, integral, limit</summary>&#13;&#10;        <table>&#13;&#10;          <tr><th>Doel</th><th>Syntax</th><th>Betekenis</th></tr>&#13;&#10;          <tr><td>Afgeleide</td><td><code>math diff ans^2</code></td><td>Benadert de helling bij de invoerwaarde.</td></tr>&#13;&#10;          <tr><td>Integraal</td><td><code>math integral 0,1 ans^2</code></td><td>Benadert de oppervlakte van 0 tot 1.</td></tr>&#13;&#10;          <tr><td>Limiet</td><td><code>math limit 0 sin(ans)/ans</code></td><td>Benadert de limiet rond 0.</td></tr>&#13;&#10;        </table>&#13;&#10;        <div class="notice"><b>Belangrijk:</b> calculus is numeriek. Het geeft een benadering, geen symbolische CAS-uitwerking.</div>&#13;&#10;        <div class="example-grid">&#13;&#10;          <div class="example-card"><h3>Voorbeeld: limiet</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><munder><mo>lim</mo><mrow><mi>x</mi><mo>&#x2192;</mo><mn>0</mn></mrow></munder><mfrac><mrow><mo>sin</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mi>x</mi></mfrac><mo>=</mo><mn>1</mn></mrow></math></div><pre>Name Limiet sinus&#13;&#10;        input1 x&#13;&#10;        input2 limiet&#13;&#10;        format #.00&#13;&#10;        math limit 0 sin(ans)/ans&#13;&#10;        end</pre></div>&#13;&#10;          <div class="example-card"><h3>Voorbeeld: afgeleide</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mfrac><mi>d</mi><mtext>dx</mtext></mfrac><msup><mi>x</mi><mn>2</mn></msup><mo>=</mo><mn>2</mn><mi>x</mi></mrow></math></div><pre>Name Afgeleide kwadraat&#13;&#10;        input1 x&#13;&#10;        input2 helling&#13;&#10;        format #.00&#13;&#10;        math diff ans^2&#13;&#10;        end</pre></div>&#13;&#10;          <div class="example-card"><h3>Voorbeeld: integraal</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msubsup><mo>&#x222B;</mo><mn>0</mn><mn>1</mn></msubsup><msup><mi>x</mi><mn>2</mn></msup><mtext>dx</mtext><mo>&#x2248;</mo><mn>0,33</mn></mrow></math></div><pre>Name Integraal kwadraat&#13;&#10;        input1 x&#13;&#10;        input2 oppervlak&#13;&#10;        format #.00&#13;&#10;        math integral 0,1 ans^2&#13;&#10;        end</pre></div>&#13;&#10;        </div>&#13;&#10;        </details>&#13;&#10;&#13;&#10;        <details><summary>Terugrekenen</summary>&#13;&#10;        <p>Oude simpele math-regels kunnen meestal automatisch terugrekenen. Bij samengestelde expressies kan een expliciete <a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a> nodig zijn.</p>&#13;&#10;        <pre>Name Fahrenheit naar Celsius&#13;&#10;        input1 Celsius&#13;&#10;        input2 Fahrenheit&#13;&#10;        math ans * 1,8&#13;&#10;        math ans + 32&#13;&#10;        reverse (ans - 32) / 1,8&#13;&#10;        end</pre>&#13;&#10;        </details>&#13;&#10;&#13;&#10;        <h2>Veelgemaakte math-fouten</h2>&#13;&#10;        <ul>&#13;&#10;          <li><code>ans</code> vergeten: schrijf <code>math ans * 100</code>, niet <code>math * 100</code>.</li>&#13;&#10;          <li>Te veel in een regel zetten terwijl losse stappen duidelijker zijn.</li>&#13;&#10;          <li><code>sin</code> gebruiken terwijl je graden bedoelt. Gebruik dan <code>sind</code>.</li>&#13;&#10;          <li>Een terugrichting verwachten bij een complexe formule zonder <a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a>.</li>&#13;&#10;        </ul>
+editor.nod_help.trans.extra=<h2>trans voorbeelden</h2>&#13;&#10;            <p><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> vertaalt een complete waarde. Het is bedoeld voor woorden, vaste codes, statussen, postcodes of korte lijsten.</p>&#13;&#10;            <div class="notice"><b>Structuur:</b> <code>trans "oude waarde","nieuwe waarde"</code>. De hele invoer moet overeenkomen met de linkerwaarde.</div>&#13;&#10;            <details open><summary>Exacte tekst vertalen</summary>&#13;&#10;            <table>&#13;&#10;              <tr><th>Doel</th><th>Regel</th><th>Resultaat</th></tr>&#13;&#10;              <tr><td>Woord vertalen</td><td><code>trans "hallo","hello"</code></td><td><code>hallo</code> wordt <code>hello</code></td></tr>&#13;&#10;              <tr><td>Status vertalen</td><td><code>trans "open","in behandeling"</code></td><td><code>open</code> wordt <code>in behandeling</code></td></tr>&#13;&#10;              <tr><td>Adres opzoeken</td><td><code>trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"</code></td><td>postcode + huisnummer wordt adres</td></tr>&#13;&#10;            </table>&#13;&#10;            <div class="example-grid">&#13;&#10;              <div class="example-card"><h3>Voorbeeld: Nederlands naar Engels</h3><pre>Name Nederlands Engels demo&#13;&#10;            input1 Nederlands&#13;&#10;            input2 Engels&#13;&#10;            trans "hallo","hello"&#13;&#10;            trans "dank je","thank you"&#13;&#10;            trans "goedemorgen","good morning"&#13;&#10;            end</pre></div>&#13;&#10;              <div class="example-card"><h3>Voorbeeld: postcode demo</h3><pre>Name Postcode naar adres demo&#13;&#10;            input1 Postcode huisnummer&#13;&#10;            input2 Adres&#13;&#10;            trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;            end</pre></div>&#13;&#10;            </div>&#13;&#10;            </details>&#13;&#10;&#13;&#10;            <details><summary>Wanneer trans, wanneer chg?</summary>&#13;&#10;            <table>&#13;&#10;              <tr><th>Gebruik</th><th>Als</th><th>Voorbeeld</th></tr>&#13;&#10;              <tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>de hele invoer precies bekend is</td><td><code>hallo</code> naar <code>hello</code></td></tr>&#13;&#10;              <tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>alleen het begin/patroon verandert</td><td><code>01751-xxxxx</code> naar <code>070-51xxxxx</code></td></tr>&#13;&#10;            </table>&#13;&#10;            </details>&#13;&#10;&#13;&#10;            <details><summary>Veelgemaakte trans-fouten</summary>&#13;&#10;            <ul>&#13;&#10;              <li>Richting omdraaien: links is invoer, rechts is uitvoer.</li>&#13;&#10;              <li>Een gedeeltelijke match verwachten. Daarvoor is <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> beter.</li>&#13;&#10;              <li>Een komma in de waarde gebruiken zonder aanhalingstekens.</li>&#13;&#10;              <li>Dubbele vertalingen voor dezelfde invoer maken; de eerste duidelijke regel is het best.</li>&#13;&#10;            </ul>&#13;&#10;            </details>
+
+editor.nod_help.mode.extra=<h2>Wanneer gebruik je mode?</h2>&#13;&#10;        <p><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> vertelt welk soort NOD-bestand je maakt. Voor gewone omrekentools is <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> meestal niet nodig; zonder mode werkt het als normale converter.</p>&#13;&#10;        <div class="notice"><b>Vuistregel:</b> gebruik <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> alleen als het bestand een speciaal type heeft, zoals data-verwerking of vergelijkingen oplossen.</div>&#13;&#10;        <details open><summary>Veelgebruikte modes</summary>&#13;&#10;        <table>&#13;&#10;          <tr><th>Mode</th><th>Gebruik</th><th>Belangrijke commands</th></tr>&#13;&#10;          <tr><td><code>mode calculator</code></td><td>Gewone converter of rekenhulp.</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr>&#13;&#10;          <tr><td><code>mode data</code></td><td>Rijen/velden in een tabel verwerken.</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a>, <a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td></tr>&#13;&#10;          <tr><td><code>mode equation</code></td><td>Een vergelijking oplossen.</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td></tr>&#13;&#10;        </table>&#13;&#10;        </details>&#13;&#10;        <details><summary>Voorbeeld: gewone converter</summary>&#13;&#10;        <pre>Name Celsius naar Fahrenheit&#13;&#10;        input1 Celsius&#13;&#10;        input2 Fahrenheit&#13;&#10;        format #.00&#13;&#10;        math ans * 1,8&#13;&#10;        math ans + 32&#13;&#10;        end</pre>&#13;&#10;        <p>Hier is <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> niet nodig. Dit is de standaard.</p>&#13;&#10;        </details>&#13;&#10;        <details><summary>Voorbeeld: data-verwerking</summary>&#13;&#10;        <pre>Name Klanten telefoon opschonen&#13;&#10;        mode data&#13;&#10;        table klanten&#13;&#10;&#13;&#10;        field telefoon&#13;&#10;        phoneformat country NL&#13;&#10;        chg "01751-xxxxx","070-51xxxxx"&#13;&#10;        output telefoon_nieuw&#13;&#10;        end</pre>&#13;&#10;        <p>Gebruik <code>mode data</code> als het NOD-bestand velden uit een tabel verwerkt.</p>&#13;&#10;        </details>&#13;&#10;        <details><summary>Voorbeeld: vergelijking oplossen</summary>&#13;&#10;        <pre>Name Vergelijking oplossen&#13;&#10;        mode equation&#13;&#10;        given y = 20&#13;&#10;        equation y = x * 2&#13;&#10;        solve x&#13;&#10;        constraint x >= 0&#13;&#10;        end</pre>&#13;&#10;        <p>Gebruik <code>mode equation</code> als je een onbekende variabele wilt oplossen.</p>&#13;&#10;        </details>
+editor.nod_help.full.classic=<h2>NOD editor introductie</h2><p>De NOD editor is de werkplaats voor converters. Bovenin schrijf je de NOD-code. Onderin test je invoer en resultaat. Rechts zie je de live preview/simulator, zodat je direct ziet waar labels, symbolen, introductietekst en uitkomsten verschijnen.</p><h2>Klassiek 1.73 tegenover NOD 2.0</h2><table><tr><th>Syscalculator 1.73 / NOD 1.0</th><th>Syscalculator 2.0 / NOD editor</th></tr><tr><td>Klassieke tekstbestanden met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>, <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> en <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</td><td>Die basis blijft werken, zodat oude NOD-bestanden herkenbaar blijven.</td></tr><tr><td>Je moest vaak onthouden waar symbolen verschijnen en daarna in de oude calculator testen.</td><td>De preview toont direct <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> t/m <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> links of rechts van de waarden.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> was klassieke prefixvervanging, bijvoorbeeld voor oude telefoonnummers.</td><td>Oude <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> blijft compatibel; NOD 2.0 voegt patroonregels met <code>x</code>-capture toe.</td></tr><tr><td>Help kwam vooral uit voorbeelden en ervaring.</td><td>De editor heeft suggesties, rechterklik-help, meerdere help-pagina's en voorbeelden per NOD-soort.</td></tr></table><h2>Syntax: volledig overzicht NOD 1.0 en NOD 2.0</h2><p>Deze tabel laat zien welke syntax uit de klassieke NOD-bestanden komt en wat in NOD 2.0 is toegevoegd.</p><table class="syntax-compare"><tr><th>Syntax / functie</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Opmerking</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Naam/titel van de converter.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:urln"><code>URLN</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Referentie of bronregel blijft ondersteund.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Labels voor invoer en uitvoer.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:result"><code>Result</code></a>, <a class="cmd-link" href="nodpage:cmd:resfou"><code>Resfou</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Resultaatnaam en fouttekst.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> t/m <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Symbolen links/rechts van input en output; NOD 2.0 toont ze direct in preview.</td></tr><tr><td><code>format #.00</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Getalnotatie blijft hetzelfde.</td></tr><tr><td><code>mode calculator</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>NOD 2.0 gebruikt <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> om speciale soorten bestanden te markeren; normale converters werken ook zonder mode.</td></tr><tr><td><code>mode data</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Voor tabel/veld-verwerking.</td></tr><tr><td><code>mode equation</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Voor vergelijkingen oplossen met <a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>.</td></tr><tr><td><code>math ans * 1,8</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Klassiek rekenen met <code>ans</code>.</td></tr><tr><td><code>math sqrt(ans^2 + 25)</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Uitgebreidere formules en functies in NOD 2.0.</td></tr><tr><td><code>chg "01751-","070-51"</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Klassieke prefixvervanging blijft werken.</td></tr><tr><td><code>chg "0183x-xx xx","0183-x0 xx xx"</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Nieuw in NOD 2.0: patroon met <code>x</code>-capture.</td></tr><tr><td><code>trans "oud","nieuw"</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Exacte tekst vertalen blijft compatibel.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Omgekeerde richting van een converter.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>NOD 2.0 data-converters met velden en uitvoeropbouw.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Telefoonnummers formatteren in data/nummer-converters.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:lookup"><code>lookup</code></a>, <a class="cmd-link" href="nodpage:cmd:match"><code>match</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Zoeken in tabellen of waarden koppelen.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Vergelijkingen oplossen met voorwaarden.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:preview"><code>preview</code></a>, <a class="cmd-link" href="nodpage:cmd:backup"><code>backup</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Editor/veiligheidsinformatie voor NOD 2.0 bestanden.</td></tr><tr><td><code>indoprint ... indoend</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Introductietekst blijft ondersteund.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Sluit het NOD-bestand af.</td></tr><tr><td>Live preview, suggesties, rechterklik-help</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Dit is editor-hulp, geen oude runtime-syntax.</td></tr></table><h2>Wat blijft hetzelfde?</h2><ul><li>Commands zijn nog steeds regelgericht en leesbaar.</li><li><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> sluit het bestand af.</li><li>Een simpele converter blijft kort: naam, labels, format en enkele regels.</li></ul><h2>Wat is nieuw?</h2><ul><li>Live preview en converter-simulator.</li><li>Graph Preview voor grafieken van math-converters.</li><li>Suggesties tijdens typen.</li><li>Uitgebreidere help per command.</li><li>Meer voorbeelden voor <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>, symbolen en <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>.</li></ul>
+editor.nod_help.page.classic=NOD editor introductie
+formula_card.title=Formulekaart
+formula_card.count=Formulekaarten
+formula_card.details_header=Details, export en voorbeeld-NOD
+formula_card.copy_mathml=Kopieer MathML
+formula_card.copy_latex=Kopieer LaTeX
+formula_card.copy_nod=Kopieer NOD
+formula_card.copy_text=Kopieer tekst
+formula_card.webview_error=WebView2 kon niet starten.
+formula_card.subtitle=Formulekaart voor leren, PWS en export
+formula_card.section_formula=Formule
+formula_card.section_explanation=Uitleg
+formula_card.section_example_nod=Voorbeeld-NOD
+formula_card.table_formula=Formule
+formula_card.table_level=Niveau
+formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
+formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
+formula_card.table_use=Wanneer?

@@ -1,0 +1,23 @@
+'Officiele omrekenkoers voor guldens is vastgesteld.
+'
+'
+
+
+Name Duitse mark naar euro
+indoprint Old currency unit will be ended at 1 January 2002.  
+indoprint All of your amounts must convert to euro before 
+indoprint Converting with Deutsch Mark to euro
+indoprint 
+indoend
+format #.00
+Symb3 DM
+Symb2 €
+input1 Value in Deutsch Mark
+input2 Value in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 1.95583
+end
+
+
