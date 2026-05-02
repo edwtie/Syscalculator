@@ -92,26 +92,38 @@ public sealed class NodCatalogService
     private void EnsureExampleFiles()
     {
         Directory.CreateDirectory(Path.Combine(BaseDirectory, "Converters"));
+        Directory.CreateDirectory(Path.Combine(BaseDirectory, "Converters", "Temperature"));
+        Directory.CreateDirectory(Path.Combine(BaseDirectory, "Converters", "Math"));
+        Directory.CreateDirectory(Path.Combine(BaseDirectory, "Converters", "Text"));
 
         if (!File.Exists(CatalogPath))
         {
             File.WriteAllText(CatalogPath, """
-            Celsius naar Fahrenheit,Converters/celsius_fahrenheit.nod,*
-            Ans maal e kwadraat,Converters/e2.nod,
-            Sinus graden,Converters/sinus_graden.nod,
-            Postcode naar adres demo,Converters/postcode_adres_demo.nod,
-            Nederlands naar Engels demo,Converters/nederlands_engels_demo.nod,
-            Operatie Decibel 1995 volledig,Converters/operatie_decibel_1995_demo.nod,
+            Celsius naar Fahrenheit,Converters/Temperature/celsius_fahrenheit.nod,*
+            Ans maal e kwadraat,Converters/Math/e2.nod,
+            Sinus graden,Converters/Math/sinus_graden.nod,
+            Postcode naar adres demo,Converters/Text/postcode_adres_demo.nod,
+            Nederlands naar Engels demo,Converters/Text/nederlands_engels_demo.nod,
+            Operatie Decibel 1995 volledig,Converters/Text/operatie_decibel_1995_demo.nod,
             """);
         }
         else
         {
-            AppendCatalogEntryIfMissing("Postcode naar adres demo", "Converters/postcode_adres_demo.nod", isDefault: false);
-            AppendCatalogEntryIfMissing("Nederlands naar Engels demo", "Converters/nederlands_engels_demo.nod", isDefault: false);
-            AppendCatalogEntryIfMissing("Operatie Decibel 1995 volledig", "Converters/operatie_decibel_1995_demo.nod", isDefault: false);
+            MoveCatalogPath("Converters/celsius_fahrenheit.nod", "Converters/Temperature/celsius_fahrenheit.nod");
+            MoveCatalogPath("Converters/e2.nod", "Converters/Math/e2.nod");
+            MoveCatalogPath("Converters/sinus_graden.nod", "Converters/Math/sinus_graden.nod");
+            MoveCatalogPath("Converters/machtsregel_animatie_solver_demo.nod", "Converters/Math/machtsregel_animatie_solver_demo.nod");
+            MoveCatalogPath("Converters/snijpunt_lijnen_solver_demo.nod", "Converters/Math/snijpunt_lijnen_solver_demo.nod");
+            MoveCatalogPath("Converters/postcode_adres_demo.nod", "Converters/Text/postcode_adres_demo.nod");
+            MoveCatalogPath("Converters/nederlands_engels_demo.nod", "Converters/Text/nederlands_engels_demo.nod");
+            MoveCatalogPath("Converters/operatie_decibel_1995_demo.nod", "Converters/Text/operatie_decibel_1995_demo.nod");
+
+            AppendCatalogEntryIfMissing("Postcode naar adres demo", "Converters/Text/postcode_adres_demo.nod", isDefault: false);
+            AppendCatalogEntryIfMissing("Nederlands naar Engels demo", "Converters/Text/nederlands_engels_demo.nod", isDefault: false);
+            AppendCatalogEntryIfMissing("Operatie Decibel 1995 volledig", "Converters/Text/operatie_decibel_1995_demo.nod", isDefault: false);
         }
 
-        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "celsius_fahrenheit.nod"), """
+        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "Temperature", "celsius_fahrenheit.nod"), """
         Name Celsius naar Fahrenheit
         input1 Celsius
         input2 Fahrenheit
@@ -123,7 +135,7 @@ public sealed class NodCatalogService
         end
         """);
 
-        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "e2.nod"), """
+        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "Math", "e2.nod"), """
         Name Ans maal e kwadraat
         input1 Getal
         input2 Resultaat
@@ -132,7 +144,7 @@ public sealed class NodCatalogService
         end
         """);
 
-        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "sinus_graden.nod"), """
+        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "Math", "sinus_graden.nod"), """
         Name Sinus graden
         input1 Graden
         input2 Sinus
@@ -141,7 +153,7 @@ public sealed class NodCatalogService
         end
         """);
 
-        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "postcode_adres_demo.nod"), """
+        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "Text", "postcode_adres_demo.nod"), """
         Name Postcode naar adres demo
         URLN Postcode naar adres demo
         input1 Postcode huisnummer
@@ -163,7 +175,7 @@ public sealed class NodCatalogService
         end
         """);
 
-        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "nederlands_engels_demo.nod"), """
+        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "Text", "nederlands_engels_demo.nod"), """
         Name Nederlands naar Engels demo
         URLN Nederlands naar Engels demo
         input1 Nederlands
@@ -186,7 +198,7 @@ public sealed class NodCatalogService
         end
         """);
 
-        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "operatie_decibel_1995_demo.nod"), """
+        WriteIfMissing(Path.Combine(BaseDirectory, "Converters", "Text", "operatie_decibel_1995_demo.nod"), """
         Name Operatie Decibel 1995 volledig
         URLN Telefoonnummer omnummering 1995 volledig
         input1 Oud telefoonnummer
@@ -213,6 +225,27 @@ public sealed class NodCatalogService
         chg "020-","020-"
         end
         """);
+    }
+
+    // Zoek/commentaar: Verplaatst oude platte cataloguspaden naar de nieuwe groepmappen.
+    private void MoveCatalogPath(string oldPath, string newPath)
+    {
+        var lines = File.ReadAllLines(CatalogPath).ToList();
+        var changed = false;
+
+        for (var index = 0; index < lines.Count; index++)
+        {
+            var parts = lines[index].Split(',');
+            if (parts.Length >= 2 && parts[1].Trim().Equals(oldPath, StringComparison.OrdinalIgnoreCase))
+            {
+                var marker = parts.Length >= 3 ? parts[2].Trim() : "";
+                lines[index] = $"{parts[0].Trim()},{newPath},{marker}";
+                changed = true;
+            }
+        }
+
+        if (changed)
+            File.WriteAllLines(CatalogPath, lines);
     }
 
     // Zoek/commentaar: Schrijft data naar schijf wanneer nodig voor WriteIfMissing.

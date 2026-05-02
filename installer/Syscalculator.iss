@@ -49,6 +49,17 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "..\artifacts\publish\Syscalculator\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[InstallDelete]
+Type: files; Name: "{app}\Converters\celsius_fahrenheit.nod"
+Type: files; Name: "{app}\Converters\e2.nod"
+Type: files; Name: "{app}\Converters\machtsregel_animatie_solver_demo.nod"
+Type: files; Name: "{app}\Converters\nederlands_engels_demo.nod"
+Type: files; Name: "{app}\Converters\operatie_decibel_1995_demo.nod"
+Type: files; Name: "{app}\Converters\postcode_adres_demo.nod"
+Type: files; Name: "{app}\Converters\sinus_graden.nod"
+Type: files; Name: "{app}\Converters\snijpunt_lijnen_solver_demo.nod"
+Type: filesandordirs; Name: "{app}\Converters\Output"
+
 [Icons]
 Name: "{group}\Syscalculator"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\NOD Editor"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-tool"

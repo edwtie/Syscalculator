@@ -696,8 +696,8 @@ Display name,NOD path,*
 Example:
 
 ```text
-Celsius naar Fahrenheit,Converters/celsius_fahrenheit.nod,*
-Ans maal e kwadraat,Converters/e2.nod,
+Celsius naar Fahrenheit,Converters/Temperature/celsius_fahrenheit.nod,*
+Ans maal e kwadraat,Converters/Math/e2.nod,
 ```
 
 The `*` means default converter.
