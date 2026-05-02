@@ -76,24 +76,26 @@ Syscalculator 1.74.x = onderhoud / legacy fix
 Syscalculator 2.0 beta = moderne opvolger
 ```
 
-### Euro NOD Data Release
+### Euro NOD Candidate
 
-Nieuwe euro-landen kunnen als data-only onderhoudsrelease voor 1.74 worden uitgebracht. Dit verandert geen VB6-code en voegt geen NOD 2.0 syntax toe.
+Nieuwe euro-landen kunnen eerst als data-only candidate voor 1.74 worden klaargezet. Dit verandert geen VB6-code en voegt geen NOD 2.0 syntax toe.
+
+Noem dit pas een release nadat de 1.74-bron getest en gecompileerd is.
 
 Gebruik:
 
 ```bat
-BUILD_SYSCALCULATOR174_EURO_NOD_RELEASE.bat
+BUILD_SYSCALCULATOR174_EURO_NOD_CANDIDATE.bat
 ```
 
 De batch maakt:
 
 ```text
-artifacts/legacy/Syscalculator174-EuroNodRelease/
-artifacts/legacy/Syscalculator174-EuroNodRelease.zip
+artifacts/legacy/Syscalculator174-EuroNodCandidate/
+artifacts/legacy/Syscalculator174-EuroNodCandidate.zip
 ```
 
-Deze release bewaart de oude groepen uit `broncode.zip`:
+Deze candidate bewaart de oude groepen uit `broncode.zip`:
 
 ```text
 Distance
@@ -117,6 +119,14 @@ MTL
 SIT
 SKK
 ```
+
+Compile-stap voor release:
+
+```text
+legacy/Syscalculator174.VB6/Syscalculator174.local.vbp
+```
+
+Als `VB6.EXE` niet beschikbaar is, blijft dit een candidate en geen release.
 
 De changelog moet per fix duidelijk vermelden:
 

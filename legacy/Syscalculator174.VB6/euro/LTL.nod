@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Litouwse litas is vastgesteld.
+'
+'
+
+Name Litouwse litas naar euro
+Urln LTL-Euro
+indoprint Lithuania adopted the euro on 1 January 2015.
+indoprint Fixed conversion rate: 1 euro = 3,45280 Lithuanian litas.
+indoprint Converting with Lithuanian litas to euro
+indoprint 
+indoend
+format #.00
+Symb1 LTL
+Symb2 €
+input1 Amounts in Lithuanian litas
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 3,45280
+end
+

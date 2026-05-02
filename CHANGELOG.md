@@ -456,19 +456,25 @@ Beperkingen:
 
 Onderhoudslijn voor legacy.
 
-#### Syscalculator 1.74 Euro NOD Maintenance
+#### Syscalculator 1.74 Euro NOD Maintenance Candidate
 
 **Date:** 2026-05-02
 
-**Release type:** data-only `.nod` maintenance package
+**Status:** candidate, not final release
+
+**Package type:** data-only `.nod` maintenance package
 
 **Fixes:**
-- Prepared a 1.74 maintenance release path for missing newer euro converters.
+- Fixed the 1.74 source tree by adding missing newer euro converters to the legacy `euro` group.
 - Kept the original grouped directory layout from `broncode.zip`.
 
 **Additions:**
-- Added `BUILD_SYSCALCULATOR174_EURO_NOD_RELEASE.bat`.
-- The release package adds BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK to the legacy `euro` group.
+- Added `BUILD_SYSCALCULATOR174_EURO_NOD_CANDIDATE.bat`.
+- The candidate package adds BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK to the legacy `euro` group.
+
+**Before final release:**
+- Test the 1.74 source.
+- Compile `Syscalculator174.local.vbp` with VB6.
 
 Doel:
 

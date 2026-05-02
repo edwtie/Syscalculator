@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Bulgaarse lev is vastgesteld.
+'
+'
+
+Name Bulgaarse lev naar euro
+Urln BGN-Euro
+indoprint Bulgaria adopted the euro on 1 January 2026.
+indoprint Fixed conversion rate: 1 euro = 1,95583 Bulgarian lev.
+indoprint Converting with Bulgarian lev to euro
+indoprint 
+indoend
+format #.00
+Symb1 BGN
+Symb2 €
+input1 Amounts in Bulgarian lev
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 1,95583
+end
+
