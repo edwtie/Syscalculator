@@ -471,6 +471,7 @@ Onderhoudslijn voor legacy.
 
 **Additions:**
 - Added `BUILD_SYSCALCULATOR174_EURO_NOD_CANDIDATE.bat`.
+- Added `BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat` to find VB6 and compile the old `.vbp` when a licensed VB6 installation is available.
 - The candidate package adds BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK to the legacy `euro` group.
 
 **Before final release:**

@@ -81,6 +81,18 @@ Nieuwste Windows 11 installaties kunnen starten zonder oude HKLM-registrywaarden
 
 Status: bronfix/candidate. Nog testen en compileren met VB6 voordat dit als 1.74 release beschreven wordt.
 
+Compile-check:
+
+```bat
+BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat
+```
+
+Als VB6 niet automatisch gevonden wordt:
+
+```bat
+BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat -Vb6Path "C:\Program Files (x86)\Microsoft Visual Studio\VB98\VB6.EXE"
+```
+
 ## Onderhoudscheck
 
 Gecontroleerd:

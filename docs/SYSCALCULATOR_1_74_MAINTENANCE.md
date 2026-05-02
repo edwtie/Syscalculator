@@ -129,6 +129,24 @@ legacy/Syscalculator174.VB6/Syscalculator174.local.vbp
 
 Als `VB6.EXE` niet beschikbaar is, blijft dit een candidate en geen release.
 
+Compile-check via batch:
+
+```bat
+BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat
+```
+
+Of met expliciet VB6-pad:
+
+```bat
+BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat -Vb6Path "C:\Program Files (x86)\Microsoft Visual Studio\VB98\VB6.EXE"
+```
+
+De batch gebruikt de klassieke VB6 command line compile:
+
+```text
+VB6.EXE /MAKE Syscalculator174.local.vbp /OUT artifacts\legacy\vb6-compile\Syscalculator174.compile.log
+```
+
 ### Windows 11 Startup Fix Candidate
 
 De 1.74-bron bevat een candidate-fix voor starten op nieuwere Windows 11 installaties:
