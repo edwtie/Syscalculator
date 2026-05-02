@@ -56,6 +56,8 @@ SIT
 SKK
 ```
 
+These newer files were not present in the old `broncode.zip`, which made those converters impossible to find in the legacy release set. Syscalculator 2.0 keeps them in `Converters/euro/` so the catalog can discover and show them with the rest of the euro converters.
+
 Syscalculator 2.0 adds new development/demo groups:
 
 ```text

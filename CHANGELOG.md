@@ -27,10 +27,12 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 **Fixes:**
 - Changed changelog to daily build grouping
 - Added build/changelog batch procedure.
+- Restored discoverability for newer euro converter files that were missing from the old `broncode.zip` release set.
 
 **Additions:**
 - Added separate additions list support
 - Daily build changelog format: one section per day with fixes and additions.
+- Added expanded euro converter set: BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK.
 
 ### Beta Releases
 
