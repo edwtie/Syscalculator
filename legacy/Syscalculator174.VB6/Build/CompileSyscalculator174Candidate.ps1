@@ -60,14 +60,19 @@ if (Test-Path -LiteralPath $logPath) {
     Remove-Item -LiteralPath $logPath -Force
 }
 
-& $Vb6Path /MAKE $projectPath /OUT $logPath
+$arguments = "/MAKE `"$projectPath`" /OUT `"$logPath`""
+$process = Start-Process -FilePath $Vb6Path -ArgumentList $arguments -PassThru
+if ($process) {
+    $process.WaitForExit()
+}
+
 $compileLog = ""
-for ($attempt = 0; $attempt -lt 20; $attempt++) {
+for ($attempt = 0; $attempt -lt 120; $attempt++) {
     $compileLog = if (Test-Path -LiteralPath $logPath) { Get-Content -LiteralPath $logPath -Raw } else { "" }
     if ($compileLog -match "(?i)succeeded") {
         break
     }
-    Start-Sleep -Milliseconds 250
+    Start-Sleep -Milliseconds 500
 }
 Start-Sleep -Milliseconds 1000
 $compileLog = if (Test-Path -LiteralPath $logPath) { Get-Content -LiteralPath $logPath -Raw } else { "" }
