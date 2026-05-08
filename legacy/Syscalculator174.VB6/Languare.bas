@@ -14,13 +14,19 @@ Dim tel As Integer
 teller = 0
 textChanged = ""
 tel = Len(App.Path)
-If Not (Left(name, tel) = App.Path) Then
-                                        If Not Left(Mid$(name, 2), 2) = ":\" Then ename = App.Path + "\" + name Else ename = name
+If Not (LCase$(Left$(name, tel)) = LCase$(App.Path)) Then
+                                        If Mid$(name, 2, 2) <> ":\" And Left$(name, 2) <> "\\" Then ename = App.Path + "\" + name Else ename = name
                                         Else
                                         ename = name
                                         End If
-Open ename For Input As #1
+If Dir$(ename) = "" And Mid$(name, 2, 2) <> ":\" And Left$(name, 2) <> "\\" Then
+                                        If Apppaths <> "" Then
+                                                                If Dir$(Apppaths + "\" + name) <> "" Then ename = Apppaths + "\" + name
+                                                                End If
+                                        End If
+If Dir$(ename) = "" And Mid$(name, 2, 2) <> ":\" And Left$(name, 2) <> "\\" Then ename = App.Path + "\eng.lng"
 On Error GoTo resfout
+Open ename For Input As #1
 Do Until EOF(1)
 teller = teller + 1
 Input #1, ncode, comm, Data, url

@@ -1,0 +1,78 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Syscalculator</AssemblyName>
+    <Title>Syscalculator</Title>
+    <Product>Syscalculator</Product>
+    <Company>Tiedragon</Company>
+    <Version>2.0.0-beta</Version>
+    <FileVersion>2.0.0.0</FileVersion>
+    <InformationalVersion>2.0.0-beta</InformationalVersion>
+    <ApplicationIcon>Resources\Syscalculator.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Converters\Output\**" />
+    <Content Remove="Converters\Output\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Syscalculator.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\AboutSyscalculator.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\WizardExpressHelp.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\SolverAnimationPrototype.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
+    <ProjectReference Include="../Tiedragon.ClipboardConvert/Tiedragon.ClipboardConvert.csproj" />
+    <ProjectReference Include="../Tiedragon.Graph2D/Tiedragon.Graph2D.csproj" />
+    <ProjectReference Include="../Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj" />
+    <ProjectReference Include="../Tiedragon.ToolEditor/Tiedragon.ToolEditor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="*.lng">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="language.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="settings.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="freesyscal.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Converters\**\*.nod">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\nod-help.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="IncrementBuildNumber" BeforeTargets="CoreCompile">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Build\IncrementBuildNumber.ps1&quot; &quot;$(MSBuildProjectDirectory)\AppVersionInfo.Generated.cs&quot;" />
+  </Target>
+
+  <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

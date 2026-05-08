@@ -318,7 +318,7 @@ Getformat = Len(Mid(Sform, S + 1))
 End Function
 Sub LetName(Vform As String)
 Appsnaam = Vform
-test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name", Appsnaam)
+test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name", Appsnaam)
 End Sub
 Sub trans(Vform As String, max As Integer)
 Dim i, o, n As Integer
@@ -410,7 +410,7 @@ If inv = True Then
     For o = 0 To ichg - 1
     b = Len(chgo(o))
     If chgo(o) = Left(ask, b) Then
-        ask = chgn(o) + Mid(ask, b)
+        ask = chgn(o) + Mid(ask, b + 1)
         If xsr = True Then
             a = Len(lndrn)
             If lndrn = Left(ask, a) Then ChgMath = lndro + Mid(ask, a + 1)
@@ -424,7 +424,7 @@ If inv = False Then
     For o = 0 To ichg - 1
     b = Len(chgn(o))
     If chgn(o) = Left(ask, b) Then
-        ask = chgo(o) + Mid(ask, b + 2)
+        ask = chgo(o) + Mid(ask, b + 1)
         If xsr = True Then
             a = Len(lndrn)
             If lndrn = Left(ask, a) Then ChgMath = lndro + Mid(ask, a + 1)

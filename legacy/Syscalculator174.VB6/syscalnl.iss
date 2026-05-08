@@ -5,16 +5,16 @@
 MessagesFile=compiler:Dutch.isl
 AppName=Syscalculator Euro Edition
 AppVerName=Syscalculator Euro Edition 1.62 Nederlands
-AppPublisher=www.tcsoftware.com
-AppPublisherURL=http://www.tcsoftware.com
-AppSupportURL=http://www.tcsoftware.com
-AppUpdatesURL=http://www.tcsoftware.com
-DefaultDirName={pf}\Syscalculcator Euro Edition
-DefaultGroupName=Tcsoftware
-LicenseFile=C:\broncode\license.rtf
-InfoBeforeFile=C:\broncode\readme.rtf
-WizardImageFile=C:\Documents and Settings\Edward Tie\My Documents\Picture 9.bmp
-WizardSmallImageFile=C:\Documents and Settings\Edward Tie\My Documents\icon4.bmp
+AppPublisher=Tiedragon
+AppPublisherURL=https://www.tiedragon.com
+AppSupportURL=https://www.tiedragon.com
+AppUpdatesURL=https://www.tiedragon.com
+DefaultDirName={pf}\Syscalculator Euro Edition
+DefaultGroupName=Tiedragon
+LicenseFile=license.rtf
+InfoBeforeFile=readme.rtf
+WizardImageFile=Picture 9.bmp
+WizardSmallImageFile=icon4.bmp
 ; uncomment the following line if you want your installation to run on NT 3.51 too.
 ; MinVersion=4,3.51
 
@@ -23,43 +23,43 @@ Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "A
 Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescription: "Additional icons:"; MinVersion: 4,4; Flags: unchecked
 
 [Files]
-Source: "C:\broncode\help\index_en.htm"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\index_nl.htm"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\Syscal_1.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\Syscal_2.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\Syscal_3.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\Syscal_4.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\triconvert_3.jpg"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\help\decimals.jpg"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\freesyscal.exe"; DestDir: "{app}"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\FRF.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\IEP.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\itl.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\GRD.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\NLG.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\PTE.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\readme.txt"; DestDir: "{app}"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\ESP.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\FIM.nod"; DestDir: "{app}\euro"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\freesyscal.cfg"; DestDir: "{app}"; CopyMode: alwaysskipifsameorolder
-Source: "C:\broncode\DEM.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\ats.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\BEF.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\LUF.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\config.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\eng.lng"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\esp.lng"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
-Source: "C:\broncode\ned.lng"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "help\index_en.htm"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\index_nl.htm"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\Syscal_1.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\Syscal_2.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\Syscal_3.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\Syscal_4.png"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\triconvert_3.jpg"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "help\decimals.jpg"; DestDir: "{app}\help\"; CopyMode: alwaysoverwrite
+Source: "freesyscal.exe"; DestDir: "{app}"; CopyMode: alwaysoverwrite
+Source: "euro\FRF.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\IEP.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\itl.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\GRD.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\NLG.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\PTE.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "readme.txt"; DestDir: "{app}"; CopyMode: alwaysoverwrite
+Source: "euro\ESP.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\FIM.nod"; DestDir: "{app}\euro"; CopyMode: alwaysoverwrite
+Source: "freesyscal.cfg"; DestDir: "{app}"; CopyMode: alwaysskipifsameorolder
+Source: "euro\DEM.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\ats.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\BEF.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "euro\LUF.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "config.nod"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "eng.lng"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "esp.lng"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
+Source: "ned.lng"; DestDir: "{app}\euro\"; CopyMode: alwaysoverwrite
 
 [Icons]
-Name: "{group}\Syscalculcator Euro Edition"; Filename: "{app}\freesyscal.exe"
-Name: "{userdesktop}\Syscalculcator Euro Edition"; Filename: "{app}\freesyscal.exe"; MinVersion: 4,4; Tasks: desktopicon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Syscalculcator Euro Edition"; Filename: "{app}\freesyscal.exe"; MinVersion: 4,4; Tasks: quicklaunchicon
+Name: "{group}\Syscalculator Euro Edition"; Filename: "{app}\freesyscal.exe"
+Name: "{userdesktop}\Syscalculator Euro Edition"; Filename: "{app}\freesyscal.exe"; MinVersion: 4,4; Tasks: desktopicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Syscalculator Euro Edition"; Filename: "{app}\freesyscal.exe"; MinVersion: 4,4; Tasks: quicklaunchicon
 [Registry]
-Root: HKLM; Subkey: "Software\TCsoftware\Syscalculcator Euro Edition"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\TCsoftware\"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Tiedragon\Syscalculator Euro Edition"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Tiedragon\"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run";  ValueName: "Syscal"; Flags: uninsdeletevalue
 
 [Run]
-Filename: "{app}\freesyscal.exe" ; Parameters: "/Once"; Description: "Launch Syscalculcator Euro Edition"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\freesyscal.exe" ; Parameters: "/Once"; Description: "Launch Syscalculator Euro Edition"; Flags: nowait postinstall skipifsilent
 

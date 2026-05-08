@@ -4,10 +4,10 @@
 [Setup]
 AppName=Tab Manager 2003 Compiler for MSN
 AppVerName=Tab Manager 2003 Compiler for MSN
-AppPublisher=Tcsoftware
-AppPublisherURL=http://www.tcsoftware.com
-AppSupportURL=http://www.tcsoftware.com
-AppUpdatesURL=http://www.tcsoftware.com
+AppPublisher=Tiedragon
+AppPublisherURL=https://www.tiedragon.com
+AppSupportURL=https://www.tiedragon.com
+AppUpdatesURL=https://www.tiedragon.com
 DefaultDirName={pf}\Tab Manager 2003 for MSN
 DefaultGroupName=Tab Manager 2003 for MSN
 LicenseFile=C:\www.tweakers\license.txt

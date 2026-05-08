@@ -6,6 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../NodSystem.Core/NodSystem.Core.csproj" />
+    <ProjectReference Include="../Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj" />
   </ItemGroup>
 </Project>

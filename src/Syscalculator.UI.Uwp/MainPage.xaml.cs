@@ -1,4 +1,4 @@
-using NodSystem.Core;
+﻿using Tiedragon.NodSystem.Core;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -138,3 +138,4 @@ public sealed partial class MainPage : Page
         }
     }
 }
+

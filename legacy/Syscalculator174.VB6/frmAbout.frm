@@ -52,7 +52,7 @@ Begin VB.Form frmAbout
    End
    Begin VB.Label lblDisclaimer 
       BackColor       =   &H00FFFFFF&
-      Caption         =   "This version is FREEWARE Syscalculcator. You will agree to license GNU. you may distribute this software to all."
+      Caption         =   "This version is FREEWARE Syscalculator. You will agree to license GNU. you may distribute this software to all."
       ForeColor       =   &H00000000&
       Height          =   1305
       Left            =   1680
@@ -62,7 +62,7 @@ Begin VB.Form frmAbout
    End
    Begin VB.Label lblDescription 
       BackColor       =   &H00FFFFFF&
-      Caption         =   "Copyright (C) 1996-2005  "
+      Caption         =   "Copyright (C) 1996-2026  "
       ForeColor       =   &H00000000&
       Height          =   210
       Left            =   1680
@@ -127,7 +127,7 @@ Private Sub Form_Load()
   Call Languare(Lname, 3)
     Me.Caption = Me.Caption & " " & App.Title
     lblVersion.Caption = lblVersion & " " & App.Major & "." & App.Minor & "." & App.Revision & " "
-    lblDescription.Caption = lblDescription & " " & "Copyright © 1996-2007"
+    lblDescription.Caption = lblDescription & " " & "Copyright © 1996-2026"
    
 
 

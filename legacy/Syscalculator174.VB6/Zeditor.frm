@@ -126,7 +126,7 @@ Begin VB.Form Editor
          Caption         =   "Bugreports"
       End
       Begin VB.Menu help0 
-         Caption         =   "Tcsoftware.com"
+         Caption         =   "Tiedragon.com"
       End
       Begin VB.Menu about 
          Caption         =   "About"
@@ -212,13 +212,14 @@ Private Sub Form_Load()
 Dim tel As Integer
 Dim ename, name As String
 Apppaths = GetDataFolder(Editor, "Syscalculator")
+If Trim$(Apppaths) = "" Then Apppaths = App.Path
 Call Addcombo(Editor)
 Call Languare(Lname, 8)
 onlyedname = Command$
 tel = Len(onlyedname)
 Dim usedlast(3) As String
 For n = 0 To max - 1
-usedlast(n) = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "usedlast" & (n + 1))
+usedlast(n) = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "usedlast" & (n + 1))
 If Not Mid(usedlast(n), 3) = "" Then
                             With lastused(n + 1)
                              .Caption = "&" & (n + 1) & ". " & visiblefile(usedlast(n))
@@ -316,7 +317,7 @@ Felhantering:
 MsgBox Edname + " " + isNotFound
 End Sub
 Private Sub lastused_Click(Index As Integer)
-usedlast = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "usedlast" & Index)
+usedlast = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "usedlast" & Index)
 Edname = usedlast
 On Error GoTo 51
 Editor.Text1.Text = ""
@@ -389,7 +390,7 @@ Sub salastused()
 
 Dim usedlast(max) As String
 For n = 0 To max - 1
-usedlast(n) = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "usedlast" & (n + 1))
+usedlast(n) = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "usedlast" & (n + 1))
 Next n
 Dim okfile As String
 okfile = visiblefile(Edname)
@@ -400,7 +401,7 @@ If Trim(Mid(lastused(ong).Caption, 4)) = Left(okfile, Len(okfile) - 1) Then
                      .Caption = "&" & n & ". " & visiblefile(usedlast(n - 2))
                      .Visible = True
                     End With
-                    Call bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "usedlast" & n, usedlast(n - 2))
+                    Call bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "usedlast" & n, usedlast(n - 2))
                     Next n
                     Call addnr1
                     Exit Sub
@@ -413,7 +414,7 @@ If Not Trim(Mid(lastused(1).Caption, 4)) = Left(okfile, Len(okfile) - 1) Then
                                                     .Caption = "&" & ns2 & ". " & visiblefile(usedlast(ns2 - 2))
                                                     .Visible = True
                                                  End With
-                                                 Call bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "usedlast" & ns2, usedlast(ns2 - 2))
+                                                 Call bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "usedlast" & ns2, usedlast(ns2 - 2))
                    
                                                  End If
                     Next ns2
@@ -425,7 +426,7 @@ If Not Trim(Mid(lastused(1).Caption, 4)) = Left(okfile, Len(okfile) - 1) Then
 
 End Sub
 Sub addnr1()
-Call bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "usedlast1", Trim(Edname))
+Call bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "usedlast1", Trim(Edname))
                     lastused(1).Caption = "&1. " + visiblefile(Trim(Edname))
                     lastused(1).Visible = True
                     line1.Visible = True

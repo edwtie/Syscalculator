@@ -1,0 +1,258 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Gebruikershandleiding voor de Syscalculator</title>
+</head>
+
+<body>
+
+<p><b><u><font size="5">Gebruikershandleiding voor de Syscalculator 1.74</font></u></b></p>
+
+<p><b>Inleiding</b></p>
+
+<p>Hartelijk dank voor het gebruik van onze software.</p>
+
+<p>Syscalculator begon als euro-conversietool en wordt nu onderhouden als klassiek
+legacy-conversieprogramma. Versie 1.74 is een onderhoudsrelease uit 2026 van de
+originele VB6-lijn. Deze versie bevat 21 oude euro-valutaconverters, inclusief nieuwere
+eurolanden zoals Kroatie 2023 en Bulgarije 2026.</p>
+
+<p>Deze release houdt de klassieke Syscalculator-werkwijze beschikbaar terwijl de moderne
+Syscalculator 2.0-lijn wordt ontwikkeld. Syscalculator combineert de volgende handige
+eigenschappen in 1 programma.</p>
+
+<p>Syscalculator&nbsp; :
+
+<ul>
+  <li>&nbsp;is een&nbsp; Conversie hulpmiddel voor gebruik in combinatie met oudere Office-
+    en Word-programma's</li>
+  <li>&nbsp;is een eenvoudige rekenmachine</li>
+  <li>&nbsp;heeft de&nbsp; Systray mogelijkheid</li>
+  <li>&nbsp;heeft configuratiemogelijkheden</li>
+</ul>
+
+<p><b>INDEX</b></p>
+
+<p>1.<b><a href="#2"> De optie introductie tonen</a></b></p>
+
+<p>2<b>. <a href="#3">De WizardExpress. een conversie hulpmiddel</a></b></p>
+
+<p>3. <b><u><a href="#1">Conversie van b.v. Guldens naar&nbsp; Duitse Marken (Tri-Conversie)</a></u></b></p>
+
+<p>4.<a href="#4"> <b>Eenvoudige rekenmachine&nbsp;</b></a></p>
+
+<p>5. <a href="#5"><b>Freesyscal.cfg en Taal instellen</b></a></p>
+
+<p>6. <a href="#7"><b><u>Systray instellen</u></b></a></p>
+
+<p>7. <a href="#8"><b>'Altijd zichtbaar' optie instellen</b></a></p>
+
+<p>8. <b><u><a href="#10">Aantal decimalen instellen.</a></u></b></p>
+
+<p>9. <b><a href="#6">Ondersteuning&nbsp;</a></b></p>
+
+<p><b><font size="4"><u><a name="2">De optie introducatie tonen:</a></u></font></b></p>
+
+<p>Schakel deze optie uit indien je het inleidend scherm niet telkenmale wenst terug te
+zien na het eerste opstarten van Syscalculator.</p>
+
+<p><b><u><font size="4"><a name="3">Wizardexpress, een conversie hulpmiddel.</a> </font></u></b></p>
+
+<p>WizardExpress kan in combinatie met oudere toepassingen zoals&nbsp; Excel, Word of andere
+klassieke Office-programma's gebruikt worden. Dit hulpmiddel zal je bedragen converteren van, b.v.,
+&nbsp; guldens naar Euro. Het is een conversiehulpmiddel dat op dezelfde wijze werkt zoals
+de 'Zoeken &amp; Vervangen' functie.&nbsp;&nbsp;</p>
+
+<p><b>Compatibiliteitsnotitie:</b> WizardExpress is bedoeld voor oudere Office- en Word-versies.
+Microsoft 365 / Office 365 werkt bekend niet betrouwbaar met deze oude VB6-koppeling.</p>
+
+<p>1.&nbsp; Voeg een nieuwe kolom in&nbsp; je werkblad in en definieer de celopmaak als
+valuta-waarden (Euro)&nbsp;</p>
+
+<p>2.&nbsp; Selecteer alle bedragen (uitsluitend waarden, geen tekst) en <strong>kopieer</strong>
+deze geselecteerde bedragen (= naar het klembord).&nbsp; </p>
+
+<p><a href="syscal_1.png"><img border="0" src="syscal_1.png" width="969" height="593"></a>
+</p>
+
+<p>3. Start de Syscalculator WizardExpress&nbsp;&nbsp;</p>
+
+<p><b>Optie:</b> Als u getallen met punten wil laten converteren, dan kunt u getalgroep
+aanvinken. Het zal getallen met punten 'xx.xxx.xxx' tonen.&nbsp;&nbsp;</p>
+
+<p>4. Klik op de &quot;OK&quot;&nbsp;toets om alle waarden te converteren.&nbsp;Wacht tot
+het rode 'start' teken in de statusbox wijzigt in het groene 'klaar'&nbsp; signaal. </p>
+
+<p><strong>Belangrijk</strong>: kopieer geen andere informatie naar het klembord vooraleer
+je de 'ok' knop aanklikt op de WizardExpress: dit zal immers het verlies van de waarden
+die je wou converteren tot gevolg hebben. Je zal dan dienen opnieuw te beginnen.</p>
+
+<p>5. Plaats de cursor in de nieuw gemaakte kolom en kies voor 'Plakken'. In gewone
+klassieke toepassingen kan dat via het plakmenu of de muis. Gebruik bij Excel /
+Microsoft 365 direct Ctrl+V na de conversie, omdat Excel eigen clipboard-management heeft.
+De nu geconverteerde bedragen zullen verschijnen, zoals getoond in het volgende voorbeeld : </p>
+
+<p><img border="0" src="syscal_2.png" width="947" height="631"></p>
+
+<p>6. Klaar ! Sluit de Wizard voor een volgend gebruik.</p>
+
+<p><b>Eigenschap: Symbool</b>.&nbsp; </p>
+
+<p>Als de optie 'symbool' in de optie box <strong>aangevinkt </strong>is, dan zal het
+gepaste symbool de ingevoegde gegevens voorafgaan, <br>
+bijvoorbeeld:&nbsp;<font size="3"> fl 351,53 -&gt; &#128;&nbsp; 241,22</font> </p>
+
+<p><font size="3">Als de optie 'symbool' <strong>niet</strong> is aangevinkt, dan zal er
+geen symbool toegevoegd worden aan de ingevoegde waarden.</font> </p>
+
+<p><b><u><a name="1">Converteren van Gulden naar Duitse Mark (Tri-Conversie)</a></u></b></p>
+
+<p>Je kan heel eenvoudig b.v bedragen in Gulden naar&nbsp; Duitse Mark of naar elke andere
+munteenheid van je keuze converteren</p>
+
+<p>1. Kopieer de geselecteerde bedragen en zet ze om naar Euro&nbsp; door de verschillende
+stappen te volgen zoals hiervoor beschreven&nbsp; in<small> </small><a name="3" href="#3"><font
+size="3"><b><u>Wizardexpress, een conversie hulpmiddel</u></b></font></a></p>
+
+<p>2. Wijzig:&nbsp; NLG -&gt; DEM (in de keuzelijst)</p>
+
+<p>3. Kies:&nbsp; Euro in WizardExpress (in de optiebox)</p>
+
+<p>4. Converteer deze bedragen naar de munteenheid van je keuze&nbsp; door de
+verschillende stappen te volgen zoals hiervoor beschreven&nbsp; in<small> </small><strong><a
+name="3" href="#3"><font size="3"><u>Wizardexpress, een conversion hulpmiddel</u></font></a></strong></p>
+
+<p><img src="triconvert_3.jpg"
+alt="triconvert_3.jpg (72998 bytes)" width="761" height="505"></p>
+
+<p><b><a name="4">Rekenmachine</a></b> </p>
+
+<p>Dit is een standaard rekenmachine. Je kan hiermee ook berekende bedragen converteren.</p>
+
+<p><a href="triconv_3.png"><img border="0" src="Syscal_3.png" width="309" height="247"></a></p>
+
+<p><b><a name="5">Instellen van de standaard valuta waarde en taal</a></b></p>
+
+<p><img border="0" src="Syscal_4.png" width="508" height="356"></p>
+
+<p>Je kan de standaard ingestelde taal en/of valuta waarde wijzigen naar keuze (daartoe
+dient er evenwel een bestaand '*.lng' bestand aanwezig te zijn). Je kan ook een nieuwe
+munteenheid toevoegen.&nbsp;</p>
+
+<p><u><font size="4"><b>Kenmerken </b>:</font></u></p>
+
+<p>- Hernoemen van munteenheden.&nbsp;</p>
+
+<p><u><b><big><a name="10">Aantal decimalen instellen</a></big></b></u></p>
+
+<p>U kunt aantal decimalen wijzigen. Aantal decimalen is maximum 11. Als u dit
+optie decimalen uitschakelt, dan zal Syscalculator uitvoeren met aantal
+decimalen die op de script staat.&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><b>Een eenheid als standaard instellen&nbsp;</b></p>
+
+<p>Jouw keuze van een nieuwe 'standaard' eenheid zal er in resulteren dat vanaf de
+eerstvolgende maal dat je Syscalculator opstart, deze waarde als standaard door het
+programma zal gebruikt worden.&nbsp;</p>
+
+<p><b><u>Editor</u></b></p>
+
+<p>Gebruik de 'Editor' om de scripts inzake munteenheden te wijzigen/aan te passen (<b>dit
+is uitsluitend voor experten</b>).Wens je meer te weten over het gebruik van alle
+commando's, dan kan je ons e-mailen bij Tiedragon. We zullen je dan een uitgebreide
+documentatie m.b.t. het gebruik van de commando's en voorbeelden toesturen.&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><strong><u><big>Bondige uitleg over enkele commando's:</big></u></strong></p>
+
+<p><b>Symb1 , Symb2&nbsp;</b></p>
+
+<p>Het&nbsp; gekozen symbool zal verschijnen op de Eurocalculator (in de
+'valuta'' rij).&nbsp;
+Symb1 en Symb2 zijn symbolen die voorafgaan aan de waarden die getoond worden in de
+Eurocalculator (in de 'Amounts in ...' rijen).</p>
+
+<p><b>Symb3, Symb4&nbsp;</b></p>
+
+<p>Symb3 en Symb4 zijn symbolen die op de waarden volgen wanneer je de WizardExpres
+gebruikt om geconverteerde waarden in andere toepassingen te plakken.</p>
+
+<p>Bijvoorbeeld:</p>
+
+<p>Symb1 <strong>fl</strong></p>
+
+<p>Symb2 <strong>DM</strong></p>
+
+<p><b>Math&nbsp;</b> &lt;waarden&gt;&nbsp;</p>
+
+<p>ans is de eerste waarde die je inbrengt.&nbsp;Deze waarde zal geconverteerd worden naar
+een nieuwe muntwaarde.</p>
+
+<p>Bijvoorbeeld:</p>
+
+<p>Math ans / 2,12412<br>
+Math ans * 4,12451&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p>Indien je meer informatie over deze commando's&nbsp; wenst te ontvangen, stuur dan een
+e-mail naar <a href="mailto:info@tiedragon.com">info@tiedragon.com</a></p>
+
+<p><u><big><b>Vertaling naar andere talen:</b></big></u></p>
+
+<p>Als je wenst bij te dragen aan de verdere ontwikkeling van Syscalculator door teksten
+(naar je moedertaal) te vertalen, gelieve dan je bestanden naar tiedragon te versturen.&nbsp;</p>
+
+<p>We zullen je taalbestanden dan op onze website publiceren, zodat ze ook voor anderen
+beschikbaar zijn.</p>
+
+<p><b>Reeds vertaalde bestanden:</b></p>
+
+<p>-eng.lng&nbsp;</p>
+
+<p>-Alle documenten die betrekking hebben op Syscalculator</p>
+
+<p><u><strong><big>Optionele instellingen</big></strong></u></p>
+
+<p><b><a name="7">Insteling Systray</a></b></p>
+
+<p>Configuratie -&gt; Tray.&nbsp;</p>
+
+<p>Vink deze optie aan om systray te activeren.</p>
+
+<p>Tray zal als gevolg hebben dat Syscalculator zich verbergt in de taakbalk.
+Syscalculator zal eenvoudig kunnen geactiveerd worden door het icoontje aan te klikken.</p>
+
+<p>De actieve tray Syscalculator beëindig je met een rechtsklik van de muis : kies
+vervolgens 'afsluiten''&nbsp;</p>
+
+<p><b><a name="8">Insteling altijd zichtbaar</a></b></p>
+
+<p>Configuratie -&gt; Altijd zichtbaar.</p>
+
+<p>WizardExpress en Calculator zullen automatisch op de voorgrond blijven, dus vóór alle
+actieve toepassingen.</p>
+
+<p><big><b><a name="6">Ondersteuning </a></b></big></p>
+
+<p>Mocht je een probleem ondervinden met deze software, gelieve ons dan te contacteren.
+Indien een echte 'bug' gevonden wordt zullen we dit zo snel als mogelijk trachten op te
+lossen. Je kan ons contacteren op de volgende wijze:</p>
+
+<p>Via het menu About -&gt; Feedback&nbsp; </p>
+
+<p>Via onze&nbsp; website : <a href="https://www.tiedragon.com">https://www.tiedragon.com</a></p>
+
+<p>Per e-mail: je kan ons een e-mail sturen op ons bedrijf : <a
+href="mailto:info@tiedragon.com">info@tiedragon.com</a> </p>
+
+<p>&nbsp;</p>
+
+<p>Copyright (c) 1996-2026</p>
+</body>
+</html>

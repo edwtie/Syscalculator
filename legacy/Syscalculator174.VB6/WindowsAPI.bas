@@ -346,6 +346,7 @@ Public Sub MakeDirectory(PhysicalPath As String)
     ' Date: July,30 2002 @ 18:53:46
     '---------------------------------------
     '     ---------------------
+    If Trim$(PhysicalPath) = "" Then Exit Sub
     Dim arrFolderArray() As String
     Dim strCurrentPath As String
     Dim X As Integer
@@ -770,18 +771,40 @@ Dim uProcess As Long
 uProcess = GetCurrentProcess
 TerminateProcess uProcess, 0
 End Sub
-Public Function GetDataFolder(form4 As Form, Appdirectory As String)
+Public Function GetDataFolder(form4 As Form, Appdirectory As String) As String
 
 On Error GoTo GenericFolder
 Dim ReturnVal As Long
 Dim PathName As String
+Dim NullPos As Integer
 PathName = String$(260, Chr$(32))
-retval = SHGetFolderPath(form4.Hwnd, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, PathName)
-PathName = Left(PathName, InStr(PathName, vbNullChar) - 1)
-GetDataFolder = PathName + "\" + Appdirectory
+ReturnVal = SHGetFolderPath(form4.Hwnd, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, PathName)
+If ReturnVal <> 0 Then GoTo GenericFolder
+NullPos = InStr(PathName, vbNullChar)
+If NullPos < 2 Then GoTo GenericFolder
+PathName = Left$(PathName, NullPos - 1)
+If Trim$(PathName) = "" Then GoTo GenericFolder
+GetDataFolder = AppendPath(PathName, Appdirectory)
 Exit Function
 GenericFolder:
-'Since Windows XP\2000 is not installed
-' we don't have this api so just use the A ' pp.path
-If Err.Number = 453 Then GetDataFolder = App.Path
+'On Windows 7 or newer this API can still fail on some systems. Never return
+'an empty path, because that causes runtime error 52 when opening config files.
+PathName = Environ$("APPDATA")
+If Trim$(PathName) <> "" Then
+                        GetDataFolder = AppendPath(PathName, Appdirectory)
+                        Else
+                        GetDataFolder = App.Path
+                        End If
+End Function
+
+Public Function AppendPath(ByVal BasePath As String, ByVal ChildPath As String) As String
+If Trim$(ChildPath) = "" Then
+                        AppendPath = BasePath
+                        Else
+                        If Right$(BasePath, 1) = "\" Then
+                                                AppendPath = BasePath + ChildPath
+                                                Else
+                                                AppendPath = BasePath + "\" + ChildPath
+                                                End If
+                        End If
 End Function

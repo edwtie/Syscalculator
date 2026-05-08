@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Maltese lira is vastgesteld.
+'
+'
+
+Name Maltese lira naar euro
+Urln MTL-Euro
+indoprint Malta adopted the euro on 1 January 2008.
+indoprint Fixed conversion rate: 1 euro = 0,429300 Maltese lira.
+indoprint Converting with Maltese lira to euro
+indoprint 
+indoend
+format #.00
+Symb1 MTL
+Symb2 €
+input1 Amounts in Maltese lira
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 0,429300
+end
+

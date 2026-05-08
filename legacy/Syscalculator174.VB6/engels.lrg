@@ -18,9 +18,9 @@
 1,204,"Option",""
 1,300,"&Help",""
 1,301,"Index",""
-1,303,"Feedback","mailto:famtie@xs4all.nl?Subject=Tabcompiler 2003 compiler feedback " 
-1,302,"Tcsoftware","http:\\www.tcsoftware.com"
-1,304,"Donate","https://www.paypal.com/xclick/business=edwtie%40tcsoftware.com&no_note=1&tax=0&currency_code=USD"
+1,303,"Feedback","mailto:info@tiedragon.com?Subject=Tabcompiler 2003 compiler feedback " 
+1,302,"Tiedragon","http:\\www.tiedragon.com"
+1,304,"Donate","https://www.paypal.com/xclick/business=edwtie%40tiedragon.com&no_note=1&tax=0&currency_code=USD"
 1,305,"About",""
 1,401,"Options",""
 1,402,"Advanced",""
@@ -51,7 +51,7 @@
 4,104,"OK",""
 5,100,"About ",
 5,101,"Version ",
-5,103,begin,"Tab Manager 2003 Compiler for MSN 6,  Tcsoftware is in no way affiliated with or endorsed by Microsoft Corporation. Copyright (c) 2003, Standard version.        MS Windows, MSN and MSN Messenger are registered trademarks of Microsoft Corporation."  
+5,103,begin,"Tab Manager 2003 Compiler for MSN 6,  Tiedragon is in no way affiliated with or endorsed by Microsoft Corporation. Copyright (c) 2003, Standard version.        MS Windows, MSN and MSN Messenger are registered trademarks of Microsoft Corporation."  
 5,103,end,""
 5,201,"OK",
 5,202,"System info...",

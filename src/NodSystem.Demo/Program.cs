@@ -1,4 +1,4 @@
-/*
+﻿/*
 NOD SYSTEM -- DEMO
 
 Dit consoleprogramma laat voorbeelden zien van:
@@ -12,7 +12,7 @@ Gebruik:
 dotnet run --project src/NodSystem.Demo
 */
 
-using NodSystem.Core;
+using Tiedragon.NodSystem.Core;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -213,4 +213,5 @@ static void RunEnterprisePreview()
     Console.WriteLine(report.ToString());
     Console.WriteLine();
 }
+
 

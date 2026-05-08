@@ -20,6 +20,60 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.07 Daily Build
+
+**Date:** 2026-05-07
+
+**Fixes:**
+- Fixed Syscalculator help layout details: clearer pane borders, aligned topic/content borders, improved scrollbar spacing and more consistent WebView scrollbar styling.
+- Fixed WizardExpress help structure so Excel/Microsoft 365 clipboard warnings are shown in the WizardExpress workflow and linked to the applications section.
+- Fixed formula card layout overflow where the MathML/formula panel could run outside its group.
+- Fixed duplicate formula card action buttons by keeping copy actions inside the relevant formula sections instead of repeating them in the bottom bar.
+- Fixed the formula card LaTeX section by adding the missing in-page `Kopieer LaTeX` action.
+- Fixed formula card tree border styling so the topic list no longer shows a doubled vertical border.
+
+**Additions:**
+- Added the legacy `Configuratie -> Start` option to Syscalculator 2.0 so users can enable or disable starting with Windows.
+- Added the legacy `Configuratie -> Overschakelen` behavior to Syscalculator 2.0, including swapping the converter direction and `input1`/`input2` values.
+- Added a reusable help-style navigation API with large Previous, Home, Next and Close buttons for help-style windows.
+- Added help-style navigation to the formula card window, including Previous, Home, Next and Close buttons in one consistent bottom row.
+- Added search and navigation polish to the help window for a more browser-like help experience.
+- Added search to the formula card window, including previous/next result navigation and Ctrl+F focus.
+- Updated the Syscalculator 1.72/1.74 versus 2.0 comparison to include restored legacy options such as Start, Overschakelen, introductions and formula/help differences.
+- Expanded the Syscalculator 2.0 Inno Setup installer from English/Dutch to nine installer languages: English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese.
+
+#### 2.0.2026.05.06 Daily Build
+
+**Date:** 2026-05-06
+
+**Fixes:**
+- Fixed ClipboardConvert row counting so trailing empty lines are not shown as extra rows after conversion.
+- Fixed duplicate blank-line output in converted clipboard text.
+- Fixed the clipboard diagnosis preview so the visible row count matches the Excel-like grid.
+- Fixed formula reporting so users see converter variable names such as `C` and `F` instead of only internal `ans` expressions.
+- Fixed HTML e-mail report generation by opening a generated `.eml` message instead of sending the whole report through `mailto` or the clipboard first.
+- Fixed `mailto` URI parsing risk for support reports.
+- Fixed duplicated formula display in HTML reports by using the rendered formula as primary output and plain text only as fallback.
+- Fixed PDF overflow by allowing report content, especially clipboard formats, to continue on a second page.
+- Fixed PDF report layout for `Voor / Na`, preview tables and formula blocks so the report is cleaner on A4.
+- Fixed report date formatting so PDF and e-mail reports follow the selected language culture instead of forcing a Dutch or system-default date.
+- Fixed the Chinese clipboard diagnosis language entries, which still contained English report labels.
+- Shortened the displayed build label to `Syscalculator 2.0 build yyyy.MM.dd.xxx`.
+
+**Additions:**
+- Added `Tiedragon.ClipboardConvert` as a reusable ClipboardConvert API group for copy, paste, conversion, diagnosis and report generation.
+- Added clipboard diagnosis tools in WizardExpress advanced mode with Excel-like cell preview and a structured details view.
+- Compared with Syscalculator 1.74, WizardExpress is now expanded beyond conversion with a new clipboard diagnosis workflow.
+- Added clipboard report API support for summary, formula, conversion details, before/after data, preview and clipboard formats.
+- Added HTML support report output for e-mail clients.
+- Added PDF diagnosis report output with Tiedragon logo, Dutch formal date and multi-page page template.
+- Added MathML/HTML formula rendering reuse in reports so WizardExpress, NOD Editor style preview, e-mail and PDF stay visually closer together.
+- Added PDF embedding of a rendered formula image when MathML is available, with fallback text rendering when capture is not possible.
+- Added localized clipboard diagnosis/report labels through the `.lng` language files.
+- Routed clipboard diagnosis and report texts through the language system so PDF, e-mail and details views can follow the selected UI language.
+- Added per-language report date culture and format keys for clipboard diagnosis output.
+- Added API documentation direction for reusable groups such as `Tiedragon.Graph2D`, `Tiedragon.ToolEditor`, `Tiedragon.NodSystem.Core` and `Tiedragon.ClipboardConvert`.
+
 #### 2.0.2026.05.02 Daily Build
 
 **Date:** 2026-05-02
@@ -28,6 +82,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Changed changelog to daily build grouping
 - Added build/changelog batch procedure.
 - Restored discoverability for newer euro converter files that were missing from the old `broncode.zip` release set.
+- Documented `WizardExpress` clipboard behavior: works in Notepad and LibreOffice Calc, while Microsoft Excel remains a special Office clipboard case because Excel-specific `BIFF` formats are replaced by the classic clipboard reset/write-back flow.
 
 **Additions:**
 - Added separate additions list support
@@ -66,7 +121,7 @@ Syscalculator 2.0 Beta is geen automatische VB6-conversie meer, maar een herbouw
 - `trans` en `chg` blijven legacy-compatible.
 - NOD 2.0 patroon-`chg` met `x`-capture toegevoegd.
 - Taalwisseling werkt zonder herstartmelding.
-- Oude VB6/Syscal.NET conversiepoging is vervangen door een gecontroleerde herbouw.
+- Oude VB6-.NET conversiepoging is vervangen door een gecontroleerde herbouw.
 
 ### Beta Fixronde: Editor-Polish, Simulator en Taalconsistentie
 
@@ -450,34 +505,33 @@ Beperkingen:
 - sterk gekoppeld aan VB6 UI
 - moeilijk onderhoudbaar
 - lastig te converteren naar moderne .NET
-- automatische Syscal.NET conversiepoging leverde te veel ballast op
+- automatische VB6-.NET conversiepoging leverde te veel ballast op
 
 ### Syscalculator 1.74
 
 Onderhoudslijn voor legacy.
 
-#### Syscalculator 1.74 Euro NOD Maintenance Candidate
+#### Syscalculator 1.74 RC1 Legacy Maintenance Release
 
-**Date:** 2026-05-02
+**Date:** 2026-05-07
 
-**Status:** candidate, not final release
+**Status:** RC1 / planned final 1.x legacy release
 
-**Package type:** data-only `.nod` maintenance package
+**Package type:** VB6 legacy application and separate Inno Setup installer
 
 **Fixes:**
-- Fixed the 1.74 source tree by adding missing newer euro converters to the legacy `euro` group.
-- Kept the original grouped directory layout from `broncode.zip`.
-- Added a Windows 11 startup candidate fix for missing HKLM migration values and missing AppData `freesyscal.cfg`.
+- Fixed first-run configuration fallback so the installed converter catalog and language files are found on Windows 7 and later.
+- Fixed the startup/configuration failure that could show `Configuration is not found` after installation on newer Windows versions.
+- Fixed the old Windows API error 52 risk on Windows 7 or newer by preventing invalid path results from breaking startup.
+- Fixed installer language handoff so Dutch setup starts Syscalculator with `ned.lng` and English setup starts with `/lng eng.lng`.
+- Fixed legacy branding references from `tcsoftware` to `Tiedragon`.
 
 **Additions:**
-- Added `BUILD_SYSCALCULATOR174_EURO_NOD_CANDIDATE.bat`.
-- Added `BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat` to find VB6 and compile the old `.vbp` when a licensed VB6 installation is available.
-- The candidate package adds BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK to the legacy `euro` group.
-
-**Before final release:**
-- Test the 1.74 source.
-- Compile `Syscalculator174.local.vbp` with VB6.
-- Smoke-test on Windows XP, Windows 7 and Windows 11.
+- Added the newer euro adopters to the legacy `euro` group: BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK.
+- Added a modern separate Inno Setup installer for Syscalculator 1.74.
+- Added VB6 runtime detection to the 1.74 installer, with a link to the official Microsoft runtime download when `msvbvm60.dll` is missing.
+- Documented that WizardExpress works best with older Office/Word versions, that LibreOffice Calc was tested and works ok, and that Microsoft 365 / Office 365 is not reliable with this old VB6 clipboard integration.
+- Updated the 1.74 readme to explain this release as the last legacy 1.x release before the modern Syscalculator 2.0 line.
 
 Doel:
 

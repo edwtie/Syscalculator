@@ -227,10 +227,9 @@ If max = -1 Then
                 Unload Me
                 Exit Sub
                 End If
-If old = -1 Then old = max: Text1.Text = saveconfig(Text1.Text, Combo1): Call form1cleanup: Form1.Show: Unload Me: Exit Sub
+If old = -1 Then old = max: Call ApplyOptions: Form1.Show: Unload Me: Exit Sub
 If Form1.Visible = False Then Call form1cleanup: Form1.Show
-flags = 5
-Text1.Text = saveconfig(Text1.Text, Combo1)
+Call ApplyOptions
 Unload Me
 End Sub
 
@@ -250,6 +249,11 @@ End Sub
 
 Private Sub Command4_Click()
 old = max
+Call ApplyOptions
+Form3.Show
+End Sub
+
+Private Sub ApplyOptions()
 Text1.Text = saveconfig(Text1.Text, Combo1)
 Combo1.Clear
 If max > -1 Then Call comb
@@ -264,7 +268,6 @@ If ActiveForm2 = True Then Call Languare(Lname, 4)
 If ActiveCal = True Then Call Languare(Lname, 5)
 'If Form1.Altop.Checked = True Then Call WindowsAPI.AlwaysOnTop(Form1, False)
 flags = 1
-Form3.Show
 End Sub
 
 Private Sub Command5_Click()

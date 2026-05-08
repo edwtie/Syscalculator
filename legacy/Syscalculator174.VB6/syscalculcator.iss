@@ -8,17 +8,17 @@ un60sp5.exe"
 
 [Setup]
 AppName=Syscalculator
-AppVerName=Syscalculator 1.72
-AppPublisher=www.tcsoftware.com
-AppPublisherURL=http://www.tcsoftware.com
-AppSupportURL=http://www.tcsoftware.com
-AppUpdatesURL=http://www.tcsoftware.com
-DefaultDirName={pf}\Syscalculcator
-DefaultGroupName=Tcsoftware
-LicenseFile=C:\broncode\license.rtf
-InfoBeforeFile=C:\broncode\readme.rtf
-WizardImageFile=C:\broncode\Picture 9.bmp
-WizardSmallImageFile=C:\broncode\icon4.bmp
+AppVerName=Syscalculator 1.74
+AppPublisher=Tiedragon
+AppPublisherURL=https://www.tiedragon.com
+AppSupportURL=https://www.tiedragon.com
+AppUpdatesURL=https://www.tiedragon.com
+DefaultDirName={pf}\Syscalculator
+DefaultGroupName=Tiedragon
+LicenseFile=license.rtf
+InfoBeforeFile=readme.rtf
+WizardImageFile=Picture 9.bmp
+WizardSmallImageFile=icon4.bmp
 ChangesAssociations=yes
 ; uncomment the following line if you want your installation to run on NT 3.51 too.
 ; MinVersion=4,3.51
@@ -33,61 +33,61 @@ Name: desktopicon; Description: Create a &desktop icon; GroupDescription: Additi
 Name: quicklaunchicon; Description: Create a &Quick Launch icon; GroupDescription: Additional icons:; MinVersion: 4,4; Flags: unchecked
 
 [Files]
-Source: C:\broncode\help\index_en.htm; DestDir: {app}\help\; Flags: ignoreversion
-Source: C:\broncode\help\index_nl.htm; DestDir: {app}\help\; Flags: ignoreversion
-Source: C:\broncode\help\Syscal_1.png; DestDir: {app}\help\; Flags: ignoreversion
-Source: C:\broncode\help\Syscal_2.png; DestDir: {app}\help\; Flags: ignoreversion
-Source: C:\broncode\help\Syscal_3.png; DestDir: {app}\help\; Flags: ignoreversion
-Source: C:\broncode\help\Syscal_4.png; DestDir: {app}\help\; Flags: ignoreversion
-Source: C:\broncode\help\triconvert_3.jpg; DestDir: {app}\help\; Flags: ignoreversion
-;Source: "C:\broncode\help\decimals.jpg"; DestDir: "{app}\help\"; Flags: ignoreversion
-Source: C:\broncode\freesyscal.exe; DestDir: {app}; Flags: ignoreversion
-Source: C:\broncode\syscaleditor.exe; DestDir: {app}; Flags: ignoreversion
-Source: C:\broncode\euro\FRF.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\IEP.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\itl.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\GRD.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\NLG.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\PTE.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\readme.rtf; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\ESP.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\FIM.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\DEM.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\ats.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\euro\BEF.nod; DestDir: {app}\Euro\; Flags: ignoreversion
-Source: C:\broncode\temperature\graden kelvin.nod; DestDir: {app}\Temperature\; Flags: ignoreversion
-Source: C:\broncode\temperature\graden fahrenheit.nod; DestDir: {app}\Temperature\; Flags: ignoreversion
-Source: C:\broncode\Distance\cm inch.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Distance\feet meter.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Distance\inches foot.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Distance\km miles.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Distance\Light year - km.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Distance\meter yards.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Mass\gram ounces.nod; DestDir: {app}\Distance\; Flags: ignoreversion
-Source: C:\broncode\Mass\kg lbs.nod; DestDir: {app}\Mass\; Flags: ignoreversion
-Source: C:\broncode\Mass\kg pound.nod; DestDir: {app}\Mass\; Flags: ignoreversion
-Source: C:\broncode\Volume\Gallons Pints.nod; DestDir: {app}\Volume\; Flags: ignoreversion
-Source: C:\broncode\Volume\Gallons Quarts.nod; DestDir: {app}\Volume\; Flags: ignoreversion
-Source: C:\broncode\Volume\liters Barrels(oil).nod; DestDir: {app}\Volume\; Flags: ignoreversion
-Source: C:\broncode\Volume\liters Bushels(uk).nod; DestDir: {app}\Volume\; Flags: ignoreversion
-Source: C:\broncode\Volume\liters Gallons(UK).nod; DestDir: {app}\Volume\; Flags: ignoreversion
-Source: C:\broncode\Volume\liters Gallons(US).nod; DestDir: {app}\Volume\; Flags: ignoreversion
-Source: C:\broncode\Pressure\Pds sq inch - kg sq cm.nod; DestDir: {app}\Pressure\; Flags: ignoreversion
-Source: C:\broncode\eng.lng; DestDir: {app}; Flags: ignoreversion
-Source: C:\broncode\esp.lng; DestDir: {app}; Flags: ignoreversion
-Source: C:\broncode\ned.lng; DestDir: {app}; Flags: ignoreversion
+Source: help\index_en.htm; DestDir: {app}\help\; Flags: ignoreversion
+Source: help\index_nl.htm; DestDir: {app}\help\; Flags: ignoreversion
+Source: help\Syscal_1.png; DestDir: {app}\help\; Flags: ignoreversion
+Source: help\Syscal_2.png; DestDir: {app}\help\; Flags: ignoreversion
+Source: help\Syscal_3.png; DestDir: {app}\help\; Flags: ignoreversion
+Source: help\Syscal_4.png; DestDir: {app}\help\; Flags: ignoreversion
+Source: help\triconvert_3.jpg; DestDir: {app}\help\; Flags: ignoreversion
+;Source: "help\decimals.jpg"; DestDir: "{app}\help\"; Flags: ignoreversion
+Source: freesyscal.exe; DestDir: {app}; Flags: ignoreversion
+Source: syscaleditor.exe; DestDir: {app}; Flags: ignoreversion
+Source: euro\FRF.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\IEP.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\itl.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\GRD.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\NLG.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\PTE.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: readme.rtf; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\ESP.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\FIM.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\DEM.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\ats.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: euro\BEF.nod; DestDir: {app}\Euro\; Flags: ignoreversion
+Source: temperature\graden kelvin.nod; DestDir: {app}\Temperature\; Flags: ignoreversion
+Source: temperature\graden fahrenheit.nod; DestDir: {app}\Temperature\; Flags: ignoreversion
+Source: Distance\cm inch.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Distance\feet meter.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Distance\inches foot.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Distance\km miles.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Distance\Light year - km.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Distance\meter yards.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Mass\gram ounces.nod; DestDir: {app}\Distance\; Flags: ignoreversion
+Source: Mass\kg lbs.nod; DestDir: {app}\Mass\; Flags: ignoreversion
+Source: Mass\kg pound.nod; DestDir: {app}\Mass\; Flags: ignoreversion
+Source: Volume\Gallons Pints.nod; DestDir: {app}\Volume\; Flags: ignoreversion
+Source: Volume\Gallons Quarts.nod; DestDir: {app}\Volume\; Flags: ignoreversion
+Source: Volume\liters Barrels(oil).nod; DestDir: {app}\Volume\; Flags: ignoreversion
+Source: Volume\liters Bushels(uk).nod; DestDir: {app}\Volume\; Flags: ignoreversion
+Source: Volume\liters Gallons(UK).nod; DestDir: {app}\Volume\; Flags: ignoreversion
+Source: Volume\liters Gallons(US).nod; DestDir: {app}\Volume\; Flags: ignoreversion
+Source: Pressure\Pds sq inch - kg sq cm.nod; DestDir: {app}\Pressure\; Flags: ignoreversion
+Source: eng.lng; DestDir: {app}; Flags: ignoreversion
+Source: esp.lng; DestDir: {app}; Flags: ignoreversion
+Source: ned.lng; DestDir: {app}; Flags: ignoreversion
 Source: cat.lng; DestDir: {app}; Flags: ignoreversion
 
 [Icons]
-Name: {group}\Syscalculcator; Filename: {app}\freesyscal.exe
-Name: {group}\Syscalculcator Editor; Filename: {app}\syscaleditor.exe
-Name: {userdesktop}\Syscalculcator; Filename: {app}\freesyscal.exe; MinVersion: 4,4; Tasks: desktopicon
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Syscalculcator; Filename: {app}\freesyscal.exe; MinVersion: 4,4; Tasks: quicklaunchicon
+Name: {group}\Syscalculator; Filename: {app}\freesyscal.exe
+Name: {group}\Syscalculator Editor; Filename: {app}\syscaleditor.exe
+Name: {userdesktop}\Syscalculator; Filename: {app}\freesyscal.exe; MinVersion: 4,4; Tasks: desktopicon
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Syscalculator; Filename: {app}\freesyscal.exe; MinVersion: 4,4; Tasks: quicklaunchicon
 
 [Registry]
-Root: HKLM; Subkey: Software\TCsoftware\Syscalculcator Euro Edition; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\TCsoftware\Syscalculcator Euro Edition; ValueName: first; ValueType: string; ValueData: 1; Flags: createvalueifdoesntexist uninsdeletekey
-Root: HKLM; Subkey: Software\TCsoftware\; Flags: uninsdeletekey
+Root: HKLM; Subkey: Software\Tiedragon\Syscalculator Euro Edition; Flags: uninsdeletekey
+Root: HKCU; Subkey: Software\Tiedragon\Syscalculator Euro Edition; ValueName: first; ValueType: string; ValueData: 1; Flags: createvalueifdoesntexist uninsdeletekey
+Root: HKLM; Subkey: Software\Tiedragon\; Flags: uninsdeletekey
 Root: HKCU; Subkey: Software\Microsoft\Windows\CurrentVersion\Run; ValueName: Syscal; Flags: uninsdeletevalue
 Root: HKCR; SubKey: ft000002; ValueType: string; ValueData: ; Flags: uninsdeletekey
 Root: HKCR; SubKey: ft000002; ValueType: dword; ValueName: EditFlags; ValueData: 00000000; Flags: uninsdeletekey
@@ -102,10 +102,10 @@ Root: HKCR; SubKey: ft000002\Shell\open\ddeexec\Topic; ValueType: string; ValueD
 Root: HKCR; SubKey: ft000002\Shell\edit; Flags: uninsdeletekey
 Root: HKCR; SubKey: ft000002\Shell\edit\command; ValueType: string; ValueData: """{app}\Syscaleditor.exe""  %1"; Flags: uninsdeletekey
 Root: HKCR; SubKey: .nod; ValueType: string; ValueData: ft000002; Flags: uninsdeletekey
-Root: HKCU; Subkey: Software\TCsoftware\Syscalculcator Euro Edition; ValueType: string; ValueName: Migration; ValueData: 1; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: Software\Tiedragon\Syscalculator Euro Edition; ValueType: string; ValueName: Migration; ValueData: 1; Flags: createvalueifdoesntexist
 
 [Run]
-Filename: {app}\freesyscal.exe; Description: Launch Syscalculcator ; Flags: nowait postinstall skipifsilent; Languages: en; Parameters: /lng eng.lng
+Filename: {app}\freesyscal.exe; Description: Launch Syscalculator ; Flags: nowait postinstall skipifsilent; Languages: en; Parameters: /lng eng.lng
 Filename: {app}\freesyscal.exe; Parameters: /lng ned.lng; Flags: nowait postinstall skipifsilent; Languages: nl
 Filename: {app}\freesyscal.exe; Parameters: /lng esp.lng; Languages: es; Flags: nowait postinstall skipifsilent
 Filename: {app}\freesyscal.exe; Parameters: /lng cat.lng; Languages: cat; Flags: nowait postinstall skipifsilent

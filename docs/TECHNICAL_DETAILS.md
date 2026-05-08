@@ -1,4 +1,4 @@
----
+﻿---
 
 # Technical Appendix — Syscalculator 2.0 Alpha 1
 
@@ -6,7 +6,7 @@
 
 ```text
 src/
-├─ NodSystem.Core
+├─ Tiedragon.NodSystem.Core
 │  ├─ NodDocument.cs
 │  ├─ NodParser.cs
 │  ├─ NodEngine.cs
@@ -75,7 +75,7 @@ In Alpha 1, these concerns are separated.
 ```text
 Syscalculator.UI.WinForms
   ↓
-NodSystem.Core
+Tiedragon.NodSystem.Core
   ↓
 NodParser / NodEngine / sub-engines
 ```
@@ -127,7 +127,7 @@ NodUiMetadata.cs
 Reason:
 
 ```text
-NodSystem.Core = conversion engine
+Tiedragon.NodSystem.Core = conversion engine
 Syscalculator.UI = display labels and form layout
 ```
 
@@ -724,9 +724,9 @@ No old MenuXP styling migrated
 
 ```bash
 dotnet new sln
-dotnet sln add src/NodSystem.Core/NodSystem.Core.csproj
+dotnet sln add src/Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj
 dotnet sln add src/NodSystem.Tests/NodSystem.Tests.csproj
-dotnet sln add src/Syscalculator.UI.WinForms/Syscalculator.UI.WinForms.csproj
+dotnet sln add src/syscalculator/Syscalculator.UI.WinForms.csproj
 ```
 
 2. Add real test framework:
@@ -811,3 +811,4 @@ more maintainable
 more extensible
 safer for future enterprise use
 ```
+

@@ -62,7 +62,7 @@ Sub form1cleanup()
                             uitnegatief = False
                             
                             Form1.Caption = Getappname()
-                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name", Form1.Caption)
+                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name", Form1.Caption)
 
                           If switch1 = False Then Form1.Label1.Caption = Getsym1() Else Form1.Label1.Caption = Getsym2()
                           If switch1 = False Then Form1.Label2.Caption = Getsym2() Else Form1.Label2.Caption = Getsym1()
@@ -78,16 +78,32 @@ End Sub
 Function Addcombo(Optional clean As Integer) As Integer
 Dim comm, Data, def, reserve As String
 Dim OK As Integer
+Dim cfgPath As String
+Dim triedInstallConfig As Boolean
+Dim old As Integer
+Dim oldname As String
 i = 0
 If clean = 1 Then old = Form1.Combo1.ListIndex: oldname = Form1.Combo1.Text
 
 Form1.Combo1.Clear
 On Error GoTo geenconfig
 If clean = 2 Then
-Open App.Path + "\" + "freesyscal.cfg" For Input As #1
+cfgPath = App.Path + "\" + "freesyscal.cfg"
  Else
-Open Apppaths + "\" + "freesyscal.cfg" For Input As #1
+cfgPath = Apppaths + "\" + "freesyscal.cfg"
 End If
+If Dir$(cfgPath) = "" Then
+                        cfgPath = Replace$(cfgPath, "freesyscal.cfg", "freesysc.cfg")
+                        End If
+If Dir$(cfgPath) = "" And clean <> 2 Then
+                        cfgPath = App.Path + "\" + "freesyscal.cfg"
+                        If Dir$(cfgPath) = "" Then
+                                                cfgPath = App.Path + "\" + "freesysc.cfg"
+                                                End If
+                        End If
+OpenConfig:
+On Error GoTo geenconfig
+Open cfgPath For Input As #1
 Do Until EOF(1)
  Input #1, comm, Data, def
  If Not Left$(comm, 1) = "'" Then
@@ -110,7 +126,7 @@ Do Until EOF(1)
   max = i - 1
   If max > -1 And Not clean = 1 Then Form1.Combo1.ListIndex = defaultID: Addcombo = defaultID
   If clean = 1 Then
-            If old < max And old < -1 Then
+            If old <= max And old > -1 Then
                             Rem Form1.Combo1.Text = oldname
                             Form1.Combo1.ListIndex = old
                             Addcombo = old
@@ -121,10 +137,55 @@ Do Until EOF(1)
             End If
 Exit Function
 geenconfig:
-Dim Status As Boolean
-Addcombo = -1
-test5 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
-If test5 = 0 Then Status = MsgBox("Configuration is not found", vbCritical, errorf): Unload Form1
+On Error Resume Next
+Close #1
+If clean <> 2 And triedInstallConfig = False Then
+                        triedInstallConfig = True
+                        cfgPath = App.Path + "\" + "freesyscal.cfg"
+                        If Dir$(cfgPath) = "" Then cfgPath = App.Path + "\" + "freesysc.cfg"
+                        If Dir$(cfgPath) <> "" Then
+                                                i = 0
+                                                Form1.Combo1.Clear
+                                                Resume OpenConfig
+                                                End If
+                        End If
+Addcombo = LoadDefaultComboCatalog(clean, old)
+End Function
+Function LoadDefaultComboCatalog(Optional ByVal clean As Integer, Optional ByVal oldIndex As Integer) As Integer
+On Error Resume Next
+Form1.Combo1.Clear
+Lname = "eng.lng"
+defaultID = 11
+Form1.Combo1.AddItem "ATS", 0: filestring(0) = "euro\ATS"
+Form1.Combo1.AddItem "BEF", 1: filestring(1) = "euro\BEF"
+Form1.Combo1.AddItem "DEM", 2: filestring(2) = "euro\DEM"
+Form1.Combo1.AddItem "ESP", 3: filestring(3) = "euro\ESP"
+Form1.Combo1.AddItem "FIM", 4: filestring(4) = "euro\FIM"
+Form1.Combo1.AddItem "FRF", 5: filestring(5) = "euro\FRF"
+Form1.Combo1.AddItem "GRD", 6: filestring(6) = "euro\GRD"
+Form1.Combo1.AddItem "IEP", 7: filestring(7) = "euro\IEP"
+Form1.Combo1.AddItem "ITL", 8: filestring(8) = "euro\ITL"
+Form1.Combo1.AddItem "LUF", 9: filestring(9) = "euro\LUF"
+Form1.Combo1.AddItem "PTE", 10: filestring(10) = "euro\PTE"
+Form1.Combo1.AddItem "Euro-NLG", 11: filestring(11) = "euro\NLG"
+Form1.Combo1.AddItem "BGN", 12: filestring(12) = "euro\BGN"
+Form1.Combo1.AddItem "CYP", 13: filestring(13) = "euro\CYP"
+Form1.Combo1.AddItem "EEK", 14: filestring(14) = "euro\EEK"
+Form1.Combo1.AddItem "HRK", 15: filestring(15) = "euro\HRK"
+Form1.Combo1.AddItem "LTL", 16: filestring(16) = "euro\LTL"
+Form1.Combo1.AddItem "LVL", 17: filestring(17) = "euro\LVL"
+Form1.Combo1.AddItem "MTL", 18: filestring(18) = "euro\MTL"
+Form1.Combo1.AddItem "SIT", 19: filestring(19) = "euro\SIT"
+Form1.Combo1.AddItem "SKK", 20: filestring(20) = "euro\SKK"
+Form1.Combo1.AddItem "Operatie Decibel 1995", 21: filestring(21) = "Text\operatie_decibel_1995"
+max = 21
+If clean = 1 And oldIndex <= max And oldIndex > -1 Then
+                        Form1.Combo1.ListIndex = oldIndex
+                        LoadDefaultComboCatalog = oldIndex
+                        Else
+                        Form1.Combo1.ListIndex = defaultID
+                        LoadDefaultComboCatalog = defaultID
+                        End If
 End Function
 Sub SaveTextFile()
 On Error GoTo Felhantering

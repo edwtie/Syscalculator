@@ -5,26 +5,26 @@
     <MASTER_PAD_INFO>Portable Application Description, or PAD for short, is a data set that is used by shareware authors to disseminate information to anyone interested in their software products. To find out more go to http://www.asp-shareware.org/pad</MASTER_PAD_INFO>
 </MASTER_PAD_VERSION_INFO>
 <Company_Info>
-        <Company_Name>Tcsoftware</Company_Name>
+        <Company_Name>Tiedragon</Company_Name>
         <Address_1>Nieboerweg 241</Address_1>
         <Address_2 />
         <City_Town>Den haag</City_Town>
         <State_Province>2566</State_Province>
         <Zip_Postal_Code>2566 gb</Zip_Postal_Code>
         <Country>Netherlands</Country>
-        <Company_WebSite_URL>http://www.tcsoftware.com</Company_WebSite_URL>
+        <Company_WebSite_URL>https://www.tiedragon.com</Company_WebSite_URL>
 <Contact_Info>
         <Author_First_Name>Edward</Author_First_Name>
         <Author_Last_Name>Tie</Author_Last_Name>
-        <Author_Email>famtie@xs4all.nl</Author_Email>
+        <Author_Email>info@tiedragon.com</Author_Email>
         <Contact_First_Name />
         <Contact_Last_Name />
         <Contact_Email />
     </Contact_Info>
 <Support_Info>
-        <Sales_Email>famtie@xs4all.nl</Sales_Email>
-        <Support_Email>famtie@xs4all.nl</Support_Email>
-        <General_Email>famtie@xs4all.nl</General_Email>
+        <Sales_Email>info@tiedragon.com</Sales_Email>
+        <Support_Email>info@tiedragon.com</Support_Email>
+        <General_Email>info@tiedragon.com</General_Email>
         <Sales_Phone />
         <Support_Phone />
         <General_Phone />
@@ -33,10 +33,10 @@
 </Company_Info>
 <Program_Info>
         <Program_Name>Syscalculator</Program_Name>
-        <Program_Version>1.72</Program_Version>
+        <Program_Version>1.74</Program_Version>
         <Program_Release_Month>10</Program_Release_Month>
         <Program_Release_Day>23</Program_Release_Day>
-        <Program_Release_Year>2005</Program_Release_Year>
+        <Program_Release_Year>2026</Program_Release_Year>
         <Program_Cost_Dollars />
         <Program_Cost_Other />
         <Program_Type>Freeware</Program_Type>
@@ -49,7 +49,7 @@
         <Program_Specific_Category>Business</Program_Specific_Category>
         <Program_Categories>Financien</Program_Categories>
 <File_Info>
-        <Filename_Versioned>sys172.zip</Filename_Versioned>
+        <Filename_Versioned>sys174-rc1.zip</Filename_Versioned>
         <Filename_Previous />
         <Filename_Generic />
         <Filename_Long />
@@ -73,42 +73,30 @@
 <Program_Descriptions>
 <English>
         <Keywords>euro eurocalculator calculator money dutch rekenmachine reken convert</Keywords>
-        <Char_Desc_45>Converting 12 currency to new euro</Char_Desc_45>
+        <Char_Desc_45>Converting legacy currencies to euro</Char_Desc_45>
         <Char_Desc_80 />
-        <Char_Desc_250>Syscalculcator  1.72, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices)</Char_Desc_250>
-        <Char_Desc_450>Syscalculcator  1.72, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices) 
+        <Char_Desc_250>Syscalculator 1.74 RC1 is a final VB6 legacy maintenance release after 20 years, with 21 euro converters including Croatia 2023 and Bulgaria 2026. Requires VB6 runtime; LibreOffice ok; Microsoft 365 / Office 365 not reliable.</Char_Desc_250>
+        <Char_Desc_450>Syscalculator 1.74 RC1 is the final 1.x legacy release after 20 years. It adds 21 euro converters, including Croatia 2023 and Bulgaria 2026, fixes startup/configuration problems for Windows 7 and later, and was tested on Windows 11. VB6 runtime is required and outdated. WizardExpress is for older Office; LibreOffice tested ok. Microsoft 365 / Office 365 is not reliable. Syscalculator 2.0 is the modern .NET successor.</Char_Desc_450>
+        <Char_Desc_2000>Syscalculator 1.74 RC1 is a legacy VB6 maintenance release of the classic Eurocalculator and converter tool. After 20 years, this release updates the old 1.x line with 21 euro legacy currency converters, including recent euro adoptions such as Croatia 2023 and Bulgaria 2026.
 
+This release fixes startup and configuration problems that prevented Syscalculator from working properly on Windows 7 and later. It has also been tested on Windows 11 and appears to work correctly after the fixes. The Visual Basic 6 Runtime is still required; the installer checks for msvbvm60.dll and offers to open the official Microsoft runtime download page when it is missing.
 
+WizardExpress remains available for older Office, Word, Excel, Access, WordPerfect, StarOffice and LibreOffice workflows. LibreOffice has been tested and works ok. Microsoft 365 / Office 365 is not supported reliably with this old VB6 integration.
 
-Features:
-
--Simple Calculcator
--WizardExpress, a converstion tool
--up to 11 currency units to new Euro
--Help documention and tips.
--Options (setting Language or Currency default)
--Systray
-
-What is new?
-
--Firewall problem Fixed
--Little bugs fixed
-
-</Char_Desc_450>
-        <Char_Desc_2000 />
+Syscalculator 1.74 RC1 is planned as the final Syscalculator 1.x legacy release before the new Syscalculator 2.0 line, built with modern .NET technology and new features that the old 1.7x line does not have.</Char_Desc_2000>
 </English>
 </Program_Descriptions>
 <Web_Info>
 <Application_URLs>
-        <Application_Info_URL>http://www.tcsoftware.com</Application_Info_URL>
+        <Application_Info_URL>https://www.tiedragon.com</Application_Info_URL>
         <Application_Order_URL />
         <Application_Screenshot_URL />
         <Application_Icon_URL />
         <Application_XML_File_URL />
     </Application_URLs>
 <Download_URLs>
-        <Primary_Download_URL>http://www.tcsoftware.com/files/sys172.zip</Primary_Download_URL>
-        <Secondary_Download_URL>http://www.xs4all.nl/~famtie/files/sys172.zip</Secondary_Download_URL>
+        <Primary_Download_URL>https://www.tiedragon.com/files/sys174-rc1.zip</Primary_Download_URL>
+        <Secondary_Download_URL>http://www.xs4all.nl/~famtie/files/sys174-rc1.zip</Secondary_Download_URL>
         <Additional_Download_URL_1 />
         <Additional_Download_URL_2 />
     </Download_URLs>

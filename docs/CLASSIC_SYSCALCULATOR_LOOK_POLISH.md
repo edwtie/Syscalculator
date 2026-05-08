@@ -1,6 +1,6 @@
 # Classic Syscalculator look polish
 
-Deze versie brengt het hoofdvenster dichter bij de oude Syscalculator/Syscalculcator-look.
+Deze versie brengt het hoofdvenster dichter bij de oude Syscalculator/Syscalculator-look.
 
 ## Aangepast
 

@@ -48,11 +48,11 @@ If Check1.Value = 0 Then
                         Check1.Value = 0
                         Form1.Indo.Checked = False
                         intro = False
-                        test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "0")
+                        test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "0")
 Else
                             intro = True
                             Form1.Indo.Checked = True
-                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "1")
+                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "1")
                            
                            End If
                           

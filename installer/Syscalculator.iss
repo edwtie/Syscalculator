@@ -29,7 +29,7 @@ DefaultDirName={autopf}\Syscalculator
 DefaultGroupName=Syscalculator
 OutputDir=..\artifacts\installer
 OutputBaseFilename=Syscalculator-2.0-{#MyBuildChannel}-{#MyAppVersion}
-SetupIconFile=..\src\Syscalculator.UI.WinForms\Resources\Syscalculator.ico
+SetupIconFile=..\src\syscalculator\Resources\Syscalculator.ico
 PrivilegesRequired=lowest
 Compression=lzma2
 SolidCompression=yes
@@ -42,6 +42,13 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "nl"; MessagesFile: "compiler:Languages\Dutch.isl"
+Name: "de"; MessagesFile: "compiler:Languages\German.isl"
+Name: "fr"; MessagesFile: "compiler:Languages\French.isl"
+Name: "it"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "pt"; MessagesFile: "compiler:Languages\Portuguese.isl"
+Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "id"; MessagesFile: "compiler:Default.isl,Languages\Indonesian.isl"
+Name: "zh"; MessagesFile: "compiler:Default.isl,Languages\ChineseSimplified.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -76,3 +83,32 @@ Root: HKCU; Subkey: "Software\Classes\Syscalculator.Nod\shell\edit\command"; Val
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Syscalculator}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+function AppLanguageFile: String;
+begin
+  case ActiveLanguage of
+    'nl': Result := 'ned.lng';
+    'de': Result := 'deu.lng';
+    'fr': Result := 'fra.lng';
+    'it': Result := 'ita.lng';
+    'pt': Result := 'por.lng';
+    'es': Result := 'spa.lng';
+    'id': Result := 'ind.lng';
+    'zh': Result := 'zho.lng';
+  else
+    Result := 'eng.lng';
+  end;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    SaveStringToFile(
+      ExpandConstant('{app}\language.cfg'),
+      '# Active language file.' + #13#10 +
+      'language=' + AppLanguageFile + #13#10,
+      False);
+  end;
+end;

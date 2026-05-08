@@ -70,7 +70,7 @@ Begin VB.Form frmAbout
    End
    Begin VB.Label lblDisclaimer 
       BackColor       =   &H00FFFFFF&
-      Caption         =   "This version is FREEWARE Syscalculcator. You will agree to license GNU. you may distribute this software to all."
+      Caption         =   "This version is FREEWARE Syscalculator. You will agree to license GNU. you may distribute this software to all."
       ForeColor       =   &H00000000&
       Height          =   1305
       Left            =   1680

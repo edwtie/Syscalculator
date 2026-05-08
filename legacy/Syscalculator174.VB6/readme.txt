@@ -1,55 +1,79 @@
+Syscalculator  1.74 RC1
 
-Syscalculator  1.72 Final
 
-
-Syscalculator has GPL license.
-This means that you may distribute this software for non-commercial or commercial use
+Syscalculator is free software under the GPL license.
+This means that you may distribute this software for non-commercial or commercial use.
  
-Tcsoftware has developed this latest version of Syscalculcator. 
+Tiedragon maintains this legacy version of Syscalculator.
 
-This version is FREEWARE 
+This is planned as the final Syscalculator 1.x legacy release before the new Syscalculator 2.0 line, built with modern technology. Syscalculator 2.0 is already in development to reduce the risks of relying on the outdated VB6 runtime. Version 2.0 will bring new features that the old 1.7x line does not have. It should be a big surprise.
+
+This version is free to use and distributed under the GPL license.
 
 Syscalculator supports:
 
-12 Euro Currencies (incl. Greek).
-temperatures,metres,cub. metres
-and any another converters !
+21 euro legacy currency converters, including recent euro adoptions such as Croatia 2023 and Bulgaria 2026.
+temperatures, metres, cub. metres
+and other NOD converters.
 
 
-WizardExpress now supports : 
+WizardExpress now supports older versions of:
 
 · MS Access 
 · MS Word
 · MS Excel
 · Staroffice
+· LibreOffice
 · Corel Wordperfect
 · Corel Office 
 
+Note: WizardExpress is intended for older Office and Word versions. LibreOffice has been tested and works ok. Microsoft 365 / Office 365 is known not to work reliably with this old VB6 integration.
+
+What's new in 1.74 RC1?
+
+Release note: After 20 years, Syscalculator 1.74 is finally released. This last 1.74 legacy version adds the newer euro countries, including recent euro adoptions such as Croatia 2023 and Bulgaria 2026, and fixes startup/configuration problems that kept Syscalculator from working properly on Windows 7 and later. We tested this 1.74 release on Windows 11; after the fixes it appears to work okay. Oops.
+
+-Updated legacy branding to Tiedragon.
+-Added the newer euro adopters: Slovenia (SIT), Cyprus (CYP), Malta (MTL), Slovakia (SKK), Estonia (EEK), Latvia (LVL), Lithuania (LTL), Croatia (HRK, euro adoption 2023) and Bulgaria (BGN, euro adoption 2026).
+-Added a modern Inno Setup installer for Syscalculator 1.74.
+-Fixed first-run configuration fallback so the installed converter catalog and language files are found on Windows 7 and later.
+-Installer language selection now starts Syscalculator with the matching language file.
+-Documented that WizardExpress works best with older Office/Word versions, LibreOffice has been tested and works ok, and Microsoft 365 / Office 365 is not reliable with this old VB6 integration.
+
 What's new in 1.71?
 
-Added Catanen Language 
+Added Catalan Language 
 Updated Setup
 Fixed some bugs.
 
 
 
 Usage:
-Copy all selected values from your file (by using the right-click button of your mouse). You need only one click to convert old values to new values. 
+Copy all selected values from your file, run WizardExpress, and paste the converted values back. In classic applications the paste menu or mouse can be used. With Excel / Microsoft 365, use Ctrl+V directly after conversion because Excel has its own clipboard management.
 
-Old Currency units:
+Euro legacy currency converters:
 
 ATS: Austrian schilling
 DEM: Deutsche Mark
-NLG: Dutch Guildens
-IEP: Irish Pound
+NLG: Dutch guilders
+IEP: Irish pound
 FRF: French franc
 BEF: Belgian franc 
 LUF: Luxembourg franc
 ITL: Italian lira
 ESP: Spanish peseta
-PTE: Portugese escudo
+PTE: Portuguese escudo
 FIM: Finnish markka
 GRD: Greek drachma
+SIT: Slovenian tolar
+CYP: Cyprus pound
+MTL: Maltese lira
+SKK: Slovak koruna
+EEK: Estonian kroon
+LVL: Latvian lats
+LTL: Lithuanian litas
+HRK: Croatian kuna (euro adoption 2023)
+BGN: Bulgarian lev (euro adoption 2026)
 
 What’s new in 1.70 Beta 2 ?
 
@@ -82,7 +106,7 @@ What's new in 1.64 ?
 
 New application for Syscalculator 1.64:
 
-A Temperature Converter for Syscalculator will be available in Tcsoftware.
+A Temperature Converter for Syscalculator will be available in Tiedragon.
 
 
 What’s new in 1.63 rev. A?
@@ -136,11 +160,11 @@ Cool features of Syscalculator
 
 Thanks to XT, Happy Hackers ,Tjeerd Huisman  for submitting bugs 
 
-This version is BETA and may be unstable version.  
+This 1.74 RC1 build is a legacy maintenance release.  
  
 Requirements:
 
-- Visual Basic 6 Runtime
+- Visual Basic 6 Runtime is required. Install the VB6 runtime first if Syscalculator does not start. The VB6 runtime is outdated, so this 1.74 build includes the last compatibility fixes to keep Syscalculator working as well as possible on that old runtime.
 - Minimum Pentium 133 mhz with 16 mb ram
-- Windows 98/95/NT/2000/ME/XP.
+- Built and maintained as a legacy VB6 application. This 1.74 release was tested on Windows 11 after the Windows 7-and-later configuration fixes. Older Windows versions are historical targets of the original 1.x line and are no longer the main test target.
 

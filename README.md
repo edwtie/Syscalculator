@@ -13,7 +13,7 @@ Deze broncode werkt het NOD-systeem verder uit met:
 
 ```text
 Syscalculator 1.74 = VB6 onderhoudslijn voor NOD 1.0 legacy fixes
-Syscalculator 2.0 = C#/.NET beta-opvolger met NOD 1.0 compatibility en NOD 2.0 functies
+Syscalculator 2.0 beta 1 (preview) = C#/.NET opvolger met NOD 1.0 compatibility en NOD 2.0 functies
 ```
 
 Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels voor de oude VB6-lijn.
@@ -118,18 +118,18 @@ DocumentBatchEngine.cs
 Deze modules maken SQL-preview, previewrapporten, safety context en documentbatch op in-memory tekst mogelijk.
 
 
-## Syscalculator
+## Syscalculator 2.0 Beta 1 Preview
 
-WinForms UI-project voor de beta:
+WinForms UI-project voor Syscalculator 2.0 beta 1 (preview):
 
 ```text
-src/Syscalculator.UI.WinForms
+src/syscalculator
 ```
 
 Starten op Windows:
 
 ```bash
-dotnet run --project src/Syscalculator.UI.WinForms
+dotnet run --project src/syscalculator
 ```
 
 Onderdelen:
@@ -145,6 +145,56 @@ NodUiMetadata
 ```
 
 Dit is een UI-prototype bovenop `NodSystem.Core`.
+
+## Installers
+
+Syscalculator 2.0 beta 1 (preview) gebruikt Inno Setup 6 via `installer/Syscalculator.iss`.
+De build publiceert eerst de WinForms-app voor `win-x64` en maakt daarna de installer.
+
+```bat
+BUILD_INSTALLER.bat daily
+BUILD_INSTALLER.bat beta
+BUILD_INSTALLER.bat production
+```
+
+Output:
+
+```text
+artifacts\installer
+```
+
+In VS Code kunnen dezelfde builds via **Terminal > Run Task** worden gestart:
+
+```text
+build installer daily
+build installer beta
+build installer production
+```
+
+De oude VB6-lijn heeft een aparte Inno Setup installer via `installer/Syscalculator174.iss`.
+Deze installer gebruikt een eigen installatiemap en eigen output, zodat hij los staat van Syscalculator 2.0 beta 1 (preview).
+
+```bat
+BUILD_SYSCALCULATOR174_INSTALLER.bat -Channel rc1
+```
+
+Output:
+
+```text
+artifacts\legacy\installer
+```
+
+Voor de oude VB6-lijn zijn er aparte 1.74 RC1 VS Code-taken:
+
+```text
+test Syscalculator 1.74 legacy
+build Syscalculator 1.74 Euro NOD RC1
+compile Syscalculator 1.74 VB6 RC1
+build Syscalculator 1.74 installer RC1
+validate Syscalculator 1.74 RC1
+```
+
+Zie `docs/INNO_SETUP_INSTALLER.md` voor de installer-details.
 
 ## Changelog
 

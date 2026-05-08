@@ -138,6 +138,14 @@ SIT
 SKK
 ```
 
+De 1.74 legacy-bron bevat ook een VB6-compatible Operatie Decibel converter:
+
+```text
+Text/operatie_decibel_1995.nod
+```
+
+Deze gebruikt oude `chg old,new` prefixregels zonder quotes, omdat de VB6 1.74 `chg` parser quotes niet verwijdert.
+
 Compile-stap voor release:
 
 ```text
@@ -161,7 +169,29 @@ BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat -Vb6Path "C:\Program Files (x86)\Micros
 De batch gebruikt de klassieke VB6 command line compile:
 
 ```text
-VB6.EXE /MAKE Syscalculator174.local.vbp /OUT artifacts\legacy\vb6-compile\Syscalculator174.compile.log
+VB6.EXE /MAKE Project1.vbp /OUT artifacts\legacy\vb6-compile\Syscalculator174.compile.log
+```
+
+### Legacy Tests
+
+Voor de oude VB6-bron is er een lichte test-runner. Dit zijn geen moderne in-process VB6 unit tests, maar onderhoudstests rond de broncode:
+
+- verplichte VB6-bestanden bestaan
+- `Project1.vbp` bevat de 1.74 candidate-instellingen
+- oude bronmap-paden zijn niet teruggekomen
+- `freesyscal.cfg` en `freesysc.cfg` verwijzen naar bestaande `.nod` en taalbestanden
+- eerder gevonden bugfixes blijven aanwezig
+
+Gebruik:
+
+```bat
+TEST_SYSCALCULATOR174_LEGACY.bat
+```
+
+Met echte VB6 compile erbij:
+
+```bat
+TEST_SYSCALCULATOR174_LEGACY.bat -Compile
 ```
 
 ### Windows 11 Startup Fix Candidate

@@ -151,7 +151,7 @@ End Sub
 '   Dim SlocalFile As String
 '   Dim hfile As Long
 '
-'   sourceUrl = "http://www.tcsoftware.com/update/version.txt"
+'   sourceUrl = "https://www.tiedragon.com/update/version.txt"
 '   SlocalFile = Apppaths + "\check.tmp"
 '
 '

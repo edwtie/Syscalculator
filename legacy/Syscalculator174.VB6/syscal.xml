@@ -5,26 +5,26 @@
     <MASTER_PAD_INFO>Portable Application Description, or PAD for short, is a data set that is used by shareware authors to disseminate information to anyone interested in their software products. To find out more go to http://www.asp-shareware.org/pad</MASTER_PAD_INFO>
 </MASTER_PAD_VERSION_INFO>
 <Company_Info>
-        <Company_Name>Tcsoftware</Company_Name>
+        <Company_Name>Tiedragon</Company_Name>
         <Address_1>Nieboerweg 241</Address_1>
         <Address_2 />
         <City_Town>Den haag</City_Town>
         <State_Province>2566</State_Province>
         <Zip_Postal_Code>2566 gb</Zip_Postal_Code>
         <Country>Netherlands</Country>
-        <Company_WebSite_URL>http://www.tcsoftware.com</Company_WebSite_URL>
+        <Company_WebSite_URL>https://www.tiedragon.com</Company_WebSite_URL>
 <Contact_Info>
         <Author_First_Name>Edward</Author_First_Name>
         <Author_Last_Name>Tie</Author_Last_Name>
-        <Author_Email>famtie@xs4all.nl</Author_Email>
+        <Author_Email>info@tiedragon.com</Author_Email>
         <Contact_First_Name />
         <Contact_Last_Name />
         <Contact_Email />
     </Contact_Info>
 <Support_Info>
-        <Sales_Email>famtie@xs4all.nl</Sales_Email>
-        <Support_Email>famtie@xs4all.nl</Support_Email>
-        <General_Email>famtie@xs4all.nl</General_Email>
+        <Sales_Email>info@tiedragon.com</Sales_Email>
+        <Support_Email>info@tiedragon.com</Support_Email>
+        <General_Email>info@tiedragon.com</General_Email>
         <Sales_Phone />
         <Support_Phone />
         <General_Phone />
@@ -36,7 +36,7 @@
         <Program_Version>1.62</Program_Version>
         <Program_Release_Month>11</Program_Release_Month>
         <Program_Release_Day>11</Program_Release_Day>
-        <Program_Release_Year>2001</Program_Release_Year>
+        <Program_Release_Year>2026</Program_Release_Year>
         <Program_Cost_Dollars />
         <Program_Cost_Other />
         <Program_Type>Freeware</Program_Type>
@@ -75,8 +75,8 @@
         <Keywords>euro eurocalculator money dutch rekenmachine reken currency currencycalculator calculator</Keywords>
         <Char_Desc_45>Converting 12 currency to new euro</Char_Desc_45>
         <Char_Desc_80 />
-        <Char_Desc_250>Syscalculcator Euro Edition 1.62, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices)</Char_Desc_250>
-        <Char_Desc_450>Syscalculcator Euro Edition 1.62, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices) 
+        <Char_Desc_250>Syscalculator Euro Edition 1.62, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices)</Char_Desc_250>
+        <Char_Desc_450>Syscalculator Euro Edition 1.62, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices) 
 
 
 
@@ -88,20 +88,20 @@ Features:
 -Help documention and tips.
 -Options (setting Language or Currency default)
 -Systray</Char_Desc_450>
-        <Char_Desc_2000>Syscalculcator Euro Edition 1.62, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices) 
+        <Char_Desc_2000>Syscalculator Euro Edition 1.62, Eurocalculcator can convert your values from one of 12 old currency units to new Euro. WizardExpress, a converstion tool supports execl, word, Access, Wordperfect , Staroffice. (also all of kind offices) 
 No dangerous macro for Execl/Word</Char_Desc_2000>
 </English>
 </Program_Descriptions>
 <Web_Info>
 <Application_URLs>
-        <Application_Info_URL>http://www.tcsoftware.com</Application_Info_URL>
+        <Application_Info_URL>https://www.tiedragon.com</Application_Info_URL>
         <Application_Order_URL />
-        <Application_Screenshot_URL>http://www.tcsoftware.com/Syscal_5.png</Application_Screenshot_URL>
+        <Application_Screenshot_URL>https://www.tiedragon.com/Syscal_5.png</Application_Screenshot_URL>
         <Application_Icon_URL />
         <Application_XML_File_URL />
     </Application_URLs>
 <Download_URLs>
-        <Primary_Download_URL>http://www.tcsoftware.com/files/sys162.zip</Primary_Download_URL>
+        <Primary_Download_URL>https://www.tiedragon.com/files/sys162.zip</Primary_Download_URL>
         <Secondary_Download_URL />
         <Additional_Download_URL_1 />
         <Additional_Download_URL_2 />

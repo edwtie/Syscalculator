@@ -1,0 +1,379 @@
+# Syscalculator 2.0 language file
+# Format: key=value
+
+language.name=中文
+
+menu.file=文件
+menu.file.open_nod=打开 NOD...
+menu.file.reload=重新加载转换器列表
+menu.file.exit=退出
+menu.edit=编辑
+menu.edit.copy_input=复制输入
+menu.edit.copy_output=复制输出
+menu.edit.paste_active=粘贴到当前字段
+menu.edit.clear=清空字段
+menu.config=配置
+menu.config.digit_group=数字分组
+menu.config.decimals=小数
+menu.config.reverse_direction=反转方向
+menu.config.live_convert=实时转换
+menu.config.trace_control=跟踪控制
+menu.config.language=语言...
+menu.config.always_on_top=窗口置顶
+menu.config.minimize_to_tray=最小化到托盘
+menu.config.start_with_windows=随 Windows 启动
+menu.config.show_introduction=显示介绍
+menu.config.catalog_manager=目录管理器
+menu.tools=工具
+menu.tools.wizard=WizardExpress
+menu.tools.calculator=计算器
+menu.tools.nod_editor=NOD 编辑器
+menu.tools.trace=跟踪
+menu.tools.show_intro=再次显示介绍
+menu.about=关于
+menu.about.syscalculator=关于 Syscalculator
+
+toolbar.file=文件:
+
+option.digit_group=数字分组
+option.decimals=小数
+option.live_convert=实时转换
+
+status.ready=就绪
+status.catalog_loaded=转换器列表已加载。
+status.loaded=已加载: {0}
+status.forward=正向计算完成。
+status.reverse=反向计算完成。
+status.direction_reversed=方向已反转。
+status.direction_normal=方向已恢复。
+status.start_with_windows_on=Syscalculator 将随 Windows 启动。
+status.start_with_windows_off=Syscalculator 不再随 Windows 启动。
+status.show_introduction_on=将显示介绍。
+status.show_introduction_off=将隐藏介绍。
+status.calculator_to_input1=计算器 -> 输入 1。
+status.calculator_to_input2=计算器 -> 输入 2。
+status.calculator_disabled=计算器仅适用于数值转换器。
+status.error=错误: {0}
+status.language_changed=语言已更改。
+
+dialog.open_nod.title=打开 NOD
+dialog.open_nod.failed_title=NOD 加载失败
+dialog.open_nod.filter=NOD 文件 (*.nod)|*.nod|所有文件 (*.*)|*.*
+dialog.error_title=错误
+dialog.intro_title=介绍
+dialog.no_intro=此转换器没有介绍文本。
+dialog.about_title=关于 Syscalculator 2.0
+dialog.about_text=Syscalculator 2.0 Beta\nNOD System 2.0\n\n基于旧版 Syscalculator/NOD 思路。
+dialog.tray_title=Syscalculator
+dialog.tray_message=Syscalculator 正在系统托盘中运行。
+dialog.open_nod.file_not_found=找不到文件: {0}
+dialog.language.title=选择语言
+dialog.language.search=搜索语言...
+dialog.language.ok=确定
+dialog.language.cancel=取消
+dialog.language.count={0} 种语言
+
+calculator.title=计算器
+calculator.title_input1=计算器 - 输入 1
+calculator.title_input2=计算器 - 输入 2
+calculator.copy=复制
+calculator.paste=粘贴
+calculator.use=使用
+calculator.use_close=使用并关闭
+
+tray.show=显示 Syscalculator
+tray.hide=隐藏到托盘
+tray.wizard=WizardExpress
+tray.calculator=计算器
+tray.exit=退出
+
+trace.title=计算跟踪
+trace.none=没有可用的跟踪。
+
+language.ned=Nederlands
+language.eng=English
+language.restart_required=语言已更改。请重新启动 Syscalculator 以应用所有文本。
+
+about.version_title=版本信息
+about.product_name=产品名称:
+about.version=版本:
+about.build=构建号:
+about.release_date=发布日期:
+about.copyright_title=版权
+about.rights=保留所有权利。
+about.description_title=说明
+about.description_text=NOD 转换和计算系统，适用于温度、重量、尺寸、货币换算等。快速、准确、灵活。
+about.website_title=网站
+about.email_title=电子邮件
+about.language_title=语言
+about.system_info=系统信息...
+about.license=许可证...
+about.license_text=Syscalculator 2.0 Beta 版本。内部评估许可证。
+
+find.title=查找 / 替换
+find.find=查找
+find.next=下一个
+find.replace=替换
+find.replace_button=替换
+find.match_case=区分大小写
+find.replace_all=全部替换
+find.close=关闭
+find.not_found=未找到。
+find.replaced_count=已完成 {0} 次替换。
+
+catalog.title=转换器目录
+catalog.add=添加
+catalog.new_converter=新转换器
+catalog.choose_nod=选择 NOD...
+catalog.save=保存
+
+editor.title=NOD 编辑器 Plus
+editor.tab.new=新建
+editor.menu.file=文件
+editor.menu.file.new_tab=新建标签
+editor.menu.file.open=打开...
+editor.menu.file.save=保存
+editor.menu.file.save_as=另存为...
+editor.menu.file.close_tab=关闭标签
+editor.menu.file.recent_files=最近文件
+editor.menu.file.recent_empty=无最近文件
+editor.menu.file.close=关闭
+editor.menu.edit=编辑
+editor.menu.edit.undo=撤销
+editor.menu.edit.cut=剪切
+editor.menu.edit.copy=复制
+editor.menu.edit.paste=粘贴
+editor.menu.edit.select_all=全选
+editor.menu.edit.find_replace=查找 / 替换
+editor.menu.tools=工具
+editor.menu.tools.validate=验证
+editor.menu.tools.test=运行测试
+editor.menu.tools.repair=修复行
+editor.menu.tools.recolor=重新着色语法
+editor.menu.tools.example_celsius=示例: 摄氏度
+editor.menu.tools.example_e2=示例: e^2
+editor.menu.tools.example_sine=示例: 正弦角度
+editor.menu.view=视图
+editor.menu.view.test_panel=显示/隐藏测试面板
+editor.menu.view.live_preview=显示/隐藏实时预览
+editor.menu.view.simulator=显示/隐藏模拟器
+editor.menu.view.restore_panels=恢复面板
+editor.menu.view.undock_test_panel=分离测试面板
+editor.menu.view.dock_test_panel=停靠测试面板
+editor.menu.view.undock_live_preview=分离实时预览
+editor.menu.view.dock_live_preview=停靠实时预览
+editor.graph.title=图形预览
+editor.graph.copy_points=复制点
+editor.graph.open_large=打开大图形
+editor.graph.hide_table=隐藏表格
+editor.graph.show_table=显示表格
+editor.graph.reset_view=重置视图
+editor.graph.zoom_in=放大
+editor.graph.zoom_out=缩小
+editor.graph.points=点
+editor.graph.position_empty=位置: (-, -)
+editor.graph.position=位置: {0}
+editor.graph.step=步长
+editor.graph.step_positive=步长必须大于 0。
+editor.graph.no_numeric_points=没有数值点。已跳过: {0}。
+editor.graph.points_status=点数: {0}。已跳过: {1}。范围: {2:0.####} 到 {3:0.####}。
+editor.graph.error=图形错误: {0}
+editor.graph.disabled=Graph Preview 已禁用
+editor.graph.disabled_chg=Graph Preview 对 chg 转换器禁用。
+editor.graph.disabled_trans=Graph Preview 对 trans 转换器禁用。
+editor.graph.disabled_math=Graph Preview 仅适用于数值 math 转换器。
+editor.menu.view.intro_preview=介绍预览
+editor.menu.view.undock_simulator=分离模拟器
+editor.menu.view.dock_simulator=停靠模拟器
+editor.toolbar.new=新建
+editor.toolbar.open=打开
+editor.toolbar.save=保存
+editor.toolbar.find=查找
+editor.toolbar.validate=验证
+editor.toolbar.test=测试
+editor.toolbar.repair=修复
+editor.preview.title=实时预览
+editor.preview.dialog=对话框
+editor.preview.input1=输入1
+editor.preview.input2=输入2
+editor.preview.sample=示例
+editor.preview.result=结果
+editor.preview.format=格式
+editor.preview.intro=介绍
+editor.sim.title=转换器模拟器
+editor.sim.window_title=转换器预览
+editor.sim.file=文件:
+editor.sim.digit_group=数字分组
+editor.sim.decimals=小数
+editor.sim.current_converter=当前转换器
+editor.test.input=测试输入
+editor.test.output=输出
+editor.test.title=转换器测试
+editor.test.formula=公式
+editor.test.calculation=计算
+editor.status.ready=就绪
+editor.status.loaded=已打开: {0}
+editor.status.saved=已保存: {0}
+editor.status.valid=NOD 有效。
+editor.status.test_done=测试完成。
+editor.status.lines_repaired=行已修复。
+editor.status.saved_short=已保存
+editor.status.position=行 {0}, 列 {1}
+editor.status.lines=行数 {0}
+editor.dialog.open_title=打开 NOD
+editor.dialog.save_title=将 NOD 另存为
+editor.dialog.filter=NOD 文件 (*.nod)|*.nod|所有文件 (*.*)|*.*
+editor.dialog.close_dirty=标签包含未保存的更改。关闭吗?
+editor.dialog.close_tab_title=关闭标签
+editor.dialog.validation_error=验证错误
+editor.dialog.test_error=测试错误
+editor.dialog.no_intro=未找到介绍文本。
+
+wizard.title=WizardExpress
+wizard.forward=正向
+wizard.reverse=反向
+wizard.paste=从剪贴板粘贴
+wizard.convert=转换
+wizard.copy_output=输出复制到剪贴板
+wizard.hint=左侧: 输入 / 右侧: 输出。表格中的制表符分隔会保留。
+wizard.office365.warning=Office 365 / Microsoft 365 可能会覆盖剪贴板。转换后请立即使用 Ctrl+V。LibreOffice Calc 可正常使用。
+wizard.status.empty=没有输入
+wizard.status.ready=就绪
+wizard.status.done=已转换
+wizard.status.clipboard_overwritten=Excel 已覆盖剪贴板。请使用 Ctrl+V。
+wizard.excel_clipboard_overwritten.title=Excel 剪贴板警告
+wizard.excel_clipboard_overwritten.message=Excel 已覆盖剪贴板。请在 WizardExpress 写入转换值后立即使用 Ctrl+V。如果粘贴仍然无效，请重新从 Excel 复制数值并再次运行 WizardExpress。
+wizard.excel_clipboard_restored.message=Excel 已覆盖剪贴板。WizardExpress 已恢复转换值。现在请使用 Ctrl+V。如果粘贴仍然无效，请重新从 Excel 复制数值并再次运行 WizardExpress。
+wizard.status.error=已完成，但有错误
+
+editor.nod_help.suggestions=建议
+editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius 到 Fahrenheit</div><div><b>含义:</b> 转换器内部名称。</div><div><b>示例:</b> <code>Name 邮编到地址示例</code>.</div>
+editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN 用户标题</div><div><b>含义:</b> 用户可见的标题或说明。</div><div><b>示例:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
+editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>含义:</b> 输入值的标签。</div><div><b>示例:</b> <code>input1 旧电话号码</code>.</div>
+editor.nod_help.input2=<div class="title">input2</div><div class="syntax">input2 Fahrenheit</div><div><b>含义:</b> 输出值的标签。</div><div><b>示例:</b> <code>input2 新电话号码</code>.</div>
+editor.nod_help.symb1=<div class="title">Symb1</div><div class="syntax">Symb1 DM</div><div><b>含义:</b> symbol 输入左侧1.</div><div><b>示例:</b> <code>Symb1 DM</code> -> <code>DM 25</code>.</div>
+editor.nod_help.symb2=<div class="title">Symb2</div><div class="syntax">Symb2 EUR</div><div><b>含义:</b> symbol 输入左侧2/output.</div><div><b>示例:</b> <code>Symb2 EUR</code> -> <code>EUR 12.78</code>.</div>
+editor.nod_help.symb3=<div class="title">Symb3</div><div class="syntax">Symb3 kg</div><div><b>含义:</b> symbol 输入右侧1.</div><div><b>示例:</b> <code>Symb3 kg</code> -> <code>25 kg</code>.</div>
+editor.nod_help.symb4=<div class="title">Symb4</div><div class="syntax">Symb4 lb</div><div><b>含义:</b> symbol 输入右侧2/output.</div><div><b>示例:</b> <code>Symb4 lb</code> -> <code>55 lb</code>.</div>
+editor.nod_help.format=<div class="title">format</div><div class="syntax">format ##.00</div><div><b>含义:</b> 控制结果的小数位数。</div><div><b>示例:</b> <code>format ##.00</code> -> <code>12.50</code>.</div>
+editor.nod_help.mode=<div class="title">mode</div><div class="syntax">mode calculator</div><div><b>含义:</b> 转换器类型的附加设置。</div><div><b>示例:</b> <code>mode calculator</code>.</div>
+editor.nod_help.math=<div class="title">math</div><div class="syntax">math ans * 1.8</div><div><b>含义:</b> 使用 <code>ans</code> 作为当前值执行一步计算。</div><div><b>示例:</b> <code>math ans + 32</code>.</div>
+editor.nod_help.chg=<div class="title">chg</div><div class="syntax">chg "old-prefix","new-prefix"</div><div><b>含义:</b> 更改文本开头，例如代码或电话号码。</div><div><b>示例:</b> <code>chg "01751-xxxxx","070-51xxxxx"</code>.</div><div><b>Patterns:</b> <code>x</code> 可以捕获数字；最具体的规则优先。</div>
+editor.nod_help.trans=<div class="title">trans</div><div class="syntax">trans "old value","new value"</div><div><b>含义:</b> 翻译精确的文本值。</div><div><b>示例:</b> <code>trans "hallo","hello"</code>.</div>
+
+editor.nod_help.trans.improved=<h2>改进的 trans：比 NOD 1.0 更智能</h2><div class="notice improved"><b>兼容:</b> 经典 NOD 1.0 的 <code>trans</code> 仍先尝试精确匹配。NOD 2.0 之后才尝试智能压缩匹配。</div><table class="syntax-compare"><tr><th>行为</th><th>NOD 1.0</th><th>NOD 2.0</th><th>示例</th></tr><tr><td>精确值</td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><code>trans "hallo","hello"</code></td></tr><tr><td>忽略大小写</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>Hallo</code> 匹配 <code>hallo</code></td></tr><tr><td>忽略空格、点、连字符和下划线</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>dank_je</code>、<code>dank je</code> 和 <code>dank-je</code> 可匹配同一规则</td></tr><tr><td>歧义智能匹配</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>如果有两个压缩匹配，不会静默错误翻译；输入保持不变。</td></tr></table>
+editor.nod_help.reverse=<div class="title">reverse</div><div class="syntax">reverse ans / 1.8</div><div><b>含义:</b> 手动反向计算规则。</div><div><b>示例:</b> <code>reverse ans / 1.8</code>.</div>
+editor.nod_help.field=<div class="title">field</div><div class="syntax">field 列名</div><div><b>含义:</b> 开始数据字段定义。</div><div><b>示例:</b> <code>field Phone</code>.</div>
+editor.nod_help.table=<div class="title">table</div><div class="syntax">table 表名</div><div><b>含义:</b> 源表名称。</div><div><b>示例:</b> <code>table Customers</code>.</div>
+editor.nod_help.output=<div class="title">output</div><div class="syntax">output 结果列</div><div><b>含义:</b> 输出字段名称。</div><div><b>示例:</b> <code>output PhoneNew</code>.</div>
+editor.nod_help.phoneformat=<div class="title">phoneformat</div><div class="syntax">phoneformat country NL</div><div><b>含义:</b> 在 <code>mode data</code> 的 <code>field</code> 块内规范化电话号码。</div><div><b>示例:</b> <code>phoneformat remove_spaces true</code> 删除空格；<code>phoneformat normalize_international true</code> 规范化荷兰国际号码写法。</div>
+editor.nod_help.lookup=<div class="title">lookup</div><div class="syntax">lookup Countries</div><div><b>含义:</b> 开始 lookup 定义。</div><div><b>示例:</b> <code>lookup Countries</code>.</div>
+editor.nod_help.match=<div class="title">match</div><div class="syntax">match code = NL</div><div><b>含义:</b> 说明 lookup 如何匹配。</div><div><b>示例:</b> <code>match postcode = 2566GB</code>.</div>
+editor.nod_help.given=<div class="title">given</div><div class="syntax">given x = 10</div><div><b>含义:</b> 方程中的已知值。</div><div><b>示例:</b> <code>given y = 20</code>.</div>
+editor.nod_help.equation=<div class="title">equation</div><div class="syntax">equation y = x * 2</div><div><b>含义:</b> 定义一个方程。</div><div><b>示例:</b> <code>equation y = x * 2</code>.</div>
+editor.nod_help.solve=<div class="title">solve</div><div class="syntax">solve x</div><div><b>含义:</b> 指定要求解的变量。</div><div><b>示例:</b> <code>solve x</code>.</div>
+editor.nod_help.constraint=<div class="title">constraint</div><div class="syntax">constraint x >= 0</div><div><b>含义:</b> 解的条件。</div><div><b>示例:</b> <code>constraint x >= 0</code>.</div>
+editor.nod_help.preview=<div class="title">preview</div><div class="syntax">preview 示例文本</div><div><b>含义:</b> 预览/示例显示文本。</div><div><b>示例:</b> <code>preview 输入 2566 GB 241</code>.</div>
+editor.nod_help.backup=<div class="title">backup</div><div class="syntax">backup true</div><div><b>含义:</b> 旧 NOD 文件的兼容设置。</div><div><b>示例:</b> <code>backup true</code>.</div>
+editor.nod_help.indoprint=<div class="title">indoprint</div><div class="syntax">indoprint 介绍文本</div><div><b>含义:</b> 使用前显示的一行介绍文本。</div><div><b>示例:</b> <code>indoprint 介绍文本</code>; <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a> 关闭该文本块.</div>
+editor.nod_help.indoend=<div class="title">indoend</div><div class="syntax">indoend</div><div><b>含义:</b> 介绍文本块的结束。</div><div><b>示例:</b> <code>indoprint ...</code> + <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</div>
+editor.nod_help.end=<div class="title">end</div><div class="syntax">end</div><div><b>含义:</b> NOD 文件的结束。</div><div><b>示例:</b> 将 <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> 放在最后一行。</div>
+editor.nod_help.insert=插入
+editor.nod_insert.indoprint=indoprint 介绍文本\nindoend
+editor.menu.help=Help
+editor.menu.help.nod=NOD help
+
+editor.menu.help.about=关于 NOD 编辑器
+editor.nod_help.more=更多帮助
+editor.nod_help.full.title=NOD 帮助
+editor.nod_help.full.keyword_title=命令参考
+editor.nod_help.full.intro=<p><b>NOD</b> 是描述 Syscalculator 转换器的语言：窗口名称、可见字段、值旁边的符号以及执行转换的规则。</p><p>NOD 编辑器让这些内容可见：输入时有建议，右键可查看命令帮助，下方可测试输入，右侧预览显示转换器窗口。</p>
+editor.nod_help.full.structure=<h2>基本结构</h2><pre>Name Celsius 到 Fahrenheit&#13;&#10;URLN Celsius 到 Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre>
+editor.nod_help.full.symbols=<h2>符号</h2><table><tr><th>命令</th><th>位置</th><th>示例</th></tr><tr><td>Symb1</td><td>输入左侧</td><td>DM 25</td></tr><tr><td>Symb2</td><td>输出左侧</td><td>EUR 25</td></tr><tr><td>Symb3</td><td>输入右侧</td><td>25 kg</td></tr><tr><td>Symb4</td><td>输出右侧</td><td>25 lb</td></tr></table><p>每个值选择左侧或右侧，不要同时使用，以免出现 <code>DM 25 DM</code>。</p>
+editor.nod_help.full.commands=<h2>重要命令</h2><ul><li><b>math</b>: 使用 <code>ans</code> 计算。</li><li><b>trans</b>: 翻译精确文本值。</li><li><b>chg</b>: 更改开头文本/前缀，并支持 <code>x</code> 模式。</li><li><b>indoprint ... indoend</b>: 介绍文本块。不要忘记 <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>。</li><li><b>end</b>: 关闭 NOD 文件。</li></ul>
+editor.nod_help.full.workflow=<h2>工作流程</h2><ol><li>从 <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>、<a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> 和 <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a> 开始。</li><li>用 <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> 到 <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> 选择符号；左侧或右侧二选一。</li><li>添加规则：<a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>、<a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> 或 <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>。</li><li>使用验证/F5 和测试/F6。</li><li>在末尾放置 <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>。</li></ol>
+editor.nod_help.full.examples=<h2>按 NOD 类型的示例</h2><p>NOD 文件可以描述不同类型的转换器。</p><h3>1. 使用 math 的计算工具</h3><p>用于数字：温度、距离、重量、货币、百分比。</p><pre>Name Celsius 到 Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><h3>2. 使用 trans 的翻译工具</h3><p>当完整输入必须匹配已知值时使用。</p><pre>Name 邮编到地址示例&#13;&#10;input1 Postcode house number&#13;&#10;input2 Address&#13;&#10;trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;end</pre><h3>3. 使用 chg 的前缀/模式工具</h3><p>只有开头或模式变化时使用 <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>。</p><pre>Name Operation Decibel demo&#13;&#10;input1 旧电话号码&#13;&#10;input2 新电话号码&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;chg "050-2xxxxx","050-52xxxxx"&#13;&#10;end</pre><h3>4. 带左/右符号的工具</h3><p>使用符号清楚显示单位。</p><pre>Name German mark 到 euro&#13;&#10;input1 Mark&#13;&#10;input2 Euro&#13;&#10;Symb1 DM&#13;&#10;Symb2 EUR&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre><h3>5. 使用 indoprint 的介绍文本</h3><p>当用户需要先看到说明时使用。</p><pre>indoprint 此转换器把摄氏度转换为华氏度。&#13;&#10;indoprint 输入摄氏温度。&#13;&#10;indoend</pre><h3>6. 使用 equation 解方程</h3><p>用于需要求未知变量的公式问题。</p><pre>Name Solve equation&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre>
+editor.nod_help.full.troubleshooting=<h2>常见错误</h2><ul><li><b>重复符号:</b> 不要为同一个值同时使用左侧和右侧符号。</li><li><b>介绍没有结束:</b> 每个 <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a> 块都要用 <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a> 结束。</li><li><b>Math 缺少 ans:</b> 使用 <code>ans</code> 作为当前值。</li><li><b>没有 end:</b> 在文件末尾放置 <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>。</li><li><b>逗号/点:</b> 始终用 F6 测试小数输入。</li></ul>
+editor.nod_help.page.workflow=工作流程
+editor.nod_help.page.structure=基本结构
+editor.nod_help.page.symbols=符号
+editor.nod_help.page.commands=重要命令
+editor.nod_help.page.examples=示例
+editor.nod_help.page.troubleshooting=常见错误
+
+
+editor.nod_help.chg.extra=<h2>chg 示例</h2><p><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> 更改文本开头或某个模式。适用于电话号码、代码、前缀和旧编号转换表。</p><div class="notice"><b>结构:</b> 左侧 = 要查找的内容，右侧 = 新形式。包含空格、逗号或特殊字符时请使用引号。</div><details open><summary>替换前缀</summary><table><tr><th>目标</th><th>规则</th><th>示例</th></tr><tr><td>Prefix</td><td><code>chg "01751","07051"</code></td><td><code>0175112345</code> -> <code>0705112345</code></td></tr><tr><td>Dash</td><td><code>chg "01751-","070-51"</code></td><td><code>01751-12345</code> -> <code>070-5112345</code></td></tr></table></details><details><summary>带 x 的模式</summary><p>NOD 2.0：<code>x</code> 捕获一个数字，并在右侧重新放回。左侧的空格和连字符只用于提高可读性。</p><pre>chg "0183x-xx xx","0183-x0 xx xx"</pre><p><code>01835-1234</code> -> <code>0183-501234</code>.</p></details><details><summary>常见错误</summary><ul><li>具体规则放在通用规则上面。</li><li>不要忘记逗号。</li><li>完整值翻译请使用 <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>。</li></ul></details>
+editor.nod_help.math.extra=<h2>Math 简要说明</h2><p><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> 使用 <code>ans</code> 计算。第一行中 <code>ans</code> 是输入值；后续行中它是上一次的结果。</p><div class="notice"><b>结构:</b> 先选择计算类型，再写对应的 syntax。较大的公式可以使用括号或多行 <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>。</div><div class="math-flow"><span class="math-pill">1. 基本运算</span><span class="math-pill">2. 函数和常量</span><span class="math-pill">3. 复杂公式</span><span class="math-pill">4. 微积分：diff、integral、limit</span></div><details open><summary>基本运算</summary><table><tr><th>目标</th><th>Syntax</th><th>示例</th></tr><tr><td>+</td><td><code>math ans + number</code></td><td><code>math ans + 32</code></td></tr><tr><td>-</td><td><code>math ans - number</code></td><td><code>math ans - 10</code></td></tr><tr><td>*</td><td><code>math ans * factor</code></td><td><code>math ans * 1.8</code></td></tr><tr><td>/</td><td><code>math ans / factor</code></td><td><code>math ans / 1.95583</code></td></tr></table><pre>Name Euro to cents&#13;&#10;input1 Euro&#13;&#10;input2 Cents&#13;&#10;format #.00&#13;&#10;math ans * 100&#13;&#10;end</pre></details><details><summary>函数和常量</summary><table><tr><th>Groep</th><th>Syntax</th><th>说明</th></tr><tr><td>Power</td><td><code>math ans^2</code> or <code>math pow(ans,3)</code></td><td>Square, cube.</td></tr><tr><td>Root</td><td><code>math sqrt(ans)</code></td><td>Can be used inside formulas.</td></tr><tr><td>Pi/e</td><td><code>math pi * ans^2</code><br><code>math e^ans</code></td><td>Circle and exponential.</td></tr><tr><td>Degrees</td><td><code>math sind(ans)</code><br><code>math cosd(ans)</code></td><td>Use <code>sin/cos/tan</code> for radians.</td></tr></table></details><details><summary>复杂公式</summary><p>当计算顺序很重要时使用括号。乘法始终用 <code>*</code> 明确写出。</p><pre>math sqrt(ans^2 + 25)&#13;&#10;math ((ans + 10) * 2) / 3&#13;&#10;math ans * (1 + 0.04)^5</pre><h3>示例：勾股定理</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>c</mi><mo>=</mo><msqrt><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></mrow></msqrt></mrow></math></div><pre>Name Hypotenuse&#13;&#10;input1 Side a&#13;&#10;input2 Side c&#13;&#10;format #.00&#13;&#10;math sqrt(ans^2 + 25)&#13;&#10;end</pre><p>这里 <code>ans</code> 是边 <code>a</code>；另一条边固定为 <code>5</code>。</p></details><details><summary>微积分：diff、integral、limit</summary><table><tr><th>目标</th><th>Syntax</th><th>结果</th></tr><tr><td>Derivative</td><td><code>math diff ans^2</code></td><td>数值斜率。</td></tr><tr><td>Integral</td><td><code>math integral 0,1 ans^2</code></td><td>从 0 到 1 的数值面积。</td></tr><tr><td>Limit</td><td><code>math limit 0 sin(ans)/ans</code></td><td>0 附近的近似值。</td></tr></table></details><h2>常见错误</h2><ul><li>不要忘记 <code>ans</code>。</li><li>角度请使用 <code>sind</code>。</li><li>复杂反向转换请使用 <a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a>。</li></ul>
+editor.nod_help.mode.extra=<h2>什么时候使用 mode？</h2><p><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> 说明正在创建哪种 NOD 文件。普通转换器通常不需要它。</p><div class="notice"><b>结构:</b> 只有特殊类型才使用 <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a>，例如数据处理或解方程。</div><details open><summary>Modes</summary><table><tr><th>Mode</th><th>何时</th><th>命令</th></tr><tr><td><code>mode calculator</code></td><td>普通转换器</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr><tr><td><code>mode data</code></td><td>数据处理</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td></tr><tr><td><code>mode equation</code></td><td>解方程</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a></td></tr></table></details><details><summary>示例: converter</summary><pre>Name Celsius to Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format #.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre></details><details><summary>示例: equation</summary><pre>Name Solve equation&#13;&#10;mode equation&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre></details>
+editor.nod_help.trans.extra=<h2>trans 示例</h2><p><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> 翻译一个完整值。适用于单词、固定代码、状态、邮编和短列表。</p><div class="notice"><b>结构:</b> <code>trans "old value","new value"</code>. 完整输入必须匹配左侧值。</div><details open><summary>翻译精确文本</summary><table><tr><th>目标</th><th>规则</th><th>结果</th></tr><tr><td>Word</td><td><code>trans "hallo","hello"</code></td><td><code>hallo</code> -> <code>hello</code></td></tr><tr><td>Status</td><td><code>trans "open","in progress"</code></td><td><code>open</code> -> <code>in progress</code></td></tr><tr><td>Address</td><td><code>trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"</code></td><td>postcode + house number -> address</td></tr></table></details><details><summary>trans / chg</summary><table><tr><th>命令</th><th>何时</th><th>示例</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>完整输入值是精确已知的。</td><td><code>hallo</code> -> <code>hello</code></td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>只有开头或模式发生变化。</td><td><code>01751-xxxxx</code> -> <code>070-51xxxxx</code></td></tr></table></details><details><summary>常见错误</summary><ul><li>左侧是输入，右侧是输出。</li><li>部分变化请使用 <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>。</li><li>避免为同一个输入创建重复翻译。</li></ul></details>
+editor.nod_help.full.classic=<h2>NOD 编辑器介绍</h2><p>NOD 编辑器是制作转换器的工作区。上方编写代码，下方测试输入和输出，右侧实时预览显示标签、符号、介绍文本和结果。</p><h2>经典 1.73 与 NOD 2.0</h2><table><tr><th>Syscalculator 1.73 / NOD 1.0</th><th>Syscalculator 2.0 / NOD 编辑器</th></tr><tr><td>经典文本文件，包含 <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>、<a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>、<a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>、<a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>、<a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>、<a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> 和 <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>。</td><td>同样的基础仍然兼容旧 NOD 文件。</td></tr><tr><td>符号位置经常需要记住后再测试。</td><td>预览会立即显示 <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> 到 <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> 的位置。</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> 主要用于前缀替换。</td><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> 保持兼容；NOD 2.0 增加带 <code>x</code> 捕获的模式。</td></tr><tr><td>帮助主要来自示例和经验。</td><td>编辑器提供输入建议、右键帮助和按类型整理的示例页面。</td></tr></table><h2>语法：NOD 1.0 和 NOD 2.0 完整概览</h2><p>此表显示哪些语法来自经典 NOD 文件，以及 NOD 2.0 新增了什么。</p><table class="syntax-compare"><tr><th>Syntax / feature</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Note</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Converter name/title.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:urln"><code>URLN</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Reference/source line remains supported.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Labels for input and output.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:result"><code>Result</code></a>, <a class="cmd-link" href="nodpage:cmd:resfou"><code>Resfou</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Result label and error text.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Symbols left/right of input and output; NOD 2.0 shows them in preview.</td></tr><tr><td><code>format #.00</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Number formatting stays the same.</td></tr><tr><td><code>mode calculator</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>NOD 2.0 uses <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> for special file types; normal converters also work without mode.</td></tr><tr><td><code>mode data</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>For table/field processing.</td></tr><tr><td><code>mode equation</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>For solving equations with <a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>.</td></tr><tr><td><code>math ans * 1.8</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Classic calculation with <code>ans</code>.</td></tr><tr><td><code>math sqrt(ans^2 + 25)</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Richer formulas and functions in NOD 2.0.</td></tr><tr><td><code>chg "01751-","070-51"</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Classic prefix replacement keeps working.</td></tr><tr><td><code>chg "0183x-xx xx","0183-x0 xx xx"</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>New in NOD 2.0: pattern with <code>x</code> capture.</td></tr><tr><td><code>trans "old","new"</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Exact text translation remains compatible.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Reverse direction of a converter.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>NOD 2.0 data converters with fields and output construction.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Format phone numbers in data/number converters.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:lookup"><code>lookup</code></a>, <a class="cmd-link" href="nodpage:cmd:match"><code>match</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Look up tables or connect values.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Solve equations with constraints.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:preview"><code>preview</code></a>, <a class="cmd-link" href="nodpage:cmd:backup"><code>backup</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Editor/safety information for NOD 2.0 files.</td></tr><tr><td><code>indoprint ... indoend</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Introduction text remains supported.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Closes the NOD file.</td></tr><tr><td>Live preview, suggestions, right-click help</td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>This is editor help, not old runtime syntax.</td></tr></table><h2>保持不变</h2><ul><li>命令仍按行书写，易读。</li><li><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> 关闭文件。</li><li>简单转换器仍然很短。</li></ul><h2>新增内容</h2><ul><li>实时预览和转换器模拟器。</li><li>Graph Preview：用于 math 转换器图形。</li><li>输入时显示建议。</li><li>每个命令有更完整的帮助。</li><li>为 <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>、<a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>、<a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>、符号和 <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a> 提供更多示例。</li></ul>
+editor.nod_help.page.classic=NOD 编辑器介绍
+formula_card.title=Formulekaart
+formula_card.count=Formulekaarten
+formula_card.details_header=Details, export en voorbeeld-NOD
+formula_card.copy_mathml=Kopieer MathML
+formula_card.copy_latex=Kopieer LaTeX
+formula_card.copy_nod=Kopieer NOD
+formula_card.copy_text=Kopieer tekst
+formula_card.webview_error=WebView2 kon niet starten.
+formula_card.subtitle=Formulekaart voor leren, PWS en export
+formula_card.section_formula=Formule
+formula_card.section_explanation=Uitleg
+formula_card.section_example_nod=Voorbeeld-NOD
+formula_card.table_formula=Formule
+formula_card.table_level=Niveau
+formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
+formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
+formula_card.table_use=Wanneer?
+
+common.yes=Yes
+common.no=No
+clipboard.debug.window_title=剪贴板调试
+clipboard.debug.cells=单元格
+clipboard.debug.details=详细信息
+clipboard.debug.summary_format=行 {0}  |  列 {1}  |  文本 {2} 字符
+clipboard.debug.report_title=剪贴板报告
+clipboard.debug.report_subtitle=当前剪贴板内容的清晰概览。
+clipboard.debug.report_date_culture=zh-CN
+clipboard.debug.report_date_format=yyyy年M月d日
+clipboard.debug.summary=摘要
+clipboard.debug.formats=格式
+clipboard.debug.preview=预览
+clipboard.debug.preview_rows_all=已显示 {0} 行
+clipboard.debug.preview_rows_limited=已显示前 {0} 行，共 {1} 行
+clipboard.debug.owner=所有者
+clipboard.debug.text_length=文本长度
+clipboard.debug.text_length_value={0} 字符
+clipboard.debug.rows=行
+clipboard.debug.columns=列
+clipboard.debug.same_last_seen=与上次看到的相同
+clipboard.debug.same_converted=与转换结果相同
+clipboard.debug.no_formats=未找到剪贴板格式。
+clipboard.debug.none=无
+clipboard.debug.mail_button=通过电子邮件发送报告...
+clipboard.debug.mail_subject={0} 剪贴板诊断
+clipboard.debug.mail_intro=请查看此剪贴板诊断。
+clipboard.debug.mail_paste_report=完整报告已复制到剪贴板。请使用 Ctrl+V 粘贴到此电子邮件中。
+clipboard.debug.mail_failed=无法打开电子邮件程序: {0}
+clipboard.debug.copy_button=复制报告
+clipboard.debug.report_copied=报告已复制到剪贴板。
+clipboard.debug.copy_failed=无法将报告复制到剪贴板。
+clipboard.debug.conversion=转换
+clipboard.debug.conversion_rows=已转换行
+clipboard.debug.conversion_cells=单元格
+clipboard.debug.conversion_success=已转换
+clipboard.debug.conversion_errors=错误
+clipboard.debug.save_pdf_button=保存 PDF...
+clipboard.debug.pdf_filter=PDF 文件 (*.pdf)|*.pdf|所有文件 (*.*)|*.*
+clipboard.debug.save_pdf_title=保存诊断报告
+clipboard.debug.pdf_saved=PDF 报告已保存。
+clipboard.debug.pdf_failed=无法保存 PDF 报告: {0}
+clipboard.debug.before=之前
+clipboard.debug.after=之后
+clipboard.debug.before_after=之前 / 之后
+clipboard.debug.used_rule=使用的规则
+clipboard.debug.formula=公式
+clipboard.debug.mathml=MathML
+clipboard.debug.mathml_available=MathML 可用于复制或发送的报告。
+clipboard.debug.formula_input=输入
+help.main.page.applications.title=应用程序
