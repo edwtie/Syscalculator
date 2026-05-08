@@ -111,7 +111,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
     _startupNodPath = startupNodPath;
     _startInTray = startInTray;
 
-    Text = "Syscalculator 2.0";
+    Text = AppVersionInfo.DisplayVersion;
     Icon = new Icon(Path.Combine(AppContext.BaseDirectory, "Resources", "Syscalculator.ico"));
         Width = 450;
         Height = 280;

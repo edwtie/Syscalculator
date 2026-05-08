@@ -154,7 +154,7 @@ internal sealed class AboutForm : Form
             CornerRadius = 10,
             CellBorderStyle = TableLayoutPanelCellBorderStyle.None,
         };
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 132));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 154));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 94));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 114));
@@ -176,6 +176,7 @@ internal sealed class AboutForm : Form
         var grid = CreateSection("\u24D8", T("about.version_title", "Version information"));
         AddPair(grid, T("about.product_name", "Product name:"), AppVersionInfo.ProductName);
         AddPair(grid, T("about.version", "Version:"), AppVersionInfo.ProductVersion);
+        AddPair(grid, T("about.release_channel", "Release channel:"), AppVersionInfo.ReleaseChannel);
         AddPair(grid, T("about.build", "Build number:"), AppVersionInfo.BuildNumber);
         AddPair(grid, T("about.release_date", "Release date:"), FormatReleaseDate(AppVersionInfo.ReleaseDate));
         return grid;

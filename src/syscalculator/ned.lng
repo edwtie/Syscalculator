@@ -71,6 +71,7 @@ dialog.about_text=Syscalculator 2.0 Beta\nNOD System 2.0\n\nGebaseerd op de oude
 about.version_title=Versie informatie
 about.product_name=Productnaam:
 about.version=Versie:
+about.release_channel=Releasekanaal:
 about.build=Buildnummer:
 about.release_date=Releasedatum:
 about.copyright_title=Copyright
