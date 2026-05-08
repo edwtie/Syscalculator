@@ -41,6 +41,22 @@ src/
    └─ Converters/
 ```
 
+## A1. NuGet package management
+
+Syscalculator 2.0 uses central NuGet package management through `Directory.Packages.props`.
+
+Current external package:
+
+```text
+Microsoft.Web.WebView2
+```
+
+WebView2 is a build/package dependency for the WinForms preview UI. It is separate from runtime prerequisites such as the .NET Desktop Runtime and the Microsoft Edge WebView2 Runtime that may be required on a target Windows machine.
+
+Enterprise features, including future SQL connector work, should document package choices before adding dependencies. Prefer small, direct packages over broad frameworks unless the feature needs them.
+
+Release planning lives in `docs/RELEASE_PLAN.md`. That document defines the separate 1.74 legacy line and the 2.0 daily, beta and production promotion path.
+
 ## B. Architectural split
 
 ### Syscalculator 1.72

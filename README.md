@@ -17,6 +17,7 @@ Syscalculator 2.0 beta 1 (preview) = C#/.NET opvolger met NOD 1.0 compatibility 
 ```
 
 Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels voor de oude VB6-lijn.
+Zie `docs/RELEASE_PLAN.md` voor de releaseplanning van 1.74, 2.0 Daily, Beta en Production.
 
 ## Projecten
 
@@ -43,6 +44,18 @@ Verwachte testuitkomst:
 ```text
 All tests passed.
 ```
+
+## NuGet dependencies
+
+NuGet package versions are managed centrally in `Directory.Packages.props`.
+
+Current external package:
+
+```text
+Microsoft.Web.WebView2  WinForms HTML/help/formula preview support
+```
+
+Most code stays in internal project references. The test console remains without external packages unless a future test genuinely needs one.
 
 ## Ontwerpregel
 
