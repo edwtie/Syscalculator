@@ -122,6 +122,9 @@ find.not_found=未找到。
 find.replaced_count=已完成 {0} 次替换。
 
 catalog.title=转换器目录
+catalog.column.name=名称
+catalog.column.nod_file=NOD 文件
+catalog.column.default=默认
 catalog.add=添加
 catalog.new_converter=新转换器
 catalog.choose_nod=选择 NOD...

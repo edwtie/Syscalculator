@@ -122,6 +122,9 @@ find.not_found=Introuvable.
 find.replaced_count={0} remplacements effectues.
 
 catalog.title=Catalogue des convertisseurs
+catalog.column.name=Nom
+catalog.column.nod_file=Fichier NOD
+catalog.column.default=Par defaut
 catalog.add=Ajouter
 catalog.new_converter=Nouveau convertisseur
 catalog.choose_nod=Choisir NOD...

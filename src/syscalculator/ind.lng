@@ -122,6 +122,9 @@ find.not_found=Tidak ditemukan.
 find.replaced_count={0} penggantian dilakukan.
 
 catalog.title=Katalog konverter
+catalog.column.name=Nama
+catalog.column.nod_file=File NOD
+catalog.column.default=Default
 catalog.add=Tambah
 catalog.new_converter=Konverter baru
 catalog.choose_nod=Pilih NOD...
