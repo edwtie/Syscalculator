@@ -34,21 +34,18 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed Copy input/output so empty fields no longer cause clipboard copy problems.
 - Fixed the main Edit menu enabled states so unavailable clipboard actions are disabled like the text box context menu.
 - Hid unused IME context-menu entries for non-CJK input languages while preserving the default Windows IME menu for Chinese, Japanese and Korean input.
-- Expanded the main user help with practical explanations of the main window, field editing, clipboard actions, IME context menus and daily tools.
+- Fixed Help dialog topic-pane sizing so long localized subject titles remain readable.
+- Fixed the first Help topic title so every bundled language starts with `Start`.
+- Fixed Help dialog splitter initialization so opening Help no longer throws a `SplitterDistance` exception.
+- Fixed the Help dialog default size so it opens compactly while keeping the topic list readable.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.
 - Updated project targets for the WinForms app, reusable helper projects, demo and test console to .NET 10.
 - Added localized catalog manager column labels for all bundled language files.
+- Expanded the main user help with practical explanations of the main window, field editing, clipboard actions, IME context menus and daily tools.
+- Expanded localized in-app help pages for all bundled languages with practical daily-use topics and limitations.
 - Verified the .NET 10 migration with restore, 80/80 NOD system tests, Release build and publish smoke test.
-
-**Replaced Build History:**
-- 2026.05.09.027: Published the first 2026-05-09 daily installer with the .NET 10 migration, restored edit shortcuts, F1 user help, clipboard safety fixes, IME context-menu cleanup and expanded daily-use help.
-- 2026.05.09.028: Expanded localized in-app help pages for all bundled languages, including practical daily-use topics and limitations.
-- 2026.05.09.029: Widened the help topic pane so long localized subject titles remain readable.
-- 2026.05.09.030: Restored the first help topic title to `Start` in all bundled Syscalculator 2.0 languages.
-- 2026.05.09.031: Fixed Help dialog splitter initialization so opening help no longer throws a `SplitterDistance` exception.
-- 2026.05.09.032: Replaced the previous installer with a more compact Help dialog while keeping the splitter fix and readable topic pane.
 
 #### 2.0.2026.05.07 Daily Build
 
