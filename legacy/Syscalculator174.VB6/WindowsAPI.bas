@@ -557,7 +557,7 @@ Public Function WndProc(ByVal hOwner As Long, ByVal wMsg As Long, ByVal wParam A
               DoFindReplace RetFrs
            End If
       Case uHelpMsg
-          iRet = ShellExecute(Editor.Hwnd, vbNullString, Configur3, vbNullString, "c:\", SW_SHOWNORMAL)
+          OpenConfiguredHelp Editor.Hwnd
     Case Else
            If wMsg = WM_DESTROY Then
               EndDialog hDialog, 0&

@@ -48,6 +48,40 @@ Global switch1 As String
 Global iX As Integer, iY As Integer
 
 
+Sub OpenConfiguredHelp(ownerHwnd As Long)
+Dim iRet As Long
+Dim helpTarget As String
+Dim chmPos As Integer
+Dim chmPath As String
+Dim topic As String
+Dim slashPos As Integer
+Dim fallbackTarget As String
+
+helpTarget = Configur3
+chmPos = InStr(1, LCase$(helpTarget), ".chm::", vbTextCompare)
+
+If chmPos > 0 Then
+    chmPath = Left$(helpTarget, chmPos + 3)
+    topic = Mid$(helpTarget, chmPos + 6)
+    If Left$(topic, 1) = "/" Or Left$(topic, 1) = "\" Then topic = Mid$(topic, 2)
+
+    If Dir$(chmPath) <> "" Then
+        iRet = ShellExecute(ownerHwnd, vbNullString, "hh.exe", """" & helpTarget & """", App.Path, SW_SHOWNORMAL)
+        Exit Sub
+    End If
+
+    slashPos = InStrRev(chmPath, "\")
+    If slashPos > 0 And topic <> "" Then
+        fallbackTarget = Left$(chmPath, slashPos) & topic
+        iRet = ShellExecute(ownerHwnd, vbNullString, fallbackTarget, vbNullString, App.Path, SW_SHOWNORMAL)
+        Exit Sub
+    End If
+End If
+
+iRet = ShellExecute(ownerHwnd, vbNullString, helpTarget, vbNullString, App.Path, SW_SHOWNORMAL)
+End Sub
+
+
 
 
 Function Addcombo(foras As Form, Optional clean As Integer) As Integer

@@ -997,7 +997,7 @@ End Sub
 
 Private Sub Help2_Click()
 Dim iRet As Long
-iRet = ShellExecute(Me.Hwnd, vbNullString, Configur3, vbNullString, "c:\", SW_SHOWNORMAL)
+OpenConfiguredHelp Me.Hwnd
 
 End Sub
 

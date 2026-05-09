@@ -1,0 +1,24 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Syscalculator174.chm
+Contents file=Syscalculator174.hhc
+Index file=Syscalculator174.hhk
+Default topic=index_en.htm
+Display compile progress=No
+Full-text search=Yes
+Language=0x409 English (United States)
+Title=Syscalculator 1.74 Help
+
+[FILES]
+index.htm
+index_cat.htm
+index_en.htm
+index_es.htm
+index_nl.htm
+logo_phpBB.gif
+Logo_phpBB_med.gif
+syscal_1.png
+syscal_2.png
+Syscal_3.png
+Syscal_4.png
+triconvert_3.jpg

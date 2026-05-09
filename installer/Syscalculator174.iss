@@ -66,7 +66,8 @@ Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{app}"; Flags: ignoreversion s
 Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MySourceRoot}\readme.rtf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MySourceRoot}\readme.txt"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "{#MySourceRoot}\help\*"; DestDir: "{app}\help"; Excludes: "*.LOG"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+Source: "{#MySourceRoot}\help\Syscalculator174.chm"; DestDir: "{app}\help"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "{#MySourceRoot}\help\*"; DestDir: "{app}\help"; Excludes: "*.LOG,*.hhp,*.hhc,*.hhk,Syscalculator174.chm"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "{#MySourceRoot}\Distance\*"; DestDir: "{app}\Distance"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "{#MySourceRoot}\euro\*"; DestDir: "{app}\euro"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "{#MySourceRoot}\Mass\*"; DestDir: "{app}\Mass"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist

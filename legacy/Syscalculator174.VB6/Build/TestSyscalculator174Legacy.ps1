@@ -47,6 +47,17 @@ function Read-Text {
     return Get-Content -LiteralPath $Path -Raw
 }
 
+function Read-LegacyText {
+    param([string]$Path)
+
+    $bytes = [IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -ge 2 -and $bytes[0] -eq 255 -and $bytes[1] -eq 254) {
+        return [Text.Encoding]::Unicode.GetString($bytes)
+    }
+
+    return [Text.Encoding]::GetEncoding(1252).GetString($bytes)
+}
+
 function Resolve-NodPath {
     param([string]$RelativePath)
 
@@ -234,6 +245,32 @@ Test-Case "Modern 1.74 installer checks for the VB6 runtime" {
     Assert-True ($installer.Contains("support.microsoft.com")) "Modern installer does not use an official Microsoft VB6 runtime download page."
     Assert-True ($installerDoc.Contains("installer checks for the Visual Basic 6 Runtime")) "Installer documentation does not describe the VB6 runtime check."
     Assert-True ($installerDoc.Contains("support.microsoft.com")) "Installer documentation does not include the Microsoft VB6 runtime download page."
+}
+
+Test-Case "Legacy help can be compiled as CHM and falls back to HTML" {
+    $installer = Read-Text (Join-Path $repoRoot "installer\Syscalculator174.iss")
+    $buildHelp = Read-Text (Join-Path $projectDir "Build\BuildHelp174.ps1")
+    $helpProject = Read-Text (Join-Path $projectDir "help\Syscalculator174.hhp")
+    $helpContents = Read-Text (Join-Path $projectDir "help\Syscalculator174.hhc")
+    $english = Read-LegacyText (Join-Path $projectDir "eng.lng")
+    $dutch = Read-LegacyText (Join-Path $projectDir "ned.lng")
+    $spanish = Read-LegacyText (Join-Path $projectDir "esp.lng")
+    $catalan = Read-LegacyText (Join-Path $projectDir "cat.lng")
+    $form = Read-Text (Join-Path $projectDir "Form1.frm")
+    $module = Read-Text (Join-Path $projectDir "Freesyscal.bas")
+
+    Assert-True ($helpProject.Contains("Compiled file=Syscalculator174.chm")) "CHM project does not build Syscalculator174.chm."
+    Assert-True ($helpProject.Contains("Default topic=index_en.htm")) "CHM project has no English default topic."
+    Assert-True ($helpContents.Contains("index_nl.htm") -and $helpContents.Contains("index_es.htm") -and $helpContents.Contains("index_cat.htm")) "CHM contents do not list all localized help pages."
+    Assert-True ($buildHelp.Contains("hhc.exe")) "CHM build script does not look for hhc.exe."
+    Assert-True ($installer.Contains("Syscalculator174.chm")) "Installer does not include the compiled CHM when present."
+    Assert-True ($english.Contains("Syscalculator174.chm::/index_en.htm")) "English help does not point to the CHM topic."
+    Assert-True ($dutch.Contains("Syscalculator174.chm::/index_nl.htm")) "Dutch help does not point to the CHM topic."
+    Assert-True ($spanish.Contains("Syscalculator174.chm::/index_es.htm")) "Spanish help does not point to the CHM topic."
+    Assert-True ($catalan.Contains("Syscalculator174.chm::/index_cat.htm")) "Catalan help does not point to the CHM topic."
+    Assert-True ($form.Contains("OpenConfiguredHelp Me.Hwnd")) "Main form does not use the CHM-aware help launcher."
+    Assert-True ($module.Contains("hh.exe")) "Help launcher does not use hh.exe for CHM files."
+    Assert-True ($module.Contains("fallbackTarget")) "Help launcher does not fall back to loose HTML."
 }
 
 Test-Case "WizardExpress help documents the Office 365 limitation" {
