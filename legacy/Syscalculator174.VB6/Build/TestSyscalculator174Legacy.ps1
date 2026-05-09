@@ -154,6 +154,8 @@ Test-Case "Legacy converter catalogs resolve to existing files" {
 Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     $helpEn = Read-Text (Join-Path $projectDir "help\index_en.htm")
     $helpNl = Read-Text (Join-Path $projectDir "help\index_nl.htm")
+    $helpEs = Read-Text (Join-Path $projectDir "help\index_es.htm")
+    $helpCat = Read-Text (Join-Path $projectDir "help\index_cat.htm")
     $classicHelp = Read-Text (Join-Path $projectDir "help\index.htm")
     $about = Read-Text (Join-Path $projectDir "frmAbout.frm")
     $readme = Read-Text (Join-Path $projectDir "readme.txt")
@@ -162,6 +164,8 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
 
     Assert-True ($helpEn.Contains("Syscalculator 1.74")) "English help still has the wrong version."
     Assert-True ($helpNl.Contains("Syscalculator 1.74")) "Dutch help still has the wrong version."
+    Assert-True ($helpEs.Contains("Syscalculator 1.74")) "Spanish help still has the wrong version."
+    Assert-True ($helpCat.Contains("Syscalculator 1.74")) "Catalan help still has the wrong version."
     Assert-True ($readme.Contains("Syscalculator  1.74 RC1")) "readme.txt still has the wrong version."
     Assert-True ($readme.Contains("What's new in 1.74 RC1?")) "readme.txt has no 1.74 RC1 changelog."
     Assert-True ($readme.Contains("After 20 years")) "readme.txt has no 20-year release note."
@@ -188,6 +192,8 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     Assert-True ($about.Contains('"Copyright') -and $about.Contains("1996-2026")) "About form runtime copyright is not 1996-2026."
     Assert-True ($helpEn.Contains("Copyright (c) 1996-2026")) "English help copyright is not 1996-2026."
     Assert-True ($helpNl.Contains("Copyright (c) 1996-2026")) "Dutch help copyright is not 1996-2026."
+    Assert-True ($helpEs.Contains("Copyright (c) 1996-2026")) "Spanish help copyright is not 1996-2026."
+    Assert-True ($helpCat.Contains("Copyright (c) 1996-2026")) "Catalan help copyright is not 1996-2026."
     Assert-True ($classicHelp.Contains("Copyright (c) 1996-2026")) "Classic help copyright is not 1996-2026."
     Assert-True ($installer.Contains("AppVerName=Syscalculator 1.74")) "Historical Inno script still has the wrong version."
     Assert-True ($helpEn -notmatch "1\.72" -and $helpNl -notmatch "1\.72" -and $readme -notmatch "1\.72" -and $pad -notmatch "1\.72") "Legacy help/readme/PAD still references 1.72."
@@ -233,6 +239,8 @@ Test-Case "Modern 1.74 installer checks for the VB6 runtime" {
 Test-Case "WizardExpress help documents the Office 365 limitation" {
     $helpEn = Read-Text (Join-Path $projectDir "help\index_en.htm")
     $helpNl = Read-Text (Join-Path $projectDir "help\index_nl.htm")
+    $helpEs = Read-Text (Join-Path $projectDir "help\index_es.htm")
+    $helpCat = Read-Text (Join-Path $projectDir "help\index_cat.htm")
     $classicHelp = Read-Text (Join-Path $projectDir "help\index.htm")
     $readme = Read-Text (Join-Path $projectDir "readme.txt")
     $pad = Read-Text (Join-Path $projectDir "pad_file.xml")
@@ -241,6 +249,8 @@ Test-Case "WizardExpress help documents the Office 365 limitation" {
     Assert-True ($helpNl.Contains("oudere Office- en Word-versies")) "Dutch help does not say WizardExpress is for older Office/Word versions."
     Assert-True ($helpEn.Contains("LibreOffice has been tested and works ok")) "English help does not document the LibreOffice test result."
     Assert-True ($helpNl.Contains("LibreOffice is getest en werkt ok")) "Dutch help does not document the LibreOffice test result."
+    Assert-True ($helpEs.Contains("Microsoft 365 / Office 365")) "Spanish help has no Microsoft 365 / Office 365 warning."
+    Assert-True ($helpCat.Contains("Microsoft 365 / Office 365")) "Catalan help has no Microsoft 365 / Office 365 warning."
     Assert-True ($classicHelp.Contains("Microsoft 365 / Office 365")) "Classic help has no Microsoft 365 / Office 365 warning."
     Assert-True ($classicHelp.Contains("LibreOffice has been tested and works ok")) "Classic help does not document the LibreOffice test result."
     Assert-True ($readme.Contains("Microsoft 365 / Office 365")) "readme.txt has no Microsoft 365 / Office 365 warning."
