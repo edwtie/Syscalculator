@@ -61,7 +61,14 @@ if (Test-Path -LiteralPath $logPath) {
 }
 
 $arguments = "/MAKE `"$projectPath`" /OUT `"$logPath`""
-$process = Start-Process -FilePath $Vb6Path -ArgumentList $arguments -PassThru
+$previousCompatLayer = [Environment]::GetEnvironmentVariable("__COMPAT_LAYER", "Process")
+try {
+    [Environment]::SetEnvironmentVariable("__COMPAT_LAYER", "RunAsInvoker", "Process")
+    $process = Start-Process -FilePath $Vb6Path -ArgumentList $arguments -PassThru
+}
+finally {
+    [Environment]::SetEnvironmentVariable("__COMPAT_LAYER", $previousCompatLayer, "Process")
+}
 if ($process) {
     $process.WaitForExit()
 }
