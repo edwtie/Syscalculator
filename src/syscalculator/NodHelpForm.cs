@@ -46,11 +46,12 @@ public sealed class NodHelpForm : Form
         string nextText = "Next")
     {
         _pages = pages;
+        var topicPaneWidth = CalculateTopicPaneWidth(pages);
 
         Text = title;
-        Width = 860;
+        Width = Math.Max(940, topicPaneWidth + 650);
         Height = 640;
-        MinimumSize = new Size(640, 440);
+        MinimumSize = new Size(780, 440);
         StartPosition = FormStartPosition.CenterParent;
         KeyPreview = true;
         KeyDown += NodHelpForm_KeyDown;
@@ -59,8 +60,10 @@ public sealed class NodHelpForm : Form
         {
             Dock = DockStyle.Fill,
             FixedPanel = FixedPanel.Panel1,
-            SplitterDistance = 230,
+            SplitterDistance = topicPaneWidth,
             SplitterWidth = 1,
+            Panel1MinSize = 260,
+            Panel2MinSize = 480,
             BorderStyle = BorderStyle.None,
             BackColor = Color.FromArgb(226, 232, 240)
         };
@@ -470,6 +473,20 @@ public sealed class NodHelpForm : Form
         {
             _browserFailed = true;
         }
+    }
+
+    private static int CalculateTopicPaneWidth(IReadOnlyList<NodHelpPage> pages)
+    {
+        using var font = new Font("Segoe UI", 9);
+        var widest = pages.Count == 0
+            ? 0
+            : pages.Max(page => TextRenderer.MeasureText(
+                page.Title.TrimStart(),
+                font,
+                Size.Empty,
+                TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Width);
+
+        return Math.Clamp(widest + 54, 280, 370);
     }
 
     // Zoek/commentaar: Markeert zoekresultaten in de huidige HTML-pagina.

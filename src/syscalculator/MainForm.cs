@@ -2056,7 +2056,7 @@ private void LoadStartupNodIfNeeded()
 
         return new[]
         {
-            new NodHelpPage("intro", T("help.main.page.intro.title", "Start"), WrapMainHelpPage(T("help.main.page.intro.title", "Start"), intro)),
+            new NodHelpPage("intro", T("help.main.page.intro.title", "Syscalculator help"), WrapMainHelpPage(T("help.main.page.intro.title", "Syscalculator help"), intro)),
             new NodHelpPage("main", T("help.main.page.main.title", "Value conversion"), WrapMainHelpPage(T("help.main.page.main.title", "Value conversion"), main)),
             new NodHelpPage("fields", T("help.main.page.fields.title", "Fields, editing and clipboard"), WrapMainHelpPage(T("help.main.page.fields.title", "Fields, editing and clipboard"), fields)),
             new NodHelpPage("wizard", T("help.main.page.wizard.title", "WizardExpress"), WrapMainHelpPage(T("help.main.page.wizard.title", "WizardExpress"), wizard)),
