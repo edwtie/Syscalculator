@@ -1,4 +1,4 @@
-; Syscalculator 1.74 RC1 installer.
+; Syscalculator 1.74 RC2 installer.
 ; Build with BUILD_SYSCALCULATOR174_INSTALLER.bat.
 
 #define MyAppName "Syscalculator 1.74"
@@ -16,7 +16,7 @@
 
 #define MyBuildChannel GetEnv("SYSCALC174_INSTALL_CHANNEL")
 #if MyBuildChannel == ""
-  #define MyBuildChannel "rc1"
+  #define MyBuildChannel "rc2"
 #endif
 
 [Setup]

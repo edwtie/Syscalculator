@@ -1,6 +1,6 @@
 param(
-    [ValidateSet("rc1", "candidate", "production")]
-    [string]$Channel = "rc1",
+    [ValidateSet("rc1", "rc2", "candidate", "production")]
+    [string]$Channel = "rc2",
     [string]$Vb6Path = "",
     [switch]$Compile
 )

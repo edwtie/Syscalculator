@@ -31,11 +31,11 @@ The installer includes:
 
 `ISCC.exe` must be available in PATH. Install Inno Setup 6 if the command is missing.
 
-## Syscalculator 1.74 RC1
+## Syscalculator 1.74 RC2
 
 The old VB6 line has a separate Inno Setup 6 script:
 
-Syscalculator 1.74 RC1 is planned as the final Syscalculator 1.x legacy release before the new Syscalculator 2.0 line built with modern technology. Syscalculator 2.0 is already in development to reduce the risks of relying on the outdated VB6 runtime. The 2.0 line will include new features that the old 1.7x line does not have.
+Syscalculator 1.74 RC2 is planned as the final Syscalculator 1.x legacy release candidate for the old VB6 line. It keeps the classic NOD converter workflow available while reducing the risks around modern Windows installation and help files.
 
 The 1.74 legacy package also carries the newer euro countries, including recent euro adoptions such as Croatia 2023 and Bulgaria 2026.
 
@@ -46,7 +46,7 @@ installer\Syscalculator174.iss
 Build it with:
 
 ```bat
-BUILD_SYSCALCULATOR174_INSTALLER.bat -Channel rc1
+BUILD_SYSCALCULATOR174_INSTALLER.bat -Channel rc2
 ```
 
 The script creates the installer from the current 1.74 files. Use the separate VB6 compile task first when you need a fresh `freesyscal.exe`.
