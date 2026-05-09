@@ -533,6 +533,28 @@ Beperkingen:
 
 Onderhoudslijn voor legacy.
 
+#### Syscalculator 1.74 RC2 Legacy Help Release
+
+**Date:** 2026-05-09
+
+**Status:** RC2 / legacy release candidate
+
+**Package type:** VB6 legacy application and separate Inno Setup installer
+
+**Fixes:**
+- Fixed the 1.74 Help menu opening problem where `hh.exe` could start hidden because `SW_SHOWNORMAL` was not defined in the VB6 API modules.
+- Connected Syscalculator 1.74 language files to their own localized CHM help files.
+- Fixed localized CHM table-of-contents structure so each subject is a separate article instead of one long index page.
+- Fixed missing localized help screenshots and added a warning icon for the limitations/support articles.
+- Updated the 1.74 installer build so RC2 packages include all localized CHM help files.
+- Hardened the VB6 compile script by moving old `.vbw` workspace files aside during command-line builds.
+
+**Validation:**
+- Legacy test runner: 25 passed, 0 failed.
+- VB6 command-line compile completed for the main app and editor.
+- Inno Setup 6.7.1 installer build completed.
+- The real VB6 Help menu command was verified to open `Syscalculator 1.74 Help - Nederlands` visibly through `hh.exe`.
+
 #### Syscalculator 1.74 RC1 Legacy Maintenance Release
 
 **Date:** 2026-05-07

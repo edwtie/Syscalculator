@@ -188,7 +188,7 @@ De oude VB6-lijn heeft een aparte Inno Setup installer via `installer/Syscalcula
 Deze installer gebruikt een eigen installatiemap en eigen output, zodat hij los staat van Syscalculator 2.0 beta 1 (preview).
 
 ```bat
-BUILD_SYSCALCULATOR174_INSTALLER.bat -Channel rc1
+BUILD_SYSCALCULATOR174_INSTALLER.bat -Channel rc2
 ```
 
 Output:
@@ -197,14 +197,14 @@ Output:
 artifacts\legacy\installer
 ```
 
-Voor de oude VB6-lijn zijn er aparte 1.74 RC1 VS Code-taken:
+Voor de oude VB6-lijn zijn er aparte 1.74 RC2 VS Code-taken:
 
 ```text
 test Syscalculator 1.74 legacy
-build Syscalculator 1.74 Euro NOD RC1
-compile Syscalculator 1.74 VB6 RC1
-build Syscalculator 1.74 installer RC1
-validate Syscalculator 1.74 RC1
+build Syscalculator 1.74 Euro NOD RC2
+compile Syscalculator 1.74 VB6 RC2
+build Syscalculator 1.74 installer RC2
+validate Syscalculator 1.74 RC2
 ```
 
 Zie `docs/INNO_SETUP_INSTALLER.md` voor de installer-details.

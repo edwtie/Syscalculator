@@ -1,4 +1,4 @@
-Syscalculator  1.74 RC1
+Syscalculator  1.74 RC2
 
 
 Syscalculator is free software under the GPL license.
@@ -6,7 +6,7 @@ This means that you may distribute this software for non-commercial or commercia
  
 Tiedragon maintains this legacy version of Syscalculator.
 
-This is planned as the final Syscalculator 1.x legacy release before the new Syscalculator 2.0 line, built with modern technology. Syscalculator 2.0 is already in development to reduce the risks of relying on the outdated VB6 runtime. Version 2.0 will bring new features that the old 1.7x line does not have. It should be a big surprise.
+This is planned as the final Syscalculator 1.x legacy release candidate for the old VB6 line. It keeps the classic NOD converter workflow available while reducing the risks around modern Windows installation and help files.
 
 This version is free to use and distributed under the GPL license.
 
@@ -29,7 +29,7 @@ WizardExpress now supports older versions of:
 
 Note: WizardExpress is intended for older Office and Word versions. LibreOffice has been tested and works ok. Microsoft 365 / Office 365 is known not to work reliably with this old VB6 integration.
 
-What's new in 1.74 RC1?
+What's new in 1.74 RC2?
 
 Release note: After 20 years, Syscalculator 1.74 is finally released. This last 1.74 legacy version adds the newer euro countries, including recent euro adoptions such as Croatia 2023 and Bulgaria 2026, and fixes startup/configuration problems that kept Syscalculator from working properly on Windows 7 and later. We tested this 1.74 release on Windows 11; after the fixes it appears to work okay. Oops.
 
@@ -160,7 +160,7 @@ Cool features of Syscalculator
 
 Thanks to XT, Happy Hackers ,Tjeerd Huisman  for submitting bugs 
 
-This 1.74 RC1 build is a legacy maintenance release.  
+This 1.74 RC2 build is a legacy maintenance release.  
  
 Requirements:
 
