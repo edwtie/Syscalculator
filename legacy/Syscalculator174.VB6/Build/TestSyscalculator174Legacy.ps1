@@ -190,6 +190,7 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     Assert-True ($readme.Contains("Croatia 2023")) "readme.txt does not mention Croatia 2023."
     Assert-True ($readme.Contains("Bulgaria 2026")) "readme.txt does not mention Bulgaria 2026."
     Assert-True ($readme.Contains("Windows 7 and later")) "readme.txt does not mention the Windows 7+ startup/configuration fix."
+    Assert-True ($readme.Contains("CHM start topics")) "readme.txt does not mention the RC2 CHM Start topic fix."
     Assert-True ($readme.Contains("Visual Basic 6 Runtime is required")) "readme.txt does not clearly mention the required VB6 runtime."
     Assert-True ($pad.Contains("<Program_Version>1.74</Program_Version>")) "PAD metadata still has the wrong version."
     Assert-True ($pad.Contains("<Program_Release_Year>2026</Program_Release_Year>")) "PAD metadata still has the wrong release year."
