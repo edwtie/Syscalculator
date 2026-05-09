@@ -1,4 +1,5 @@
 #nullable enable
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 
 namespace Tiedragon.ToolEditor;
@@ -79,7 +80,12 @@ public static class ToolEditorTabsApi
 
     private sealed class ToolEditorTabHeaderPanel : Panel
     {
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool Selected { get; set; }
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool Dirty { get; set; }
 
         public ToolEditorTabHeaderPanel()

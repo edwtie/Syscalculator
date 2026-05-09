@@ -9,7 +9,7 @@ Syscalculator 1.74
 = release candidates first, then final legacy release
 
 Syscalculator 2.0 Daily
-= active C#/.NET 8 development line
+= active C#/.NET 10 development line
 = frequent builds for internal testing
 = may contain experimental features
 
@@ -55,7 +55,7 @@ Syscalculator 2.0 Production
 
 - Promote from `beta` only after install, startup, About, help and core NOD workflows are checked.
 - Production notes must mention runtime requirements:
-  - .NET 8 Desktop Runtime
+  - .NET 10 Desktop Runtime
   - Microsoft Edge WebView2 Runtime when needed
 - Production should not depend on hidden local build state.
 

@@ -11,7 +11,7 @@ Syscalculator 1.72/1.74
 = NOD-parser/uitvoering direct gekoppeld aan forms/modules
 
 Syscalculator 2.0
-= C#/.NET 8
+= C#/.NET 10
 = losse Tiedragon.NodSystem.Core engine
 = WinForms UI-laag
 = tests, documentatie en uitbreidbare architectuur
@@ -24,7 +24,7 @@ Syscalculator 2.0
 | Onderdeel | Syscalculator 1.72/1.74 | Syscalculator 2.0 |
 |---|---|---|
 | Programmeertaal | Visual Basic 6 | C# |
-| Runtime | VB6 runtime | .NET 8 |
+| Runtime | VB6 runtime | .NET 10 |
 | UI | VB6 Forms | WinForms |
 | Projectvorm | klassieke VB6-projectstructuur | meerdere .NET-projecten |
 | Testbaarheid | beperkt | aparte testprojecten mogelijk |

@@ -20,6 +20,21 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.09 Daily Build
+
+**Date:** 2026-05-09
+
+**Fixes:**
+- Fixed .NET 10 WinForms analyzer compatibility by marking runtime-only custom control properties with explicit designer serialization metadata.
+- Fixed the language selection dialog so the currently selected language is shown first while the remaining languages stay alphabetical.
+- Fixed catalog manager column headers so technical property names are replaced with localized labels.
+
+**Additions:**
+- Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.
+- Updated project targets for the WinForms app, reusable helper projects, demo and test console to .NET 10.
+- Added localized catalog manager column labels for all bundled language files.
+- Verified the .NET 10 migration with restore, 80/80 NOD system tests, Release build and publish smoke test.
+
 #### 2.0.2026.05.07 Daily Build
 
 **Date:** 2026-05-07
@@ -106,7 +121,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 Nog geen production release entry voor deze dag.
 
 **Status:** beta in voorbereiding  
-**Technologie:** C# / .NET 8 / WinForms  
+**Technologie:** C# / .NET 10 / WinForms  
 **Basis:** moderne opvolger van Syscalculator 1.72/1.74
 
 Syscalculator 2.0 Beta is geen automatische VB6-conversie meer, maar een herbouw rond een aparte NOD-engine, moderne WinForms UI en betere tooling voor converterontwikkeling.
@@ -460,7 +475,7 @@ Ondersteund:
 ## Syscalculator 2.0 Alpha 1
 
 **Status:** eerste moderne herbouw / alpha-prototype  
-**Technologie:** C# / .NET 8 / WinForms  
+**Technologie:** C# / .NET 10 / WinForms  
 **Basis:** voortzetting van Syscalculator 1.72 en het oorspronkelijke NOD-systeem
 
 Alpha 1 bewees dat het oude NOD-model losgemaakt kon worden van VB6 en opnieuw bruikbaar kon worden in een moderne .NET-architectuur.
