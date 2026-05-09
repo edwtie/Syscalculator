@@ -4,6 +4,7 @@
 #define MyAppName "Syscalculator"
 #define MyAppPublisher "Tiedragon"
 #define MyAppURL "https://www.tiedragon.com"
+#define DotNetDesktopRuntimeURL "https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe"
 #define MyAppExeName "Syscalculator.exe"
 
 #define MyAppVersion GetEnv("SYSCALC_INSTALL_VERSION")
@@ -50,6 +51,17 @@ Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "id"; MessagesFile: "compiler:Default.isl,Languages\Indonesian.isl"
 Name: "zh"; MessagesFile: "compiler:Default.isl,Languages\ChineseSimplified.isl"
 
+[CustomMessages]
+en.DotNetDesktopRuntimeMissing=Syscalculator requires Microsoft .NET 10 Desktop Runtime x64. Missing runtime: Microsoft.WindowsDesktop.App 10.x.%n%nOpen the official Microsoft download page now?
+nl.DotNetDesktopRuntimeMissing=Syscalculator heeft Microsoft .NET 10 Desktop Runtime x64 nodig. Ontbrekende runtime: Microsoft.WindowsDesktop.App 10.x.%n%nOfficiele Microsoft-downloadpagina nu openen?
+de.DotNetDesktopRuntimeMissing=Syscalculator benoetigt Microsoft .NET 10 Desktop Runtime x64. Fehlende Runtime: Microsoft.WindowsDesktop.App 10.x.%n%nOffizielle Microsoft-Downloadseite jetzt oeffnen?
+fr.DotNetDesktopRuntimeMissing=Syscalculator necessite Microsoft .NET 10 Desktop Runtime x64. Runtime manquante: Microsoft.WindowsDesktop.App 10.x.%n%nOuvrir maintenant la page de telechargement officielle de Microsoft?
+it.DotNetDesktopRuntimeMissing=Syscalculator richiede Microsoft .NET 10 Desktop Runtime x64. Runtime mancante: Microsoft.WindowsDesktop.App 10.x.%n%nAprire ora la pagina ufficiale di download Microsoft?
+pt.DotNetDesktopRuntimeMissing=Syscalculator precisa do Microsoft .NET 10 Desktop Runtime x64. Runtime ausente: Microsoft.WindowsDesktop.App 10.x.%n%nAbrir agora a pagina oficial de download da Microsoft?
+es.DotNetDesktopRuntimeMissing=Syscalculator necesita Microsoft .NET 10 Desktop Runtime x64. Runtime faltante: Microsoft.WindowsDesktop.App 10.x.%n%nAbrir ahora la pagina oficial de descarga de Microsoft?
+id.DotNetDesktopRuntimeMissing=Syscalculator memerlukan Microsoft .NET 10 Desktop Runtime x64. Runtime yang hilang: Microsoft.WindowsDesktop.App 10.x.%n%nBuka halaman unduhan resmi Microsoft sekarang?
+zh.DotNetDesktopRuntimeMissing=Syscalculator requires Microsoft .NET 10 Desktop Runtime x64. Missing runtime: Microsoft.WindowsDesktop.App 10.x.%n%nOpen the official Microsoft download page now?
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
@@ -85,6 +97,85 @@ Root: HKCU; Subkey: "Software\Classes\Syscalculator.Nod\shell\edit\command"; Val
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Syscalculator}"; Flags: nowait postinstall skipifsilent
 
 [Code]
+function IsDotNet10DesktopRuntimeVersion(Version: String): Boolean;
+begin
+  Result := (Version = '10') or (Pos('10.', Version) = 1);
+end;
+
+function HasDotNet10DesktopRuntimeRegistryEntry(RootKey: Integer; Subkey: String): Boolean;
+var
+  Names: TArrayOfString;
+  I: Integer;
+begin
+  Result := False;
+
+  if RegGetValueNames(RootKey, Subkey, Names) then
+  begin
+    for I := 0 to GetArrayLength(Names) - 1 do
+    begin
+      if IsDotNet10DesktopRuntimeVersion(Names[I]) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+
+  if RegGetSubkeyNames(RootKey, Subkey, Names) then
+  begin
+    for I := 0 to GetArrayLength(Names) - 1 do
+    begin
+      if IsDotNet10DesktopRuntimeVersion(Names[I]) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
+function HasDotNet10DesktopRuntimeFolder(BaseDir: String): Boolean;
+var
+  FindRec: TFindRec;
+  RuntimeDir: String;
+begin
+  Result := False;
+
+  if not DirExists(BaseDir) then
+  begin
+    Exit;
+  end;
+
+  if FindFirst(AddBackslash(BaseDir) + '10.*', FindRec) then
+  begin
+    try
+      repeat
+        RuntimeDir := AddBackslash(BaseDir) + FindRec.Name;
+        if DirExists(RuntimeDir) and IsDotNet10DesktopRuntimeVersion(FindRec.Name) then
+        begin
+          Result := True;
+          Exit;
+        end;
+      until not FindNext(FindRec);
+    finally
+      FindClose(FindRec);
+    end;
+  end;
+end;
+
+function IsDotNet10DesktopRuntimeInstalled: Boolean;
+var
+  SharedFxKey: String;
+begin
+  SharedFxKey := 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App';
+
+  Result :=
+    HasDotNet10DesktopRuntimeRegistryEntry(HKLM64, SharedFxKey) or
+    HasDotNet10DesktopRuntimeRegistryEntry(HKLM32, SharedFxKey) or
+    HasDotNet10DesktopRuntimeFolder(ExpandConstant('{commonpf64}\dotnet\shared\Microsoft.WindowsDesktop.App')) or
+    HasDotNet10DesktopRuntimeFolder(ExpandConstant('{commonpf}\dotnet\shared\Microsoft.WindowsDesktop.App'));
+end;
+
 function AppLanguageFile: String;
 begin
   case ActiveLanguage of
@@ -98,6 +189,20 @@ begin
     'zh': Result := 'zho.lng';
   else
     Result := 'eng.lng';
+  end;
+end;
+
+function InitializeSetup: Boolean;
+var
+  ErrorCode: Integer;
+begin
+  Result := IsDotNet10DesktopRuntimeInstalled;
+  if not Result then
+  begin
+    if MsgBox(ExpandConstant('{cm:DotNetDesktopRuntimeMissing}'), mbConfirmation, MB_YESNO) = IDYES then
+    begin
+      ShellExec('open', '{#DotNetDesktopRuntimeURL}', '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
+    end;
   end;
 end;
 

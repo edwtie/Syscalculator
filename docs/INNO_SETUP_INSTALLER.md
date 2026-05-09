@@ -26,8 +26,11 @@ The installer includes:
 - NOD Editor shortcut using `-tool`
 - NOD Template Wizard shortcut using `-wizardtool`
 - `.nod` file association
+- Microsoft .NET 10 Desktop Runtime x64 prerequisite check
 - grouped `.nod` converter directories based on the legacy `broncode.zip` structure
 - uninstall support
+
+Because the 2.0 installer is framework-dependent, it checks for `Microsoft.WindowsDesktop.App` 10.x before setup continues. When the runtime is missing, setup offers to open the official Microsoft .NET 10 Desktop Runtime download page and then stops so the user can install the runtime first.
 
 `ISCC.exe` must be available in PATH. Install Inno Setup 6 if the command is missing.
 

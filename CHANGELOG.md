@@ -38,6 +38,8 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed the first Help topic title so every bundled language starts with `Start`.
 - Fixed Help dialog splitter initialization so opening Help no longer throws a `SplitterDistance` exception.
 - Fixed the Help dialog default size so it opens compactly while keeping the topic list readable.
+- Fixed the 2.0 installer so it detects the required Microsoft .NET 10 Desktop Runtime x64 before setup continues.
+- Fixed the 2.0 installer build script so a failed `dotnet publish` stops before Inno Setup runs.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.

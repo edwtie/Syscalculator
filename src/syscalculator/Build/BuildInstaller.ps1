@@ -33,6 +33,13 @@ if (Test-Path $publishDir) {
 }
 
 dotnet publish $project -c Release -r win-x64 --self-contained false -o $publishDir
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet publish failed with exit code $LASTEXITCODE."
+}
+
+if (-not (Test-Path -LiteralPath (Join-Path $publishDir 'Syscalculator.exe'))) {
+    throw "Publish output is missing Syscalculator.exe: $publishDir"
+}
 
 $versionText = Get-Content $generatedVersionFile -Raw
 if ($versionText -notmatch 'BuildNumber\s*=\s*"(?<build>[^"]+)"') {

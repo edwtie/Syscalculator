@@ -163,7 +163,7 @@ For 2.0 Production, keep the notes short, clear and user-facing.
 
 ## Known Release Risks
 
-- .NET Desktop Runtime detection still needs installer work.
+- WebView2 runtime availability on target machines still needs a final installer/runtime policy.
 - WebView2 package dependency is not the same as WebView2 Runtime availability on user machines.
 - Older Windows 7/10 testing is not complete.
 - Syscalculator 1.74 depends on old VB6-era runtime technology.
