@@ -38,6 +38,7 @@ Release note: After 20 years, Syscalculator 1.74 is finally released. This last 
 -Added a modern Inno Setup installer for Syscalculator 1.74.
 -Fixed first-run configuration fallback so the installed converter catalog and language files are found on Windows 7 and later.
 -Installer language selection now starts Syscalculator with the matching language file.
+-Fixed localized CHM start topics so each language opens with Start in the contents pane instead of a language-name placeholder.
 -Documented that WizardExpress works best with older Office/Word versions, LibreOffice has been tested and works ok, and Microsoft 365 / Office 365 is not reliable with this old VB6 integration.
 
 What's new in 1.71?
