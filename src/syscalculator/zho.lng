@@ -386,7 +386,7 @@ clipboard.debug.mathml_available=MathML 可用于复制或发送的报告。
 clipboard.debug.formula_input=输入
 help.main.page.applications.title=应用程序
 help.main.page.applications.body=<p>WizardExpress 可与多种应用配合使用，但剪贴板行为因程序而异。</p><h2>配合较好的应用</h2><ul><li>普通文本程序</li><li>LibreOffice Calc</li></ul><p>处理电子表格时，通常最安全的是不带额外符号的普通数值。</p><h2>Excel / Microsoft 365</h2><p>Microsoft Excel 处理剪贴板数据的方式可能不同于普通文本程序和 LibreOffice Calc。</p><ul><li>Excel 常使用更丰富的 Office 剪贴板格式。</li><li>WizardExpress 会清空剪贴板并写回转换后的结果。</li><li>因此转换后 Excel 的行为可能不同。</li></ul><div class="warning"><b>Excel 剪贴板:</b> WizardExpress 后请立即使用 <b>Ctrl+V</b> 粘贴。避免在 Excel 中右键粘贴，因为 Excel 可能用自己的剪贴板状态替换转换后的数据。</div><p>如果在 Excel 中粘贴困难，可尝试 LibreOffice Calc、通过文件处理，或使用普通数值粘贴。</p>
-help.main.page.intro.title=中文帮助
+help.main.page.intro.title=Start
 help.main.page.intro.body=<p><b>Syscalculator 2.0</b> 用于快速换算。选择一个转换器，输入数值，然后读取结果。需要快速处理剪贴板时可使用 WizardExpress；需要创建或调整转换器时可使用 NOD Editor。</p><p>此帮助按照经典 Syscalculator 1.74 帮助的实用顺序编排，并加入现代 2.0 daily 版本的补充说明。</p><ul><li><a href="nodpage:main">数值转换</a></li><li><a href="nodpage:fields">字段、编辑和剪贴板</a></li><li><a href="nodpage:wizard">WizardExpress</a></li><li><a href="nodpage:calculator">计算器</a></li><li><a href="nodpage:configuration">配置</a></li><li><a href="nodpage:window">窗口、托盘和小数</a></li><li><a href="nodpage:nodfiles">NOD 文件和目录</a></li><li><a href="nodpage:applications">应用程序</a></li><li><a href="nodpage:support">限制和支持</a></li></ul>
 help.main.page.main.title=数值转换
 help.main.page.main.body=<p>主窗口是普通转换器界面。所选转换器决定第一个和第二个字段的含义。</p><ol><li>从顶部列表选择转换器。</li><li>在第一个字段输入源数值。</li><li>按 <b>Enter</b>，或在启用时使用实时转换。</li><li>在第二个字段读取转换结果。</li></ol><p>启用 <b>反向</b> 时，Syscalculator 会交换字段含义，以便反向转换。</p><p>如果转换器包含介绍，Syscalculator 可在首次打开时显示。需要重新阅读时使用 <b>工具 &gt; 再次显示介绍</b>。</p>
