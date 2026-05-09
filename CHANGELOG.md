@@ -546,6 +546,7 @@ Onderhoudslijn voor legacy.
 - Fixed the startup/configuration failure that could show `Configuration is not found` after installation on newer Windows versions.
 - Fixed the old Windows API error 52 risk on Windows 7 or newer by preventing invalid path results from breaking startup.
 - Fixed installer language handoff so Dutch setup starts Syscalculator with `ned.lng` and English setup starts with `/lng eng.lng`.
+- Fixed the 1.74 installer language coverage so Spanish and Catalan setup also start Syscalculator with `esp.lng` and `cat.lng`.
 - Fixed legacy branding references from `tcsoftware` to `Tiedragon`.
 - Fixed the main legacy Edit menu so Select All is available with Ctrl+A for the active input/output field.
 - Fixed the main legacy Edit menu so Copy, Cut and Delete act on the selected text instead of the whole field.

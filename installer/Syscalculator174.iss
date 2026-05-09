@@ -43,10 +43,14 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "nl"; MessagesFile: "compiler:Languages\Dutch.isl"
+Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "cat"; MessagesFile: "compiler:Languages\Catalan.isl"
 
 [CustomMessages]
 en.Vb6RuntimeMissing=Syscalculator 1.74 requires the Visual Basic 6 Runtime. Missing file: msvbvm60.dll.%n%nOpen the official Microsoft download page now?
 nl.Vb6RuntimeMissing=Syscalculator 1.74 heeft de Visual Basic 6 Runtime nodig. Ontbrekend bestand: msvbvm60.dll.%n%nOfficiele Microsoft-downloadpagina nu openen?
+es.Vb6RuntimeMissing=Syscalculator 1.74 necesita Visual Basic 6 Runtime. Falta el archivo: msvbvm60.dll.%n%nAbrir ahora la pagina oficial de descarga de Microsoft?
+cat.Vb6RuntimeMissing=Syscalculator 1.74 necessita Visual Basic 6 Runtime. Falta el fitxer: msvbvm60.dll.%n%nVoleu obrir ara la pagina oficial de descarrega de Microsoft?
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -74,10 +78,14 @@ Source: "{#MySourceRoot}\Volume\*"; DestDir: "{app}\Volume"; Flags: ignoreversio
 [Icons]
 Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Languages: en
 Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Languages: nl
+Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Languages: es
+Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Languages: cat
 Name: "{group}\Syscalculator 1.74 Editor"; Filename: "{app}\{#MyAppEditorExeName}"; Check: FileExists(ExpandConstant('{app}\{#MyAppEditorExeName}'))
 Name: "{group}\{cm:UninstallProgram,Syscalculator 1.74}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Tasks: desktopicon; Languages: en
 Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Tasks: desktopicon; Languages: nl
+Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Tasks: desktopicon; Languages: es
+Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Tasks: desktopicon; Languages: cat
 
 [Registry]
 Root: HKCU; Subkey: "Software\Tiedragon\Syscalculator Euro Edition"; ValueType: string; ValueName: "first"; ValueData: "1"; Flags: createvalueifdoesntexist uninsdeletekey
@@ -91,6 +99,8 @@ Root: HKCU; Subkey: "Software\Classes\Syscalculator174.Nod\shell\edit\command"; 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: en
 Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: nl
+Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: es
+Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: cat
 
 [Code]
 function IsVb6RuntimeInstalled(): Boolean;
