@@ -144,7 +144,7 @@ internal sealed class LanguageSelectionForm : Form
         _languageList.BeginUpdate();
         _languageList.Items.Clear();
 
-        foreach (var language in _languages.Where(language => MatchesFilter(language, filter)))
+        foreach (var language in GetDisplayLanguages(filter, currentLanguageFile))
             _languageList.Items.Add(language);
 
         _languageList.EndUpdate();
@@ -152,6 +152,18 @@ internal sealed class LanguageSelectionForm : Form
         SelectCurrentLanguage(currentLanguageFile);
         _countLabel.Text = string.Format(T("dialog.language.count", "{0} languages"), _languageList.Items.Count);
         _okButton.Enabled = _languageList.SelectedItem is not null;
+    }
+
+    // Zoek/commentaar: Zet de huidige taal bovenaan en laat de rest alfabetisch staan.
+    private IEnumerable<LanguageCatalog.LanguageInfo> GetDisplayLanguages(string filter, string currentLanguageFile)
+    {
+        var matchingLanguages = _languages
+            .Where(language => MatchesFilter(language, filter))
+            .ToList();
+
+        return matchingLanguages
+            .OrderByDescending(language => language.FileName.Equals(currentLanguageFile, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(language => language.DisplayName, StringComparer.CurrentCultureIgnoreCase);
     }
 
     // Zoek/commentaar: Selecteert het juiste item voor SelectCurrentLanguage.
