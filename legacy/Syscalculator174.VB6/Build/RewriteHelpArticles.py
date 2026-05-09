@@ -53,7 +53,7 @@ HELP = {
     "en": {
         "lang": "en-us",
         "home": "index_en.htm",
-        "home_name": "English Help",
+        "home_name": "Start",
         "title": "Syscalculator 1.74 Help - English",
         "intro": "Syscalculator 1.74 keeps the classic Visual Basic 6 converter available as a legacy maintenance release.",
         "select": "Choose a topic from the contents pane or from the list below.",
@@ -108,7 +108,7 @@ HELP = {
     "nl": {
         "lang": "nl",
         "home": "index_nl.htm",
-        "home_name": "Nederlandse Help",
+        "home_name": "Start",
         "title": "Syscalculator 1.74 Help - Nederlands",
         "intro": "Syscalculator 1.74 houdt de klassieke Visual Basic 6 converter beschikbaar als legacy-onderhoudsrelease.",
         "select": "Kies een onderwerp in de inhoudsopgave of uit de lijst hieronder.",
@@ -163,7 +163,7 @@ HELP = {
     "es": {
         "lang": "es",
         "home": "index_es.htm",
-        "home_name": "Ayuda en Espanol",
+        "home_name": "Start",
         "title": "Syscalculator 1.74 Help - Espanol",
         "intro": "Syscalculator 1.74 conserva el conversor clasico de Visual Basic 6 como version legacy de mantenimiento.",
         "select": "Elija un tema en el panel de contenido o en la lista siguiente.",
@@ -218,7 +218,7 @@ HELP = {
     "cat": {
         "lang": "ca",
         "home": "index_cat.htm",
-        "home_name": "Ajuda en Catala",
+        "home_name": "Start",
         "title": "Syscalculator 1.74 Help - Catala",
         "intro": "Syscalculator 1.74 conserva el conversor classic de Visual Basic 6 com a versio legacy de manteniment.",
         "select": "Trieu un tema al panell de contingut o a la llista seguent.",

@@ -12,7 +12,7 @@
     <param name="Local" value="index.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="English Help">
+    <param name="Name" value="Start">
     <param name="Local" value="index_en.htm">
   </OBJECT>
   <UL>
@@ -50,7 +50,7 @@
     </OBJECT>
   </UL>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="Nederlandse Help">
+    <param name="Name" value="Start">
     <param name="Local" value="index_nl.htm">
   </OBJECT>
   <UL>
@@ -88,7 +88,7 @@
     </OBJECT>
   </UL>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="Ayuda en Espanol">
+    <param name="Name" value="Start">
     <param name="Local" value="index_es.htm">
   </OBJECT>
   <UL>
@@ -126,7 +126,7 @@
     </OBJECT>
   </UL>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="Ajuda en Catala">
+    <param name="Name" value="Start">
     <param name="Local" value="index_cat.htm">
   </OBJECT>
   <UL>
