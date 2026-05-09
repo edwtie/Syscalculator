@@ -29,6 +29,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed the language selection dialog so the currently selected language is shown first while the remaining languages stay alphabetical.
 - Fixed catalog manager column headers so technical property names are replaced with localized labels.
 - Fixed the main Help menu so user help is available with the F1 shortcut.
+- Fixed the main Edit menu so Cut, Copy, Paste and Select all expose standard Ctrl shortcuts for the active field.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.

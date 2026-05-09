@@ -169,6 +169,31 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         });
 
         var edit = new ToolStripMenuItem(T("menu.edit", "Edit"));
+        var cutItem = new ToolStripMenuItem(T("menu.edit.cut", "Cut"))
+        {
+            ShortcutKeys = Keys.Control | Keys.X
+        };
+        cutItem.Click += CutActiveField_Click;
+        edit.DropDownItems.Add(cutItem);
+        var copyItem = new ToolStripMenuItem(T("menu.edit.copy", "Copy"))
+        {
+            ShortcutKeys = Keys.Control | Keys.C
+        };
+        copyItem.Click += CopyActiveField_Click;
+        edit.DropDownItems.Add(copyItem);
+        var pasteItem = new ToolStripMenuItem(T("menu.edit.paste", "Paste"))
+        {
+            ShortcutKeys = Keys.Control | Keys.V
+        };
+        pasteItem.Click += PasteIntoActiveField_Click;
+        edit.DropDownItems.Add(pasteItem);
+        var selectAllItem = new ToolStripMenuItem(T("menu.edit.select_all", "Select all"))
+        {
+            ShortcutKeys = Keys.Control | Keys.A
+        };
+        selectAllItem.Click += SelectAllActiveField_Click;
+        edit.DropDownItems.Add(selectAllItem);
+        edit.DropDownItems.Add(new ToolStripSeparator());
         edit.DropDownItems.Add(T("menu.edit.copy_input", "Copy input"), null, (_, _) => Clipboard.SetText(_inputTextBox.Text));
         edit.DropDownItems.Add(T("menu.edit.copy_output", "Copy output"), null, (_, _) => Clipboard.SetText(_outputTextBox.Text));
         edit.DropDownItems.Add(T("menu.edit.paste_active", "Paste to active field"), null, (_, _) =>
@@ -305,6 +330,44 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         MainMenuStrip = menu;
         Controls.Add(menu);
         menu.BringToFront();
+    }
+
+    private TextBox GetActiveEditTextBox()
+    {
+        return ActiveControl is TextBox textBox && (textBox == _inputTextBox || textBox == _outputTextBox)
+            ? textBox
+            : _calculatorTargetTextBox ?? _inputTextBox;
+    }
+
+    private void CutActiveField_Click(object? sender, EventArgs e)
+    {
+        var target = GetActiveEditTextBox();
+        target.Focus();
+        target.Cut();
+    }
+
+    private void CopyActiveField_Click(object? sender, EventArgs e)
+    {
+        var target = GetActiveEditTextBox();
+        target.Focus();
+        target.Copy();
+    }
+
+    private void PasteIntoActiveField_Click(object? sender, EventArgs e)
+    {
+        if (!Clipboard.ContainsText())
+            return;
+
+        var target = GetActiveEditTextBox();
+        target.Focus();
+        target.Paste();
+    }
+
+    private void SelectAllActiveField_Click(object? sender, EventArgs e)
+    {
+        var target = GetActiveEditTextBox();
+        target.Focus();
+        target.SelectAll();
     }
 
     // Zoek/commentaar: Methode ChangeLanguage: centrale logica voor deze stap.
