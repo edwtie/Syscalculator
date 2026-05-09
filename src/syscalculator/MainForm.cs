@@ -187,6 +187,12 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         };
         pasteItem.Click += PasteIntoActiveField_Click;
         edit.DropDownItems.Add(pasteItem);
+        var deleteItem = new ToolStripMenuItem(T("menu.edit.delete", "Delete"))
+        {
+            ShortcutKeys = Keys.Delete
+        };
+        deleteItem.Click += DeleteFromActiveField_Click;
+        edit.DropDownItems.Add(deleteItem);
         var selectAllItem = new ToolStripMenuItem(T("menu.edit.select_all", "Select all"))
         {
             ShortcutKeys = Keys.Control | Keys.A
@@ -361,6 +367,25 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         var target = GetActiveEditTextBox();
         target.Focus();
         target.Paste();
+    }
+
+    private void DeleteFromActiveField_Click(object? sender, EventArgs e)
+    {
+        var target = GetActiveEditTextBox();
+        target.Focus();
+
+        if (target.SelectionLength > 0)
+        {
+            target.SelectedText = string.Empty;
+            return;
+        }
+
+        if (target.SelectionStart < target.TextLength)
+        {
+            var selectionStart = target.SelectionStart;
+            target.Text = target.Text.Remove(selectionStart, 1);
+            target.SelectionStart = selectionStart;
+        }
     }
 
     private void SelectAllActiveField_Click(object? sender, EventArgs e)

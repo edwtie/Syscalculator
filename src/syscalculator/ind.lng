@@ -11,6 +11,7 @@ menu.edit=Edit
 menu.edit.cut=Potong
 menu.edit.copy=Salin
 menu.edit.paste=Tempel
+menu.edit.delete=Hapus
 menu.edit.select_all=Pilih semua
 menu.edit.copy_input=Salin input
 menu.edit.copy_output=Salin output

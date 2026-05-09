@@ -11,6 +11,7 @@ menu.edit=Modifica
 menu.edit.cut=Taglia
 menu.edit.copy=Copia
 menu.edit.paste=Incolla
+menu.edit.delete=Elimina
 menu.edit.select_all=Seleziona tutto
 menu.edit.copy_input=Copia input
 menu.edit.copy_output=Copia output
