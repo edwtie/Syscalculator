@@ -735,6 +735,8 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
 
         _inputTextBox = CreateClassicTextBox();
         _outputTextBox = CreateClassicTextBox();
+        ApplyTextBoxContextMenu(_inputTextBox);
+        ApplyTextBoxContextMenu(_outputTextBox);
 
         _inputTextBox.Enter += (_, _) =>
         {
@@ -873,6 +875,59 @@ private static TextBox CreateClassicTextBox()
         Anchor = AnchorStyles.Left,
         TextAlign = HorizontalAlignment.Left
     };
+}
+
+private void ApplyTextBoxContextMenu(TextBox textBox)
+{
+    if (UsesImeInputLanguage())
+        return;
+
+    var menu = new ContextMenuStrip();
+    var cut = menu.Items.Add(T("menu.edit.cut", "Cut"));
+    var copy = menu.Items.Add(T("menu.edit.copy", "Copy"));
+    var paste = menu.Items.Add(T("menu.edit.paste", "Paste"));
+    var delete = menu.Items.Add(T("menu.edit.delete", "Delete"));
+    menu.Items.Add(new ToolStripSeparator());
+    var selectAll = menu.Items.Add(T("menu.edit.select_all", "Select all"));
+
+    cut.Click += (_, _) => textBox.Cut();
+    copy.Click += (_, _) => textBox.Copy();
+    paste.Click += (_, _) => textBox.Paste();
+    delete.Click += (_, _) =>
+    {
+        if (textBox.SelectionLength > 0)
+        {
+            textBox.SelectedText = string.Empty;
+            return;
+        }
+
+        if (textBox.SelectionStart < textBox.TextLength)
+        {
+            var selectionStart = textBox.SelectionStart;
+            textBox.Text = textBox.Text.Remove(selectionStart, 1);
+            textBox.SelectionStart = selectionStart;
+        }
+    };
+    selectAll.Click += (_, _) => textBox.SelectAll();
+    menu.Opening += (_, e) =>
+    {
+        var hasSelection = textBox.SelectionLength > 0;
+        var hasText = textBox.TextLength > 0;
+        cut.Enabled = hasSelection;
+        copy.Enabled = hasSelection;
+        paste.Enabled = Clipboard.ContainsText();
+        delete.Enabled = hasSelection || textBox.SelectionStart < textBox.TextLength;
+        selectAll.Enabled = hasText;
+        e.Cancel = !hasText && !paste.Enabled;
+    };
+
+    textBox.ContextMenuStrip = menu;
+}
+
+private static bool UsesImeInputLanguage()
+{
+    var language = InputLanguage.CurrentInputLanguage.Culture.TwoLetterISOLanguageName;
+    return language is "zh" or "ja" or "ko";
 }
 // Zoek/commentaar: Past groottes/kolommen aan voor ResizeConverterTextColumns.
 private void ResizeConverterTextColumns()

@@ -33,6 +33,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed the main Edit menu so Delete is available with the Del shortcut and acts on the active field selection.
 - Fixed Copy input/output so empty fields no longer cause clipboard copy problems.
 - Fixed the main Edit menu enabled states so unavailable clipboard actions are disabled like the text box context menu.
+- Hid unused IME context-menu entries for non-CJK input languages while preserving the default Windows IME menu for Chinese, Japanese and Korean input.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.
