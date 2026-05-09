@@ -549,6 +549,7 @@ Onderhoudslijn voor legacy.
 - Fixed the 1.74 installer language coverage so Spanish and Catalan setup also start Syscalculator with `esp.lng` and `cat.lng`.
 - Added Spanish and Catalan 1.74 help pages and linked F1/help menu entries to those pages.
 - Expanded the Spanish and Catalan 1.74 help pages with practical daily-use guidance, editing actions, WizardExpress notes, NOD catalog information and legacy limitations.
+- Expanded the English and Dutch 1.74 help pages with a practical daily-use quick guide for the main window, editing, clipboard copy commands, NOD catalogs and VB6 legacy context.
 - Fixed legacy branding references from `tcsoftware` to `Tiedragon`.
 - Fixed the main legacy Edit menu so Select All is available with Ctrl+A for the active input/output field.
 - Fixed the main legacy Edit menu so Copy, Cut and Delete act on the selected text instead of the whole field.
