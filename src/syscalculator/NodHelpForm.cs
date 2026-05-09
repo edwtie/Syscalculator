@@ -1,4 +1,5 @@
 #nullable enable
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using Microsoft.Web.WebView2.Core;
@@ -871,6 +872,8 @@ internal sealed class HelpTopicsList : Control
 
     public event EventHandler? SelectedIndexChanged;
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int SelectedIndex
     {
         get => _selectedIndex;

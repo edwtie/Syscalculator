@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -28,6 +29,8 @@ public sealed class MathMlPreviewControl : UserControl
 {
     private string _mathMarkup = "";
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string MathMarkup
     {
         get => _mathMarkup;

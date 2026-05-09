@@ -1,4 +1,5 @@
 #nullable enable
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 
 namespace Syscalculator.UI.WinForms;
@@ -33,6 +34,8 @@ internal sealed class GraphToolbarIconButton : Button
         _toolTip.SetToolTip(this, tooltip);
     }
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public GraphToolbarIcon Icon
     {
         get => _icon;
@@ -46,6 +49,8 @@ internal sealed class GraphToolbarIconButton : Button
         }
     }
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string TooltipText
     {
         get => _toolTip.GetToolTip(this) ?? "";

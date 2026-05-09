@@ -1,4 +1,5 @@
 #nullable enable
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
@@ -16,6 +17,8 @@ public sealed class HtmlMathPreviewControl : UserControl
     private bool _browserFailed;
     private TaskCompletionSource? _readySource;
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string MathMarkup
     {
         get => _mathMarkup;

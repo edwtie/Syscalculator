@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System.ComponentModel;
 using Tiedragon.NodSystem.Core;
 using Tiedragon.Graph2D;
 
@@ -8,9 +9,19 @@ internal sealed class SolverStepsForm : Form
 {
     private sealed class StepMotionPanel : Panel
     {
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string StepText { get; set; } = "";
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int StepIndex { get; set; }
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int StepCount { get; set; }
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public float? DisplayProgress { get; set; }
 
         public StepMotionPanel()

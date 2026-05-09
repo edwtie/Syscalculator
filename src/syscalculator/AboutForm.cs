@@ -1,4 +1,5 @@
 #nullable enable
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -555,8 +556,16 @@ internal sealed class AboutForm : Form
 // Zoek/commentaar: Type-overzicht: class RoundedPanel bevat de hoofdlogica/data voor dit onderdeel.
 internal class RoundedPanel : Panel
 {
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int CornerRadius { get; set; } = 10;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color BorderColor { get; set; } = Color.FromArgb(99, 157, 214);
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color SecondaryBorderColor { get; set; } = Color.FromArgb(198, 218, 240);
 
     // Zoek/commentaar: Methode OnSizeChanged: centrale logica voor deze stap.
@@ -624,8 +633,16 @@ internal class RoundedPanel : Panel
 // Zoek/commentaar: Type-overzicht: class RoundedTableLayoutPanel bevat de hoofdlogica/data voor dit onderdeel.
 internal sealed class RoundedTableLayoutPanel : TableLayoutPanel
 {
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int CornerRadius { get; set; } = 10;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color BorderColor { get; set; } = Color.FromArgb(99, 157, 214);
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color SecondaryBorderColor { get; set; } = Color.FromArgb(198, 218, 240);
 
     // Zoek/commentaar: Methode OnSizeChanged: centrale logica voor deze stap.
