@@ -1,268 +1,37 @@
+<!DOCTYPE html>
 <html>
-
 <head>
 <meta http-equiv="Content-Language" content="en-us">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<title>User manual for the Syscalculator</title>
+<title>Syscalculator 1.74 Help - English</title>
+<style>
+body { font-family: Tahoma, Arial, sans-serif; font-size: 10pt; margin: 18px; color: #202020; background: #ffffff; }
+h1 { font-size: 18pt; margin: 0 0 10px 0; }
+p { margin: 0 0 10px 0; line-height: 1.35; }
+ul, ol { margin-top: 6px; margin-bottom: 12px; }
+li { margin: 4px 0; }
+img { max-width: 100%; height: auto; border: 0; }
+.nav { border-bottom: 1px solid #c0c0c0; margin-bottom: 12px; padding-bottom: 8px; }
+.note { border-top: 1px solid #c0c0c0; margin-top: 18px; padding-top: 10px; color: #505050; }
+.warning { border: 1px solid #b07800; background: #fff7d6; padding: 8px; margin: 12px 0; }
+.warning img { vertical-align: middle; margin-right: 8px; }
+.warning-title { font-weight: bold; }
+</style>
 </head>
-
 <body>
-
-<p><b><u><font size="5">Manual for&nbsp; Syscalculator 1.74</font></u></b></p>
-
-<p><b>Introduction</b></p>
-
-<p>Thank you for downloading our software.</p>
-
-<p>Syscalculator started as a euro conversion tool and is now maintained as a classic
-legacy converter. Version 1.74 is a 2026 maintenance release of the original VB6 line.
-It includes 21 euro legacy currency converters, including newer euro adoptions such as
-Croatia 2023 and Bulgaria 2026.</p>
-
-<p>This release keeps the classic Syscalculator workflow available while the modern
-Syscalculator 2.0 line is being developed. It combines these features in one program.</p>
-
-<p>It :
-
-<ul>
-  <li>&nbsp;is a Conversion Tool for older Office and Word programs</li>
-  <li>&nbsp;is an easy calculator</li>
-  <li>&nbsp;has Systray</li>
-  <li>&nbsp;has Configuration possibilities</li>
-</ul>
-
-<p><b>Daily use quick guide</b></p>
-
-<p><b>Main converter window:</b> choose a converter from the list, type the source value
-in the first field, and read the result in the second field. Use reverse direction when
-you want to calculate back through the same converter.</p>
-
-<p><b>Editing values:</b> Copy, Cut and Delete work on the selected text in the active
-field. Paste inserts clipboard text into the active field. Select All selects the complete
-field first, so the next Copy, Cut or Delete action applies to the whole value.</p>
-
-<p><b>Copying input and output:</b> use the input/output copy commands when you want to
-copy the full value from one field. Empty fields are ignored, so an accidental empty copy
-does not overwrite useful clipboard content.</p>
-
-<p><b>Converter files:</b> Syscalculator uses classic NOD files. The catalog decides which
-converters appear in the list. If converter files are added or repaired, restart
-Syscalculator or reload the catalog so the list is refreshed.</p>
-
-<p><b>Legacy note:</b> Syscalculator 1.74 keeps the old VB6 program available. It was
-tested for this maintenance release, but the Visual Basic 6 runtime is old and is no
-longer actively maintained by Microsoft. Syscalculator 2.0 is the modern successor line.</p>
-<p><b>INDEX</b></p>
-
-<p>1.<b><a href="#2"> Introduction option</a></b></p>
-
-<p>2<b>. <a href="#3">WizardExpress. Conversion Tool</a></b></p>
-
-<p>3. <b><u><a href="#1">Converting from Guilders to Deutsche Mark (Tri-Conversion)</a></u></b></p>
-
-<p>4.<a href="#4"> <b>Simple Calculcator&nbsp;</b></a></p>
-
-<p>5. <a href="#5"><b>Setting freesyscal.cfg and Language Translation</b></a></p>
-
-<p>6. <b><u><a href="#7">Setting Systray</a></u></b></p>
-
-<p>7, <a href="#8"><b>Setting Always on top</b></a></p>
-
-<p>8.<b> <a href="#10">Setting decimals</a></b></p>
-
-<p>9. <b><a href="#6">Support&nbsp;</a></b></p>
-
-<p><b><font size="4"><u><a name="2">Introduction Option:</a></u></font></b></p>
-
-<p>If you do not want the introduction screen to appear on <strong>each</strong> startup
-after the first use of the Syscalculator, then disable the introduction option.</p>
-
-<p>&nbsp;</p>
-
-<p><b><u><font size="4"><a name="3">Wizardexpress, Conversion Tool.</a> </font></u></b></p>
-
-<p>WizardExpress can be used in combination with older applications such as&nbsp; Excel, Word or
-other classic Office programs, including LibreOffice. This utility will convert&nbsp; your amounts, for example, from
-guilders to euro. It's a conversion tool that functions in the same way as the&nbsp;
-'Replace &amp; Find' feature does.&nbsp;&nbsp;</p>
-
-<p><b>Compatibility note:</b> WizardExpress is intended for older Office and Word versions.
-LibreOffice has been tested and works ok. Microsoft 365 / Office 365 is known not to work reliably with this old VB6 integration.</p>
-
-<p>1.&nbsp; Add a new column to your worksheet and define the cell-properties as 'currency
-value Euro'&nbsp;</p>
-
-<p>2.&nbsp; Select all the amounts (only values, no text) and <strong>copy</strong> these
-marked amounts (= to the clipboard).&nbsp; </p>
-
-<p><a href="syscal_1.png"><img border="0" src="syscal_1.png" width="969" height="593"></a>
-</p>
-
-<p>3. Launch the Syscalculator WizardExpress</p>
-
-<p>4. Click the &quot;OK&quot;&nbsp; button to convert all amounts.&nbsp; Wait for the
-statusbox red 'start' sign to turn to the green 'ready' sign. </p>
-
-<p><strong>Important</strong>: do not copy any other information to the clipboard before
-clicking the 'ok' button of the WizardExpress: this will cause the loss of the values that
-should be converted. You will have to start again in that case.</p>
-
-<p>5. Place your cursor in the newly made column and choose the 'Paste' command. In
-normal classic applications the paste menu or mouse can be used. With Excel /
-Microsoft 365, use Ctrl+V directly after conversion because Excel has its own clipboard
-management. The now converted amounts will appear, as shown in the example below : </p>
-
-<p><img border="0" src="syscal_2.png" width="947" height="631"></p>
-
-<p>6. Done ! </p>
-
-<p><b>Feature: Symbol</b>.&nbsp; </p>
-
-<p>If the 'symbol' option in the option box <strong>is</strong> checked, then the
-appropriate symbol will precede the pasted values, <br>
-for example:&nbsp;<font size="3"> fl 351,53 -&gt; &#128;&nbsp; 241,22</font> </p>
-
-<p><font size="3">If the symbol-option is <strong>not</strong> checked, no symbol will be
-added to the pasted values.</font> </p>
-
-<p><b><u><a name="1">Converting from Guilders to Deutsche Mark (Tri-Conversion)</a></u></b></p>
-
-<p>It's easy to convert from guilders to Deutsche Mark or any other currency of your
-choice.</p>
-
-<p>1. Copy the marked amounts and convert to Euro by following the steps described above
-in<small> </small><a name="3" href="#3"><font size="3"><b><u>Wizardexpress, Conversion
-Tool</u></b></font></a></p>
-
-<p>2. Change:&nbsp; NLG -&gt; DEM (in the dropdown box)</p>
-
-<p>3. Choose:&nbsp; Euro&nbsp; in WizardExpress (in the option box)</p>
-
-<p>4. Convert these amounts to the currency of your choice by following&nbsp; the steps
-described above in<small> </small><strong><a name="3" href="#3"><font size="3"><u>Wizardexpress,
-Conversion Tool</u></font></a></strong></p>
-
-<p><img src="triconvert_3.jpg" width="761" height="505"
-alt="triconvert_3.jpg (72998 bytes)"></p>
-
-<p><b><a name="4">Calculcator</a></b> </p>
-
-<p>This feature is a standard calculator. You can use it to convert or to calculate your
-values.</p>
-
-<p><a href="Syscal_3.png"><img border="0" src="Syscal_3.png" width="299" height="229"></a></p>
-
-<p><b><a name="5">Setting Default Currency&nbsp; and Language</a></b></p>
-
-<p><img border="0" src="Syscal_4.png" width="508" height="356"></p>
-
-<p>You can modify the default language setting to the one of your choice (needs an
-existing '*.lng' file however) or you can add a new currency unit&nbsp;</p>
-
-<p><u><font size="4"><b>Properties </b>:</font></u></p>
-
-<p>-Rename your currency units.&nbsp;</p>
-
-<p><b>Setting a unit as default&nbsp;</b></p>
-
-<p>Your choosing of a new&nbsp; unit as default, will result in the use by
-Syscalculator of this new value as default value on the next startup of the program.&nbsp;</p>
-
-<p><b><u>Editor</u></b></p>
-
-<p>Use the Editor to modify your scripts of currency units (<b>for experts only</b>). If
-you want to know more about all of the commands, you can email us at Tiedragon. We'll
-send you <font FACE="Times New Roman">comprehensive</font> documents about all of the
-commands and examples.&nbsp;</p>
-
-<p><strong><u><big>Brief explanation of&nbsp; some commands:</big></u></strong></p>
-
-<p><b>Symb1 , Symb2&nbsp;</b></p>
-
-<p>The chosen Symbol will appear on Syscalculator (currency row).&nbsp; Symb1 and Symb2
-are the symbols that precede the&nbsp; values shown in the Eurocalculator (Amounts in
-...rows).</p>
-
-<p><b>Symb3, Symb4&nbsp;</b></p>
-
-<p>Symb3 and Symb4 are symbols that follow values when using the WizardExpres to paste
-converted values into other applications</p>
-
-<p>For Example:</p>
-
-<p>Symb1 fl</p>
-
-<p>Symb2 DM</p>
-
-<p><b>Math&nbsp;</b> &lt;values&gt;&nbsp;</p>
-
-<p>ans is the first value that you submit.&nbsp; This value will be used for the
-conversion to a new currency value.</p>
-
-<p>For Example:</p>
-
-<p>Math ans / 2,12412<br>
-Math ans * 4,12451&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-
-<p>If you would like to receive more information about other commands, please send an
-email to <a href="mailto:info@tiedragon.com">info@tiedragon.com</a></p>
-
-<p><u><big><b>Translations to another languages:</b></big></u></p>
-
-<p>If you want to contribute to Syscalculator by translating texts to your language, then
-please send your files to tiedragon.&nbsp;</p>
-
-<p>We will publish your language-files to our website, for use by whoever may need them.</p>
-
-<p><b>Translated files:</b></p>
-
-<p>-eng.lng&nbsp;</p>
-
-<p>-All documents concerning Syscalculator</p>
-
-<p><u><strong><big>Optional settings</big></strong></u></p>
-
-<p><b><a name="7">Setting Systray</a></b></p>
-
-<p>Config -&gt; Tray.&nbsp;</p>
-
-<p>Check this option to enable systray.</p>
-
-<p>Tray will cause Syscalculator to hide. Syscalculator will stay easily accessible by
-clicking an icon in the taskbar.</p>
-
-<p>To terminate active tray Syscalculator : Right-click the icon and choose 'exit'&nbsp;</p>
-
-<p><b><a name="8"><u>Setting Always on top</u></a></b></p>
-
-<p>Config -&gt; Always on top.</p>
-
-<p>WizardExpress and Calculator will automatically stay in the foreground, thus in front of
-all other active applications.</p>
-
-<p><b><u><font size="4"><a name="10">Setting decimals</a></font></u></b></p>
-
-<p>Syscalculator allow you to set decimals. Maximum decimals is 11.&nbsp;&nbsp;
-It will&nbsp; automatically set for WizardExpress and this converter. If you
-disabled this decimals,then syscalculator will&nbsp; set default decimals from
-script.&nbsp;&nbsp;</p>
-
-<p><big><b><a name="6">Support </a></b></big></p>
-
-<p>If you detect any problem with this software, please contact us. If a real bug was
-found then we'll try to fix it as soon as possible.</p>
-
-<p>About -&gt; Feedback&nbsp; </p>
-
-<p>Through our website : <a href="https://www.tiedragon.com">https://www.tiedragon.com</a></p>
-
-<p>By e-mail: you may send an e-mail to our company : <a href="mailto:info@tiedragon.com">info@tiedragon.com</a>
-</p>
-
-<p>&nbsp;</p>
-
-<p>Copyright (c) 1996-2026</p>
+<h1>English Help</h1>
+<p>Syscalculator 1.74 keeps the classic Visual Basic 6 converter available as a legacy maintenance release.</p>
+<p>Choose a topic from the contents pane or from the list below.</p>
+<ol>
+  <li><a href="help_en_convert.htm">Convert a Value</a></li>
+  <li><a href="help_en_fields.htm">Fields, Editing and Clipboard</a></li>
+  <li><a href="help_en_wizardexpress.htm">WizardExpress</a></li>
+  <li><a href="help_en_calculator.htm">Calculator</a></li>
+  <li><a href="help_en_configuration.htm">Configuration</a></li>
+  <li><a href="help_en_window_options.htm">Window, Tray and Decimals</a></li>
+  <li><a href="help_en_nod_catalog.htm">NOD Files and Catalog</a></li>
+  <li><a href="help_en_support.htm">Limitations and Support</a></li>
+</ol>
+<p class="note">Copyright (c) 1996-2026 Tiedragon.</p>
 </body>
 </html>

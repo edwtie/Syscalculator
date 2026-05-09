@@ -1,126 +1,37 @@
+<!DOCTYPE html>
 <html>
-
 <head>
 <meta http-equiv="Content-Language" content="es">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Manual de Syscalculator 1.74</title>
+<title>Syscalculator 1.74 Help - Espanol</title>
+<style>
+body { font-family: Tahoma, Arial, sans-serif; font-size: 10pt; margin: 18px; color: #202020; background: #ffffff; }
+h1 { font-size: 18pt; margin: 0 0 10px 0; }
+p { margin: 0 0 10px 0; line-height: 1.35; }
+ul, ol { margin-top: 6px; margin-bottom: 12px; }
+li { margin: 4px 0; }
+img { max-width: 100%; height: auto; border: 0; }
+.nav { border-bottom: 1px solid #c0c0c0; margin-bottom: 12px; padding-bottom: 8px; }
+.note { border-top: 1px solid #c0c0c0; margin-top: 18px; padding-top: 10px; color: #505050; }
+.warning { border: 1px solid #b07800; background: #fff7d6; padding: 8px; margin: 12px 0; }
+.warning img { vertical-align: middle; margin-right: 8px; }
+.warning-title { font-weight: bold; }
+</style>
 </head>
-
 <body>
-
-<p><b><u><font size="5">Manual de Syscalculator 1.74</font></u></b></p>
-
-<p><b>Introduccion</b></p>
-
-<p>Syscalculator 1.74 es la linea clasica de Syscalculator basada en Visual Basic 6.
-Esta version mantiene disponible el antiguo flujo de trabajo mientras se desarrolla
-Syscalculator 2.0.</p>
-
-<p>La version 1.74 es una version de mantenimiento. Incluye correcciones para Windows
-moderno, archivos de conversion clasicos y monedas historicas del euro, incluyendo
-adopciones recientes como Croacia 2023 y Bulgaria 2026.</p>
-
-<p><b>Importante:</b> el runtime de Visual Basic 6 es antiguo y ya no esta mantenido
-activamente por Microsoft. Syscalculator 1.74 se ofrece como version legacy. Para trabajo
-nuevo y funciones futuras se esta preparando Syscalculator 2.0.</p>
-
-<p><b>Indice rapido</b></p>
-
+<h1>Ayuda en Espanol</h1>
+<p>Syscalculator 1.74 conserva el conversor clasico de Visual Basic 6 como version legacy de mantenimiento.</p>
+<p>Elija un tema en el panel de contenido o en la lista siguiente.</p>
 <ol>
-  <li><a href="#convertir">Convertir un valor</a></li>
-  <li><a href="#campos">Campos y edicion</a></li>
-  <li><a href="#wizard">WizardExpress</a></li>
-  <li><a href="#configuracion">Configuracion</a></li>
-  <li><a href="#archivos">Archivos NOD y catalogos</a></li>
-  <li><a href="#limitaciones">Limitaciones conocidas</a></li>
+  <li><a href="help_es_convertir.htm">Convertir un Valor</a></li>
+  <li><a href="help_es_campos.htm">Campos, Edicion y Portapapeles</a></li>
+  <li><a href="help_es_wizardexpress.htm">WizardExpress</a></li>
+  <li><a href="help_es_calculadora.htm">Calculadora</a></li>
+  <li><a href="help_es_configuracion.htm">Configuracion</a></li>
+  <li><a href="help_es_ventana_opciones.htm">Ventana, Bandeja y Decimales</a></li>
+  <li><a href="help_es_nod_catalogo.htm">Archivos NOD y Catalogo</a></li>
+  <li><a href="help_es_soporte.htm">Limitaciones y Soporte</a></li>
 </ol>
-
-<p><b><a name="convertir">Como convertir un valor</a></b></p>
-
-<ol>
-  <li>Elija un conversor en la lista.</li>
-  <li>Escriba el valor en el primer campo.</li>
-  <li>Lea el resultado en el segundo campo.</li>
-  <li>Use la opcion de direccion inversa si quiere calcular en sentido contrario.</li>
-</ol>
-
-<p>Ejemplo: si el conversor seleccionado es de kilometros a millas, escriba el numero de
-kilometros en el primer campo. Syscalculator calcula el resultado y lo muestra en el
-segundo campo. Si activa la direccion inversa, puede usar el mismo conversor para volver
-de millas a kilometros.</p>
-
-<p><b><a name="campos">Campos y edicion</a></b></p>
-
-<ul>
-  <li><b>Copiar</b> copia el texto seleccionado del campo activo.</li>
-  <li><b>Cortar</b> copia y elimina el texto seleccionado.</li>
-  <li><b>Pegar</b> inserta texto del portapapeles en el campo activo.</li>
-  <li><b>Eliminar</b> elimina el texto seleccionado.</li>
-  <li><b>Seleccionar todo</b> selecciona todo el valor del campo activo.</li>
-</ul>
-
-<p>Si no hay texto seleccionado, las acciones que necesitan una seleccion pueden estar
-desactivadas. Esto evita borrar o copiar un campo completo por accidente.</p>
-
-<p><b><a name="wizard">WizardExpress</a></b></p>
-
-<p>WizardExpress convierte valores que se copian al portapapeles. Esta pensado para
-programas antiguos de Office y Word y para texto simple.</p>
-
-<ol>
-  <li>Copie los valores al portapapeles.</li>
-  <li>Abra WizardExpress.</li>
-  <li>Ejecute la conversion.</li>
-  <li>Pegue el resultado de nuevo en la aplicacion.</li>
-</ol>
-
-<p><b>Nota de compatibilidad:</b> LibreOffice se ha probado y funciona correctamente.
-Microsoft 365 / Office 365 no funciona de forma fiable con esta integracion VB6 antigua
-del portapapeles.</p>
-
-<p>Consejo: despues de ejecutar WizardExpress, pegue inmediatamente el resultado con
-Ctrl+V. En Excel moderno, el menu contextual de pegado puede cambiar otra vez el contenido
-del portapapeles.</p>
-
-<p><b><a name="configuracion">Configuracion</a></b></p>
-
-<ul>
-  <li>Puede cambiar idioma y moneda/conversor predeterminado.</li>
-  <li>Puede iniciar Syscalculator con Windows.</li>
-  <li>Puede usar la bandeja del sistema.</li>
-  <li>Puede mantener la ventana siempre visible.</li>
-  <li>Puede ajustar decimales y formato de salida para resultados numericos.</li>
-</ul>
-
-<p>Los ajustes se guardan en los archivos de configuracion clasicos. En instalaciones
-modernas tambien se copian a la carpeta de datos del usuario para evitar problemas de
-permisos en Windows.</p>
-
-<p><b><a name="archivos">Archivos NOD y catalogos</a></b></p>
-
-<p>Los conversores se guardan como archivos NOD. El catalogo agrupa esos archivos para que
-aparezcan en la lista principal. Si se anaden o corrigen archivos NOD, vuelva a abrir
-Syscalculator o recargue el catalogo para verlos.</p>
-
-<p>La version 1.74 conserva los conversores clasicos de distancia, masa, presion,
-temperatura, volumen, texto y monedas historicas del euro.</p>
-
-<p><b><a name="limitaciones">Limitaciones conocidas</a></b></p>
-
-<ul>
-  <li>Esta es una aplicacion legacy VB6, no una aplicacion moderna .NET.</li>
-  <li>El runtime VB6 es obligatorio.</li>
-  <li>Microsoft 365 / Office 365 puede comportarse mal con el portapapeles.</li>
-  <li>Windows 11 ha sido probado. Windows antiguos son objetivos historicos y no siempre se vuelven a probar.</li>
-</ul>
-
-<p><b>Soporte y futuro</b></p>
-
-<p>Syscalculator 1.74 conserva la compatibilidad historica. Syscalculator 2.0 es la nueva
-linea moderna, pensada para reducir los riesgos del runtime VB6 antiguo y para anadir
-funciones nuevas.</p>
-
-<p>Copyright (c) 1996-2026 Tiedragon</p>
-
+<p class="note">Copyright (c) 1996-2026 Tiedragon.</p>
 </body>
 </html>

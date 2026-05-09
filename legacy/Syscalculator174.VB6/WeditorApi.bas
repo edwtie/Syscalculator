@@ -30,6 +30,7 @@ Type COPYDATASTRUCT
 End Type
 Public Const GWL_WNDPROC = (-4)
 Public Const WM_COPYDATA = &H4A
+Public Const SW_SHOWNORMAL = 1
 Public Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (hpvDest As Any, hpvSource As Any, ByVal cbCopy As Long)
 
 Private Declare Function FindText Lib "comdlg32.dll" Alias "FindTextA" (pFindreplace As Long) As Long

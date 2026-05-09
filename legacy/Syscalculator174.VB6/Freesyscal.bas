@@ -70,7 +70,7 @@ If chmPos > 0 Then
     If Left$(topic, 1) = "/" Or Left$(topic, 1) = "\" Then topic = Mid$(topic, 2)
 
     If Dir$(chmPath) <> "" Then
-        iRet = ShellExecute(ownerHwnd, vbNullString, "hh.exe", """" & helpTarget & """", App.Path, SW_SHOWNORMAL)
+        Call LaunchHtmlHelp(ownerHwnd, helpTarget, App.Path)
         Exit Sub
     End If
 
@@ -82,7 +82,34 @@ If chmPos > 0 Then
     End If
 End If
 
+If LCase$(Right$(helpTarget, 4)) = ".chm" Then
+    If Dir$(helpTarget) <> "" Then
+        Call LaunchHtmlHelp(ownerHwnd, helpTarget, App.Path)
+        Exit Sub
+    End If
+End If
+
 iRet = ShellExecute(ownerHwnd, vbNullString, helpTarget, vbNullString, App.Path, SW_SHOWNORMAL)
+End Sub
+
+Sub LaunchHtmlHelp(ownerHwnd As Long, helpTarget As String, workingDir As String)
+Dim iRet As Long
+Dim hhPath As String
+
+hhPath = Environ$("WINDIR")
+If hhPath <> "" Then
+    If Right$(hhPath, 1) <> "\" Then hhPath = hhPath & "\"
+    hhPath = hhPath & "hh.exe"
+    If Dir$(hhPath) <> "" Then
+        iRet = ShellExecute(ownerHwnd, vbNullString, hhPath, """" & helpTarget & """", workingDir, SW_SHOWNORMAL)
+        If iRet > 32 Then Exit Sub
+    End If
+End If
+
+iRet = ShellExecute(ownerHwnd, vbNullString, "hh.exe", """" & helpTarget & """", workingDir, SW_SHOWNORMAL)
+If iRet > 32 Then Exit Sub
+
+iRet = ShellExecute(ownerHwnd, vbNullString, helpTarget, vbNullString, workingDir, SW_SHOWNORMAL)
 End Sub
 
 

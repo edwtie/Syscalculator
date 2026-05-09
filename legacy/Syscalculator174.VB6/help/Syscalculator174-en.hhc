@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft HTML Help Workshop">
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+  <param name="Window Styles" value="0x800025">
+</OBJECT>
+<UL>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="English Help">
+    <param name="Local" value="index_en.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Convert a Value">
+    <param name="Local" value="help_en_convert.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Fields, Editing and Clipboard">
+    <param name="Local" value="help_en_fields.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="WizardExpress">
+    <param name="Local" value="help_en_wizardexpress.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Calculator">
+    <param name="Local" value="help_en_calculator.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Configuration">
+    <param name="Local" value="help_en_configuration.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Window, Tray and Decimals">
+    <param name="Local" value="help_en_window_options.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="NOD Files and Catalog">
+    <param name="Local" value="help_en_nod_catalog.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Limitations and Support">
+    <param name="Local" value="help_en_support.htm">
+  </OBJECT>
+</UL>
+</BODY></HTML>

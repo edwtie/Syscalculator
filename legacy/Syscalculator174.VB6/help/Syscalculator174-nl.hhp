@@ -1,0 +1,33 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Syscalculator174-nl.chm
+Contents file=Syscalculator174-nl.hhc
+Index file=Syscalculator174-nl.hhk
+Default Window=main
+Default topic=index_nl.htm
+Display compile progress=No
+Full-text search=Yes
+Language=0x413 Dutch (Netherlands)
+Title=Syscalculator 1.74 Help - Nederlands
+
+[WINDOWS]
+main="Syscalculator 1.74 Help - Nederlands","Syscalculator174-nl.hhc","Syscalculator174-nl.hhk","index_nl.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+
+[FILES]
+index_nl.htm
+help_nl_converteren.htm
+help_nl_velden.htm
+help_nl_wizardexpress.htm
+help_nl_rekenmachine.htm
+help_nl_configuratie.htm
+help_nl_venster_opties.htm
+help_nl_nod_catalogus.htm
+help_nl_support.htm
+logo_phpBB.gif
+Logo_phpBB_med.gif
+syscal_1.png
+syscal_2.png
+Syscal_3.png
+Syscal_4.png
+triconvert_3.jpg
+warning_triangle.png

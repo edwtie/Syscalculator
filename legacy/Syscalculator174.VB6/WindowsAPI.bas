@@ -24,6 +24,7 @@ End Type
 'Const SW_HIDE = 0    'Hides the window. Activation passes to another window.
 'Const SW_MINIMIZE = 6     'Minimizes the window. Activation passes to another window.
 Global Const SW_RESTORE = 9    'Displays a window at its original size and location and activates it.
+Global Const SW_SHOWNORMAL = 1     'Displays a normal visible window.
 'Const SW_SHOW = 5   'Displays a window at its current size and location, and activates it.
 'Const SW_SHOWMAXIMIZED = 3      'Maximizes a window and activates it.
 'Const SW_SHOWMINIMIZED = 2      'Minimizes a window and activates it.
