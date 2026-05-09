@@ -41,9 +41,31 @@ public sealed class CatalogManagerForm : Form
         _grid = new DataGridView
         {
             Dock = DockStyle.Fill,
-            AutoGenerateColumns = true,
+            AutoGenerateColumns = false,
+            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
             DataSource = _binding
         };
+        _grid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            DataPropertyName = nameof(NodCatalogItem.DisplayName),
+            HeaderText = T("catalog.column.name", "Naam"),
+            FillWeight = 50,
+            MinimumWidth = 260
+        });
+        _grid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            DataPropertyName = nameof(NodCatalogItem.NodPath),
+            HeaderText = T("catalog.column.nod_file", "NOD-bestand"),
+            FillWeight = 40,
+            MinimumWidth = 240
+        });
+        _grid.Columns.Add(new DataGridViewCheckBoxColumn
+        {
+            DataPropertyName = nameof(NodCatalogItem.IsDefault),
+            HeaderText = T("catalog.column.default", "Standaard"),
+            FillWeight = 10,
+            MinimumWidth = 90
+        });
 
         panel.Controls.Add(_grid, 0, 0);
 

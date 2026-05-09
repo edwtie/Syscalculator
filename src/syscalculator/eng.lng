@@ -114,6 +114,9 @@ find.not_found=Not found.
 find.replaced_count={0} replacements made.
 
 catalog.title=Converter catalog
+catalog.column.name=Name
+catalog.column.nod_file=NOD file
+catalog.column.default=Default
 catalog.add=Add
 catalog.new_converter=New converter
 catalog.choose_nod=Choose NOD...

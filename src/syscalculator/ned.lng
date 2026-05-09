@@ -119,6 +119,9 @@ find.not_found=Niet gevonden.
 find.replaced_count={0} vervangingen uitgevoerd.
 
 catalog.title=Convertercatalogus
+catalog.column.name=Naam
+catalog.column.nod_file=NOD-bestand
+catalog.column.default=Standaard
 catalog.add=Toevoegen
 catalog.new_converter=Nieuwe converter
 catalog.choose_nod=NOD kiezen...
