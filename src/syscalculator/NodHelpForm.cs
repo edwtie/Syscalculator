@@ -60,13 +60,12 @@ public sealed class NodHelpForm : Form
         {
             Dock = DockStyle.Fill,
             FixedPanel = FixedPanel.Panel1,
-            SplitterDistance = topicPaneWidth,
             SplitterWidth = 1,
-            Panel1MinSize = 260,
-            Panel2MinSize = 480,
             BorderStyle = BorderStyle.None,
             BackColor = Color.FromArgb(226, 232, 240)
         };
+        split.SizeChanged += (_, _) => ApplyTopicPaneWidth(split, topicPaneWidth);
+        Shown += (_, _) => ApplyTopicPaneWidth(split, topicPaneWidth);
 
         _topics = new HelpTopicsList
         {
@@ -487,6 +486,18 @@ public sealed class NodHelpForm : Form
                 TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Width);
 
         return Math.Clamp(widest + 54, 280, 370);
+    }
+
+    private static void ApplyTopicPaneWidth(SplitContainer split, int preferredPanel1Width)
+    {
+        if (split.Width <= split.Panel1MinSize + split.Panel2MinSize)
+            return;
+
+        var validMaxDistance = split.Width - split.Panel2MinSize;
+        var maxDistance = Math.Min(validMaxDistance, Math.Max(split.Panel1MinSize, split.Width - 480));
+        var distance = Math.Clamp(preferredPanel1Width, split.Panel1MinSize, maxDistance);
+        if (split.SplitterDistance != distance)
+            split.SplitterDistance = distance;
     }
 
     // Zoek/commentaar: Markeert zoekresultaten in de huidige HTML-pagina.
