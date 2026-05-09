@@ -287,7 +287,12 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         tools.DropDownItems.Add(T("menu.tools.show_intro", "Show introduction again"), null, (_, _) => ShowIntroAgain());
 
         var about = new ToolStripMenuItem(T("menu.about", "About"));
-        about.DropDownItems.Add(T("menu.about.help", "Help for users"), null, UserHelp_Click);
+        var userHelpItem = new ToolStripMenuItem(T("menu.about.help", "Help for users"))
+        {
+            ShortcutKeys = Keys.F1
+        };
+        userHelpItem.Click += UserHelp_Click;
+        about.DropDownItems.Add(userHelpItem);
         about.DropDownItems.Add(new ToolStripSeparator());
         about.DropDownItems.Add(T("menu.about.syscalculator", "About Syscalculator"), null, About_Click);
 

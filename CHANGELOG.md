@@ -28,6 +28,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed .NET 10 WinForms analyzer compatibility by marking runtime-only custom control properties with explicit designer serialization metadata.
 - Fixed the language selection dialog so the currently selected language is shown first while the remaining languages stay alphabetical.
 - Fixed catalog manager column headers so technical property names are replaced with localized labels.
+- Fixed the main Help menu so user help is available with the F1 shortcut.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.
