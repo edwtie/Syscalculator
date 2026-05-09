@@ -1895,13 +1895,32 @@ private void LoadStartupNodIfNeeded()
 
         var main = T("help.main.page.main.body", """
 <h2>Main window</h2>
-<ul>
+<p>The main window is the normal converter screen. The selected converter decides what the first and second fields mean.</p>
+<h2>Convert a value</h2>
+<ol>
   <li>Choose a converter from the list at the top.</li>
   <li>Type the source value in the first field.</li>
+  <li>Press <b>Enter</b>, or use live convert when it is enabled.</li>
   <li>Read the converted value in the second field.</li>
-  <li>Use <b>Open NOD</b> when you want to load a specific converter file.</li>
-  <li>Use <b>Reload converter list</b> when new converter files were added.</li>
-  <li>Use <b>Calculator</b> when you want to type directly into another field.</li>
+</ol>
+<p>When <b>Reverse direction</b> is enabled, Syscalculator swaps the meaning of the fields so you can convert back.</p>
+<h2>Editing fields</h2>
+<ul>
+  <li><b>Cut / Copy / Delete</b> work on the selected text in the active field.</li>
+  <li><b>Paste</b> inserts clipboard text into the active field.</li>
+  <li><b>Select all</b> selects the complete active field. After that, Copy, Cut or Delete applies to the whole value.</li>
+  <li><b>Copy input</b> copies the full first field when it has text.</li>
+  <li><b>Copy output</b> copies the full second field when it has text.</li>
+  <li><b>Clear fields</b> empties both fields.</li>
+</ul>
+<p>The right-click menu shows the same practical edit actions. Syscalculator hides unused Windows IME entries for normal European input languages. For Chinese, Japanese and Korean input, Windows keeps its own IME menu so those input methods still work.</p>
+<h2>Tools on this screen</h2>
+<ul>
+  <li><b>Open NOD</b>: load a specific converter file.</li>
+  <li><b>Reload converter list</b>: refresh the list after converter files were added or changed.</li>
+  <li><b>Calculator</b>: enter a calculated number directly into the active field.</li>
+  <li><b>NOD Editor</b>: create, inspect or repair converter files.</li>
+  <li><b>WizardExpress</b>: convert copied clipboard values quickly.</li>
 </ul>
 """);
 

@@ -34,6 +34,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed Copy input/output so empty fields no longer cause clipboard copy problems.
 - Fixed the main Edit menu enabled states so unavailable clipboard actions are disabled like the text box context menu.
 - Hid unused IME context-menu entries for non-CJK input languages while preserving the default Windows IME menu for Chinese, Japanese and Korean input.
+- Expanded the main user help with practical explanations of the main window, field editing, clipboard actions, IME context menus and daily tools.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.
