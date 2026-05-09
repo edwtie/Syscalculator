@@ -543,6 +543,7 @@ Onderhoudslijn voor legacy.
 - Fixed installer language handoff so Dutch setup starts Syscalculator with `ned.lng` and English setup starts with `/lng eng.lng`.
 - Fixed legacy branding references from `tcsoftware` to `Tiedragon`.
 - Fixed the main legacy Edit menu so Select All is available with Ctrl+A for the active input/output field.
+- Fixed the main legacy Edit menu so Copy, Cut and Delete act on the selected text instead of the whole field.
 
 **Additions:**
 - Added the newer euro adopters to the legacy `euro` group: BGN, CYP, EEK, HRK, LTL, LVL, MTL, SIT and SKK.

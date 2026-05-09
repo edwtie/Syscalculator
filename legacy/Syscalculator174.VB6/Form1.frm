@@ -682,21 +682,39 @@ Call cal_Click
 End Sub
 
 Private Sub Delete_Click()
-If Option1.Value = True Then Text1.Text = ""
-If Option2.Value = True Then Text2.Text = ""
+If Option1.Value = True Then
+    If Text1.SelLength > 0 Then
+        n = Text1.SelStart
+        Text1.Text = Left(Text1.Text, Text1.SelStart) & Mid(Text1.Text, Text1.SelStart + Text1.SelLength + 1)
+        Text1.SelStart = n
+    End If
+End If
+If Option2.Value = True Then
+    If Text2.SelLength > 0 Then
+        n = Text2.SelStart
+        Text2.Text = Left(Text2.Text, Text2.SelStart) & Mid(Text2.Text, Text2.SelStart + Text2.SelLength + 1)
+        Text2.SelStart = n
+    End If
+End If
 End Sub
 
 Private Sub ecopy_Click()
-Clipboard.Clear
-If Option1.Value = True Then Clipboard.SetText Text1.Text
-If Option2.Value = True Then Clipboard.SetText Text2.Text
+If Option1.Value = True And Text1.SelLength > 0 Then Clipboard.Clear: Clipboard.SetText Mid(Text1.Text, Text1.SelStart + 1, Text1.SelLength)
+If Option2.Value = True And Text2.SelLength > 0 Then Clipboard.Clear: Clipboard.SetText Mid(Text2.Text, Text2.SelStart + 1, Text2.SelLength)
     
 End Sub
 
 Private Sub ecut_Click()
-        Clipboard.Clear
-If Option1.Value = True Then Clipboard.SetText Text1.Text: Text1.Text = ""
-If Option2.Value = True Then Clipboard.SetText Text2.Text: Text2.Text = ""
+If Option1.Value = True And Text1.SelLength > 0 Then
+    Clipboard.Clear
+    Clipboard.SetText Mid(Text1.Text, Text1.SelStart + 1, Text1.SelLength)
+    Call Delete_Click
+End If
+If Option2.Value = True And Text2.SelLength > 0 Then
+    Clipboard.Clear
+    Clipboard.SetText Mid(Text2.Text, Text2.SelStart + 1, Text2.SelLength)
+    Call Delete_Click
+End If
        
 End Sub
 
