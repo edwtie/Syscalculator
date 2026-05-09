@@ -1883,20 +1883,23 @@ private void LoadStartupNodIfNeeded()
     private IReadOnlyList<NodHelpPage> BuildMainHelpPages()
     {
         var intro = T("help.main.page.intro.body", """
-<p><b>Syscalculator</b> is for quick conversions. Choose a converter, type a value, and read the result. For fast clipboard work you can use WizardExpress. For making or changing converters use the NOD Editor.</p>
-<p>This help is for daily use. It explains the main screen, WizardExpress, and the applications where clipboard behavior can differ.</p>
+<p><b>Syscalculator 2.0</b> is for quick conversions. Choose a converter, type a value, and read the result. For fast clipboard work you can use WizardExpress. For making or changing converters use the NOD Editor.</p>
+<p>This help follows the practical order of the classic Syscalculator 1.74 help, with extra notes for the modern 2.0 daily version.</p>
 <ul>
-  <li><a href="nodpage:main">Main window</a></li>
+  <li><a href="nodpage:main">Value conversion</a></li>
+  <li><a href="nodpage:fields">Fields, editing and clipboard</a></li>
   <li><a href="nodpage:wizard">WizardExpress</a></li>
-  <li><a href="nodpage:applications">Applications</a></li>
+  <li><a href="nodpage:calculator">Calculator</a></li>
   <li><a href="nodpage:configuration">Configuration</a></li>
+  <li><a href="nodpage:window">Window, tray and decimals</a></li>
+  <li><a href="nodpage:nodfiles">NOD files and catalog</a></li>
+  <li><a href="nodpage:applications">Applications</a></li>
+  <li><a href="nodpage:support">Limitations and support</a></li>
 </ul>
 """);
 
         var main = T("help.main.page.main.body", """
-<h2>Main window</h2>
 <p>The main window is the normal converter screen. The selected converter decides what the first and second fields mean.</p>
-<h2>Convert a value</h2>
 <ol>
   <li>Choose a converter from the list at the top.</li>
   <li>Type the source value in the first field.</li>
@@ -1904,6 +1907,11 @@ private void LoadStartupNodIfNeeded()
   <li>Read the converted value in the second field.</li>
 </ol>
 <p>When <b>Reverse direction</b> is enabled, Syscalculator swaps the meaning of the fields so you can convert back.</p>
+<p>If the converter contains an introduction, Syscalculator can show it when the converter is first opened. Use <b>Tools &gt; Show introduction again</b> when you want to reread it.</p>
+""");
+
+        var fields = T("help.main.page.fields.body", """
+<p>The input and output fields behave like normal Windows edit fields. The active field is the field that currently has the text cursor or selection.</p>
 <h2>Editing fields</h2>
 <ul>
   <li><b>Cut / Copy / Delete</b> work on the selected text in the active field.</li>
@@ -1914,13 +1922,13 @@ private void LoadStartupNodIfNeeded()
   <li><b>Clear fields</b> empties both fields.</li>
 </ul>
 <p>The right-click menu shows the same practical edit actions. Syscalculator hides unused Windows IME entries for normal European input languages. For Chinese, Japanese and Korean input, Windows keeps its own IME menu so those input methods still work.</p>
-<h2>Tools on this screen</h2>
+<h2>Clipboard commands</h2>
 <ul>
-  <li><b>Open NOD</b>: load a specific converter file.</li>
-  <li><b>Reload converter list</b>: refresh the list after converter files were added or changed.</li>
-  <li><b>Calculator</b>: enter a calculated number directly into the active field.</li>
-  <li><b>NOD Editor</b>: create, inspect or repair converter files.</li>
-  <li><b>WizardExpress</b>: convert copied clipboard values quickly.</li>
+  <li><b>Ctrl+X</b>: cut selected text.</li>
+  <li><b>Ctrl+C</b>: copy selected text.</li>
+  <li><b>Ctrl+V</b>: paste clipboard text.</li>
+  <li><b>Ctrl+A</b>: select all text in the active field.</li>
+  <li><b>Del</b>: delete the selection or the next character.</li>
 </ul>
 """);
 
@@ -1944,6 +1952,17 @@ private void LoadStartupNodIfNeeded()
             BuildHelpImageTag(
                 "WizardExpressHelp.png",
                 T("help.main.page.wizard.screenshot_alt", "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.")));
+
+        var calculator = T("help.main.page.calculator.body", """
+<p>The calculator is for quick arithmetic while you are working with a converter. It can place the calculated result directly in the active input or output field.</p>
+<ol>
+  <li>Click in the field where the result should go.</li>
+  <li>Open <b>Tools &gt; Calculator</b>, or use the calculator button.</li>
+  <li>Calculate the value.</li>
+  <li>Insert or copy the result back into Syscalculator.</li>
+</ol>
+<p>For converter formulas, NOD files and educational formula cards, use the NOD Editor instead of the simple calculator.</p>
+""");
 
         var applications = T("help.main.page.applications.body", """
 <p>WizardExpress can be used with several applications, but clipboard behavior differs per program.</p>
@@ -1985,20 +2004,68 @@ private void LoadStartupNodIfNeeded()
   <li><b>Always on top</b>: keeps Syscalculator, WizardExpress, and Calculator above other windows.</li>
   <li><b>Minimize to tray</b>: hides Syscalculator in the system tray instead of leaving it on the taskbar.</li>
   <li><b>Language</b>: changes the interface language.</li>
-  <li><b>Digit group</b> and <b>Decimals</b>: control how converted numbers are formatted.</li>
   <li><b>Live convert</b>: converts while you type instead of waiting for a separate action.</li>
   <li><b>Catalog manager</b>: manages the converter catalog.</li>
 </ul>
 <p>Use <b>Tools &gt; Show introduction again</b> when you want to reread the introduction for the current converter.</p>
 """);
 
+        var window = T("help.main.page.window.body", """
+<p>The window settings control how Syscalculator stays available while you work in other programs.</p>
+<h2>Window and tray</h2>
+<ul>
+  <li><b>Always on top</b>: keeps Syscalculator, WizardExpress and Calculator above other windows.</li>
+  <li><b>Minimize to tray</b>: hides Syscalculator in the system tray instead of leaving it on the taskbar.</li>
+  <li><b>Start with Windows</b>: starts Syscalculator automatically when Windows starts.</li>
+</ul>
+<p>The tray menu can show Syscalculator, hide it again, open WizardExpress or the Calculator, and exit the program.</p>
+<h2>Decimals and digit grouping</h2>
+<ul>
+  <li><b>Decimals</b> controls how many decimal places are shown for numeric results.</li>
+  <li><b>Digit group</b> adds or removes thousands grouping in displayed numbers.</li>
+</ul>
+<p>These display settings do not change the converter rule itself. They only control how the result is shown.</p>
+""");
+
+        var nodFiles = T("help.main.page.nodfiles.body", """
+<p>Syscalculator converters are stored as NOD files. A NOD file describes the name, labels and conversion rules for one converter.</p>
+<h2>Daily use</h2>
+<ul>
+  <li><b>Open NOD</b>: load a specific converter file.</li>
+  <li><b>Reload converter list</b>: refresh the list after converter files were added or changed.</li>
+  <li><b>Catalog manager</b>: inspect and manage the converter catalog.</li>
+</ul>
+<h2>Editing and compatibility</h2>
+<p>Use the <b>NOD Editor</b> to create, inspect or repair converter files. Syscalculator 2.0 keeps the classic NOD 1.0 style recognizable, while the editor also explains newer NOD 2.0 features.</p>
+<p>Old Syscalculator 1.74 NOD files should remain readable. When a file uses old commands such as <code>input1</code> and <code>input2</code>, the editor can explain the modern equivalent.</p>
+""");
+
+        var support = T("help.main.page.support.body", """
+<div class="warning">
+  <b>Daily build:</b> Syscalculator 2.0 daily builds are for testing the modern version. Keep backups of important NOD files and use Syscalculator 1.74 when you need the old VB6 legacy release.
+</div>
+<h2>Known limitations</h2>
+<ul>
+  <li>Clipboard behavior can differ per application. Excel and Microsoft 365 need extra care.</li>
+  <li>The installer is framework-dependent and may need the Microsoft .NET Desktop Runtime on the target computer.</li>
+  <li>NOD 2.0 beta does not include every future idea yet. Unsupported modes such as full 3D geometry or matrix3x3 are rejected instead of half-handled.</li>
+</ul>
+<h2>Support information</h2>
+<p>When reporting a problem, include the Syscalculator version, the selected language, the converter name, and the exact steps that caused the problem. For clipboard issues, mention the application you copied from and pasted into.</p>
+""");
+
         return new[]
         {
             new NodHelpPage("intro", T("help.main.page.intro.title", "Start"), WrapMainHelpPage(T("help.main.page.intro.title", "Start"), intro)),
-            new NodHelpPage("main", T("help.main.page.main.title", "Main window"), WrapMainHelpPage(T("help.main.page.main.title", "Main window"), main)),
+            new NodHelpPage("main", T("help.main.page.main.title", "Value conversion"), WrapMainHelpPage(T("help.main.page.main.title", "Value conversion"), main)),
+            new NodHelpPage("fields", T("help.main.page.fields.title", "Fields, editing and clipboard"), WrapMainHelpPage(T("help.main.page.fields.title", "Fields, editing and clipboard"), fields)),
             new NodHelpPage("wizard", T("help.main.page.wizard.title", "WizardExpress"), WrapMainHelpPage(T("help.main.page.wizard.title", "WizardExpress"), wizard)),
-            new NodHelpPage("applications", "  " + T("help.main.page.applications.title", "Applications"), WrapMainHelpPage(T("help.main.page.applications.title", "Applications"), applications)),
-            new NodHelpPage("configuration", T("help.main.page.configuration.title", "Configuration"), WrapMainHelpPage(T("help.main.page.configuration.title", "Configuration"), configuration))
+            new NodHelpPage("calculator", T("help.main.page.calculator.title", "Calculator"), WrapMainHelpPage(T("help.main.page.calculator.title", "Calculator"), calculator)),
+            new NodHelpPage("configuration", T("help.main.page.configuration.title", "Configuration"), WrapMainHelpPage(T("help.main.page.configuration.title", "Configuration"), configuration)),
+            new NodHelpPage("window", T("help.main.page.window.title", "Window, tray and decimals"), WrapMainHelpPage(T("help.main.page.window.title", "Window, tray and decimals"), window)),
+            new NodHelpPage("nodfiles", T("help.main.page.nodfiles.title", "NOD files and catalog"), WrapMainHelpPage(T("help.main.page.nodfiles.title", "NOD files and catalog"), nodFiles)),
+            new NodHelpPage("applications", T("help.main.page.applications.title", "Applications"), WrapMainHelpPage(T("help.main.page.applications.title", "Applications"), applications)),
+            new NodHelpPage("support", T("help.main.page.support.title", "Limitations and support"), WrapMainHelpPage(T("help.main.page.support.title", "Limitations and support"), support))
         };
     }
 
