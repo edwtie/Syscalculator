@@ -42,6 +42,14 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added localized catalog manager column labels for all bundled language files.
 - Verified the .NET 10 migration with restore, 80/80 NOD system tests, Release build and publish smoke test.
 
+**Replaced Build History:**
+- 2026.05.09.027: Published the first 2026-05-09 daily installer with the .NET 10 migration, restored edit shortcuts, F1 user help, clipboard safety fixes, IME context-menu cleanup and expanded daily-use help.
+- 2026.05.09.028: Expanded localized in-app help pages for all bundled languages, including practical daily-use topics and limitations.
+- 2026.05.09.029: Widened the help topic pane so long localized subject titles remain readable.
+- 2026.05.09.030: Restored the first help topic title to `Start` in all bundled Syscalculator 2.0 languages.
+- 2026.05.09.031: Fixed Help dialog splitter initialization so opening help no longer throws a `SplitterDistance` exception.
+- 2026.05.09.032: Replaced the previous installer with a more compact Help dialog while keeping the splitter fix and readable topic pane.
+
 #### 2.0.2026.05.07 Daily Build
 
 **Date:** 2026-05-07
