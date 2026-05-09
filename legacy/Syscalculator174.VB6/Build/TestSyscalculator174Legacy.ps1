@@ -236,6 +236,7 @@ Test-Case "Legacy startup menu describes Windows startup" {
 Test-Case "Modern 1.74 installer checks for the VB6 runtime" {
     $installer = Read-Text (Join-Path $repoRoot "installer\Syscalculator174.iss")
     $installerDoc = Read-Text (Join-Path $repoRoot "docs\INNO_SETUP_INSTALLER.md")
+    $buildInstaller = Read-Text (Join-Path $projectDir "Build\BuildInstaller174.ps1")
 
     Assert-True ($installer.Contains("function IsVb6RuntimeInstalled")) "Modern installer has no VB6 runtime check function."
     Assert-True ($installer.Contains("msvbvm60.dll")) "Modern installer does not check for msvbvm60.dll."
@@ -245,13 +246,20 @@ Test-Case "Modern 1.74 installer checks for the VB6 runtime" {
     Assert-True ($installer.Contains("support.microsoft.com")) "Modern installer does not use an official Microsoft VB6 runtime download page."
     Assert-True ($installerDoc.Contains("installer checks for the Visual Basic 6 Runtime")) "Installer documentation does not describe the VB6 runtime check."
     Assert-True ($installerDoc.Contains("support.microsoft.com")) "Installer documentation does not include the Microsoft VB6 runtime download page."
+    Assert-True ($buildInstaller.Contains("Get-VersionFromExecutable")) "Legacy installer build script does not read the version from the compiled executable."
+    Assert-True ($buildInstaller.Contains("SyscalEditor.exe")) "Legacy installer build script does not require the editor executable."
+    Assert-True ($buildInstaller.Contains("SYSCALC174_INSTALL_VERSION")) "Legacy installer build script does not pass the version to Inno Setup."
 }
 
-Test-Case "Legacy help can be compiled as CHM and falls back to HTML" {
+Test-Case "Legacy help can be compiled as main and localized CHM files" {
     $installer = Read-Text (Join-Path $repoRoot "installer\Syscalculator174.iss")
     $buildHelp = Read-Text (Join-Path $projectDir "Build\BuildHelp174.ps1")
     $helpProject = Read-Text (Join-Path $projectDir "help\Syscalculator174.hhp")
     $helpContents = Read-Text (Join-Path $projectDir "help\Syscalculator174.hhc")
+    $helpProjectEn = Read-Text (Join-Path $projectDir "help\Syscalculator174-en.hhp")
+    $helpProjectNl = Read-Text (Join-Path $projectDir "help\Syscalculator174-nl.hhp")
+    $helpProjectEs = Read-Text (Join-Path $projectDir "help\Syscalculator174-es.hhp")
+    $helpProjectCat = Read-Text (Join-Path $projectDir "help\Syscalculator174-cat.hhp")
     $english = Read-LegacyText (Join-Path $projectDir "eng.lng")
     $dutch = Read-LegacyText (Join-Path $projectDir "ned.lng")
     $spanish = Read-LegacyText (Join-Path $projectDir "esp.lng")
@@ -260,24 +268,87 @@ Test-Case "Legacy help can be compiled as CHM and falls back to HTML" {
     $module = Read-Text (Join-Path $projectDir "Freesyscal.bas")
 
     Assert-True ($helpProject.Contains("Compiled file=Syscalculator174.chm")) "CHM project does not build Syscalculator174.chm."
-    Assert-True ($helpProject.Contains("Default topic=index_en.htm")) "CHM project has no English default topic."
-    Assert-True ($helpContents.Contains("index_nl.htm") -and $helpContents.Contains("index_es.htm") -and $helpContents.Contains("index_cat.htm")) "CHM contents do not list all localized help pages."
+    Assert-True ($helpProject.Contains("Default Window=main")) "Main CHM project has no compact default window."
+    Assert-True ($helpProject.Contains("[90,80,850,620]")) "Main CHM default window is not the expected compact size."
+    Assert-True ($helpProject.Contains('",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0')) "Main CHM window definition does not use the stable compact HHP format."
+    Assert-True ($helpProject -notmatch '"index\.htm","index\.htm"') "Main CHM window definition duplicates default and home topics."
+    Assert-True ($helpProject.Contains("Default topic=index.htm")) "Main CHM project does not use index.htm as contents start page."
+    Assert-True ($helpContents.Contains("index.htm")) "Main CHM contents does not point to the help contents page."
+    Assert-True ($helpContents.Contains("Convert a Value") -and $helpContents.Contains("help_en_convert.htm")) "Main CHM contents does not list English help articles."
+    Assert-True ($helpContents.Contains("Waarde Converteren") -and $helpContents.Contains("help_nl_converteren.htm")) "Main CHM contents does not list Dutch help articles."
+    Assert-True ($helpContents.Contains("Convertir un Valor") -and $helpContents.Contains("help_es_convertir.htm")) "Main CHM contents does not list Spanish help articles."
+    Assert-True ($helpContents.Contains("Camps, Edicio i Porta-retalls") -and $helpContents.Contains("help_cat_camps.htm")) "Main CHM contents does not list Catalan help articles."
+    Assert-True ($helpProjectEn.Contains("Compiled file=Syscalculator174-en.chm") -and $helpProjectEn.Contains("Default topic=index_en.htm")) "English CHM project is not configured correctly."
+    Assert-True ($helpProjectNl.Contains("Compiled file=Syscalculator174-nl.chm") -and $helpProjectNl.Contains("Default topic=index_nl.htm")) "Dutch CHM project is not configured correctly."
+    Assert-True ($helpProjectEs.Contains("Compiled file=Syscalculator174-es.chm") -and $helpProjectEs.Contains("Default topic=index_es.htm")) "Spanish CHM project is not configured correctly."
+    Assert-True ($helpProjectCat.Contains("Compiled file=Syscalculator174-cat.chm") -and $helpProjectCat.Contains("Default topic=index_cat.htm")) "Catalan CHM project is not configured correctly."
+    Assert-True ($helpProjectEn.Contains("[90,80,850,620]") -and $helpProjectNl.Contains("[90,80,850,620]") -and $helpProjectEs.Contains("[90,80,850,620]") -and $helpProjectCat.Contains("[90,80,850,620]")) "Localized CHM projects do not use the compact default window size."
     Assert-True ($buildHelp.Contains("hhc.exe")) "CHM build script does not look for hhc.exe."
-    Assert-True ($installer.Contains("Syscalculator174.chm")) "Installer does not include the compiled CHM when present."
-    Assert-True ($english.Contains("Syscalculator174.chm::/index_en.htm")) "English help does not point to the CHM topic."
-    Assert-True ($dutch.Contains("Syscalculator174.chm::/index_nl.htm")) "Dutch help does not point to the CHM topic."
-    Assert-True ($spanish.Contains("Syscalculator174.chm::/index_es.htm")) "Spanish help does not point to the CHM topic."
-    Assert-True ($catalan.Contains("Syscalculator174.chm::/index_cat.htm")) "Catalan help does not point to the CHM topic."
+    Assert-True ($buildHelp.Contains("Syscalculator174-en.hhp") -and $buildHelp.Contains("Syscalculator174-nl.hhp") -and $buildHelp.Contains("Syscalculator174-es.hhp") -and $buildHelp.Contains("Syscalculator174-cat.hhp")) "CHM build script does not compile all localized projects."
+    Assert-True ($installer.Contains("help\*.chm")) "Installer does not include all compiled CHM files."
+    Assert-True ($english.Contains("[App]\help\Syscalculator174-en.chm")) "English help does not point to the English CHM."
+    Assert-True ($dutch.Contains("[App]\help\Syscalculator174-nl.chm")) "Dutch help does not point to the Dutch CHM."
+    Assert-True ($spanish.Contains("[App]\help\Syscalculator174-es.chm")) "Spanish help does not point to the Spanish CHM."
+    Assert-True ($catalan.Contains("[App]\help\Syscalculator174-cat.chm")) "Catalan help does not point to the Catalan CHM."
+    Assert-True ($english -notmatch "\[App\]\\help\\index_") "English help still points to loose HTML."
+    Assert-True ($dutch -notmatch "\[App\]\\help\\index_") "Dutch help still points to loose HTML."
+    Assert-True ($spanish -notmatch "\[App\]\\help\\index_") "Spanish help still points to loose HTML."
+    Assert-True ($catalan -notmatch "\[App\]\\help\\index_") "Catalan help still points to loose HTML."
     Assert-True ($form.Contains("OpenConfiguredHelp Me.Hwnd")) "Main form does not use the CHM-aware help launcher."
     Assert-True ($module.Contains("hh.exe")) "Help launcher does not use hh.exe for CHM files."
+    Assert-True ($module.Contains('Environ$("WINDIR")')) "Help launcher does not use the full Windows hh.exe path."
+    Assert-True ($module.Contains("LaunchHtmlHelp")) "Help launcher does not use the shared HTML Help launch routine."
     Assert-True ($module.Contains("fallbackTarget")) "Help launcher does not fall back to loose HTML."
+    Assert-True ((Read-Text (Join-Path $projectDir "WindowsAPI.bas")).Contains("Global Const SW_SHOWNORMAL = 1")) "Main project leaves ShellExecute windows hidden because SW_SHOWNORMAL is not defined."
+}
+
+Test-Case "Syscalculator 1.74 Help menu opens localized CHM files" {
+    $form = Read-Text (Join-Path $projectDir "Form1.frm")
+    $formData = Read-Text (Join-Path $projectDir "Form1Data.frm")
+    $editor = Read-Text (Join-Path $projectDir "editor.frm")
+    $zEditor = Read-Text (Join-Path $projectDir "Zeditor.frm")
+    $module = Read-Text (Join-Path $projectDir "Freesyscal.bas")
+    $editorModule = Read-Text (Join-Path $projectDir "EditorMod.bas")
+    $language = Read-Text (Join-Path $projectDir "Languare.bas")
+    $languageEditor = Read-Text (Join-Path $projectDir "Languarex.bas")
+    $windowsApi = Read-Text (Join-Path $projectDir "WindowsAPI.bas")
+    $editorApi = Read-Text (Join-Path $projectDir "WeditorApi.bas")
+    $english = Read-LegacyText (Join-Path $projectDir "eng.lng")
+    $dutch = Read-LegacyText (Join-Path $projectDir "ned.lng")
+    $dutchAlt = Read-LegacyText (Join-Path $projectDir "ned1.lng")
+    $spanish = Read-LegacyText (Join-Path $projectDir "esp.lng")
+    $catalan = Read-LegacyText (Join-Path $projectDir "cat.lng")
+    $directChmBranch = 'If LCase$(Right$(helpTarget, 4)) = ".chm" Then'
+
+    Assert-True ($form.Contains("Private Sub Help2_Click()") -and $form.Contains("OpenConfiguredHelp Me.Hwnd")) "Main form Help menu is not wired to OpenConfiguredHelp."
+    Assert-True ($formData.Contains("Private Sub Help2_Click()") -and $formData.Contains("OpenConfiguredHelp Me.Hwnd")) "Stored main form data is not wired to OpenConfiguredHelp."
+    Assert-True ($editor.Contains("Private Sub Help2_Click()") -and $editor.Contains("OpenConfiguredHelp Me.Hwnd")) "Editor Help menu is not wired to OpenConfiguredHelp."
+    Assert-True ($zEditor.Contains("Private Sub Help2_Click()") -and $zEditor.Contains("OpenConfiguredHelp Me.Hwnd")) "Zeditor Help menu is not wired to OpenConfiguredHelp."
+    Assert-True ($module.Contains($directChmBranch)) "Main help launcher does not open direct CHM paths through hh.exe."
+    Assert-True ($editorModule.Contains($directChmBranch)) "Editor help launcher does not open direct CHM paths through hh.exe."
+    Assert-True ($module.Contains('Dir$(helpTarget)') -and $editorModule.Contains('Dir$(helpTarget)')) "Help launchers do not verify the CHM file before hh.exe."
+    Assert-True ($module.Contains('"hh.exe"') -and $editorModule.Contains('"hh.exe"')) "Help launchers do not call hh.exe."
+    Assert-True ($module.Contains('Environ$("WINDIR")') -and $editorModule.Contains('Environ$("WINDIR")')) "Help launchers do not try the full Windows hh.exe path."
+    Assert-True ($module.Contains("iRet > 32") -and $editorModule.Contains("iRet > 32")) "Help launchers do not fall through when hh.exe launch fails."
+    Assert-True ($windowsApi.Contains("Global Const SW_SHOWNORMAL = 1") -and $editorApi.Contains("Public Const SW_SHOWNORMAL = 1")) "ShellExecute show mode is not defined for both main app and editor."
+    Assert-True ($language.Contains('If Left$(url, 5) = "[App]" Then url = App.Path + Mid$(url, 6)')) "Main language loader does not resolve [App] help paths."
+    Assert-True ($languageEditor.Contains('If Left$(url, 5) = "[App]" Then url = App.Path + Mid$(url, 6)')) "Editor language loader does not resolve [App] help paths."
+    Assert-True ($english.Contains('[App]\help\Syscalculator174-en.chm')) "English language file is not connected to the English CHM."
+    Assert-True ($dutch.Contains('[App]\help\Syscalculator174-nl.chm')) "Dutch language file is not connected to the Dutch CHM."
+    Assert-True ($dutchAlt.Contains('[App]\help\Syscalculator174-nl.chm')) "Alternate Dutch language file is not connected to the Dutch CHM."
+    Assert-True ($spanish.Contains('[App]\help\Syscalculator174-es.chm')) "Spanish language file is not connected to the Spanish CHM."
+    Assert-True ($catalan.Contains('[App]\help\Syscalculator174-cat.chm')) "Catalan language file is not connected to the Catalan CHM."
+
+    foreach ($chm in @("Syscalculator174-en.chm", "Syscalculator174-nl.chm", "Syscalculator174-es.chm", "Syscalculator174-cat.chm")) {
+        Assert-True (Test-Path -LiteralPath (Join-Path $projectDir "help\$chm")) "Compiled localized CHM is missing: $chm"
+    }
 }
 
 Test-Case "WizardExpress help documents the Office 365 limitation" {
-    $helpEn = Read-Text (Join-Path $projectDir "help\index_en.htm")
-    $helpNl = Read-Text (Join-Path $projectDir "help\index_nl.htm")
-    $helpEs = Read-Text (Join-Path $projectDir "help\index_es.htm")
-    $helpCat = Read-Text (Join-Path $projectDir "help\index_cat.htm")
+    $helpEn = Read-Text (Join-Path $projectDir "help\help_en_wizardexpress.htm")
+    $helpNl = Read-Text (Join-Path $projectDir "help\help_nl_wizardexpress.htm")
+    $helpEs = Read-Text (Join-Path $projectDir "help\help_es_wizardexpress.htm")
+    $helpCat = Read-Text (Join-Path $projectDir "help\help_cat_wizardexpress.htm")
     $classicHelp = Read-Text (Join-Path $projectDir "help\index.htm")
     $readme = Read-Text (Join-Path $projectDir "readme.txt")
     $pad = Read-Text (Join-Path $projectDir "pad_file.xml")
@@ -288,12 +359,51 @@ Test-Case "WizardExpress help documents the Office 365 limitation" {
     Assert-True ($helpNl.Contains("LibreOffice is getest en werkt ok")) "Dutch help does not document the LibreOffice test result."
     Assert-True ($helpEs.Contains("Microsoft 365 / Office 365")) "Spanish help has no Microsoft 365 / Office 365 warning."
     Assert-True ($helpCat.Contains("Microsoft 365 / Office 365")) "Catalan help has no Microsoft 365 / Office 365 warning."
-    Assert-True ($classicHelp.Contains("Microsoft 365 / Office 365")) "Classic help has no Microsoft 365 / Office 365 warning."
-    Assert-True ($classicHelp.Contains("LibreOffice has been tested and works ok")) "Classic help does not document the LibreOffice test result."
+    Assert-True ($classicHelp.Contains("Syscalculator 1.74 Help")) "Classic help index is not the help contents page."
+    Assert-True ($classicHelp.Contains("index_en.htm")) "Classic help index does not link to the English overview."
+    Assert-True ($classicHelp.Contains("index_nl.htm")) "Classic help index does not link to the Dutch overview."
+    Assert-True ($classicHelp.Contains("index_es.htm")) "Classic help index does not link to the Spanish overview."
+    Assert-True ($classicHelp.Contains("index_cat.htm")) "Classic help index does not link to the Catalan overview."
     Assert-True ($readme.Contains("Microsoft 365 / Office 365")) "readme.txt has no Microsoft 365 / Office 365 warning."
     Assert-True ($readme.Contains("LibreOffice has been tested and works ok")) "readme.txt does not document the LibreOffice test result."
     Assert-True ($pad.Contains("Microsoft 365 / Office 365 is not supported reliably")) "PAD metadata does not describe the Office 365 limitation."
     Assert-True ($pad.Contains("LibreOffice has been tested and works ok")) "PAD metadata does not document the LibreOffice test result."
+}
+
+Test-Case "Localized help pages include screenshots" {
+    $helpEn = (Read-Text (Join-Path $projectDir "help\help_en_convert.htm")) + (Read-Text (Join-Path $projectDir "help\help_en_wizardexpress.htm")) + (Read-Text (Join-Path $projectDir "help\help_en_configuration.htm")) + (Read-Text (Join-Path $projectDir "help\help_en_nod_catalog.htm"))
+    $helpNl = (Read-Text (Join-Path $projectDir "help\help_nl_converteren.htm")) + (Read-Text (Join-Path $projectDir "help\help_nl_wizardexpress.htm")) + (Read-Text (Join-Path $projectDir "help\help_nl_configuratie.htm")) + (Read-Text (Join-Path $projectDir "help\help_nl_nod_catalogus.htm"))
+    $helpEs = (Read-Text (Join-Path $projectDir "help\help_es_convertir.htm")) + (Read-Text (Join-Path $projectDir "help\help_es_wizardexpress.htm")) + (Read-Text (Join-Path $projectDir "help\help_es_configuracion.htm")) + (Read-Text (Join-Path $projectDir "help\help_es_nod_catalogo.htm"))
+    $helpCat = (Read-Text (Join-Path $projectDir "help\help_cat_convertir.htm")) + (Read-Text (Join-Path $projectDir "help\help_cat_wizardexpress.htm")) + (Read-Text (Join-Path $projectDir "help\help_cat_configuracio.htm")) + (Read-Text (Join-Path $projectDir "help\help_cat_nod_cataleg.htm"))
+    $requiredImages = @("syscal_1.png", "syscal_2.png", "Syscal_3.png", "Syscal_4.png", "triconvert_3.jpg")
+
+    foreach ($image in $requiredImages) {
+        Assert-True ($helpEn.Contains($image)) "English help does not reference $image."
+        Assert-True ($helpNl.Contains($image)) "Dutch help does not reference $image."
+        Assert-True ($helpEs.Contains($image)) "Spanish help does not reference $image."
+        Assert-True ($helpCat.Contains($image)) "Catalan help does not reference $image."
+        Assert-True (Test-Path -LiteralPath (Join-Path $projectDir "help\$image")) "Help image is missing: $image"
+    }
+
+    Assert-True ($helpNl -notmatch "triconv_3\.png") "Dutch help still links to a missing triconv_3.png file."
+}
+
+Test-Case "Localized limitation articles show warning triangle" {
+    $supportArticles = @(
+        "help_en_support.htm",
+        "help_nl_support.htm",
+        "help_es_soporte.htm",
+        "help_cat_suport.htm"
+    )
+
+    foreach ($article in $supportArticles) {
+        $text = Read-Text (Join-Path $projectDir "help\$article")
+        Assert-True ($text.Contains('class="warning"')) "$article has no warning box."
+        Assert-True ($text.Contains('warning_triangle.png')) "$article has no warning triangle image."
+        Assert-True ($text.Contains('alt="!"')) "$article has no warning exclamation fallback."
+    }
+
+    Assert-True (Test-Path -LiteralPath (Join-Path $projectDir "help\warning_triangle.png")) "Warning triangle image is missing."
 }
 
 Test-Case "New euro adopters are included in the legacy catalog" {
@@ -402,6 +512,8 @@ Test-Case "Operatie Decibel is VB6 1.74 compatible" {
 }
 
 Test-Case "Compile script validates the VB6 project path" {
+    $compileScriptText = Read-Text $compileScript
+    Assert-True ($compileScriptText.Contains("Project1.vbw") -and $compileScriptText.Contains("SyscalEditor.vbw")) "Compile script does not move VB6 workspace files out of the way."
     & $compileScript -SkipCompile | Out-Host
 }
 

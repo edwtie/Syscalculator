@@ -3,18 +3,54 @@ Compatibility=1.1 or later
 Compiled file=Syscalculator174.chm
 Contents file=Syscalculator174.hhc
 Index file=Syscalculator174.hhk
-Default topic=index_en.htm
+Default Window=main
+Default topic=index.htm
 Display compile progress=No
 Full-text search=Yes
 Language=0x409 English (United States)
 Title=Syscalculator 1.74 Help
 
+[WINDOWS]
+main="Syscalculator 1.74 Help","Syscalculator174.hhc","Syscalculator174.hhk","index.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+
 [FILES]
 index.htm
-index_cat.htm
 index_en.htm
-index_es.htm
+help_en_convert.htm
+help_en_fields.htm
+help_en_wizardexpress.htm
+help_en_calculator.htm
+help_en_configuration.htm
+help_en_window_options.htm
+help_en_nod_catalog.htm
+help_en_support.htm
 index_nl.htm
+help_nl_converteren.htm
+help_nl_velden.htm
+help_nl_wizardexpress.htm
+help_nl_rekenmachine.htm
+help_nl_configuratie.htm
+help_nl_venster_opties.htm
+help_nl_nod_catalogus.htm
+help_nl_support.htm
+index_es.htm
+help_es_convertir.htm
+help_es_campos.htm
+help_es_wizardexpress.htm
+help_es_calculadora.htm
+help_es_configuracion.htm
+help_es_ventana_opciones.htm
+help_es_nod_catalogo.htm
+help_es_soporte.htm
+index_cat.htm
+help_cat_convertir.htm
+help_cat_camps.htm
+help_cat_wizardexpress.htm
+help_cat_calculadora.htm
+help_cat_configuracio.htm
+help_cat_finestra_opcions.htm
+help_cat_nod_cataleg.htm
+help_cat_suport.htm
 logo_phpBB.gif
 Logo_phpBB_med.gif
 syscal_1.png
@@ -22,3 +58,4 @@ syscal_2.png
 Syscal_3.png
 Syscal_4.png
 triconvert_3.jpg
+warning_triangle.png

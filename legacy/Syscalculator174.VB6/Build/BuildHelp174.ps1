@@ -7,11 +7,19 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectDir = Split-Path -Parent $scriptDir
 $helpDir = Join-Path $projectDir "help"
-$projectFile = Join-Path $helpDir "Syscalculator174.hhp"
-$outputFile = Join-Path $helpDir "Syscalculator174.chm"
+$helpProjects = @(
+    @{ Project = "Syscalculator174-en.hhp"; Output = "Syscalculator174-en.chm" },
+    @{ Project = "Syscalculator174-nl.hhp"; Output = "Syscalculator174-nl.chm" },
+    @{ Project = "Syscalculator174-es.hhp"; Output = "Syscalculator174-es.chm" },
+    @{ Project = "Syscalculator174-cat.hhp"; Output = "Syscalculator174-cat.chm" },
+    @{ Project = "Syscalculator174.hhp"; Output = "Syscalculator174.chm" }
+)
 
-if (-not (Test-Path -LiteralPath $projectFile)) {
-    throw "HTML Help project file not found: $projectFile"
+foreach ($helpProject in $helpProjects) {
+    $projectFile = Join-Path $helpDir $helpProject.Project
+    if (-not (Test-Path -LiteralPath $projectFile)) {
+        throw "HTML Help project file not found: $projectFile"
+    }
 }
 
 if ([string]::IsNullOrWhiteSpace($HhcPath)) {
@@ -38,18 +46,23 @@ if ([string]::IsNullOrWhiteSpace($HhcPath) -or -not (Test-Path -LiteralPath $Hhc
 
 Push-Location $helpDir
 try {
-    if (Test-Path -LiteralPath $outputFile) {
-        Remove-Item -LiteralPath $outputFile -Force
-    }
+    foreach ($helpProject in $helpProjects) {
+        $projectFile = Join-Path $helpDir $helpProject.Project
+        $outputFile = Join-Path $helpDir $helpProject.Output
 
-    & $HhcPath $projectFile
+        if (Test-Path -LiteralPath $outputFile) {
+            Remove-Item -LiteralPath $outputFile -Force
+        }
 
-    if (-not (Test-Path -LiteralPath $outputFile)) {
-        throw "HTML Help compiler finished but did not create: $outputFile"
+        & $HhcPath $projectFile
+
+        if (-not (Test-Path -LiteralPath $outputFile)) {
+            throw "HTML Help compiler finished but did not create: $outputFile"
+        }
+
+        Write-Host "Syscalculator 1.74 CHM help created: $outputFile"
     }
 }
 finally {
     Pop-Location
 }
-
-Write-Host "Syscalculator 1.74 CHM help created: $outputFile"

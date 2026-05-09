@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft HTML Help Workshop">
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+  <param name="Window Styles" value="0x800025">
+</OBJECT>
+<UL>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Ayuda en Espanol">
+    <param name="Local" value="index_es.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Convertir un Valor">
+    <param name="Local" value="help_es_convertir.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Campos, Edicion y Portapapeles">
+    <param name="Local" value="help_es_campos.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="WizardExpress">
+    <param name="Local" value="help_es_wizardexpress.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Calculadora">
+    <param name="Local" value="help_es_calculadora.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Configuracion">
+    <param name="Local" value="help_es_configuracion.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Ventana, Bandeja y Decimales">
+    <param name="Local" value="help_es_ventana_opciones.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Archivos NOD y Catalogo">
+    <param name="Local" value="help_es_nod_catalogo.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Limitaciones y Soporte">
+    <param name="Local" value="help_es_soporte.htm">
+  </OBJECT>
+</UL>
+</BODY></HTML>

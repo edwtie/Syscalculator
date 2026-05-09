@@ -1,126 +1,37 @@
+<!DOCTYPE html>
 <html>
-
 <head>
 <meta http-equiv="Content-Language" content="ca">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Manual de Syscalculator 1.74</title>
+<title>Syscalculator 1.74 Help - Catala</title>
+<style>
+body { font-family: Tahoma, Arial, sans-serif; font-size: 10pt; margin: 18px; color: #202020; background: #ffffff; }
+h1 { font-size: 18pt; margin: 0 0 10px 0; }
+p { margin: 0 0 10px 0; line-height: 1.35; }
+ul, ol { margin-top: 6px; margin-bottom: 12px; }
+li { margin: 4px 0; }
+img { max-width: 100%; height: auto; border: 0; }
+.nav { border-bottom: 1px solid #c0c0c0; margin-bottom: 12px; padding-bottom: 8px; }
+.note { border-top: 1px solid #c0c0c0; margin-top: 18px; padding-top: 10px; color: #505050; }
+.warning { border: 1px solid #b07800; background: #fff7d6; padding: 8px; margin: 12px 0; }
+.warning img { vertical-align: middle; margin-right: 8px; }
+.warning-title { font-weight: bold; }
+</style>
 </head>
-
 <body>
-
-<p><b><u><font size="5">Manual de Syscalculator 1.74</font></u></b></p>
-
-<p><b>Introduccio</b></p>
-
-<p>Syscalculator 1.74 es la linia classica de Syscalculator basada en Visual Basic 6.
-Aquesta versio mante disponible el flux de treball antic mentre es desenvolupa
-Syscalculator 2.0.</p>
-
-<p>La versio 1.74 es una versio de manteniment. Inclou correccions per a Windows modern,
-fitxers de conversio classics i monedes historiques de l'euro, incloent adopcions recents
-com Croacia 2023 i Bulgaria 2026.</p>
-
-<p><b>Important:</b> el runtime de Visual Basic 6 es antic i Microsoft ja no el mante
-activament. Syscalculator 1.74 s'ofereix com a versio legacy. Per a treball nou i funcions
-futures s'esta preparant Syscalculator 2.0.</p>
-
-<p><b>Index rapid</b></p>
-
+<h1>Ajuda en Catala</h1>
+<p>Syscalculator 1.74 conserva el conversor classic de Visual Basic 6 com a versio legacy de manteniment.</p>
+<p>Trieu un tema al panell de contingut o a la llista seguent.</p>
 <ol>
-  <li><a href="#convertir">Convertir un valor</a></li>
-  <li><a href="#camps">Camps i edicio</a></li>
-  <li><a href="#wizard">WizardExpress</a></li>
-  <li><a href="#configuracio">Configuracio</a></li>
-  <li><a href="#fitxers">Fitxers NOD i catalegs</a></li>
-  <li><a href="#limitacions">Limitacions conegudes</a></li>
+  <li><a href="help_cat_convertir.htm">Convertir un Valor</a></li>
+  <li><a href="help_cat_camps.htm">Camps, Edicio i Porta-retalls</a></li>
+  <li><a href="help_cat_wizardexpress.htm">WizardExpress</a></li>
+  <li><a href="help_cat_calculadora.htm">Calculadora</a></li>
+  <li><a href="help_cat_configuracio.htm">Configuracio</a></li>
+  <li><a href="help_cat_finestra_opcions.htm">Finestra, Safata i Decimals</a></li>
+  <li><a href="help_cat_nod_cataleg.htm">Fitxers NOD i Cataleg</a></li>
+  <li><a href="help_cat_suport.htm">Limitacions i Suport</a></li>
 </ol>
-
-<p><b><a name="convertir">Com convertir un valor</a></b></p>
-
-<ol>
-  <li>Trieu un conversor de la llista.</li>
-  <li>Escriviu el valor al primer camp.</li>
-  <li>Llegiu el resultat al segon camp.</li>
-  <li>Useu la direccio inversa si voleu calcular en sentit contrari.</li>
-</ol>
-
-<p>Exemple: si el conversor seleccionat es de quilometres a milles, escriviu el nombre de
-quilometres al primer camp. Syscalculator calcula el resultat i el mostra al segon camp.
-Si activeu la direccio inversa, podeu usar el mateix conversor per tornar de milles a
-quilometres.</p>
-
-<p><b><a name="camps">Camps i edicio</a></b></p>
-
-<ul>
-  <li><b>Copiar</b> copia el text seleccionat del camp actiu.</li>
-  <li><b>Retallar</b> copia i elimina el text seleccionat.</li>
-  <li><b>Enganxar</b> insereix text del porta-retalls al camp actiu.</li>
-  <li><b>Eliminar</b> elimina el text seleccionat.</li>
-  <li><b>Seleccionar-ho tot</b> selecciona tot el valor del camp actiu.</li>
-</ul>
-
-<p>Si no hi ha text seleccionat, les accions que necessiten una seleccio poden estar
-desactivades. Aixo evita esborrar o copiar un camp complet per accident.</p>
-
-<p><b><a name="wizard">WizardExpress</a></b></p>
-
-<p>WizardExpress converteix valors copiats al porta-retalls. Esta pensat per a programes
-antics d'Office i Word i per a text simple.</p>
-
-<ol>
-  <li>Copieu els valors al porta-retalls.</li>
-  <li>Obriu WizardExpress.</li>
-  <li>Executeu la conversio.</li>
-  <li>Enganxeu el resultat de nou a l'aplicacio.</li>
-</ol>
-
-<p><b>Nota de compatibilitat:</b> LibreOffice s'ha provat i funciona correctament.
-Microsoft 365 / Office 365 no funciona de manera fiable amb aquesta integracio VB6 antiga
-del porta-retalls.</p>
-
-<p>Consell: despres d'executar WizardExpress, enganxeu immediatament el resultat amb
-Ctrl+V. En Excel modern, el menu contextual d'enganxar pot canviar una altra vegada el
-contingut del porta-retalls.</p>
-
-<p><b><a name="configuracio">Configuracio</a></b></p>
-
-<ul>
-  <li>Podeu canviar l'idioma i la moneda/conversor predeterminat.</li>
-  <li>Podeu iniciar Syscalculator amb Windows.</li>
-  <li>Podeu usar la safata del sistema.</li>
-  <li>Podeu mantenir la finestra sempre visible.</li>
-  <li>Podeu ajustar decimals i format de sortida per a resultats numerics.</li>
-</ul>
-
-<p>Els ajustos es desen als fitxers de configuracio classics. En instal.lacions modernes
-tambe es copien a la carpeta de dades de l'usuari per evitar problemes de permisos a
-Windows.</p>
-
-<p><b><a name="fitxers">Fitxers NOD i catalegs</a></b></p>
-
-<p>Els conversors es desen com a fitxers NOD. El cataleg agrupa aquests fitxers perque
-apareguin a la llista principal. Si s'afegeixen o es corregeixen fitxers NOD, torneu a
-obrir Syscalculator o recarregueu el cataleg per veure'ls.</p>
-
-<p>La versio 1.74 conserva els conversors classics de distancia, massa, pressio,
-temperatura, volum, text i monedes historiques de l'euro.</p>
-
-<p><b><a name="limitacions">Limitacions conegudes</a></b></p>
-
-<ul>
-  <li>Aquesta es una aplicacio legacy VB6, no una aplicacio moderna .NET.</li>
-  <li>El runtime VB6 es obligatori.</li>
-  <li>Microsoft 365 / Office 365 pot comportar-se malament amb el porta-retalls.</li>
-  <li>Windows 11 ha estat provat. Windows antics son objectius historics i no sempre es tornen a provar.</li>
-</ul>
-
-<p><b>Suport i futur</b></p>
-
-<p>Syscalculator 1.74 conserva la compatibilitat historica. Syscalculator 2.0 es la nova
-linia moderna, pensada per reduir els riscos del runtime VB6 antic i per afegir funcions
-noves.</p>
-
-<p>Copyright (c) 1996-2026 Tiedragon</p>
-
+<p class="note">Copyright (c) 1996-2026 Tiedragon.</p>
 </body>
 </html>

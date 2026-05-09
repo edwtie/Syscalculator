@@ -5,32 +5,152 @@
 </HEAD><BODY>
 <UL>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="converter">
+    <param name="Name" value="Syscalculator 1.74 Help">
+    <param name="Local" value="index.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="English Help">
     <param name="Local" value="index_en.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Convert a Value">
+    <param name="Local" value="help_en_convert.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Fields, Editing and Clipboard">
+    <param name="Local" value="help_en_fields.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
     <param name="Name" value="WizardExpress">
-    <param name="Local" value="index_en.htm#3">
+    <param name="Local" value="help_en_wizardexpress.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="NOD">
-    <param name="Local" value="index_en.htm">
+    <param name="Name" value="Calculator">
+    <param name="Local" value="help_en_calculator.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="VB6 legacy">
-    <param name="Local" value="index_en.htm">
+    <param name="Name" value="Configuration">
+    <param name="Local" value="help_en_configuration.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="Nederlands">
+    <param name="Name" value="Window, Tray and Decimals">
+    <param name="Local" value="help_en_window_options.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="NOD Files and Catalog">
+    <param name="Local" value="help_en_nod_catalog.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Limitations and Support">
+    <param name="Local" value="help_en_support.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Nederlandse Help">
     <param name="Local" value="index_nl.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="Espanol">
+    <param name="Name" value="Waarde Converteren">
+    <param name="Local" value="help_nl_converteren.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Velden, Bewerken en Klembord">
+    <param name="Local" value="help_nl_velden.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="WizardExpress">
+    <param name="Local" value="help_nl_wizardexpress.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Rekenmachine">
+    <param name="Local" value="help_nl_rekenmachine.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Configuratie">
+    <param name="Local" value="help_nl_configuratie.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Venster, Tray en Decimalen">
+    <param name="Local" value="help_nl_venster_opties.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="NOD-bestanden en Catalogus">
+    <param name="Local" value="help_nl_nod_catalogus.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Beperkingen en Support">
+    <param name="Local" value="help_nl_support.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Ayuda en Espanol">
     <param name="Local" value="index_es.htm">
   </OBJECT>
   <LI><OBJECT type="text/sitemap">
-    <param name="Name" value="Catala">
+    <param name="Name" value="Convertir un Valor">
+    <param name="Local" value="help_es_convertir.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Campos, Edicion y Portapapeles">
+    <param name="Local" value="help_es_campos.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="WizardExpress">
+    <param name="Local" value="help_es_wizardexpress.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Calculadora">
+    <param name="Local" value="help_es_calculadora.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Configuracion">
+    <param name="Local" value="help_es_configuracion.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Ventana, Bandeja y Decimales">
+    <param name="Local" value="help_es_ventana_opciones.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Archivos NOD y Catalogo">
+    <param name="Local" value="help_es_nod_catalogo.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Limitaciones y Soporte">
+    <param name="Local" value="help_es_soporte.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Ajuda en Catala">
     <param name="Local" value="index_cat.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Convertir un Valor">
+    <param name="Local" value="help_cat_convertir.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Camps, Edicio i Porta-retalls">
+    <param name="Local" value="help_cat_camps.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="WizardExpress">
+    <param name="Local" value="help_cat_wizardexpress.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Calculadora">
+    <param name="Local" value="help_cat_calculadora.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Configuracio">
+    <param name="Local" value="help_cat_configuracio.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Finestra, Safata i Decimals">
+    <param name="Local" value="help_cat_finestra_opcions.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Fitxers NOD i Cataleg">
+    <param name="Local" value="help_cat_nod_cataleg.htm">
+  </OBJECT>
+  <LI><OBJECT type="text/sitemap">
+    <param name="Name" value="Limitacions i Suport">
+    <param name="Local" value="help_cat_suport.htm">
   </OBJECT>
 </UL>
 </BODY></HTML>
