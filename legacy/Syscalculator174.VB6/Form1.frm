@@ -272,6 +272,10 @@ Begin VB.Form Form1
          Caption         =   "Delete"
          Shortcut        =   {DEL}
       End
+      Begin VB.Menu eselect 
+         Caption         =   "Select All"
+         Shortcut        =   ^A
+      End
       Begin VB.Menu delall 
          Caption         =   "Delete All "
          Enabled         =   0   'False
@@ -702,6 +706,11 @@ Private Sub epaste_Click()
       result = ""
 If Option1.Value = True Then Text1.Text = Clipboard.GetText()
 If Option2.Value = True Then Text2.Text = Clipboard.GetText()
+End Sub
+
+Private Sub eselect_Click()
+If Option1.Value = True Then Text1.SetFocus: Text1.SelStart = 0: Text1.SelLength = Len(Text1.Text)
+If Option2.Value = True Then Text2.SetFocus: Text2.SelStart = 0: Text2.SelLength = Len(Text2.Text)
 End Sub
 
 Private Sub exit_Click()

@@ -181,6 +181,8 @@ Sub From1(F1 As String, comm As Integer, Data As String, url As String)
             Form1.Delete.Caption = Data
             Case 505:
             Form1.delall.Caption = Data
+            Case 506:
+            Form1.eselect.Caption = Data
             Case 601:
             tray1.mnuShow.Caption = Data
             Case 602:
