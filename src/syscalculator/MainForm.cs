@@ -200,8 +200,8 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         selectAllItem.Click += SelectAllActiveField_Click;
         edit.DropDownItems.Add(selectAllItem);
         edit.DropDownItems.Add(new ToolStripSeparator());
-        edit.DropDownItems.Add(T("menu.edit.copy_input", "Copy input"), null, (_, _) => Clipboard.SetText(_inputTextBox.Text));
-        edit.DropDownItems.Add(T("menu.edit.copy_output", "Copy output"), null, (_, _) => Clipboard.SetText(_outputTextBox.Text));
+        edit.DropDownItems.Add(T("menu.edit.copy_input", "Copy input"), null, (_, _) => CopyFieldText(_inputTextBox));
+        edit.DropDownItems.Add(T("menu.edit.copy_output", "Copy output"), null, (_, _) => CopyFieldText(_outputTextBox));
         edit.DropDownItems.Add(T("menu.edit.paste_active", "Paste to active field"), null, (_, _) =>
         {
             var target = _calculatorTargetTextBox ?? _inputTextBox;
@@ -343,6 +343,14 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         return ActiveControl is TextBox textBox && (textBox == _inputTextBox || textBox == _outputTextBox)
             ? textBox
             : _calculatorTargetTextBox ?? _inputTextBox;
+    }
+
+    private void CopyFieldText(TextBox textBox)
+    {
+        if (string.IsNullOrEmpty(textBox.Text))
+            return;
+
+        Clipboard.SetText(textBox.Text);
     }
 
     private void CutActiveField_Click(object? sender, EventArgs e)

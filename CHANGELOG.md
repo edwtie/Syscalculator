@@ -31,6 +31,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed the main Help menu so user help is available with the F1 shortcut.
 - Fixed the main Edit menu so Cut, Copy, Paste and Select all expose standard Ctrl shortcuts for the active field.
 - Fixed the main Edit menu so Delete is available with the Del shortcut and acts on the active field selection.
+- Fixed Copy input/output so empty fields no longer cause clipboard copy problems.
 
 **Additions:**
 - Upgraded the Syscalculator 2.0 daily development line from .NET 8 to .NET 10.
