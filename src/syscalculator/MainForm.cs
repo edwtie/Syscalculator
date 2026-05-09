@@ -200,16 +200,40 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         selectAllItem.Click += SelectAllActiveField_Click;
         edit.DropDownItems.Add(selectAllItem);
         edit.DropDownItems.Add(new ToolStripSeparator());
-        edit.DropDownItems.Add(T("menu.edit.copy_input", "Copy input"), null, (_, _) => CopyFieldText(_inputTextBox));
-        edit.DropDownItems.Add(T("menu.edit.copy_output", "Copy output"), null, (_, _) => CopyFieldText(_outputTextBox));
-        edit.DropDownItems.Add(T("menu.edit.paste_active", "Paste to active field"), null, (_, _) =>
+        var copyInputItem = new ToolStripMenuItem(T("menu.edit.copy_input", "Copy input"));
+        copyInputItem.Click += (_, _) => CopyFieldText(_inputTextBox);
+        edit.DropDownItems.Add(copyInputItem);
+        var copyOutputItem = new ToolStripMenuItem(T("menu.edit.copy_output", "Copy output"));
+        copyOutputItem.Click += (_, _) => CopyFieldText(_outputTextBox);
+        edit.DropDownItems.Add(copyOutputItem);
+        var pasteActiveItem = new ToolStripMenuItem(T("menu.edit.paste_active", "Paste to active field"));
+        pasteActiveItem.Click += (_, _) =>
         {
             var target = _calculatorTargetTextBox ?? _inputTextBox;
             if (Clipboard.ContainsText())
                 target.Text = Clipboard.GetText();
-        });
+        };
+        edit.DropDownItems.Add(pasteActiveItem);
         edit.DropDownItems.Add(new ToolStripSeparator());
-        edit.DropDownItems.Add(T("menu.edit.clear", "Clear fields"), null, (_, _) => ClearFields());
+        var clearItem = new ToolStripMenuItem(T("menu.edit.clear", "Clear fields"));
+        clearItem.Click += (_, _) => ClearFields();
+        edit.DropDownItems.Add(clearItem);
+        edit.DropDownOpening += (_, _) =>
+        {
+            var target = GetActiveEditTextBox();
+            var hasSelection = target.SelectionLength > 0;
+            var hasClipboardText = Clipboard.ContainsText();
+
+            cutItem.Enabled = hasSelection;
+            copyItem.Enabled = hasSelection;
+            deleteItem.Enabled = hasSelection || target.SelectionStart < target.TextLength;
+            pasteItem.Enabled = hasClipboardText;
+            selectAllItem.Enabled = target.TextLength > 0;
+            copyInputItem.Enabled = !string.IsNullOrEmpty(_inputTextBox.Text);
+            copyOutputItem.Enabled = !string.IsNullOrEmpty(_outputTextBox.Text);
+            pasteActiveItem.Enabled = hasClipboardText;
+            clearItem.Enabled = !string.IsNullOrEmpty(_inputTextBox.Text) || !string.IsNullOrEmpty(_outputTextBox.Text);
+        };
 
         var config = new ToolStripMenuItem(T("menu.config", "Config"));
         config.DropDownItems.Add(T("option.digit_group", "Digit group"), null, (_, _) => _digitGroupCheckBox.Checked = !_digitGroupCheckBox.Checked);
