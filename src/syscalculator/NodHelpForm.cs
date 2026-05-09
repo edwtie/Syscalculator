@@ -49,9 +49,9 @@ public sealed class NodHelpForm : Form
         var topicPaneWidth = CalculateTopicPaneWidth(pages);
 
         Text = title;
-        Width = Math.Max(940, topicPaneWidth + 650);
-        Height = 640;
-        MinimumSize = new Size(780, 440);
+        Width = Math.Max(900, topicPaneWidth + 600);
+        Height = 600;
+        MinimumSize = new Size(740, 420);
         StartPosition = FormStartPosition.CenterParent;
         KeyPreview = true;
         KeyDown += NodHelpForm_KeyDown;
@@ -485,7 +485,7 @@ public sealed class NodHelpForm : Form
                 Size.Empty,
                 TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Width);
 
-        return Math.Clamp(widest + 54, 280, 370);
+        return Math.Clamp(widest + 46, 260, 330);
     }
 
     private static void ApplyTopicPaneWidth(SplitContainer split, int preferredPanel1Width)
