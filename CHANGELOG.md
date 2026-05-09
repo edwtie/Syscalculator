@@ -49,6 +49,27 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Expanded localized in-app help pages for all bundled languages with practical daily-use topics and limitations.
 - Verified the .NET 10 migration with restore, 80/80 NOD system tests, Release build and publish smoke test.
 
+#### 2.0.2026.05.08 Daily Build
+
+**Date:** 2026-05-08
+
+**Fixes:**
+- Added visible release information to the main Syscalculator About window.
+- Updated the main window title so daily builds show the build label, for example `Syscalculator 2.0 daily build 2026.05.08.006`.
+- Added English and Dutch language labels for the release channel field.
+- Fixed formula card layout overflow and duplicated formula card action buttons.
+- Improved Syscalculator help layout, search and navigation polish.
+
+**Additions:**
+- Published the first GitHub daily installer releases for Syscalculator 2.0: `v2.0.2026.05.08.003-daily` and `v2.0.2026.05.08.006-daily`.
+- Added GitHub release assets for `Syscalculator-2.0-daily-2.0.2026.05.08.003.exe` and `Syscalculator-2.0-daily-2.0.2026.05.08.006.exe`.
+- Restored legacy `Configuratie -> Start` behavior for starting with Windows.
+- Restored legacy `Configuratie -> Overschakelen` behavior for reversing converter direction.
+- Added reusable help-style navigation API and formula/help navigation controls.
+- Expanded the Syscalculator 2.0 installer language support to English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese.
+- Continued separating reusable code into `Tiedragon.NodSystem.Core`, `Tiedragon.Graph2D`, `Tiedragon.ToolEditor` and `Tiedragon.ClipboardConvert`.
+- Verified the daily release packaging with the NOD/System test runner: 80 passed, 0 failed, solution build and Inno Setup 6.7.1 installer builds.
+
 #### 2.0.2026.05.07 Daily Build
 
 **Date:** 2026-05-07
