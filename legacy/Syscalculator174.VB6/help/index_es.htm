@@ -24,7 +24,18 @@ adopciones recientes como Croacia 2023 y Bulgaria 2026.</p>
 activamente por Microsoft. Syscalculator 1.74 se ofrece como version legacy. Para trabajo
 nuevo y funciones futuras se esta preparando Syscalculator 2.0.</p>
 
-<p><b>Como convertir un valor</b></p>
+<p><b>Indice rapido</b></p>
+
+<ol>
+  <li><a href="#convertir">Convertir un valor</a></li>
+  <li><a href="#campos">Campos y edicion</a></li>
+  <li><a href="#wizard">WizardExpress</a></li>
+  <li><a href="#configuracion">Configuracion</a></li>
+  <li><a href="#archivos">Archivos NOD y catalogos</a></li>
+  <li><a href="#limitaciones">Limitaciones conocidas</a></li>
+</ol>
+
+<p><b><a name="convertir">Como convertir un valor</a></b></p>
 
 <ol>
   <li>Elija un conversor en la lista.</li>
@@ -33,7 +44,25 @@ nuevo y funciones futuras se esta preparando Syscalculator 2.0.</p>
   <li>Use la opcion de direccion inversa si quiere calcular en sentido contrario.</li>
 </ol>
 
-<p><b>WizardExpress</b></p>
+<p>Ejemplo: si el conversor seleccionado es de kilometros a millas, escriba el numero de
+kilometros en el primer campo. Syscalculator calcula el resultado y lo muestra en el
+segundo campo. Si activa la direccion inversa, puede usar el mismo conversor para volver
+de millas a kilometros.</p>
+
+<p><b><a name="campos">Campos y edicion</a></b></p>
+
+<ul>
+  <li><b>Copiar</b> copia el texto seleccionado del campo activo.</li>
+  <li><b>Cortar</b> copia y elimina el texto seleccionado.</li>
+  <li><b>Pegar</b> inserta texto del portapapeles en el campo activo.</li>
+  <li><b>Eliminar</b> elimina el texto seleccionado.</li>
+  <li><b>Seleccionar todo</b> selecciona todo el valor del campo activo.</li>
+</ul>
+
+<p>Si no hay texto seleccionado, las acciones que necesitan una seleccion pueden estar
+desactivadas. Esto evita borrar o copiar un campo completo por accidente.</p>
+
+<p><b><a name="wizard">WizardExpress</a></b></p>
 
 <p>WizardExpress convierte valores que se copian al portapapeles. Esta pensado para
 programas antiguos de Office y Word y para texto simple.</p>
@@ -49,13 +78,40 @@ programas antiguos de Office y Word y para texto simple.</p>
 Microsoft 365 / Office 365 no funciona de forma fiable con esta integracion VB6 antigua
 del portapapeles.</p>
 
-<p><b>Configuracion</b></p>
+<p>Consejo: despues de ejecutar WizardExpress, pegue inmediatamente el resultado con
+Ctrl+V. En Excel moderno, el menu contextual de pegado puede cambiar otra vez el contenido
+del portapapeles.</p>
+
+<p><b><a name="configuracion">Configuracion</a></b></p>
 
 <ul>
   <li>Puede cambiar idioma y moneda/conversor predeterminado.</li>
   <li>Puede iniciar Syscalculator con Windows.</li>
   <li>Puede usar la bandeja del sistema.</li>
   <li>Puede mantener la ventana siempre visible.</li>
+  <li>Puede ajustar decimales y formato de salida para resultados numericos.</li>
+</ul>
+
+<p>Los ajustes se guardan en los archivos de configuracion clasicos. En instalaciones
+modernas tambien se copian a la carpeta de datos del usuario para evitar problemas de
+permisos en Windows.</p>
+
+<p><b><a name="archivos">Archivos NOD y catalogos</a></b></p>
+
+<p>Los conversores se guardan como archivos NOD. El catalogo agrupa esos archivos para que
+aparezcan en la lista principal. Si se anaden o corrigen archivos NOD, vuelva a abrir
+Syscalculator o recargue el catalogo para verlos.</p>
+
+<p>La version 1.74 conserva los conversores clasicos de distancia, masa, presion,
+temperatura, volumen, texto y monedas historicas del euro.</p>
+
+<p><b><a name="limitaciones">Limitaciones conocidas</a></b></p>
+
+<ul>
+  <li>Esta es una aplicacion legacy VB6, no una aplicacion moderna .NET.</li>
+  <li>El runtime VB6 es obligatorio.</li>
+  <li>Microsoft 365 / Office 365 puede comportarse mal con el portapapeles.</li>
+  <li>Windows 11 ha sido probado. Windows antiguos son objetivos historicos y no siempre se vuelven a probar.</li>
 </ul>
 
 <p><b>Soporte y futuro</b></p>
