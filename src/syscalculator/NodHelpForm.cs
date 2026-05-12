@@ -697,7 +697,7 @@ internal sealed class HelpNavigationButton : Button
     {
         _icon = icon;
         Text = text;
-        Font = new Font("Segoe UI", 9, FontStyle.Regular);
+        Font = new Font("Segoe UI Semibold", 9.2f, FontStyle.Regular);
         Cursor = Cursors.Hand;
         FlatStyle = FlatStyle.Flat;
         FlatAppearance.BorderSize = 0;
@@ -714,15 +714,15 @@ internal sealed class HelpNavigationButton : Button
 
         var rect = new RectangleF(0.5f, 0.5f, ClientSize.Width - 1, ClientSize.Height - 1);
         var backgroundColor = !Enabled
-            ? Color.FromArgb(226, 232, 240)
+            ? Color.FromArgb(232, 240, 254)
             : _pressed
-                ? Color.FromArgb(219, 234, 254)
+                ? Color.FromArgb(191, 219, 254)
                 : _hover
-                    ? Color.FromArgb(239, 246, 255)
-                    : Color.White;
-        var borderColor = Enabled ? Color.FromArgb(100, 116, 139) : Color.FromArgb(148, 163, 184);
-        var iconColor = Enabled ? Color.FromArgb(15, 63, 143) : Color.FromArgb(100, 116, 139);
-        var textColor = Enabled ? Color.FromArgb(31, 41, 55) : Color.FromArgb(100, 116, 139);
+                    ? Color.FromArgb(219, 234, 254)
+                    : Color.FromArgb(239, 246, 255);
+        var borderColor = Enabled ? Color.FromArgb(59, 130, 246) : Color.FromArgb(147, 197, 253);
+        var iconColor = Enabled ? Color.FromArgb(29, 78, 216) : Color.FromArgb(75, 105, 150);
+        var textColor = Enabled ? Color.FromArgb(15, 63, 143) : Color.FromArgb(75, 105, 150);
 
         using var background = new SolidBrush(backgroundColor);
         using var borderPen = new Pen(borderColor, 1f);
@@ -732,8 +732,8 @@ internal sealed class HelpNavigationButton : Button
 
         var iconRect = _icon switch
         {
-            HelpNavigationIcon.Next => new RectangleF(ClientSize.Width - 42, 8, 24, 24),
-            _ => new RectangleF(18, 8, 24, 24)
+            HelpNavigationIcon.Next => new RectangleF(ClientSize.Width - 42, 5, 24, 24),
+            _ => new RectangleF(18, 5, 24, 24)
         };
 
         using var iconPen = new Pen(iconColor, 2.4f)
@@ -820,20 +820,25 @@ internal sealed class HelpNavigationButton : Button
     private static void DrawArrow(Graphics g, Pen pen, RectangleF rect, int direction)
     {
         var cy = rect.Top + rect.Height / 2f;
-        var left = rect.Left + 3;
-        var right = rect.Right - 3;
-        if (direction < 0)
-        {
-            g.DrawLine(pen, right, cy, left, cy);
-            g.DrawLine(pen, left, cy, left + 7, cy - 7);
-            g.DrawLine(pen, left, cy, left + 7, cy + 7);
-        }
-        else
-        {
-            g.DrawLine(pen, left, cy, right, cy);
-            g.DrawLine(pen, right, cy, right - 7, cy - 7);
-            g.DrawLine(pen, right, cy, right - 7, cy + 7);
-        }
+        var cx = rect.Left + rect.Width / 2f;
+        var halfWidth = 5.5f;
+        var halfHeight = 8f;
+        var triangle = direction < 0
+            ? new[]
+            {
+                new PointF(cx - halfWidth, cy),
+                new PointF(cx + halfWidth, cy - halfHeight),
+                new PointF(cx + halfWidth, cy + halfHeight)
+            }
+            : new[]
+            {
+                new PointF(cx + halfWidth, cy),
+                new PointF(cx - halfWidth, cy - halfHeight),
+                new PointF(cx - halfWidth, cy + halfHeight)
+            };
+
+        using var brush = new SolidBrush(pen.Color);
+        g.FillPolygon(brush, triangle);
     }
 
     private static void DrawHome(Graphics g, Pen pen, Brush fill, RectangleF rect)

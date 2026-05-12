@@ -26,6 +26,8 @@ namespace Syscalculator.UI.WinForms;
 /// </summary>
 public sealed class NodEditorForm : Form
 {
+    private const int WmSetRedraw = 0x000B;
+
     private enum UnsavedChangesChoice { Save, Discard, Cancel }
 
     private const float GraphNormalHalfYRange = 5f;
@@ -34,8 +36,8 @@ public sealed class NodEditorForm : Form
     private const int DockedSimulatorWidth = 360;
     private const int NodHelpPopupMinWidth = 330;
     private const int NodHelpPopupMaxWidth = 390;
-    private const int NodHelpPopupMinHeight = 96;
-    private const int NodHelpPopupMaxHeight = 210;
+    private const int NodHelpPopupMinHeight = 72;
+    private const int NodHelpPopupMaxHeight = 360;
     private const int RecentFilesLimit = 5;
     private static readonly Color NodHelpBubbleBackColor = Color.FromArgb(247, 251, 255);
     private static string RecentFilesConfigDirectory => Path.Combine(
@@ -43,6 +45,9 @@ public sealed class NodEditorForm : Form
         "Tiedragon",
         "Syscalculator");
     private static string RecentFilesConfigPath => Path.Combine(RecentFilesConfigDirectory, "recent-nod-files.cfg");
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
     private sealed class EditorTab
     {
@@ -56,6 +61,9 @@ public sealed class NodEditorForm : Form
         public Control Content { get; init; } = null!;
         public RichTextBox Editor { get; init; } = null!;
         public TextBox LineNumbers { get; init; } = null!;
+        public string HistoryText { get; set; } = "";
+        public Stack<string> UndoTextStack { get; } = new();
+        public Stack<string> RedoTextStack { get; } = new();
     }
 
     private sealed class NodHelpPopupPanel : Panel
@@ -63,7 +71,7 @@ public sealed class NodEditorForm : Form
         public NodHelpPopupPanel()
         {
             DoubleBuffered = true;
-            Padding = new Padding(24, 24, 8, 6);
+            Padding = new Padding(24, 24, 8, 8);
             BackColor = Color.Transparent;
             SetStyle(
                 ControlStyles.AllPaintingInWmPaint |
@@ -93,7 +101,7 @@ public sealed class NodEditorForm : Form
             using var shadowPath = (GraphicsPath)path.Clone();
             using (var matrix = new Matrix())
             {
-                matrix.Translate(3f, 4f);
+                matrix.Translate(3.2f, 3.6f);
                 shadowPath.Transform(matrix);
             }
 
@@ -104,23 +112,23 @@ public sealed class NodEditorForm : Form
 
         private static void PaintNodHelpBubbleShadow(Graphics graphics, GraphicsPath path)
         {
+            using var ambientShadowPath = (GraphicsPath)path.Clone();
             using var farShadowPath = (GraphicsPath)path.Clone();
             using var nearShadowPath = (GraphicsPath)path.Clone();
-            using var farShadow = new SolidBrush(Color.FromArgb(5, 52, 98, 160));
-            using var nearShadow = new SolidBrush(Color.FromArgb(7, 52, 98, 160));
+            using var ambientMatrix = new Matrix();
+            using var farMatrix = new Matrix();
+            using var nearMatrix = new Matrix();
+            ambientMatrix.Translate(3.2f, 3.6f);
+            farMatrix.Translate(2f, 2.2f);
+            nearMatrix.Translate(0.9f, 1f);
+            ambientShadowPath.Transform(ambientMatrix);
+            farShadowPath.Transform(farMatrix);
+            nearShadowPath.Transform(nearMatrix);
 
-            using (var matrix = new Matrix())
-            {
-                matrix.Translate(4f, 5f);
-                farShadowPath.Transform(matrix);
-            }
-
-            using (var matrix = new Matrix())
-            {
-                matrix.Translate(2f, 2f);
-                nearShadowPath.Transform(matrix);
-            }
-
+            using var ambientShadow = new SolidBrush(Color.FromArgb(7, 16, 38, 70));
+            using var farShadow = new SolidBrush(Color.FromArgb(13, 10, 24, 45));
+            using var nearShadow = new SolidBrush(Color.FromArgb(24, 0, 0, 0));
+            graphics.FillPath(ambientShadow, ambientShadowPath);
             graphics.FillPath(farShadow, farShadowPath);
             graphics.FillPath(nearShadow, nearShadowPath);
         }
@@ -187,6 +195,8 @@ public sealed class NodEditorForm : Form
     private FlowLayoutPanel _editorTabStrip = null!;
     private LanguageCatalog _language;
     private bool _highlighting;
+    private bool _applyingTextHistory;
+    private bool _suppressNodHelpUpdates;
     private Panel _nodHelpPopup = null!;
     private WebView2 _nodHelpBrowser = null!;
     private RichTextBox? _nodHelpTargetEditor;
@@ -198,6 +208,10 @@ public sealed class NodEditorForm : Form
     private MenuStrip _menuStrip = null!;
     private ToolStrip _toolStrip = null!;
     private ToolStripButton _saveButton = null!;
+    private ToolStripButton _undoButton = null!;
+    private ToolStripButton _redoButton = null!;
+    private ToolStripMenuItem _undoMenuItem = null!;
+    private ToolStripMenuItem _redoMenuItem = null!;
     private ToolStripMenuItem _recentFilesMenuItem = null!;
     private ToolStripMenuItem _viewTestPanelItem = null!;
     private ToolStripMenuItem _viewLivePreviewItem = null!;
@@ -333,6 +347,9 @@ public sealed class NodEditorForm : Form
         BuildLayout();
         BuildStatusbar();
         BuildNodHelpPopup();
+        Deactivate += (_, _) => HideNodHelpPopup();
+        Move += (_, _) => HideNodHelpPopup();
+        Resize += (_, _) => HideNodHelpPopup();
 
         if (path is not null && File.Exists(path))
             OpenFileInNewTab(path);
@@ -369,6 +386,17 @@ public sealed class NodEditorForm : Form
 
         CloseDetachedEditorWindows();
         base.OnFormClosing(e);
+    }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == (Keys.Control | Keys.Shift | Keys.Z))
+        {
+            RedoCurrentEditor();
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
     }
 
     private bool HasUnsavedTabs()
@@ -512,6 +540,7 @@ public sealed class NodEditorForm : Form
             BackColor = Color.FromArgb(245, 245, 245),
             Dock = DockStyle.Top
         };
+        _menuStrip.MenuActivate += (_, _) => HideNodHelpPopup();
 
         var file = new ToolStripMenuItem(T("editor.menu.file", "File"));
         AddMenuItem(file, T("editor.menu.file.new_tab", "New tab"), (_, _) => AddBlankNewTab(), Keys.Control | Keys.N);
@@ -527,7 +556,9 @@ public sealed class NodEditorForm : Form
         AddMenuItem(file, T("editor.menu.file.close", "Close"), (_, _) => Close());
 
         var edit = new ToolStripMenuItem(T("editor.menu.edit", "Edit"));
-        AddMenuItem(edit, T("editor.menu.edit.undo", "Undo"), (_, _) => { var e = CurrentEditor; if (e?.CanUndo == true) e.Undo(); }, Keys.Control | Keys.Z);
+        _undoMenuItem = AddMenuItem(edit, T("editor.menu.edit.undo", "Ongedaan maken"), (_, _) => UndoCurrentEditor(), Keys.Control | Keys.Z);
+        _redoMenuItem = AddMenuItem(edit, T("editor.menu.edit.redo", "Opnieuw uitvoeren"), (_, _) => RedoCurrentEditor(), Keys.Control | Keys.Y);
+        edit.DropDownOpening += (_, _) => UpdateUndoRedoState();
         edit.DropDownItems.Add(new ToolStripSeparator());
         AddMenuItem(edit, T("editor.menu.edit.cut", "Cut"), (_, _) => CurrentEditor?.Cut(), Keys.Control | Keys.X);
         AddMenuItem(edit, T("editor.menu.edit.copy", "Copy"), (_, _) => CurrentEditor?.Copy(), Keys.Control | Keys.C);
@@ -540,7 +571,8 @@ public sealed class NodEditorForm : Form
         AddMenuItem(tools, T("editor.menu.tools.validate", "Validate"), Validate_Click, Keys.F5);
         AddMenuItem(tools, T("editor.menu.tools.test", "Run test"), Test_Click, Keys.F6);
         AddMenuItem(tools, T("editor.menu.tools.solver_steps", "Solver stappen..."), SolverSteps_Click, Keys.F7);
-        AddMenuItem(tools, T("editor.menu.tools.repair", "Repair lines"), RepairLines_Click);
+        AddMenuItem(tools, T("editor.menu.tools.restore_original", "Herstel oorspronkelijk"), RestoreOriginal_Click);
+        AddMenuItem(tools, T("editor.menu.tools.repair_lines", "Regels repareren"), RepairLines_Click);
         AddMenuItem(tools, T("editor.menu.tools.recolor", "Recolor syntax"), (_, _) => HighlightCurrent());
         tools.DropDownItems.Add(new ToolStripSeparator());
         AddMenuItem(tools, T("editor.menu.tools.template_wizard", "Template wizard..."), TemplateWizard_Click, Keys.Control | Keys.Shift | Keys.N);
@@ -620,13 +652,18 @@ public sealed class NodEditorForm : Form
         _saveButton = MakeButton(T("editor.toolbar.save", "Save"), Save_Click, ToolEditorIcon.Save);
         _toolStrip.Items.Add(_saveButton);
         _toolStrip.Items.Add(new ToolStripSeparator());
+        _undoButton = MakeIconButton(T("editor.toolbar.undo", "Ongedaan maken"), (_, _) => UndoCurrentEditor(), ToolEditorIcon.Undo);
+        _redoButton = MakeIconButton(T("editor.toolbar.redo", "Opnieuw uitvoeren"), (_, _) => RedoCurrentEditor(), ToolEditorIcon.Redo);
+        _toolStrip.Items.Add(_undoButton);
+        _toolStrip.Items.Add(_redoButton);
+        _toolStrip.Items.Add(new ToolStripSeparator());
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.template_wizard", "Templates"), TemplateWizard_Click, ToolEditorIcon.Wizard));
         _toolStrip.Items.Add(new ToolStripSeparator());
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.find", "Find"), (_, _) => ShowFindReplace(), ToolEditorIcon.Find));
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.validate", "Validate"), Validate_Click, ToolEditorIcon.Validate));
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.test", "Test"), Test_Click, ToolEditorIcon.Test));
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.solver_steps", "Solver"), SolverSteps_Click, ToolEditorIcon.Solver));
-        _toolStrip.Items.Add(MakeButton(T("editor.toolbar.repair", "Repair"), RepairLines_Click, ToolEditorIcon.Repair));
+        _toolStrip.Items.Add(MakeButton(T("editor.toolbar.restore_original", "Herstel"), RestoreOriginal_Click, ToolEditorIcon.Repair));
 
         _topStripPanel.Controls.Add(_toolStrip);
         UpdateSaveButtonState();
@@ -636,6 +673,16 @@ public sealed class NodEditorForm : Form
     private static ToolStripButton MakeButton(string text, EventHandler handler, ToolEditorIcon icon)
     {
         return ToolEditorApi.CreateButton(text, icon, handler, tooltip: text);
+    }
+
+    private static ToolStripButton MakeIconButton(string tooltip, EventHandler handler, ToolEditorIcon icon)
+    {
+        var button = ToolEditorApi.CreateButton("", icon, handler, tooltip: tooltip);
+        button.DisplayStyle = ToolStripItemDisplayStyle.Image;
+        button.AutoSize = false;
+        button.Size = new Size(28, 26);
+        button.Padding = new Padding(1);
+        return button;
     }
 
     // Bouwt de hoofdindeling: editor-tabs bovenaan en test/live-preview/simulator onderaan.
@@ -657,7 +704,7 @@ public sealed class NodEditorForm : Form
             ItemSize = new Size(0, 1),
             SizeMode = TabSizeMode.Fixed
         };
-        _tabControl.SelectedIndexChanged += (_, _) => { UpdateUiState(); UpdatePreviewFromCurrentText(); RefreshEditorTabStrip(); };
+        _tabControl.SelectedIndexChanged += (_, _) => { HideNodHelpPopup(); UpdateUiState(); UpdatePreviewFromCurrentText(); RefreshEditorTabStrip(); };
         _tabControl.Visible = false;
 
         _mainSplit.Panel1.Padding = new Padding(4, 4, 4, 0);
@@ -2431,7 +2478,7 @@ public sealed class NodEditorForm : Form
         if (!int.TryParse(message[prefix.Length..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var contentHeight))
             return;
 
-        var newHeight = Math.Clamp(contentHeight + _nodHelpPopup.Padding.Vertical + 8, NodHelpPopupMinHeight, NodHelpPopupMaxHeight);
+        var newHeight = Math.Clamp(contentHeight + _nodHelpPopup.Padding.Vertical + 4, NodHelpPopupMinHeight, NodHelpPopupMaxHeight);
         if (_nodHelpPopup.Height == newHeight)
             return;
 
@@ -2537,12 +2584,14 @@ public sealed class NodEditorForm : Form
             LineNumbers = lineNumbers,
             Path = path,
             CleanText = dirty ? "" : normalizedText,
-            Dirty = dirty
+            Dirty = dirty,
+            HistoryText = normalizedText
         };
 
         editor.TextChanged += (_, _) =>
         {
-            if (_highlighting) return;
+            if (_highlighting || _applyingTextHistory) return;
+            TrackEditorTextChange(tab);
             SetTabDirty(tab, !IsCleanEditorText(tab));
             UpdateLineNumbers(tab);
             HighlightSyntax(tab);
@@ -2556,8 +2605,24 @@ public sealed class NodEditorForm : Form
             UpdateUiState();
             UpdateNodKeywordTip(editor);
         };
+        editor.KeyDown += (_, e) =>
+        {
+            if (e.Control && !e.Shift && e.KeyCode == Keys.Z)
+            {
+                UndoEditor(editor);
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+            }
+            else if ((e.Control && e.KeyCode == Keys.Y) || (e.Control && e.Shift && e.KeyCode == Keys.Z))
+            {
+                RedoEditor(editor);
+                e.SuppressKeyPress = true;
+                e.Handled = true;
+            }
+        };
         editor.MouseDown += (_, e) =>
         {
+            HideNodHelpPopup();
             if (e.Button == MouseButtons.Right)
                 MoveEditorCaretForContextMenu(editor, e.Location);
         };
@@ -2567,7 +2632,11 @@ public sealed class NodEditorForm : Form
             if (e.Button != MouseButtons.Right)
                 UpdateNodKeywordTip(editor);
         };
-        editor.SelectionChanged += (_, _) => UpdateNodKeywordTip(editor);
+        editor.SelectionChanged += (_, _) =>
+        {
+            if (!_highlighting && !_applyingTextHistory && !_suppressNodHelpUpdates)
+                UpdateNodKeywordTip(editor);
+        };
         editor.Leave += (_, _) => HideNodHelpPopup();
 
         layout.Controls.Add(lineNumbers, 0, 0);
@@ -2585,16 +2654,19 @@ public sealed class NodEditorForm : Form
         SetTabDirty(tab, dirty || !IsCleanEditorText(tab));
         UpdateLineNumbers(tab);
         HighlightSyntax(tab);
+        editor.ClearUndo();
         UpdateTabTitle(tab);
         RefreshEditorTabStrip();
         UpdatePreviewFromCurrentText();
+        UpdateUndoRedoState();
     }
 
     // Bouwt een normaal rechtermuisknopmenu voor tekstbewerking in de NOD-editor.
     private ContextMenuStrip CreateEditorContextMenu(RichTextBox editor)
     {
         var menu = new ContextMenuStrip();
-        var undo = new ToolStripMenuItem(T("editor.menu.edit.undo", "Undo"), null, (_, _) => { if (editor.CanUndo) editor.Undo(); });
+        var undo = new ToolStripMenuItem(T("editor.menu.edit.undo", "Ongedaan maken"), null, (_, _) => UndoEditor(editor));
+        var redo = new ToolStripMenuItem(T("editor.menu.edit.redo", "Opnieuw uitvoeren"), null, (_, _) => RedoEditor(editor));
         var cut = new ToolStripMenuItem(T("editor.menu.edit.cut", "Cut"), null, (_, _) => editor.Cut());
         var copy = new ToolStripMenuItem(T("editor.menu.edit.copy", "Copy"), null, (_, _) => editor.Copy());
         var paste = new ToolStripMenuItem(T("editor.menu.edit.paste", "Paste"), null, (_, _) => editor.Paste());
@@ -2604,6 +2676,7 @@ public sealed class NodEditorForm : Form
         menu.Items.AddRange(
         [
             undo,
+            redo,
             new ToolStripSeparator(),
             cut,
             copy,
@@ -2618,7 +2691,9 @@ public sealed class NodEditorForm : Form
         {
             HideNodHelpPopup();
             var hasSelection = editor.SelectionLength > 0;
-            undo.Enabled = editor.CanUndo;
+            var tab = FindTab(editor);
+            undo.Enabled = tab?.UndoTextStack.Count > 0;
+            redo.Enabled = tab?.RedoTextStack.Count > 0;
             cut.Enabled = hasSelection;
             copy.Enabled = hasSelection;
             paste.Enabled = Clipboard.ContainsText();
@@ -2653,8 +2728,9 @@ public sealed class NodEditorForm : Form
             return File.ReadAllLines(RecentFilesConfigPath)
                 .Select(line => line.Trim())
                 .Where(line => line.Length > 0 && !line.StartsWith("#") && !line.StartsWith(";"))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(Path.GetFullPath)
                 .Where(File.Exists)
+                .DistinctBy(RecentFileIdentity, StringComparer.OrdinalIgnoreCase)
                 .Take(RecentFilesLimit)
                 .ToList();
         }
@@ -2670,8 +2746,8 @@ public sealed class NodEditorForm : Form
         {
             var cleanPaths = paths
                 .Select(Path.GetFullPath)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Where(File.Exists)
+                .DistinctBy(RecentFileIdentity, StringComparer.OrdinalIgnoreCase)
                 .Take(RecentFilesLimit)
                 .ToList();
 
@@ -2730,6 +2806,14 @@ public sealed class NodEditorForm : Form
             item.Click += (_, _) => OpenRecentFile(path);
             _recentFilesMenuItem.DropDownItems.Add(item);
         }
+    }
+
+    private static string RecentFileIdentity(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var marker = $"{Path.DirectorySeparatorChar}Converters{Path.DirectorySeparatorChar}";
+        var index = fullPath.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        return index >= 0 ? fullPath[(index + 1)..] : fullPath;
     }
 
     private void OpenRecentFile(string path)
@@ -2806,6 +2890,118 @@ public sealed class NodEditorForm : Form
         TrySaveTab(tab);
     }
 
+    private void UndoCurrentEditor()
+    {
+        if (CurrentEditor is { } editor)
+            UndoEditor(editor);
+    }
+
+    private void RedoCurrentEditor()
+    {
+        if (CurrentEditor is { } editor)
+            RedoEditor(editor);
+    }
+
+    private void UndoEditor(RichTextBox editor)
+    {
+        var tab = FindTab(editor);
+        if (tab is null || tab.UndoTextStack.Count == 0)
+            return;
+
+        tab.RedoTextStack.Push(editor.Text);
+        ApplyEditorHistoryText(tab, tab.UndoTextStack.Pop());
+    }
+
+    private void RedoEditor(RichTextBox editor)
+    {
+        var tab = FindTab(editor);
+        if (tab is null || tab.RedoTextStack.Count == 0)
+            return;
+
+        tab.UndoTextStack.Push(editor.Text);
+        ApplyEditorHistoryText(tab, tab.RedoTextStack.Pop());
+    }
+
+    private EditorTab? FindTab(RichTextBox editor)
+    {
+        return _tabs.Values.FirstOrDefault(tab => ReferenceEquals(tab.Editor, editor));
+    }
+
+    private void ApplyEditorHistoryText(EditorTab tab, string text)
+    {
+        var editor = tab.Editor;
+        var selectionStart = Math.Min(editor.SelectionStart, text.Length);
+
+        RunEditorAntiShock(editor, suppressTextHistory: true, hideTip: true, () =>
+        {
+            editor.Text = text;
+            editor.Select(selectionStart, 0);
+            tab.HistoryText = text;
+            HighlightSyntax(tab);
+        });
+
+        SetTabDirty(tab, !IsCleanEditorText(tab));
+        UpdateLineNumbers(tab);
+        UpdatePreviewFromCurrentText();
+        UpdateUiState();
+    }
+
+    private void HighlightSyntaxForEdit(RichTextBox editor)
+    {
+        var tab = FindTab(editor);
+        if (tab is not null)
+            HighlightSyntax(tab);
+    }
+
+    private void TrackEditorTextChange(EditorTab tab)
+    {
+        if (_applyingTextHistory)
+            return;
+
+        var text = tab.Editor.Text;
+        if (string.Equals(text, tab.HistoryText, StringComparison.Ordinal))
+            return;
+
+        tab.UndoTextStack.Push(tab.HistoryText);
+        tab.RedoTextStack.Clear();
+        tab.HistoryText = text;
+    }
+
+    private void RunEditorAntiShock(Control control, bool suppressTextHistory, bool hideTip, Action action)
+    {
+        var previousTextHistorySuppression = _applyingTextHistory;
+        var previousTipSuppression = _suppressNodHelpUpdates;
+
+        _applyingTextHistory = _applyingTextHistory || suppressTextHistory;
+        _suppressNodHelpUpdates = true;
+
+        if (hideTip)
+            HideNodHelpPopup();
+
+        SetControlRedraw(control, enabled: false);
+        try
+        {
+            action();
+        }
+        finally
+        {
+            _applyingTextHistory = previousTextHistorySuppression;
+            _suppressNodHelpUpdates = previousTipSuppression;
+            SetControlRedraw(control, enabled: true);
+            control.Refresh();
+        }
+    }
+
+    private static void SetControlRedraw(Control control, bool enabled)
+    {
+        if (!control.IsHandleCreated)
+            return;
+
+        SendMessage(control.Handle, WmSetRedraw, enabled ? 1 : 0, 0);
+        if (enabled)
+            control.Invalidate();
+    }
+
     // Menu actie: slaat de huidige tab op onder een gekozen bestandsnaam.
     private void SaveAs_Click(object? sender, EventArgs e)
     {
@@ -2862,11 +3058,40 @@ public sealed class NodEditorForm : Form
         var text = NodTextNormalizer.NormalizeForEditor(tab.Editor.Text, repairConcatenated: false);
         File.WriteAllText(path, text);
         tab.Path = path;
-        tab.Editor.Text = text;
+        if (!string.Equals(tab.Editor.Text, text, StringComparison.Ordinal))
+        {
+            RunEditorAntiShock(tab.Editor, suppressTextHistory: true, hideTip: true, () =>
+            {
+                tab.Editor.Text = text;
+                tab.HistoryText = text;
+                HighlightSyntax(tab);
+                tab.Editor.ClearUndo();
+            });
+        }
+
         tab.CleanText = tab.Editor.Text;
         SetTabDirty(tab, false);
         AddRecentFile(path);
         SetStatus(T("editor.status.saved_short", "Opgeslagen"));
+    }
+
+    private void NormalizeEditorText(EditorTab tab, bool repairConcatenated)
+    {
+        var editor = tab.Editor;
+        var normalized = NodTextNormalizer.NormalizeForEditor(editor.Text, repairConcatenated);
+        if (string.Equals(editor.Text, normalized, StringComparison.Ordinal))
+            return;
+
+        var selectionStart = Math.Min(editor.SelectionStart, normalized.Length);
+        var selectionLength = Math.Min(editor.SelectionLength, normalized.Length - selectionStart);
+        RunEditorAntiShock(editor, suppressTextHistory: true, hideTip: true, () =>
+        {
+            editor.Text = normalized;
+            editor.Select(selectionStart, Math.Max(0, selectionLength));
+            HighlightSyntax(tab);
+        });
+
+        UpdateUndoRedoState();
     }
 
     // Sluit de actieve tab.
@@ -2946,7 +3171,7 @@ public sealed class NodEditorForm : Form
 
         try
         {
-            tab.Editor.Text = NodTextNormalizer.NormalizeForEditor(tab.Editor.Text, repairConcatenated: true);
+            NormalizeEditorText(tab, repairConcatenated: true);
             NodParser.Parse(tab.Editor.Text);
             SetStatus(T("editor.status.valid", "NOD valid."));
         }
@@ -2965,7 +3190,7 @@ public sealed class NodEditorForm : Form
 
         try
         {
-            tab.Editor.Text = NodTextNormalizer.NormalizeForEditor(tab.Editor.Text, repairConcatenated: true);
+            NormalizeEditorText(tab, repairConcatenated: true);
             var normalized = NodTextNormalizer.Normalize(tab.Editor.Text, repairConcatenated: true);
             var doc = NodParser.Parse(normalized);
             var meta = NodUiMetadata.Parse(normalized);
@@ -3573,13 +3798,48 @@ public sealed class NodEditorForm : Form
         return $"{input} \u2192 {output} (trans not found)";
     }
 
-    // Menu/toolbar actie: herstelt samengeplakte of rommelige NOD-regels.
+    // Menu/toolbar actie: zet de huidige tab terug naar de laatst opgeslagen/geopende tekst.
+    private void RestoreOriginal_Click(object? sender, EventArgs e)
+    {
+        var tab = CurrentTab;
+        if (tab is null || string.Equals(tab.Editor.Text, tab.CleanText, StringComparison.Ordinal))
+            return;
+
+        RestoreEditorText(tab, tab.CleanText, markClean: true);
+        SetStatus(T("editor.status.original_restored", "Oorspronkelijke tekst hersteld."));
+    }
+
+    private void RestoreEditorText(EditorTab tab, string text, bool markClean)
+    {
+        var editor = tab.Editor;
+        var selectionStart = Math.Min(editor.SelectionStart, text.Length);
+
+        RunEditorAntiShock(editor, suppressTextHistory: false, hideTip: true, () =>
+        {
+            editor.Text = text;
+            editor.Select(selectionStart, 0);
+            tab.HistoryText = text;
+            HighlightSyntax(tab);
+        });
+
+        tab.UndoTextStack.Clear();
+        tab.RedoTextStack.Clear();
+        if (markClean)
+            tab.CleanText = text;
+
+        SetTabDirty(tab, !markClean && !IsCleanEditorText(tab));
+        UpdateLineNumbers(tab);
+        UpdatePreviewFromCurrentText();
+        UpdateUiState();
+    }
+
+    // Menu actie: repareert samengeplakte of rommelige NOD-regels.
     private void RepairLines_Click(object? sender, EventArgs e)
     {
         var tab = CurrentTab;
         if (tab is null) return;
 
-        tab.Editor.Text = NodTextNormalizer.NormalizeForEditor(tab.Editor.Text, repairConcatenated: true);
+        NormalizeEditorText(tab, repairConcatenated: true);
         SetTabDirty(tab, !IsCleanEditorText(tab));
         SetStatus(T("editor.status.lines_repaired", "Lines repaired."));
     }
@@ -3592,7 +3852,7 @@ public sealed class NodEditorForm : Form
 
         try
         {
-            tab.Editor.Text = NodTextNormalizer.NormalizeForEditor(tab.Editor.Text, repairConcatenated: true);
+            NormalizeEditorText(tab, repairConcatenated: true);
             var normalized = NodTextNormalizer.Normalize(tab.Editor.Text, repairConcatenated: true);
             var doc = NodParser.Parse(normalized);
             if (!IsSolverDocument(normalized, doc))
@@ -4120,7 +4380,10 @@ public sealed class NodEditorForm : Form
     // Toont NOD-keyword hulp terwijl je aan het begin van een regel typt.
     private void UpdateNodKeywordTip(RichTextBox editor)
     {
-        if (_highlighting || !editor.Focused || editor.SelectionLength > 0)
+        if (_highlighting || _applyingTextHistory || _suppressNodHelpUpdates)
+            return;
+
+        if (!editor.Focused || editor.SelectionLength > 0)
         {
             HideNodHelpPopup();
             return;
@@ -4421,13 +4684,53 @@ public sealed class NodEditorForm : Form
     private IReadOnlyList<NodHelpPage> BuildNodHelpPages()
     {
         var intro = T("editor.nod_help.full.intro", """
-        <p><b>NOD</b> beschrijft een converter: naam, labels, symbolen, rekenregels en optionele introductietekst.</p>
-        <p>Gebruik suggesties om commands in te voegen. Rechterklik op een command voor korte uitleg.</p>
+        <h2>Wat is NOD?</h2>
+        <p><b>NOD</b> is het tekstformaat waarmee Syscalculator een converter beschrijft. Een NOD-bestand vertelt hoe de converter heet, welke invoer en uitvoer zichtbaar zijn, welke symbolen bij waarden horen en welke regels de waarde omzetten.</p>
+        <h2>Het basisidee</h2>
+        <p>Een NOD-bestand leest als een klein stappenplan. Eerst komt de naam, daarna de labels, daarna eventueel symbolen en uitlegtekst, vervolgens de regels die rekenen of tekst omzetten. De laatste regel is meestal <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</p>
+        <h2>Waarom gewone tekst?</h2>
+        <p>Omdat de kennis dan zichtbaar blijft. Een Celsius/Fahrenheit-regel, een eurokoers of een oude telefoonnummeromzetting zit niet verstopt in programmacode, maar staat als leesbare regels in het bestand.</p>
+        <h2>Mini voorbeeld</h2>
+        <pre>Name Celsius naar Fahrenheit
+        input1 Celsius
+        input2 Fahrenheit
+        format ##.00
+        math ans * 1,8
+        math ans + 32
+        end</pre>
+        <p>Lees dit van boven naar beneden: de converter krijgt een naam, toont twee labels, kiest een getalnotatie en voert twee rekenstappen uit met <code>ans</code> als huidige waarde.</p>
         """);
-        var classic = T("editor.nod_help.full.classic", """
-        <h2>NOD editor introductie</h2>
-        <p>De NOD editor is bedoeld als werkplaats voor converters. Links schrijf je de NOD-code, onderin test je invoer en rechts zie je een venster-preview. Zo zie je sneller of labels, symbolen, uitlegtekst en berekening goed terechtkomen.</p>
-        <h2>Klassiek 1.73 tegenover NOD 2.0</h2>
+        var guide = T("editor.nod_help.full.guide", """
+        <p>Dit hoofdstuk gaat over werken in het editorvenster. Je schrijft de NOD-tekst in het midden, gebruikt de knoppen bovenin voor openen, opslaan, testen en valideren, en leest de commandotips wanneer je op een bekende regel staat.</p>
+        <h2>Het venster</h2>
+        {NodEditorScreenshot}
+        <p class="shot-caption">Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>Name</code>.</p>
+        <h2>Een converter maken</h2>
+        <ol>
+          <li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.</li>
+          <li>Voeg optioneel <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot en met <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> toe voor symbolen links of rechts van waarden.</li>
+          <li>Schrijf de omzetting met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> of <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.</li>
+          <li>Gebruik <b>Validate</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.</li>
+          <li>Sla het bestand op zodra de converter klopt.</li>
+        </ol>
+        <h2>Commandotips</h2>
+        <p>De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Replace</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>More help</b> opent de volledige commandopagina.</p>
+        <h2>Undo, redo en herstel</h2>
+        <p><b>Undo</b> en <b>Redo</b> gaan over recente tekstbewerkingen. <b>Restore</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Tools &gt; Repair lines</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.</p>
+        """);
+        guide = guide.Replace(
+            "{NodEditorScreenshot}",
+            BuildNodHelpImageTag(
+                "NodEditorHelp.png",
+                T("help.main.page.nodeditor.screenshot_alt", "Screenshot of the NOD Editor with toolbar, code editor and command tip.")));
+        var classic = T("editor.nod_help.full.classic_book", """
+        <h2>Waarom oud en nieuw naast elkaar bestaan</h2>
+        <p>Syscalculator 2.0 is geen breuk met de oude NOD-bestanden. De bedoeling is juist dat oude converters herkenbaar blijven, terwijl de editor meer hulp geeft tijdens het schrijven, testen en onderhouden.</p>
+        <h2>Wat klassiek NOD sterk maakte</h2>
+        <p>Klassiek NOD was klein en direct. Een regel met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> rekende verder met <code>ans</code>. Een regel met <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> vertaalde een vaste waarde. Een regel met <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> veranderde het begin van tekst, bijvoorbeeld bij oude telefoonnummeromzettingen.</p>
+        <h2>Wat NOD 2.0 toevoegt</h2>
+        <p>NOD 2.0 bewaart die eenvoudige basis, maar zet er een moderne editor omheen: syntaxkleuring, commandotips, rechterklik-help, templates, validatie, testuitvoer, preview en herstel. De taal blijft leesbaar, maar de omgeving helpt sneller fouten vinden.</p>
+        <h2>Overzicht</h2>
         <table>
         <tr><th>Syscalculator 1.73 / NOD 1.x</th><th>Syscalculator 2.0 / NOD editor</th></tr>
         <tr><td>Kleine tekstbestanden met klassieke commands zoals <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code> en <code>end</code>.</td><td>Dezelfde basis blijft werken, zodat oude NOD-bestanden herkenbaar en bruikbaar blijven.</td></tr>
@@ -4435,10 +4738,8 @@ public sealed class NodEditorForm : Form
         <tr><td><code>chg</code> was vooral klassieke prefixvervanging, handig voor oude telefoonnummer-omzettingen.</td><td><code>chg</code> blijft compatibel, maar NOD 2.0 kan ook patronen met <code>x</code>-capture gebruiken.</td></tr>
         <tr><td>Help zat vooral in voorbeelden en ervaring.</td><td>De editor geeft suggesties, rechterklik-help, commandopagina's en voorbeelden per soort NOD-bestand.</td></tr>
         </table>
-        <h2>Wat blijft hetzelfde?</h2>
-        <ul><li>Commands blijven regelgericht en leesbaar.</li><li><code>end</code> sluit het bestand af.</li><li>Oude simpele omrekentools blijven kort: labels, format en een paar <code>math</code>-regels.</li></ul>
-        <h2>Wat is nieuw?</h2>
-        <ul><li>Live preview van het venster en converter-simulator.</li><li>Graph Preview voor grafieken van math-converters.</li><li>Suggesties tijdens typen.</li><li>Uitgebreidere help per command.</li><li>Duidelijkere voorbeelden voor <code>math</code>, <code>trans</code>, <code>chg</code>, symbolen en introductietekst.</li></ul>
+        <h2>Vuistregel</h2>
+        <p>Gebruik oude commands gerust wanneer je een bestaand bestand onderhoudt. Gebruik de modernere schrijfwijze wanneer de editor die voorstelt en het bestand daardoor duidelijker wordt. Compatibiliteit is belangrijk, maar leesbaarheid is het doel.</p>
         """);
         var history = T("editor.nod_help.full.history", """
         <h2>Geschiedenis</h2>
@@ -4557,8 +4858,9 @@ public sealed class NodEditorForm : Form
 
         var pages = new List<NodHelpPage>
         {
-            new("intro", T("editor.nod_help.full.title", "NOD help"), WrapNodHelpPage(T("editor.nod_help.full.title", "NOD help"), intro)),
-            new("classic", T("editor.nod_help.page.classic", "NOD editor introductie"), WrapNodHelpPage(T("editor.nod_help.page.classic", "NOD editor introductie"), classic)),
+            new("intro", T("editor.nod_help.page.intro", "NOD introductie"), WrapNodHelpPage(T("editor.nod_help.page.intro", "NOD introductie"), intro)),
+            new("guide", T("editor.nod_help.page.guide", "NOD Editor gebruiken"), WrapNodHelpPage(T("editor.nod_help.page.guide", "NOD Editor gebruiken"), guide)),
+            new("classic", T("editor.nod_help.page.classic", "Van klassiek NOD naar NOD 2.0"), WrapNodHelpPage(T("editor.nod_help.page.classic", "Van klassiek NOD naar NOD 2.0"), classic)),
             new("history", T("editor.nod_help.page.history", "Geschiedenis"), WrapNodHelpPage(T("editor.nod_help.page.history", "Geschiedenis"), history)),
             new("compatibility", T("editor.nod_help.page.compatibility", "Compatibiliteit"), WrapNodHelpPage(T("editor.nod_help.page.compatibility", "Compatibiliteit"), BuildCompatibilityHelp())),
             new("workflow", T("editor.nod_help.page.workflow", "Werkwijze"), WrapNodHelpPage(T("editor.nod_help.page.workflow", "Werkwijze"), workflow)),
@@ -4618,6 +4920,40 @@ public sealed class NodEditorForm : Form
         <h2>Kringintegraal en formulekaarten</h2>
         <p>Onderwerpen zoals 2D vectorpijlen, kringintegraal en limited matrix 2x2 kunnen in 2.0 beta al als formulekaart en educatieve uitleg bestaan. Een 2D vector mag als pijl in een grafiek worden getoond. <code>math geometry</code>, <code>mode geometry</code> en 3x3 matrices zijn nog geen 2.0-productiefunctie, omdat daarvoor een 3D graph/geometry-engine nodig is. Volledig rekenen met vectorvelden, paden, 3x3 matrices of 3D hoort bij een latere geavanceerde NOD-laag.</p>
         """);
+    }
+
+    private string BuildNodHelpImageTag(string fileName, string altText)
+    {
+        var path = ResolveLocalizedNodHelpImagePath(fileName);
+        if (!File.Exists(path))
+            return "";
+
+        var extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
+        var mime = extension switch
+        {
+            "jpg" or "jpeg" => "image/jpeg",
+            "svg" => "image/svg+xml",
+            _ => "image/png"
+        };
+        var base64 = Convert.ToBase64String(File.ReadAllBytes(path));
+        return $"""<div class="screenshot-frame"><img src="data:{mime};base64,{base64}" alt="{WebUtility.HtmlEncode(altText)}" /></div>""";
+    }
+
+    private string ResolveLocalizedNodHelpImagePath(string fileName)
+    {
+        var resourcesPath = Path.Combine(AppContext.BaseDirectory, "Resources");
+        var languageCode = HelpLanguageCode();
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        var extension = Path.GetExtension(fileName);
+        var candidates = new[]
+        {
+            Path.Combine(resourcesPath, $"{name}.{languageCode}.svg"),
+            Path.Combine(resourcesPath, $"{name}.{languageCode}{extension}"),
+            Path.Combine(resourcesPath, $"{name}.svg"),
+            Path.Combine(resourcesPath, fileName)
+        };
+
+        return candidates.FirstOrDefault(File.Exists) ?? Path.Combine(resourcesPath, fileName);
     }
 
     private string BuildInputCommandHelp(string keyword)
@@ -5078,7 +5414,7 @@ public sealed class NodEditorForm : Form
                     ("NOD groups", "After Syscalculator, loose files grew into converter groups. A folder such as <code>euro</code> could contain currency rules; folders such as <code>Temperature</code>, <code>Distance</code>, <code>Mass</code>, <code>Volume</code> and <code>Pressure</code> contained physical units. A pressure file such as <code>Pds sq inch - kg sq cm.nod</code> shows the same <code>math</code> rule structure used for unit conversion."),
                     ("Not a one-time tool", "The euro period made Syscalculator useful for guilder/euro, Deutschmark/euro and other currencies. Development continued with distance, mass, temperature, volume, pressure, text tables and telephone conversions. NOD 1.0 stayed readable through simple commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code> and <code>end</code>."),
                     ("Syscalculator 1.72 / 1.73 / 1.74", "The VB6 line remained usable, but also carried typical old-Windows problems: paths, language files, <code>App.Path</code>, permissions and old registry settings. Maintenance is still possible for 1.74, but new development belongs in 2.0."),
-                    ("VB6-.NET conversiepoging", "Later, the old VB6 code was converted automatically to .NET. That was not the right route: forms, API calls, control arrays, <code>App.Path</code>, <code>Load</code>/<code>Unload</code> and default properties caused too many errors. The developer got extra repair work instead of a clean result."),
+                    ("VB6-.NET conversion attempt", "Later, the old VB6 code was converted automatically to .NET. That was not the right route: forms, API calls, control arrays, <code>App.Path</code>, <code>Load</code>/<code>Unload</code> and default properties caused too many errors. The developer got extra repair work instead of a clean result."),
                     ("Preserved period", "The idea survived, but the implementation was too heavy and took too much time. The source code was kept until there was a better way to understand and rebuild the system."),
                     ("New euro countries 2026", "In 2026 new euro NODs were added again. Bulgaria introduced the euro on 1 January 2026 as the 21st eurozone country, with the fixed rate <code>1 EUR = 1.95583 BGN</code>. That makes <code>BGN.nod</code> part of the historical euro group."),
                     ("Postcode finder 2026", "In 2026 a postcode finder is in development. This moves NOD a little further: besides renumbering, calculating and unit conversion, the system can also look up and connect data, for example postcode plus house number to address information."),
@@ -6044,13 +6380,14 @@ public sealed class NodEditorForm : Form
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <style>
         * { box-sizing:border-box; }
-        html, body { overflow:hidden; }
-        body { margin:0; padding:10px 13px; font-family:"Segoe UI", Arial, sans-serif; font-size:12px; line-height:1.34; color:#1f2937; background:transparent; }
+        html, body { overflow:visible; }
+        body { margin:0; padding:10px 13px 7px; font-family:"Segoe UI", Arial, sans-serif; font-size:12px; line-height:1.34; color:#1f2937; background:transparent; }
         .title { font-weight:750; color:#0f3f8f; margin-bottom:5px; font-size:13px; }
         .syntax { font-family:Consolas, "Cascadia Mono", monospace; background:#f6f8fb; border:1px solid #d7e0ee; border-radius:6px; padding:5px 7px; margin:4px 0 7px; white-space:pre-wrap; overflow-wrap:anywhere; }
         .muted { color:#6b7280; }
         .insert { display:inline-block; margin-top:6px; padding:5px 10px; border-radius:999px; background:#0f3f8f; color:#fff; text-decoration:none; font-weight:700; }
         .more { display:inline-block; margin:6px 0 0 8px; color:#0f3f8f; font-weight:700; text-decoration:none; }
+        .actions { margin:7px 0 0; }
         .suggest { color:#0f3f8f; text-decoration:none; font-weight:750; }
         code { font-family:Consolas, "Cascadia Mono", monospace; background:#eef4ff; border:1px solid #d7e3f7; border-radius:5px; padding:1px 4px; color:#0f3f8f; overflow-wrap:anywhere; }
         .cmd-link { text-decoration:none; }
@@ -6065,7 +6402,21 @@ public sealed class NodEditorForm : Form
                 return;
             }
 
-            const height = Math.ceil(document.documentElement.scrollHeight);
+            const body = document.body;
+            const html = document.documentElement;
+            const bodyTop = body ? body.getBoundingClientRect().top : 0;
+            const childBottom = body
+                ? Array.from(body.children).reduce((bottom, child) => {
+                    const rect = child.getBoundingClientRect();
+                    return Math.max(bottom, rect.bottom - bodyTop);
+                  }, 0)
+                : 0;
+            const height = Math.ceil(Math.max(
+                body ? body.getBoundingClientRect().height : 0,
+                body ? body.scrollHeight : 0,
+                html ? html.scrollHeight : 0,
+                childBottom
+            ));
             window.chrome.webview.postMessage('nodhelp-height:' + height);
         }
 
@@ -6075,6 +6426,11 @@ public sealed class NodEditorForm : Form
             postHeight();
         }
         window.addEventListener('load', postHeight);
+        if (window.ResizeObserver) {
+            new ResizeObserver(postHeight).observe(document.body);
+        }
+        requestAnimationFrame(postHeight);
+        setTimeout(postHeight, 80);
         </script>
         </head>
         <body>{{body}}</body>
@@ -6092,7 +6448,7 @@ public sealed class NodEditorForm : Form
             : T("editor.nod_help.insert", "Invoegen");
         var moreText = T("editor.nod_help.more", "Meer help");
         var link = $"nodinsert:///{Uri.EscapeDataString(keyword)}";
-        return body + $"<div><a class=\"insert\" href=\"{link}\">{WebUtility.HtmlEncode(insertText)}</a><a class=\"more\" href=\"nodhelp:///full\">{WebUtility.HtmlEncode(moreText)}</a></div>";
+        return body + $"<div class=\"actions\"><a class=\"insert\" href=\"{link}\">{WebUtility.HtmlEncode(insertText)}</a><a class=\"more\" href=\"nodhelp:///full\">{WebUtility.HtmlEncode(moreText)}</a></div>";
     }
 
     private static bool IsLegacyInputKeyword(string keyword)
@@ -6418,6 +6774,7 @@ public sealed class NodEditorForm : Form
         var tab = CurrentTab;
         var editor = tab?.Editor;
         UpdateSaveButtonState();
+        UpdateUndoRedoState();
 
         if (tab is null || editor is null)
         {
@@ -6468,6 +6825,25 @@ public sealed class NodEditorForm : Form
             return;
 
         _saveButton.Enabled = CurrentTab?.Dirty == true;
+    }
+
+    private void UpdateUndoRedoState()
+    {
+        var tab = CurrentTab;
+        var canUndo = tab?.UndoTextStack.Count > 0;
+        var canRedo = tab?.RedoTextStack.Count > 0;
+
+        if (_undoButton is not null)
+            _undoButton.Enabled = canUndo;
+
+        if (_redoButton is not null)
+            _redoButton.Enabled = canRedo;
+
+        if (_undoMenuItem is not null)
+            _undoMenuItem.Enabled = canUndo;
+
+        if (_redoMenuItem is not null)
+            _redoMenuItem.Enabled = canRedo;
     }
 
     private string FormatPositionStatus(int line, int column)

@@ -20,6 +20,30 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.12 Daily Build
+
+**Date:** 2026-05-12
+
+**Fixes:**
+- Fixed NOD Editor undo/redo so text edits use an editor-owned history stack instead of the RichTextBox formatting history.
+- Fixed undo/redo redraw jitter by adding an anti-shock redraw/suggestion suppression path around editor history operations.
+- Fixed Restore behavior in the NOD Editor so it returns the current tab to the last opened or saved text instead of running line repair.
+- Fixed the NOD command tip popup so it is hosted inside the editor, hides during menu/editor actions, and sizes itself to the rendered help text.
+- Fixed NOD command tip shadow rendering so the bubble keeps a clear edge without hiding text underneath.
+- Fixed recent NOD file suggestions so duplicate file names are deduplicated by converter-relative identity.
+- Fixed the template wizard preview so template text is shown as readable dark code with syntax coloring.
+- Fixed NOD text normalization for pasted or concatenated legacy metadata lines such as `URLN`, `Result`, `Resfou`, `indoprint` and `indoend`.
+- Fixed NOD help language labels, including the English `History` title and the English VB6-.NET history card title.
+
+**Additions:**
+- Added NOD Editor toolbar and menu support for Undo, Redo and Restore, including new shared ToolEditor icons.
+- Added a NOD Editor guide page to both the main help and the NOD Editor help, including a real editor screenshot.
+- Added book-style NOD help chapters: NOD introduction, using the NOD Editor, and from classic NOD to NOD 2.0.
+- Added localized help screenshot lookup, for example `NodEditorHelp.ned.png` or `NodEditorHelp.eng.svg`, with fallback to the shared image.
+- Added SVG support for help screenshots so language-specific help artwork can use sharp editable text.
+- Added blue navigation button styling and clearer icon placement for help-style navigation buttons.
+- Added localized NOD Editor menu/toolbar/help labels across the bundled language files.
+
 #### 2.0.2026.05.09 Daily Build
 
 **Date:** 2026-05-09

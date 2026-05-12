@@ -91,6 +91,8 @@ public static class ToolEditorApi
             case ToolEditorIcon.Wizard: DrawWizardIcon(g, colors); break;
             case ToolEditorIcon.Open: DrawOpenIcon(g, colors); break;
             case ToolEditorIcon.Save: DrawSaveIcon(g, colors); break;
+            case ToolEditorIcon.Undo: DrawUndoIcon(g, colors); break;
+            case ToolEditorIcon.Redo: DrawRedoIcon(g, colors); break;
             case ToolEditorIcon.Find: DrawFindIcon(g, colors); break;
             case ToolEditorIcon.Validate: DrawValidateIcon(g, colors); break;
             case ToolEditorIcon.Test: DrawTestIcon(g, colors); break;
@@ -143,6 +145,40 @@ public static class ToolEditorApi
         g.DrawLine(accent, 7, 3, 7, 8);
         g.DrawLine(accent, 7, 8, 13, 8);
         g.DrawLine(pen, 7, 14, 13, 14);
+    }
+
+    private static void DrawUndoIcon(Graphics g, ToolEditorPalette colors)
+    {
+        using var pen = new Pen(colors.Text, 1.9f)
+        {
+            StartCap = LineCap.Round,
+            EndCap = LineCap.Round
+        };
+        using var accent = new Pen(colors.Accent, 2.1f)
+        {
+            StartCap = LineCap.Round,
+            EndCap = LineCap.Round
+        };
+
+        g.DrawArc(pen, 5, 5, 11, 10, 205, 260);
+        g.DrawLines(accent, new[] { new Point(6, 5), new Point(3, 8), new Point(7, 10) });
+    }
+
+    private static void DrawRedoIcon(Graphics g, ToolEditorPalette colors)
+    {
+        using var pen = new Pen(colors.Text, 1.9f)
+        {
+            StartCap = LineCap.Round,
+            EndCap = LineCap.Round
+        };
+        using var accent = new Pen(colors.Accent, 2.1f)
+        {
+            StartCap = LineCap.Round,
+            EndCap = LineCap.Round
+        };
+
+        g.DrawArc(pen, 4, 5, 11, 10, 75, 260);
+        g.DrawLines(accent, new[] { new Point(14, 5), new Point(17, 8), new Point(13, 10) });
     }
 
     private static void DrawFindIcon(Graphics g, ToolEditorPalette colors)

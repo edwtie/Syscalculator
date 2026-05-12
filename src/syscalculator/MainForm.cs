@@ -1893,6 +1893,7 @@ private void LoadStartupNodIfNeeded()
   <li><a href="nodpage:configuration">Configuration</a></li>
   <li><a href="nodpage:window">Window, tray and decimals</a></li>
   <li><a href="nodpage:nodfiles">NOD files and catalog</a></li>
+  <li><a href="nodpage:nodeditor">NOD Editor guide</a></li>
   <li><a href="nodpage:applications">Applications</a></li>
   <li><a href="nodpage:support">Limitations and support</a></li>
 </ul>
@@ -2040,6 +2041,44 @@ private void LoadStartupNodIfNeeded()
 <p>Old Syscalculator 1.74 NOD files should remain readable. When a file uses old commands such as <code>input1</code> and <code>input2</code>, the editor can explain the modern equivalent.</p>
 """);
 
+        var nodEditorGuide = T("help.main.page.nodeditor.body", """
+<p>The <b>NOD Editor</b> is the workspace for creating and maintaining converter files. It combines a code editor, command tips, validation, test tools, templates and repair actions.</p>
+<h2>Screenshot</h2>
+{NodEditorScreenshot}
+<p class="shot-caption">Example: a Celsius/Fahrenheit converter with the command tip for <code>input1</code>.</p>
+<h2>Basic workflow</h2>
+<ol>
+  <li>Open the editor with <b>Tools &gt; NOD Editor</b>, or open a specific <code>.nod</code> file.</li>
+  <li>Use <b>Templates</b> for a starter file, or type commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> and <code>end</code>.</li>
+  <li>Read the blue command tip while typing. It explains the command and often shows a modern replacement.</li>
+  <li>Use <b>Validate</b> to check syntax and <b>Test</b> to run the converter with a sample value.</li>
+  <li>Use <b>Save</b> when the converter works.</li>
+</ol>
+<h2>Toolbar</h2>
+<ul>
+  <li><b>New / Open / Save</b>: create, load and save NOD files.</li>
+  <li><b>Undo / Redo</b>: undo and redo text edits without including syntax coloring.</li>
+  <li><b>Templates</b>: start from a ready-made converter pattern.</li>
+  <li><b>Find</b>: search and replace inside the current NOD file.</li>
+  <li><b>Validate</b>: parse the file and report syntax problems.</li>
+  <li><b>Test</b>: run the converter with the test input.</li>
+  <li><b>Solver</b>: open solver steps for equation, diff and integral files.</li>
+  <li><b>Restore</b>: return the current tab to the last opened or saved version.</li>
+</ul>
+<h2>Command tips</h2>
+<p>When the caret is on a known command, the editor can show a small help balloon. Use <b>Replace</b> when the tip offers a modern command form, or <b>More help</b> to open the full NOD command reference.</p>
+<h2>Restore and repair</h2>
+<ul>
+  <li><b>Restore</b> means: go back to the original/opened/saved text for this tab.</li>
+  <li><b>Tools &gt; Repair lines</b> means: repair NOD text, for example when old metadata lines were pasted together.</li>
+</ul>
+""");
+        nodEditorGuide = nodEditorGuide.Replace(
+            "{NodEditorScreenshot}",
+            BuildHelpImageTag(
+                "NodEditorHelp.png",
+                T("help.main.page.nodeditor.screenshot_alt", "Screenshot of the NOD Editor with toolbar, code editor and command tip.")));
+
         var support = T("help.main.page.support.body", """
 <div class="warning">
   <b>Daily build:</b> Syscalculator 2.0 daily builds are for testing the modern version. Keep backups of important NOD files and use Syscalculator 1.74 when you need the old VB6 legacy release.
@@ -2064,6 +2103,7 @@ private void LoadStartupNodIfNeeded()
             new NodHelpPage("configuration", T("help.main.page.configuration.title", "Configuration"), WrapMainHelpPage(T("help.main.page.configuration.title", "Configuration"), configuration)),
             new NodHelpPage("window", T("help.main.page.window.title", "Window, tray and decimals"), WrapMainHelpPage(T("help.main.page.window.title", "Window, tray and decimals"), window)),
             new NodHelpPage("nodfiles", T("help.main.page.nodfiles.title", "NOD files and catalog"), WrapMainHelpPage(T("help.main.page.nodfiles.title", "NOD files and catalog"), nodFiles)),
+            new NodHelpPage("nodeditor", T("help.main.page.nodeditor.title", "NOD Editor guide"), WrapMainHelpPage(T("help.main.page.nodeditor.title", "NOD Editor guide"), nodEditorGuide)),
             new NodHelpPage("applications", T("help.main.page.applications.title", "Applications"), WrapMainHelpPage(T("help.main.page.applications.title", "Applications"), applications)),
             new NodHelpPage("support", T("help.main.page.support.title", "Limitations and support"), WrapMainHelpPage(T("help.main.page.support.title", "Limitations and support"), support))
         };
@@ -2086,16 +2126,51 @@ private void LoadStartupNodIfNeeded()
         """;
     }
 
-    private static string BuildHelpImageTag(string fileName, string altText)
+    private string BuildHelpImageTag(string fileName, string altText)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "Resources", fileName);
+        var path = ResolveLocalizedHelpImagePath(fileName);
         if (!File.Exists(path))
             return "";
 
-        var extension = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
-        var mime = extension == "jpg" || extension == "jpeg" ? "image/jpeg" : "image/png";
+        var extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
+        var mime = extension switch
+        {
+            "jpg" or "jpeg" => "image/jpeg",
+            "svg" => "image/svg+xml",
+            _ => "image/png"
+        };
         var base64 = Convert.ToBase64String(File.ReadAllBytes(path));
         return $"""<div class="screenshot-frame"><img src="data:{mime};base64,{base64}" alt="{WebUtility.HtmlEncode(altText)}" /></div>""";
+    }
+
+    private string ResolveLocalizedHelpImagePath(string fileName)
+    {
+        var resourcesPath = Path.Combine(AppContext.BaseDirectory, "Resources");
+        var languageCode = CurrentLanguageCode();
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        var extension = Path.GetExtension(fileName);
+        var candidates = new[]
+        {
+            Path.Combine(resourcesPath, $"{name}.{languageCode}.svg"),
+            Path.Combine(resourcesPath, $"{name}.{languageCode}{extension}"),
+            Path.Combine(resourcesPath, $"{name}.svg"),
+            Path.Combine(resourcesPath, fileName)
+        };
+
+        return candidates.FirstOrDefault(File.Exists) ?? Path.Combine(resourcesPath, fileName);
+    }
+
+    private string CurrentLanguageCode()
+    {
+        var fileName = _language.FileName;
+        var slashIndex = Math.Max(fileName.LastIndexOf('\\'), fileName.LastIndexOf('/'));
+        if (slashIndex >= 0)
+            fileName = fileName[(slashIndex + 1)..];
+
+        if (fileName.EndsWith(".lng", StringComparison.OrdinalIgnoreCase))
+            fileName = fileName[..^4];
+
+        return fileName.ToLowerInvariant();
     }
 
     private static string GetMainHelpCss()

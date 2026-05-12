@@ -803,6 +803,16 @@ Test("parser auto normalizes concatenated nod", () =>
     AssertText("71.60", result.Text);
 });
 
+Test("normalizer repairs concatenated nod metadata lines", () =>
+{
+    var nod = "Name Ans maal e kwadraatURLN e-kwadraat conversieinput1 getalinput2 resultaatResult resformat ##.00math ans * e^2end";
+    var normalized = NodTextNormalizer.NormalizeForEditor(nod);
+    AssertContains($"{Environment.NewLine}URLN e-kwadraat conversie", normalized);
+    AssertContains($"{Environment.NewLine}input1 getal", normalized);
+    AssertContains($"{Environment.NewLine}input2 resultaat", normalized);
+    AssertContains($"{Environment.NewLine}Result res", normalized);
+});
+
 Test("parser marks input1 input2 as deprecated until 3.0", () =>
 {
     var doc = NodParser.Parse("""
@@ -1398,6 +1408,12 @@ static void AssertText(string expected, string actual)
 {
     if (!string.Equals(expected, actual, StringComparison.Ordinal))
         throw new Exception($"Expected text '{expected}', got '{actual}'.");
+}
+
+static void AssertContains(string expected, string actual)
+{
+    if (!actual.Contains(expected, StringComparison.Ordinal))
+        throw new Exception($"Expected text to contain '{expected}', got '{actual}'.");
 }
 
 static void AssertDecimal(decimal expected, decimal actual)

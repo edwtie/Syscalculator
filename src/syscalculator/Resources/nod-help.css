@@ -20,6 +20,9 @@ code { background:#eef4ff; border:1px solid #d7e3f7; border-radius:5px; padding:
 .cmd-link:hover code { background:#dcecff; border-color:#6fa2e9; color:#0a3478; }
 pre { background:#101827; color:#e5eefc; border:1px solid #24324d; border-radius:8px; padding:13px 14px; white-space:pre-wrap; box-shadow:0 8px 20px rgba(15,23,42,.10); overflow:auto; }
 pre code { background:transparent; border:0; padding:0; color:inherit; }
+.screenshot-frame { max-width:100%; margin:12px 0 8px; border:1px solid #d7dee8; border-radius:8px; overflow:hidden; background:#f8fafc; box-shadow:0 8px 22px rgba(15,23,42,.12); }
+.screenshot-frame img { display:block; width:100%; height:auto; }
+.shot-caption { font-size:12px; color:#475569; margin-top:6px; }
 .code-copy-wrap { position:relative; margin:10px 0 16px; }
 .code-copy-wrap pre { margin:0; padding-right:48px; }
 .code-copy-button { position:absolute; top:8px; right:8px; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:6px; background:transparent; color:#dbeafe; font-size:0; line-height:1; cursor:pointer; }

@@ -68,7 +68,9 @@ public static class NodTextNormalizer
         var hits = 0;
         string[] keys =
         [
+            "urln ",
             "input1 ", "input2 ", "inputr ",
+            "result ", "resfou ",
             "symb1 ", "symb2 ", "symb3 ", "symb4 ",
             "format ", "tformat ",
             "math ", "chg ", "trans ",
@@ -77,6 +79,7 @@ public static class NodTextNormalizer
             "phoneformat ", "lookup ", "match ",
             "given ", "equation ", "solve ", "constraint ",
             "preview ", "backup ",
+            "indoprint ", "indoend ",
             "end"
         ];
 
@@ -97,7 +100,9 @@ public static class NodTextNormalizer
         string[] commands =
         [
             "Name",
+            "URLN",
             "input1", "input2", "inputr",
+            "Result", "Resfou",
             "Symb1", "Symb2", "Symb3", "Symb4",
             "Symba1", "Symba2", "Symba3", "Symba4",
             "format", "tformat",
@@ -106,6 +111,7 @@ public static class NodTextNormalizer
             "table", "field", "output", "phoneformat", "lookup", "match",
             "given", "equation", "solve", "constraint",
             "preview", "backup",
+            "indoprint", "indoend",
             "end"
         ];
 

@@ -10,6 +10,8 @@ public enum ToolEditorIcon
     New,
     Open,
     Save,
+    Undo,
+    Redo,
     Find,
     Validate,
     Test,
