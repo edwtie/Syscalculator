@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Cypriotische pond is vastgesteld.
+'
+'
+
+Name Cypriotische pond naar euro
+Urln CYP-Euro
+indoprint Cyprus adopted the euro on 1 January 2008.
+indoprint Fixed conversion rate: 1 euro = 0,585274 Cyprus pound.
+indoprint Converting with Cyprus pound to euro
+indoprint 
+indoend
+format #.00
+Symb1 CYP
+Symb2 €
+input1 Amounts in Cyprus pounds
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 0,585274
+end
+

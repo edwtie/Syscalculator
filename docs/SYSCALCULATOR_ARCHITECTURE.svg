@@ -1,0 +1,281 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1850" role="img" aria-labelledby="title desc">
+  <title id="title">Syscalculator totale architectuur</title>
+  <desc id="desc">Overzicht van de hoofdapp, Tiedragon Library, NOD engine, resources, tests en installer.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill:#f8fafc; }
+      .ink { fill:#0f172a; font-family:"Segoe UI", Arial, sans-serif; }
+      .muted { fill:#475569; font-family:"Segoe UI", Arial, sans-serif; }
+      .title { font-size:44px; font-weight:700; }
+      .subtitle { font-size:20px; }
+      .module-title { font-size:28px; font-weight:650; }
+      .module-sub { font-size:15px; }
+      .card-title { font-size:15px; font-weight:650; }
+      .card-text { font-size:12.5px; }
+      .platform { fill:#f1f5f9; stroke:#475569; stroke-width:2.4; }
+      .app { fill:#eff6ff; stroke:#2563eb; stroke-width:2.4; }
+      .res { fill:#fffbeb; stroke:#d97706; stroke-width:2.4; }
+      .side { fill:#fff1f2; stroke:#e11d48; stroke-width:2.4; }
+      .libs { fill:#faf5ff; stroke:#7c3aed; stroke-width:2.4; }
+      .core { fill:#f0fdf4; stroke:#16a34a; stroke-width:2.4; }
+      .card { fill:#fff; stroke:#cbd5e1; stroke-width:1.3; }
+      .blue { fill:#2563eb; }
+      .green { fill:#16a34a; }
+      .amber { fill:#d97706; }
+      .violet { fill:#7c3aed; }
+      .cyan { fill:#0891b2; }
+      .rose { fill:#e11d48; }
+      .slate { fill:#475569; }
+      .line { stroke:#475569; stroke-width:3.5; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="2400" height="1850"/>
+  <text class="ink title" x="70" y="90">Syscalculator totale architectuur</text>
+  <text class="muted subtitle" x="74" y="126">Hoofdapp, Tiedragon Library, NOD-engine, runtime resources, taal/config, tests/demo en installer in een overzicht.</text>
+
+  <rect x="1480" y="42" width="770" height="104" rx="18" class="card" stroke-width="2"/>
+  <text class="muted card-text" x="1510" y="72">Solution / build output</text>
+  <text class="ink card-title" x="1510" y="101">Syscalculator App + Tiedragon Library</text>
+  <text class="muted card-text" x="1510" y="126">De app verwijst naar ClipboardConvert, Graph2D, Help, NodSystem Core en ToolEditor.</text>
+
+  <rect x="70" y="200" width="320" height="590" rx="22" class="platform"/>
+  <text class="ink module-title" x="105" y="255">Platform</text>
+  <text class="muted module-sub" x="105" y="282">Windows en .NET omgeving</text>
+
+  <rect x="105" y="310" width="250" height="82" rx="13" class="card"/>
+  <rect x="105" y="310" width="9" height="82" rx="9" class="slate"/>
+  <text class="ink card-title" x="132" y="340">.NET 10 + Windows UI</text>
+  <text class="muted card-text" x="132" y="362">Vensters, controls,</text>
+  <text class="muted card-text" x="132" y="381">dialogen en drawing.</text>
+
+  <rect x="105" y="420" width="250" height="82" rx="13" class="card"/>
+  <rect x="105" y="420" width="9" height="82" rx="9" class="slate"/>
+  <text class="ink card-title" x="132" y="450">Microsoft WebView2</text>
+  <text class="muted card-text" x="132" y="472">HTML help, formulekaart</text>
+  <text class="muted card-text" x="132" y="491">en previews.</text>
+
+  <rect x="105" y="530" width="250" height="82" rx="13" class="card"/>
+  <rect x="105" y="530" width="9" height="82" rx="9" class="slate"/>
+  <text class="ink card-title" x="132" y="560">Windows Clipboard</text>
+  <text class="muted card-text" x="132" y="582">Copy/paste</text>
+  <text class="muted card-text" x="132" y="601">en tabeldata.</text>
+
+  <rect x="105" y="640" width="250" height="82" rx="13" class="card"/>
+  <rect x="105" y="640" width="9" height="82" rx="9" class="slate"/>
+  <text class="ink card-title" x="132" y="670">File system</text>
+  <text class="muted card-text" x="132" y="692">.nod, config,</text>
+  <text class="muted card-text" x="132" y="711">resources, installer.</text>
+
+  <rect x="440" y="200" width="760" height="590" rx="22" class="app"/>
+  <text class="ink module-title" x="473" y="255">Syscalculator App</text>
+  <text class="muted module-sub" x="473" y="282">Syscalculator UI - hoofdapp en workflows</text>
+
+  <rect x="480" y="310" width="315" height="92" rx="13" class="card"/>
+  <rect x="480" y="310" width="9" height="92" rx="9" class="blue"/>
+  <text class="ink card-title" x="505" y="340">Program.cs + Main</text>
+  <text class="muted card-text" x="505" y="366">Hoofdcalculator, converterkeuze,</text>
+  <text class="muted card-text" x="505" y="385">input/output, tray en menu.</text>
+
+  <rect x="825" y="310" width="315" height="92" rx="13" class="card"/>
+  <rect x="825" y="310" width="9" height="92" rx="9" class="blue"/>
+  <text class="ink card-title" x="850" y="340">WizardExpress</text>
+  <text class="muted card-text" x="850" y="366">Clipboard/table workflow:</text>
+  <text class="muted card-text" x="850" y="385">lezen, converteren, terugplaatsen.</text>
+
+  <rect x="480" y="430" width="315" height="92" rx="13" class="card"/>
+  <rect x="480" y="430" width="9" height="92" rx="9" class="blue"/>
+  <text class="ink card-title" x="505" y="460">NOD Editor</text>
+  <text class="muted card-text" x="505" y="486">Tabs, syntax, validator,</text>
+  <text class="muted card-text" x="505" y="505">simulator, popups, preview.</text>
+
+  <rect x="825" y="430" width="315" height="92" rx="13" class="card"/>
+  <rect x="825" y="430" width="9" height="92" rx="9" class="blue"/>
+  <text class="ink card-title" x="850" y="460">Formula Card</text>
+  <text class="muted card-text" x="850" y="486">Zoekfunctie, formulefilm,</text>
+  <text class="muted card-text" x="850" y="505">demo en codevoorbeelden.</text>
+
+  <rect x="480" y="550" width="315" height="92" rx="13" class="card"/>
+  <rect x="480" y="550" width="9" height="92" rx="9" class="blue"/>
+  <text class="ink card-title" x="505" y="580">GraphPreview + SolverSteps</text>
+  <text class="muted card-text" x="505" y="606">Graph preview, solverstappen,</text>
+  <text class="muted card-text" x="505" y="625">MathML/HTML en trace.</text>
+
+  <rect x="825" y="550" width="315" height="92" rx="13" class="card"/>
+  <rect x="825" y="550" width="9" height="92" rx="9" class="blue"/>
+  <text class="ink card-title" x="850" y="580">Beheer / services</text>
+  <text class="muted card-text" x="850" y="606">CatalogManager, Calculator,</text>
+  <text class="muted card-text" x="850" y="625">Language, intro, find/replace.</text>
+
+  <rect x="480" y="670" width="660" height="76" rx="13" class="card"/>
+  <rect x="480" y="670" width="9" height="76" rx="9" class="cyan"/>
+  <text class="ink card-title" x="505" y="700">App helpers</text>
+  <text class="muted card-text" x="505" y="727">LanguageCatalog, NodCatalogService, metadata, iconen en WebView2 data.</text>
+
+  <rect x="1250" y="200" width="520" height="590" rx="22" class="res"/>
+  <text class="ink module-title" x="1285" y="255">Runtime data en resources</text>
+  <text class="muted module-sub" x="1285" y="282">Bewerkbaar zonder C# build</text>
+
+  <rect x="1285" y="310" width="210" height="90" rx="13" class="card"/>
+  <rect x="1285" y="310" width="9" height="90" rx="9" class="amber"/>
+  <text class="ink card-title" x="1310" y="340">Converters/*.nod</text>
+  <text class="muted card-text" x="1310" y="362">Converterbestanden</text>
+  <text class="muted card-text" x="1310" y="381">en catalogus.</text>
+
+  <rect x="1525" y="310" width="210" height="90" rx="13" class="card"/>
+  <rect x="1525" y="310" width="9" height="90" rx="9" class="amber"/>
+  <text class="ink card-title" x="1550" y="340">Config</text>
+  <text class="muted card-text" x="1550" y="362">language/settings</text>
+  <text class="muted card-text" x="1550" y="381">freesyscal.cfg</text>
+
+  <rect x="1285" y="432" width="210" height="90" rx="13" class="card"/>
+  <rect x="1285" y="432" width="9" height="90" rx="9" class="amber"/>
+  <text class="ink card-title" x="1310" y="462">*.lng</text>
+  <text class="muted card-text" x="1310" y="484">eng fallback</text>
+  <text class="muted card-text" x="1310" y="503">ned/deu/spa/etc.</text>
+
+  <rect x="1525" y="432" width="210" height="90" rx="13" class="card"/>
+  <rect x="1525" y="432" width="9" height="90" rx="9" class="amber"/>
+  <text class="ink card-title" x="1550" y="462">Resources/Help</text>
+  <text class="muted card-text" x="1550" y="484">HTML, CSS, JS</text>
+  <text class="muted card-text" x="1550" y="503">contentgroepen.</text>
+
+  <rect x="1285" y="554" width="210" height="90" rx="13" class="card"/>
+  <rect x="1285" y="554" width="9" height="90" rx="9" class="amber"/>
+  <text class="ink card-title" x="1310" y="584">Images/SVG/video</text>
+  <text class="muted card-text" x="1310" y="606">Iconen, screenshots,</text>
+  <text class="muted card-text" x="1310" y="625">SVG en video.</text>
+
+  <rect x="1525" y="554" width="210" height="90" rx="13" class="card"/>
+  <rect x="1525" y="554" width="9" height="90" rx="9" class="amber"/>
+  <text class="ink card-title" x="1550" y="584">AppData WebView2</text>
+  <text class="muted card-text" x="1550" y="606">Lokale WebView2</text>
+  <text class="muted card-text" x="1550" y="625">browserdata.</text>
+
+  <rect x="1820" y="200" width="360" height="590" rx="22" class="side"/>
+  <text class="ink module-title" x="1855" y="255">Overige projecten</text>
+  <text class="muted module-sub" x="1855" y="282">Naast hoofdapp in de solution</text>
+
+  <rect x="1855" y="310" width="250" height="82" rx="13" class="card"/>
+  <rect x="1855" y="310" width="9" height="82" rx="9" class="rose"/>
+  <text class="ink card-title" x="1880" y="340">Syscalculator.UI.Uwp</text>
+  <text class="muted card-text" x="1880" y="367">UWP prototype; NOD core.</text>
+
+  <rect x="1855" y="420" width="250" height="82" rx="13" class="card"/>
+  <rect x="1855" y="420" width="9" height="82" rx="9" class="rose"/>
+  <text class="ink card-title" x="1880" y="450">NodSystem.Demo</text>
+  <text class="muted card-text" x="1880" y="477">Demo/console rond NOD core.</text>
+
+  <rect x="1855" y="530" width="250" height="82" rx="13" class="card"/>
+  <rect x="1855" y="530" width="9" height="82" rx="9" class="rose"/>
+  <text class="ink card-title" x="1880" y="560">NodSystem.Tests</text>
+  <text class="muted card-text" x="1880" y="587">Tests voor parser en engine.</text>
+
+  <rect x="1855" y="640" width="250" height="82" rx="13" class="card"/>
+  <rect x="1855" y="640" width="9" height="82" rx="9" class="rose"/>
+  <text class="ink card-title" x="1880" y="670">installer + docs</text>
+  <text class="muted card-text" x="1880" y="697">Inno Setup, releaseplan,</text>
+  <text class="muted card-text" x="1880" y="716">technische docs.</text>
+
+  <path class="line" d="M390 495 H440"/>
+  <path class="line" d="M1200 430 H1250"/>
+  <path class="line" d="M1250 565 H1200"/>
+  <path class="line" d="M820 790 V880"/>
+  <path class="line" d="M1540 790 V880"/>
+  <path class="line" d="M1935 880 V790"/>
+
+  <rect x="70" y="880" width="2110" height="330" rx="22" class="libs"/>
+  <text class="ink module-title" x="105" y="934">Tiedragon Library</text>
+  <text class="muted module-sub" x="105" y="958">Herbruikbare library-laag waar de Syscalculator App naar verwijst</text>
+
+  <rect x="110" y="1000" width="370" height="124" rx="13" class="card"/>
+  <rect x="110" y="1000" width="9" height="124" rx="9" class="violet"/>
+  <text class="ink card-title" x="135" y="1032">ClipboardConvert</text>
+  <text class="muted card-text" x="135" y="1060">Clipboard lezen/schrijven,</text>
+  <text class="muted card-text" x="135" y="1079">TSV/CSV/HTML en debug.</text>
+
+  <rect x="505" y="1000" width="370" height="124" rx="13" class="card"/>
+  <rect x="505" y="1000" width="9" height="124" rx="9" class="violet"/>
+  <text class="ink card-title" x="530" y="1032">Graph2D</text>
+  <text class="muted card-text" x="530" y="1060">Renderer, assen, rooster,</text>
+  <text class="muted card-text" x="530" y="1079">overlays, zoom en point table.</text>
+
+  <rect x="900" y="1000" width="370" height="124" rx="13" class="card"/>
+  <rect x="900" y="1000" width="9" height="124" rx="9" class="violet"/>
+  <text class="ink card-title" x="925" y="1032">ToolEditor</text>
+  <text class="muted card-text" x="925" y="1060">Toolbar, tabs, iconen,</text>
+  <text class="muted card-text" x="925" y="1079">tips, ballonnen, editor UI.</text>
+
+  <rect x="1295" y="1000" width="370" height="124" rx="13" class="card"/>
+  <rect x="1295" y="1000" width="9" height="124" rx="9" class="violet"/>
+  <text class="ink card-title" x="1320" y="1032">Help</text>
+  <text class="muted card-text" x="1320" y="1060">Dialoog, HTML/SVG, taal,</text>
+  <text class="muted card-text" x="1320" y="1079">WebView2 en templates.</text>
+
+  <rect x="1690" y="1000" width="410" height="124" rx="13" class="card"/>
+  <rect x="1690" y="1000" width="9" height="124" rx="9" class="green"/>
+  <text class="ink card-title" x="1715" y="1032">NodSystem Core</text>
+  <text class="muted card-text" x="1715" y="1060">Parser, engine, reverse,</text>
+  <text class="muted card-text" x="1715" y="1079">trace, stappen, transformaties.</text>
+
+  <path class="line" d="M820 1210 V1290"/>
+  <path class="line" d="M1545 1210 L1380 1290"/>
+
+  <rect x="440" y="1290" width="1320" height="360" rx="22" class="core"/>
+  <text class="ink module-title" x="473" y="1345">NOD engine laag</text>
+  <text class="muted module-sub" x="473" y="1370">Binnen NodSystem Core</text>
+
+  <rect x="480" y="1400" width="280" height="92" rx="13" class="card"/>
+  <rect x="480" y="1400" width="9" height="92" rx="9" class="green"/>
+  <text class="ink card-title" x="505" y="1430">NodParser + NodDocument</text>
+  <text class="muted card-text" x="505" y="1450">Leest .nod tekst</text>
+  <text class="muted card-text" x="505" y="1469">naar documentmodel.</text>
+
+  <rect x="790" y="1400" width="280" height="92" rx="13" class="card"/>
+  <rect x="790" y="1400" width="9" height="92" rx="9" class="green"/>
+  <text class="ink card-title" x="815" y="1430">NodEngine + NodReverse</text>
+  <text class="muted card-text" x="815" y="1450">Converter, reverse,</text>
+  <text class="muted card-text" x="815" y="1469">trace en resultaat.</text>
+
+  <rect x="1100" y="1400" width="280" height="92" rx="13" class="card"/>
+  <rect x="1100" y="1400" width="9" height="92" rx="9" class="green"/>
+  <text class="ink card-title" x="1125" y="1430">Expression + Calculus</text>
+  <text class="muted card-text" x="1125" y="1450">Formules, vergelijkingen,</text>
+  <text class="muted card-text" x="1125" y="1469">constraints en calculus.</text>
+
+  <rect x="1410" y="1400" width="280" height="92" rx="13" class="card"/>
+  <rect x="1410" y="1400" width="9" height="92" rx="9" class="green"/>
+  <text class="ink card-title" x="1435" y="1430">DataTransform + SQL</text>
+  <text class="muted card-text" x="1435" y="1450">field/table/output</text>
+  <text class="muted card-text" x="1435" y="1469">lookup/match/phoneformat.</text>
+
+  <rect x="480" y="1520" width="590" height="76" rx="13" class="card"/>
+  <rect x="480" y="1520" width="9" height="76" rx="9" class="green"/>
+  <text class="ink card-title" x="505" y="1550">FormulaCardCatalog</text>
+  <text class="muted card-text" x="505" y="1577">Brondata voor formulekaart en voorbeelden.</text>
+
+  <rect x="1100" y="1520" width="590" height="76" rx="13" class="card"/>
+  <rect x="1100" y="1520" width="9" height="76" rx="9" class="green"/>
+  <text class="ink card-title" x="1125" y="1550">SolverStepBuilder + Reports</text>
+  <text class="muted card-text" x="1125" y="1577">Staprapporten, regels, uitleg, graph-info en trace.</text>
+
+  <path class="line" d="M1100 1650 V1710"/>
+
+  <rect x="300" y="1710" width="1800" height="78" rx="18" class="card" stroke-width="2"/>
+  <text class="ink card-title" x="350" y="1750">Runtime hoofdlijn</text>
+  <text class="muted" x="550" y="1741" font-family="Segoe UI, Arial, sans-serif" font-size="16">Gebruiker -&gt; app schermen -&gt; Library -&gt; NOD core -&gt; resources/config/.lng.</text>
+  <text class="muted" x="550" y="1764" font-family="Segoe UI, Arial, sans-serif" font-size="16">Uitvoer: resultaat, graph, trace, help of clipboard.</text>
+
+  <rect x="70" y="1698" width="180" height="88" rx="16" class="card" stroke="#2563eb" stroke-width="2"/>
+  <text class="muted card-text" x="92" y="1729">Hoofdoutput</text>
+  <text class="ink card-title" x="92" y="1754">Syscalculator App</text>
+  <text class="muted card-text" x="92" y="1778">plus Library-laag</text>
+
+  <rect x="2160" y="1698" width="170" height="88" rx="16" class="card" stroke="#2563eb" stroke-width="2"/>
+  <text class="muted card-text" x="2182" y="1729">Entry point</text>
+  <text class="ink card-title" x="2182" y="1754">Program.cs</text>
+  <text class="muted card-text" x="2182" y="1778">start app</text>
+</svg>

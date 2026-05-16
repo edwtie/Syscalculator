@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1160" role="img" aria-labelledby="title desc">
+  <title id="title">Help-architectuur</title>
+  <desc id="desc">Architectuurdiagram van de Syscalculator App, Help en runtime resources.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill:#f8fafc; }
+      .ink { fill:#0f172a; font-family:"Segoe UI", Arial, sans-serif; }
+      .muted { fill:#475569; font-family:"Segoe UI", Arial, sans-serif; }
+      .title { font-size:44px; font-weight:700; }
+      .subtitle { font-size:20px; }
+      .module-title { font-size:28px; font-weight:650; }
+      .module-sub { font-size:15px; }
+      .card-title { font-size:16px; font-weight:650; }
+      .card-text { font-size:13px; }
+      .module-app { fill:#eff6ff; stroke:#60a5fa; stroke-width:2.4; }
+      .module-help { fill:#f0fdf4; stroke:#4ade80; stroke-width:2.4; }
+      .module-res { fill:#fffbeb; stroke:#fbbf24; stroke-width:2.4; }
+      .card { fill:#fff; stroke:#cbd5e1; stroke-width:1.3; }
+      .blue { fill:#2563eb; }
+      .green { fill:#16a34a; }
+      .amber { fill:#d97706; }
+      .cyan { fill:#0891b2; }
+      .line { stroke:#475569; stroke-width:3.5; fill:none; marker-end:url(#arrow); }
+      .thin-line { stroke:#475569; stroke-width:2.5; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1160"/>
+  <text class="ink title" x="60" y="82">Help-architectuur</text>
+  <text class="muted subtitle" x="64" y="118">Nieuwe opzet: help-code als aparte Help-laag, gevoed door HTML/CSS/JS, SVG en .lng taalbestanden.</text>
+
+  <rect x="1310" y="45" width="360" height="64" rx="16" class="card" stroke="#2563eb" stroke-width="2"/>
+  <text class="muted card-text" x="1332" y="72">Build output</text>
+  <text class="ink card-title" x="1332" y="101">Help</text>
+
+  <rect x="70" y="170" width="480" height="760" rx="22" class="module-app"/>
+  <text class="ink module-title" x="105" y="229">Syscalculator App</text>
+  <text class="muted module-sub" x="105" y="256">Windows applicatie</text>
+
+  <rect x="105" y="295" width="400" height="118" rx="13" class="card"/>
+  <rect x="105" y="295" width="10" height="118" rx="10" class="blue"/>
+  <text class="ink card-title" x="132" y="333">Main</text>
+  <text class="muted card-text" x="132" y="360">Bouwt hoofd-help pagina's en geeft</text>
+  <text class="muted card-text" x="132" y="381">taalresolver door.</text>
+
+  <rect x="105" y="445" width="400" height="118" rx="13" class="card"/>
+  <rect x="105" y="445" width="10" height="118" rx="10" class="blue"/>
+  <text class="ink card-title" x="132" y="483">NOD Editor</text>
+  <text class="muted card-text" x="132" y="510">Bouwt NOD help, command help</text>
+  <text class="muted card-text" x="132" y="531">en screenshots.</text>
+
+  <rect x="105" y="595" width="400" height="118" rx="13" class="card"/>
+  <rect x="105" y="595" width="10" height="118" rx="10" class="blue"/>
+  <text class="ink card-title" x="132" y="633">Formula Card</text>
+  <text class="muted card-text" x="132" y="660">Gebruikt dezelfde help templates,</text>
+  <text class="muted card-text" x="132" y="681">scripts en navigatieknoppen.</text>
+
+  <rect x="105" y="765" width="400" height="110" rx="13" class="card"/>
+  <rect x="105" y="765" width="10" height="110" rx="10" class="cyan"/>
+  <text class="ink card-title" x="132" y="803">Language Catalog</text>
+  <text class="muted card-text" x="132" y="830">Actieve taal + eng.lng fallback</text>
+  <text class="muted card-text" x="132" y="851">blijven in de app.</text>
+
+  <rect x="670" y="170" width="500" height="760" rx="22" class="module-help"/>
+  <text class="ink module-title" x="705" y="229">Help</text>
+  <text class="muted module-sub" x="705" y="256">Gedeelde help-laag</text>
+
+  <rect x="705" y="295" width="420" height="122" rx="13" class="card"/>
+  <rect x="705" y="295" width="10" height="122" rx="10" class="green"/>
+  <text class="ink card-title" x="732" y="333">Help</text>
+  <text class="muted card-text" x="732" y="360">Publieke ingang: dialogen, content, tekst,</text>
+  <text class="muted card-text" x="732" y="381">ScreenshotImage en CSS helpers.</text>
+
+  <rect x="705" y="455" width="420" height="122" rx="13" class="card"/>
+  <rect x="705" y="455" width="10" height="122" rx="10" class="green"/>
+  <text class="ink card-title" x="732" y="493">HTML Renderer</text>
+  <text class="muted card-text" x="732" y="520">Laadt templates en content, vult placeholders,</text>
+  <text class="muted card-text" x="732" y="541">vult [lng.key], embedt SVG/PNG.</text>
+
+  <rect x="705" y="615" width="420" height="122" rx="13" class="card"/>
+  <rect x="705" y="615" width="10" height="122" rx="10" class="green"/>
+  <text class="ink card-title" x="732" y="653">Help Dialoog</text>
+  <text class="muted card-text" x="732" y="680">Help dialoog met topics, WebView2,</text>
+  <text class="muted card-text" x="732" y="701">zoekfunctie en navigatie.</text>
+
+  <rect x="705" y="775" width="420" height="100" rx="13" class="card"/>
+  <rect x="705" y="775" width="10" height="100" rx="10" class="green"/>
+  <text class="ink card-title" x="732" y="813">Navigatie UI</text>
+  <text class="muted card-text" x="732" y="840">Gedeelde controls voor helpnavigatie.</text>
+
+  <rect x="1280" y="170" width="450" height="760" rx="22" class="module-res"/>
+  <text class="ink module-title" x="1315" y="229">Runtime resources</text>
+  <text class="muted module-sub" x="1315" y="256">Bewerkbaar zonder C#</text>
+
+  <rect x="1315" y="295" width="370" height="110" rx="13" class="card"/>
+  <rect x="1315" y="295" width="10" height="110" rx="10" class="amber"/>
+  <text class="ink card-title" x="1342" y="333">Resources/Help/Content</text>
+  <text class="muted card-text" x="1342" y="360">HTML helpteksten per groep:</text>
+  <text class="muted card-text" x="1342" y="381">main, nod/full, command en snippets.</text>
+
+  <rect x="1315" y="435" width="370" height="110" rx="13" class="card"/>
+  <rect x="1315" y="435" width="10" height="110" rx="10" class="amber"/>
+  <text class="ink card-title" x="1342" y="473">Resources/Help</text>
+  <text class="muted card-text" x="1342" y="500">Document templates, CSS en JS</text>
+  <text class="muted card-text" x="1342" y="521">voor kopieren, zoeken en formulefilm.</text>
+
+  <rect x="1315" y="575" width="370" height="110" rx="13" class="card"/>
+  <rect x="1315" y="575" width="10" height="110" rx="10" class="amber"/>
+  <text class="ink card-title" x="1342" y="613">Resources/NodEditorHelp.svg</text>
+  <text class="muted card-text" x="1342" y="640">Een SVG mock met [lng.key] tokens</text>
+  <text class="muted card-text" x="1342" y="661">in plaats van meerdere PNG's.</text>
+
+  <rect x="1315" y="715" width="370" height="110" rx="13" class="card"/>
+  <rect x="1315" y="715" width="10" height="110" rx="10" class="amber"/>
+  <text class="ink card-title" x="1342" y="753">*.lng</text>
+  <text class="muted card-text" x="1342" y="780">Taalteksten zoals eng.lng, ned.lng;</text>
+  <text class="muted card-text" x="1342" y="801">Engels is fallback.</text>
+
+  <path class="line" d="M550 356 H670"/>
+  <path class="line" d="M550 506 H670"/>
+  <path class="line" d="M550 820 H670"/>
+
+  <path class="line" d="M1170 356 H1280"/>
+  <path class="line" d="M1170 516 H1280"/>
+  <path class="line" d="M1170 676 H1280"/>
+  <path class="line" d="M1280 770 H1170"/>
+
+  <path class="line" d="M925 930 V990"/>
+  <rect x="230" y="990" width="1340" height="92" rx="18" class="card" stroke-width="2"/>
+  <text class="ink card-title" x="280" y="1032">Resultaat in runtime</text>
+  <text class="muted" x="510" y="1023" font-family="Segoe UI, Arial, sans-serif" font-size="16">Help dialoog -&gt; WebView2 HTML -&gt; content uit resources -&gt; taal via .lng.</text>
+  <text class="muted" x="510" y="1046" font-family="Segoe UI, Arial, sans-serif" font-size="16">SVG mock gebruikt [lng] tokens.</text>
+</svg>

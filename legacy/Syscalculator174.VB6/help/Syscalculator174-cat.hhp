@@ -1,0 +1,33 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Syscalculator174-cat.chm
+Contents file=Syscalculator174-cat.hhc
+Index file=Syscalculator174-cat.hhk
+Default Window=main
+Default topic=index_cat.htm
+Display compile progress=No
+Full-text search=Yes
+Language=0x403 Catalan
+Title=Syscalculator 1.74 Help - Catala
+
+[WINDOWS]
+main="Syscalculator 1.74 Help - Catala","Syscalculator174-cat.hhc","Syscalculator174-cat.hhk","index_cat.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+
+[FILES]
+index_cat.htm
+help_cat_convertir.htm
+help_cat_camps.htm
+help_cat_wizardexpress.htm
+help_cat_calculadora.htm
+help_cat_configuracio.htm
+help_cat_finestra_opcions.htm
+help_cat_nod_cataleg.htm
+help_cat_suport.htm
+logo_phpBB.gif
+Logo_phpBB_med.gif
+syscal_1.png
+syscal_2.png
+Syscal_3.png
+Syscal_4.png
+triconvert_3.jpg
+warning_triangle.png

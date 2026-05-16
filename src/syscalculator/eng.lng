@@ -1,0 +1,495 @@
+# Syscalculator 2.0 language file
+# Format: key=value
+
+language.name=English
+
+menu.file=File
+menu.file.open_nod=Open NOD...
+menu.file.reload=Reload converter list
+menu.file.exit=Exit
+menu.edit=Edit
+menu.edit.cut=Cut
+menu.edit.copy=Copy
+menu.edit.paste=Paste
+menu.edit.delete=Delete
+menu.edit.select_all=Select all
+menu.edit.copy_input=Copy input
+menu.edit.copy_output=Copy output
+menu.edit.paste_active=Paste to active field
+menu.edit.clear=Clear fields
+menu.config=Config
+menu.config.digit_group=Digit group
+menu.config.decimals=Decimals
+menu.config.reverse_direction=Reverse direction
+menu.config.live_convert=Live convert
+menu.config.trace_control=Trace control
+menu.config.language=Language...
+menu.config.always_on_top=Always on top
+menu.config.minimize_to_tray=Minimize to tray
+menu.config.start_with_windows=Start with Windows
+menu.config.show_introduction=Show introductions
+menu.config.catalog_manager=Catalog manager
+menu.tools=Tools
+menu.tools.wizard=WizardExpress
+menu.tools.calculator=Calculator
+menu.tools.nod_editor=NOD Editor
+menu.tools.trace=Trace
+menu.tools.show_intro=Show introduction again
+menu.about=About
+menu.about.syscalculator=About Syscalculator
+
+toolbar.file=File:
+
+option.digit_group=Digit group
+option.decimals=Decimals
+option.live_convert=Live convert
+
+language.ned=Nederlands
+language.eng=English
+language.restart_required=Language changed. Restart Syscalculator to apply all text.
+
+status.ready=Ready
+status.catalog_loaded=Converter list loaded.
+status.loaded=Loaded: {0}
+status.forward=Forward calculated.
+status.reverse=Reverse calculated.
+status.direction_reversed=Direction reversed.
+status.direction_normal=Direction restored.
+status.start_with_windows_on=Syscalculator will start with Windows.
+status.start_with_windows_off=Syscalculator will not start with Windows.
+status.show_introduction_on=Introductions will be shown.
+status.show_introduction_off=Introductions will be hidden.
+status.calculator_to_input1=Calculator -> input 1.
+status.calculator_to_input2=Calculator -> input 2.
+status.calculator_disabled=Calculator is only available for numeric converters.
+status.error=Error: {0}
+status.language_changed=Language changed.
+
+dialog.open_nod.title=Open NOD
+dialog.open_nod.failed_title=NOD load failed
+dialog.open_nod.filter=NOD files (*.nod)|*.nod|All files (*.*)|*.*
+dialog.error_title=Error
+dialog.intro_title=Introduction
+dialog.no_intro=This converter has no introduction text.
+dialog.about_title=About Syscalculator 2.0
+dialog.about_text=Syscalculator 2.0 Beta\nNOD System 2.0\n\nBased on the old Syscalculator/NOD idea.
+about.version_title=Version information
+about.product_name=Product name:
+about.version=Version:
+about.release_channel=Release channel:
+about.build=Build number:
+about.release_date=Release date:
+about.copyright_title=Copyright
+about.rights=All rights reserved.
+about.description_title=Description
+about.description_text=NOD conversion and calculation system for temperature, weights, dimensions, currency conversion and more. Fast, accurate and flexible.
+about.website_title=Website
+about.email_title=E-mail
+about.language_title=Language
+about.system_info=System information...
+about.license=License...
+about.license_text=Syscalculator 2.0 beta build. Internal evaluation license.
+dialog.tray_title=Syscalculator
+dialog.tray_message=Syscalculator is running in the system tray.
+dialog.open_nod.file_not_found=File not found: {0}
+dialog.language.title=Choose language
+dialog.language.search=Search language...
+dialog.language.ok=OK
+dialog.language.cancel=Cancel
+dialog.language.count={0} languages
+
+calculator.title_input1=Calculator - input 1
+calculator.title_input2=Calculator - input 2
+
+tray.show=Show Syscalculator
+tray.hide=Hide to system tray
+tray.wizard=WizardExpress
+tray.calculator=Calculator
+tray.exit=Exit
+
+find.title=Find / replace
+find.find=Find
+find.next=Next
+find.replace=Replace
+find.replace_button=Replace
+find.match_case=Match case
+find.replace_all=Replace all
+find.close=Close
+find.not_found=Not found.
+find.replaced_count={0} replacements made.
+
+catalog.title=Converter catalog
+catalog.column.name=Name
+catalog.column.nod_file=NOD file
+catalog.column.default=Default
+catalog.add=Add
+catalog.new_converter=New converter
+catalog.choose_nod=Choose NOD...
+catalog.save=Save
+
+editor.title=NOD Editor Plus
+editor.mode.advanced=Advanced mode
+editor.tab.new=new
+editor.menu.file=File
+editor.menu.file.new_tab=New tab
+editor.menu.file.open=Open...
+editor.menu.file.save=Save
+editor.menu.file.save_as=Save as...
+editor.menu.file.close_tab=Close tab
+editor.menu.file.recent_files=Recent files
+editor.menu.file.recent_empty=No recent files
+editor.menu.file.close=Close
+editor.menu.edit=Edit
+editor.menu.edit.undo=Undo
+editor.menu.edit.redo=Redo
+editor.menu.edit.cut=Cut
+editor.menu.edit.copy=Copy
+editor.menu.edit.paste=Paste
+editor.menu.edit.select_all=Select all
+editor.menu.edit.find_replace=Find / replace
+editor.menu.tools=Tools
+editor.menu.tools.validate=Validate
+editor.menu.tools.test=Run test
+editor.menu.tools.repair=Repair lines
+editor.menu.tools.restore_original=Restore original
+editor.menu.tools.repair_lines=Repair lines
+editor.menu.tools.recolor=Recolor syntax
+editor.menu.tools.example_celsius=Example: Celsius
+editor.menu.tools.example_e2=Example: e^2
+editor.menu.tools.example_sine=Example: sine degrees
+editor.menu.view=View
+editor.menu.view.test_panel=Show/hide test panel
+editor.menu.view.live_preview=Show/hide live preview
+editor.menu.view.simulator=Show/hide simulator
+editor.menu.view.restore_panels=Restore panels
+editor.menu.view.undock_test_panel=Undock test panel
+editor.menu.view.dock_test_panel=Dock test panel
+editor.menu.view.undock_live_preview=Undock live preview
+editor.menu.view.dock_live_preview=Dock live preview
+editor.graph.title=Graph Preview
+editor.graph.copy_points=Copy points
+editor.graph.open_large=Open large graph
+editor.graph.hide_table=Hide table
+editor.graph.show_table=Show table
+editor.graph.reset_view=Reset view
+editor.graph.zoom_in=Zoom in
+editor.graph.zoom_out=Zoom out
+editor.graph.points=Points
+editor.graph.position_empty=Position: (-, -)
+editor.graph.position=Position: {0}
+editor.graph.step=Step
+editor.graph.step_positive=Step must be greater than 0.
+editor.graph.no_numeric_points=No numeric points. Skipped: {0}.
+editor.graph.points_status=Points: {0}. Skipped: {1}. Range: {2:0.####} to {3:0.####}.
+editor.graph.error=Graph error: {0}
+editor.graph.disabled=Graph Preview disabled
+editor.graph.disabled_chg=Graph Preview is disabled for chg converters.
+editor.graph.disabled_trans=Graph Preview is disabled for trans converters.
+editor.graph.disabled_math=Graph Preview is only available for numeric math converters.
+editor.menu.view.intro_preview=Introduction preview
+editor.menu.view.undock_simulator=Undock simulator
+editor.menu.view.dock_simulator=Dock simulator
+editor.menu.help=Help
+editor.menu.help.nod=NOD help
+
+editor.menu.help.about=About NOD Editor
+menu.about.help=Help for users
+help.nav.home=Home
+help.nav.previous=Previous
+help.nav.next=Next
+help.main.title=Syscalculator help
+help.main.close=Close
+help.main.body=Syscalculator is a converter tool.\r\n\r\nWhat you can do:\r\n- Choose a converter from the list.\r\n- Type a value in the first field.\r\n- Read the result in the second field.\r\n- Use WizardExpress for quick clipboard conversion.\r\n- Use NOD Editor for advanced converter work.\r\n\r\nWizardExpress:\r\n- Copy values to the clipboard.\r\n- Open WizardExpress.\r\n- Click OK.\r\n- Paste the converted values back.\r\n\r\nClipboard note:\r\n- WizardExpress works well with normal text programs.\r\n- WizardExpress also works well with LibreOffice Calc.\r\n- Microsoft Excel can behave differently with clipboard data.\r\n- If Excel paste is difficult, use LibreOffice Calc or work through files instead of clipboard.\r\n\r\nTips:\r\n- Open NOD when you want a specific converter file.\r\n- Reload the converter list if new files were added.\r\n- Use Calculator when you want to type into another field directly.\r\n\r\nThis help is for daily use.\r\nFor converter development, use the NOD Editor help.
+help.main.page.intro.title=Start
+help.main.page.intro.body=<p><b>Syscalculator 2.0</b> is for quick conversions. Choose a converter, type a value, and read the result. For fast clipboard work you can use WizardExpress. For making or changing converters use the NOD Editor.</p><p>This help follows the practical order of the classic Syscalculator 1.74 help, with extra notes for the modern 2.0 daily version.</p><ul><li><a href="nodpage:main">Value conversion</a></li><li><a href="nodpage:fields">Fields, editing and clipboard</a></li><li><a href="nodpage:wizard">WizardExpress</a></li><li><a href="nodpage:calculator">Calculator</a></li><li><a href="nodpage:configuration">Configuration</a></li><li><a href="nodpage:window">Window, tray and decimals</a></li><li><a href="nodpage:nodfiles">NOD files and catalog</a></li><li><a href="nodpage:nodeditor">NOD Editor guide</a></li><li><a href="nodpage:applications">Applications</a></li><li><a href="nodpage:support">Limitations and support</a></li></ul>
+help.main.page.main.title=Value conversion
+help.main.page.main.body=<p>The main window is the normal converter screen. The selected converter decides what the first and second fields mean.</p><ol><li>Choose a converter from the list at the top.</li><li>Type the source value in the first field.</li><li>Press <b>Enter</b>, or use live convert when it is enabled.</li><li>Read the converted value in the second field.</li></ol><p>When <b>Reverse direction</b> is enabled, Syscalculator swaps the meaning of the fields so you can convert back.</p><p>If the converter contains an introduction, Syscalculator can show it when the converter is first opened. Use <b>Tools &gt; Show introduction again</b> when you want to reread it.</p>
+help.main.page.fields.title=Fields, editing and clipboard
+help.main.page.fields.body=<p>The input and output fields behave like normal Windows edit fields. The active field is the field that currently has the text cursor or selection.</p><h2>Editing fields</h2><ul><li><b>Cut / Copy / Delete</b> work on the selected text in the active field.</li><li><b>Paste</b> inserts clipboard text into the active field.</li><li><b>Select all</b> selects the complete active field. After that, Copy, Cut or Delete applies to the whole value.</li><li><b>Copy input</b> copies the full first field when it has text.</li><li><b>Copy output</b> copies the full second field when it has text.</li><li><b>Clear fields</b> empties both fields.</li></ul><p>The right-click menu shows the same practical edit actions. Syscalculator hides unused Windows IME entries for normal European input languages. For Chinese, Japanese and Korean input, Windows keeps its own IME menu so those input methods still work.</p><h2>Clipboard commands</h2><ul><li><b>Ctrl+X</b>: cut selected text.</li><li><b>Ctrl+C</b>: copy selected text.</li><li><b>Ctrl+V</b>: paste clipboard text.</li><li><b>Ctrl+A</b>: select all text in the active field.</li><li><b>Del</b>: delete the selection or the next character.</li></ul>
+help.main.page.applications.title=Applications
+help.main.page.configuration.title=Configuration
+help.main.page.applications.body=<p>WizardExpress can be used with several applications, but clipboard behavior differs per program.</p><h2>Works well with</h2><ul><li>plain text programs</li><li>LibreOffice Calc</li></ul><p>For spreadsheet work, plain values without unit symbols are usually the safest result.</p><h2>Excel / Microsoft 365</h2><p>Microsoft Excel can handle clipboard data differently from plain text programs and LibreOffice Calc.</p><ul><li>Excel often uses richer Office clipboard formats.</li><li>WizardExpress follows the classic clipboard reset and write-back model.</li><li>Because of that, Excel can behave differently after conversion.</li></ul><div class="warning"><b>Excel clipboard management:</b> after WizardExpress writes the converted result, paste immediately with <b>Ctrl+V</b>. Avoid right-click paste in Excel, because Excel can replace the converted clipboard data with its own clipboard state. If paste still does not work, copy the values from Excel again and run WizardExpress again.</div><p>If paste behavior is difficult in Excel, use one of these routes:</p><ul><li>try LibreOffice Calc</li><li>work through files instead of clipboard</li><li>use normal plain value paste</li></ul><p>Excel for the web / Microsoft 365 online can be even stricter because browser clipboard behavior is added on top.</p><h2>Data and reporting</h2><p>The advanced WizardExpress window combines data view and debug reporting. The <b>Input</b> and <b>Output</b> tabs show the working data as grids.</p><p><b>Reporting</b> means a compact diagnosis of the clipboard conversion: row and column counts, clipboard formats, the used rule, before/after information, and a short preview.</p><p>The report deliberately shows only the first rows when there is a lot of data. That keeps copied, e-mailed, and PDF reports readable. It is a report, not a full data export.</p>
+help.main.page.wizard.title=WizardExpress
+help.main.page.wizard.screenshot_alt=Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.
+help.main.page.wizard.body=<p>WizardExpress is the quick clipboard mode. It is meant for users who want to copy values, convert them quickly, and paste them back without opening the advanced editor.</p><ol><li>Copy values to the clipboard.</li><li>Open WizardExpress.</li><li>Click <b>OK</b>.</li><li>Paste the converted values back with <b>Ctrl+V</b>, or use the paste menu in applications other than Excel.</li></ol><h2>Screenshot</h2>{WizardExpressScreenshot}<p class="shot-caption">Example: values are copied from a spreadsheet, WizardExpress converts them, and the result can be pasted back.</p><div class="warning"><b>Excel / Microsoft 365:</b> Excel has its own clipboard management. Paste immediately with <b>Ctrl+V</b> after WizardExpress. See <a href="nodpage:applications">Applications</a> for the Excel details.</div>
+help.main.page.calculator.title=Calculator
+help.main.page.calculator.body=<p>The calculator is for quick arithmetic while you are working with a converter. It can place the calculated result directly in the active input or output field.</p><ol><li>Click in the field where the result should go.</li><li>Open <b>Tools &gt; Calculator</b>, or use the calculator button.</li><li>Calculate the value.</li><li>Insert or copy the result back into Syscalculator.</li></ol><p>For converter formulas, NOD files and educational formula cards, use the NOD Editor instead of the simple calculator.</p>
+help.main.page.configuration.body=<p>The <b>Config</b> menu contains the daily behavior settings for Syscalculator.</p><ul><li><b>Reverse direction</b>: swaps the converter direction, including input and output fields.</li><li><b>Show introductions</b>: shows or hides converter introduction text when a converter has one.</li><li><b>Start with Windows</b>: starts Syscalculator automatically when Windows starts.</li><li><b>Always on top</b>: keeps Syscalculator, WizardExpress, and Calculator above other windows.</li><li><b>Minimize to tray</b>: hides Syscalculator in the system tray instead of leaving it on the taskbar.</li><li><b>Language</b>: changes the interface language.</li><li><b>Live convert</b>: converts while you type instead of waiting for a separate action.</li><li><b>Catalog manager</b>: manages the converter catalog.</li></ul><p>Use <b>Tools &gt; Show introduction again</b> when you want to reread the introduction for the current converter.</p>
+help.main.page.window.title=Window, tray and decimals
+help.main.page.window.body=<p>The window settings control how Syscalculator stays available while you work in other programs.</p><h2>Window and tray</h2><ul><li><b>Always on top</b>: keeps Syscalculator, WizardExpress and Calculator above other windows.</li><li><b>Minimize to tray</b>: hides Syscalculator in the system tray instead of leaving it on the taskbar.</li><li><b>Start with Windows</b>: starts Syscalculator automatically when Windows starts.</li></ul><p>The tray menu can show Syscalculator, hide it again, open WizardExpress or the Calculator, and exit the program.</p><h2>Decimals and digit grouping</h2><ul><li><b>Decimals</b> controls how many decimal places are shown for numeric results.</li><li><b>Digit group</b> adds or removes thousands grouping in displayed numbers.</li></ul><p>These display settings do not change the converter rule itself. They only control how the result is shown.</p>
+help.main.page.nodfiles.title=NOD files and catalog
+help.main.page.nodfiles.body=<p>Syscalculator converters are stored as NOD files. A NOD file describes the name, labels and conversion rules for one converter.</p><h2>Daily use</h2><ul><li><b>Open NOD</b>: load a specific converter file.</li><li><b>Reload converter list</b>: refresh the list after converter files were added or changed.</li><li><b>Catalog manager</b>: inspect and manage the converter catalog.</li></ul><h2>Editing and compatibility</h2><p>Use the <b>NOD Editor</b> to create, inspect or repair converter files. Syscalculator 2.0 keeps the classic NOD 1.0 style recognizable, while the editor also explains newer NOD 2.0 features.</p><p>Old Syscalculator 1.74 NOD files should remain readable. When a file uses old commands such as <code>input1</code> and <code>input2</code>, the editor can explain the modern equivalent.</p>
+help.main.page.support.title=Limitations and support
+help.main.page.support.body=<div class="warning"><b>Daily build:</b> Syscalculator 2.0 daily builds are for testing the modern version. Keep backups of important NOD files and use Syscalculator 1.74 when you need the old VB6 legacy release.</div><h2>Known limitations</h2><ul><li>Clipboard behavior can differ per application. Excel and Microsoft 365 need extra care.</li><li>The installer is framework-dependent and may need the Microsoft .NET Desktop Runtime on the target computer.</li><li>NOD 2.0 beta does not include every future idea yet. Unsupported modes such as full 3D geometry or matrix3x3 are rejected instead of half-handled.</li></ul><h2>Support information</h2><p>When reporting a problem, include the Syscalculator version, the selected language, the converter name, and the exact steps that caused the problem. For clipboard issues, mention the application you copied from and pasted into.</p>
+help.main.page.clipboard.title=Clipboard
+help.main.page.excel.title=Excel / Microsoft 365
+help.main.page.excel.body=<h2>Problem: Excel / Microsoft 365</h2><p>Microsoft Excel can handle clipboard data differently from plain text programs and LibreOffice Calc.</p><ul><li>Excel often uses richer Office clipboard formats.</li><li>WizardExpress follows the classic clipboard reset and write-back model.</li><li>Because of that, Excel can behave differently after conversion.</li></ul><div class="warning"><b>Excel clipboard management:</b> after WizardExpress writes the converted result, paste immediately with <b>Ctrl+V</b>. Avoid right-click paste in Excel, because Excel can replace the converted clipboard data with its own clipboard state. If paste still does not work, copy the values from Excel again and run WizardExpress again.</div><p>If paste behavior is difficult in Excel, use one of these routes:</p><ul><li>try LibreOffice Calc</li><li>work through files instead of clipboard</li><li>use normal plain value paste</li></ul><p>Excel for the web / Microsoft 365 online can be even stricter because browser clipboard behavior is added on top.</p>
+wizard.menu.file=File
+wizard.menu.file.close=Close
+wizard.menu.extra=Extra
+wizard.menu.extra.advanced=Advanced mode
+wizard.menu.extra.data=Excel-style data
+wizard.menu.extra.debug=Clipboard debug
+editor.toolbar.new=New
+editor.toolbar.open=Open
+editor.toolbar.save=Save
+editor.toolbar.template_wizard=Templates
+editor.toolbar.undo=Undo
+editor.toolbar.redo=Redo
+editor.toolbar.find=Find
+editor.toolbar.validate=Validate
+editor.toolbar.test=Test
+editor.toolbar.solver_steps=Solver
+editor.toolbar.repair=Repair
+editor.toolbar.restore_original=Restore
+editor.preview.title=Live preview
+editor.preview.dialog=Dialog
+editor.preview.input1=Input1
+editor.preview.input2=Input2
+editor.preview.sample=Sample
+editor.preview.result=Result
+editor.preview.format=Format
+editor.preview.intro=Introduction
+editor.sim.title=Converter simulator
+editor.sim.window_title=Converter preview
+editor.sim.file=File:
+editor.sim.digit_group=Digit group
+editor.sim.decimals=Decimals
+editor.sim.current_converter=Current converter
+editor.test.input=Test input
+editor.test.output=Output
+editor.test.title=Converter test
+editor.test.formula=Formula
+editor.test.calculation=Calculation
+editor.status.ready=Ready
+editor.status.loaded=Loaded: {0}
+editor.status.saved=Saved: {0}
+editor.status.valid=NOD valid.
+editor.status.test_done=Test completed.
+editor.status.lines_repaired=Lines repaired.
+editor.status.original_restored=Original text restored.
+editor.status.saved_short=Saved
+help.main.page.nodeditor.title=NOD Editor guide
+help.main.page.nodeditor.screenshot_alt=Screenshot of the NOD Editor with toolbar, code editor and command tip.
+help.section.screenshot=Screenshot
+help.section.basic_workflow=Basic workflow
+help.section.toolbar=Toolbar
+help.section.command_tips=Command tips
+help.section.restore_repair=Restore and repair
+help.main.nodeditor.intro=The <b>NOD Editor</b> is the workspace for creating and maintaining converter files. It combines a code editor, command tips, validation, test tools, templates and repair actions.
+help.main.nodeditor.screenshot_caption=Example: a Celsius/Fahrenheit converter with the command tip for <code>input1</code>.
+help.main.nodeditor.workflow.open=Open the editor with <b>Tools &gt; NOD Editor</b>, or open a specific <code>.nod</code> file.
+help.main.nodeditor.workflow.templates=Use <b>Templates</b> for a starter file, or type commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> and <code>end</code>.
+help.main.nodeditor.workflow.tip=Read the blue command tip while typing. It explains the command and often shows a modern replacement.
+help.main.nodeditor.workflow.validate=Use <b>Validate</b> to check syntax and <b>Test</b> to run the converter with a sample value.
+help.main.nodeditor.workflow.save=Use <b>Save</b> when the converter works.
+help.main.nodeditor.toolbar.files=create, load and save NOD files.
+help.main.nodeditor.toolbar.undo=undo and redo text edits without including syntax coloring.
+help.main.nodeditor.toolbar.templates=start from a ready-made converter pattern.
+help.main.nodeditor.toolbar.find=search and replace inside the current NOD file.
+help.main.nodeditor.toolbar.validate=parse the file and report syntax problems.
+help.main.nodeditor.toolbar.test=run the converter with the test input.
+help.main.nodeditor.toolbar.solver=open solver steps for equation, diff and integral files.
+help.main.nodeditor.toolbar.restore=return the current tab to the last opened or saved version.
+help.main.nodeditor.command_tips=When the caret is on a known command, the editor can show a small help balloon. Use <b>Replace</b> when the tip offers a modern command form, or <b>More help</b> to open the full NOD command reference.
+help.main.nodeditor.restore=<b>Restore</b> means: go back to the original/opened/saved text for this tab.
+help.main.nodeditor.repair=<b>Tools &gt; Repair lines</b> means: repair NOD text, for example when old metadata lines were pasted together.
+help.main.page.nodeditor.body=<p>The <b>NOD Editor</b> is the workspace for creating and maintaining converter files. It combines a code editor, command tips, validation, test tools, templates and repair actions.</p><h2>Screenshot</h2>{NodEditorScreenshot}<p class="shot-caption">Example: a Celsius/Fahrenheit converter with the command tip for <code>input1</code>.</p><h2>Basic workflow</h2><ol><li>Open the editor with <b>Tools &gt; NOD Editor</b>, or open a specific <code>.nod</code> file.</li><li>Use <b>Templates</b> for a starter file, or type commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> and <code>end</code>.</li><li>Read the blue command tip while typing. It explains the command and often shows a modern replacement.</li><li>Use <b>Validate</b> to check syntax and <b>Test</b> to run the converter with a sample value.</li><li>Use <b>Save</b> when the converter works.</li></ol><h2>Toolbar</h2><ul><li><b>New / Open / Save</b>: create, load and save NOD files.</li><li><b>Undo / Redo</b>: undo and redo text edits without including syntax coloring.</li><li><b>Templates</b>: start from a ready-made converter pattern.</li><li><b>Find</b>: search and replace inside the current NOD file.</li><li><b>Validate</b>: parse the file and report syntax problems.</li><li><b>Test</b>: run the converter with the test input.</li><li><b>Solver</b>: open solver steps for equation, diff and integral files.</li><li><b>Restore</b>: return the current tab to the last opened or saved version.</li></ul><h2>Command tips</h2><p>When the caret is on a known command, the editor can show a small help balloon. Use <b>Replace</b> when the tip offers a modern command form, or <b>More help</b> to open the full NOD command reference.</p><h2>Restore and repair</h2><ul><li><b>Restore</b> means: go back to the original/opened/saved text for this tab.</li><li><b>Tools &gt; Repair lines</b> means: repair NOD text, for example when old metadata lines were pasted together.</li></ul>
+editor.status.position=Ln {0}, Col {1}
+editor.status.lines=Lines {0}
+editor.dialog.open_title=Open NOD
+editor.dialog.save_title=Save NOD as
+editor.dialog.filter=NOD files (*.nod)|*.nod|All files (*.*)|*.*
+editor.dialog.close_dirty=Tab has unsaved changes. Close?
+editor.dialog.close_tab_title=Close tab
+editor.dialog.validation_error=Validation error
+editor.dialog.test_error=Test error
+editor.dialog.no_intro=No introduction text found.
+
+wizard.title=WizardExpress
+wizard.advanced.title=WizardExpress Data
+wizard.advanced.copy_tsv=Copy output TSV
+wizard.mode.basic=Basic mode
+wizard.subtitle=Clipboard in, conversion out, with the old stoplight feel.
+wizard.forward=Forward
+wizard.reverse=Reverse
+wizard.paste=Paste from Clipboard
+wizard.convert=Convert
+wizard.copy_output=Output to Clipboard
+wizard.copy_now=Copy now
+wizard.hint=Left: input / right: output. Tab-delimited tables are preserved.
+wizard.office365.warning=Office 365 / Microsoft 365 may overwrite the clipboard. After conversion, use Ctrl+V immediately. LibreOffice Calc works OK.
+wizard.input=Input
+wizard.output=Output
+wizard.status.caption=Status
+wizard.status.empty=No input
+wizard.status.ready=Ready
+wizard.status.done=Converted
+wizard.status.clipboard_overwritten=Excel overwrote the clipboard. Use Ctrl+V.
+wizard.excel_clipboard_overwritten.title=Excel clipboard warning
+wizard.excel_clipboard_overwritten.message=Excel has overwritten the clipboard. Use Ctrl+V immediately after WizardExpress writes the converted value. If paste does not work, copy the values from Excel again and run WizardExpress again.
+wizard.excel_clipboard_restored.message=Excel has overwritten the clipboard. WizardExpress restored the converted value. Use Ctrl+V now. If paste still does not work, copy the values from Excel again and run WizardExpress again.
+wizard.status.error=Completed with errors
+
+calculator.title=Calculator
+calculator.copy=Copy
+calculator.paste=Paste
+calculator.use=Use
+calculator.use_close=Use+Close
+
+trace.title=Calculation Trace
+trace.none=No trace available.
+
+editor.nod_help.suggestions=Suggestions
+help.nod_screenshot.converter_name=Celsius to Fahrenheit
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=Meaning:
+help.nod_screenshot.name_meaning=internal converter name.
+help.nod_screenshot.example_label=Example:
+help.nod_screenshot.example_name=Name Postcode to address demo
+editor.nod_help.insert=Insert
+editor.nod_help.more=More help
+editor.nod_help.full.title=NOD help
+editor.nod_help.page.intro=NOD introduction
+editor.nod_help.page.guide=Using the NOD Editor
+editor.nod_help.page.classic=From classic NOD to NOD 2.0
+editor.nod_help.page.history=History
+editor.nod_help.full.keyword_title=Command reference
+editor.nod_help.page.workflow=Workflow
+editor.nod_help.page.structure=Basic structure
+editor.nod_help.page.symbols=Symbols
+editor.nod_help.page.commands=Important commands
+editor.nod_help.page.examples=Examples
+editor.nod_help.page.troubleshooting=Common mistakes
+editor.nod_help.full.intro=<h2>What is NOD?</h2><p><b>NOD</b> is the text format Syscalculator uses to describe a converter. A NOD file tells the program the converter name, visible input and output labels, symbols near values, and the rules that transform the value.</p><h2>The basic idea</h2><p>A NOD file reads like a small recipe. First comes the name, then labels, optional symbols and introduction text, then the rules for calculation or text conversion. The last line is usually <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</p><h2>Why plain text?</h2><p>Because the knowledge stays visible. A Celsius/Fahrenheit rule, a euro rate or an old phone renumbering rule is not hidden in program code; it remains readable in the file.</p><h2>Mini example</h2><pre>Name Celsius to Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><p>Read this from top to bottom: the converter gets a name, shows two labels, chooses number formatting and runs two calculation steps with <code>ans</code> as the current value.</p>
+editor.nod_help.full.guide=<p>This chapter is about working in the editor window. You write NOD text in the middle, use the toolbar for opening, saving, testing and validation, and read command tips when the caret is on a known line.</p><h2>The window</h2>{NodEditorScreenshot}<p class="shot-caption">Example: a Celsius/Fahrenheit converter with the command tip for <code>Name</code>.</p><h2>Create a converter</h2><ol><li>Start with <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> and <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.</li><li>Optionally add <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> for symbols left or right of values.</li><li>Write the conversion with <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> or <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.</li><li>Use <b>Validate</b> to find syntax errors and <b>Test</b> to try the result.</li><li>Save the file when the converter is correct.</li></ol><h2>Command tips</h2><p>The blue balloon gives short help for the line where the caret is placed. Sometimes it also shows a more modern form. Use <b>Replace</b> only when you really want that modern form; <b>More help</b> opens the full command page.</p><h2>Undo, redo and restore</h2><p><b>Undo</b> and <b>Redo</b> are about recent text edits. <b>Restore</b> is larger: it returns the current tab to the last opened or saved version. <b>Tools &gt; Repair lines</b> is different; it tries to repair pasted or merged NOD lines.</p>
+editor.nod_help.guide.intro=This chapter is about working in the editor window. You write NOD text in the middle, use the toolbar for opening, saving, testing and validation, and read command tips when the caret is on a known line.
+editor.nod_help.guide.window_title=The window
+editor.nod_help.guide.screenshot_caption=Example: a Celsius/Fahrenheit converter with the command tip for <code>Name</code>.
+editor.nod_help.guide.create_title=Create a converter
+editor.nod_help.guide.create.name=Start with <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> and <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.
+editor.nod_help.guide.create.symbols=Optionally add <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> for symbols left or right of values.
+editor.nod_help.guide.create.rules=Write the conversion with <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> or <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.
+editor.nod_help.guide.create.validate=Use <b>Validate</b> to find syntax errors and <b>Test</b> to try the result.
+editor.nod_help.guide.create.save=Save the file when the converter is correct.
+editor.nod_help.guide.tips_title=Command tips
+editor.nod_help.guide.tips=The blue balloon gives short help for the line where the caret is placed. Sometimes it also shows a more modern form. Use <b>Replace</b> only when you really want that modern form; <b>More help</b> opens the full command page.
+editor.nod_help.guide.undo_title=Undo, redo and restore
+editor.nod_help.guide.undo=<b>Undo</b> and <b>Redo</b> are about recent text edits. <b>Restore</b> is larger: it returns the current tab to the last opened or saved version. <b>Tools &gt; Repair lines</b> is different; it tries to repair pasted or merged NOD lines.
+editor.nod_help.full.classic_book=<h2>Why old and new live together</h2><p>Syscalculator 2.0 is not a break with old NOD files. The goal is that older converters remain recognizable, while the editor gives more help while writing, testing and maintaining them.</p><h2>What made classic NOD strong</h2><p>Classic NOD was small and direct. A <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> line calculated further with <code>ans</code>. A <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> line translated a fixed value. A <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> line changed the start of text, for example in old phone renumbering files.</p><h2>What NOD 2.0 adds</h2><p>NOD 2.0 keeps that simple base, but surrounds it with a modern editor: syntax coloring, command tips, right-click help, templates, validation, test output, preview and restore. The language stays readable, while the environment helps find mistakes faster.</p><h2>Overview</h2><table><tr><th>Syscalculator 1.73 / NOD 1.x</th><th>Syscalculator 2.0 / NOD editor</th></tr><tr><td>Small text files with classic commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code> and <code>end</code>.</td><td>The same base still works, so older NOD files remain recognizable and usable.</td></tr><tr><td>You often had to remember where symbols appeared and then test in the old calculator.</td><td>The editor shows a live preview/simulator where <code>Symb1</code> through <code>Symb4</code> are immediately visible.</td></tr><tr><td><code>chg</code> was mainly classic prefix replacement, useful for old phone renumbering.</td><td><code>chg</code> stays compatible, but NOD 2.0 can also use patterns with <code>x</code> capture.</td></tr><tr><td>Help mostly came from examples and experience.</td><td>The editor has suggestions, right-click help, command pages and examples by NOD type.</td></tr></table><h2>Rule of thumb</h2><p>Use old commands when maintaining an existing file. Use the modern form when the editor suggests it and the file becomes clearer. Compatibility matters, but readability is the goal.</p>
+editor.nod_help.full.structure=<h2>Basic structure</h2><pre>Name Celsius to Fahrenheit&#13;&#10;URLN Celsius to Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre>
+editor.nod_help.full.workflow=<h2>Workflow</h2><ol><li>Start with <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, and <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>; then the converter has a name and visible labels.</li><li>Optionally choose symbols with <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a>. Use left or right per value, not both.</li><li>Add conversion rules: <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> for calculations, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> for exact text translation, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> for prefix changes.</li><li>Use <b>Validate</b> or F5 to check syntax and <b>Test</b> or F6 to see the result.</li><li>Place <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> at the end.</li></ol>
+editor.nod_help.full.symbols=<h2>Symbols</h2><table><tr><th>Command</th><th>Position</th><th>Example</th></tr><tr><td>Symb1</td><td>left of input</td><td>DM 25</td></tr><tr><td>Symb2</td><td>left of output</td><td>EUR 25</td></tr><tr><td>Symb3</td><td>right of input</td><td>25 kg</td></tr><tr><td>Symb4</td><td>right of output</td><td>25 lb</td></tr></table><p>Usually choose left or right per value, not both, to avoid duplicate text such as <code>DM 25 DM</code>.</p>
+editor.nod_help.full.commands=<h2>Important commands</h2><ul><li><b>math</b>: calculates with <code>ans</code>.</li><li><b>trans</b>: translates exact text values.</li><li><b>chg</b>: changes starting text/prefix; also supports <code>x</code> patterns such as <code>050-2xxxxx</code>, with the most specific prefix winning.</li><li><b>indoprint ... indoend</b>: introduction text block. Do not forget <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</li><li><b>end</b>: closes the NOD file.</li></ul>
+editor.nod_help.full.examples=<h2>Examples by NOD type</h2><p>NOD files can describe different kinds of converters. Choose the pattern that fits what you want to build.</p><h3>1. Calculation tool with math</h3><p>Use this for numbers: temperature, distance, weight, currency, percentage.</p><pre>Name Celsius to Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><h3>2. Translation tool with trans</h3><p>Use this when the full input must exactly match a known value. Separate old and new with a comma. Use quotes when values contain spaces or commas.</p><pre>Name Postcode to address demo&#13;&#10;input1 Postcode house number&#13;&#10;input2 Address&#13;&#10;trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;end</pre><h3>3. Prefix/pattern tool with chg</h3><p>Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when only the start of the text changes. Separate old and new with a comma. <code>x</code> patterns are allowed, useful for old phone renumbering tables.</p><pre>Name Operation Decibel example&#13;&#10;input1 Old phone number&#13;&#10;input2 New phone number&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;chg "050-2xxxxx","050-52xxxxx"&#13;&#10;end</pre><h3>4. Tool with left/right symbols</h3><p>Use symbols to display values neatly. Choose left or right per value.</p><pre>Name German mark to euro&#13;&#10;input1 Mark&#13;&#10;input2 Euro&#13;&#10;Symb1 DM&#13;&#10;Symb2 EUR&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre><h3>5. Introduction text with indoprint</h3><p>Use this when the user should see instructions before using the converter.</p><pre>indoprint This converter changes Celsius to Fahrenheit.&#13;&#10;indoprint Enter a temperature in degrees Celsius.&#13;&#10;indoend</pre><h3>6. Equation solving with equation</h3><p>Use this for formula-like problems where an unknown variable should be solved.</p><pre>Name Solve equation&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre><h3>7. Example as shown in the window</h3><p>This shows where labels, input, result, and symbols appear on screen.</p><div class="dialog-example"><div class="dialog-title">EuroCalculator</div><div class="dialog-menu"><span>File</span><span>Edit</span><span>Config</span><span>Tools</span><span>About</span></div><div class="dialog-body"><div class="dialog-row"><span></span><div class="dialog-label">Value in Deutsch Mark</div><span></span></div><div class="dialog-row"><span class="dialog-radio on"></span><div class="dialog-input">22</div><div class="dialog-symbol">DM</div></div><div class="dialog-row"><span></span><div class="dialog-label">Value in euros</div><span></span></div><div class="dialog-row"><span class="dialog-radio"></span><div class="dialog-input">11.25</div><span></span></div><div class="dialog-options"><span>&#9633; Digit group</span><span>&#9745; Decimals</span><span>2</span></div></div></div><pre>Name German mark to euro&#13;&#10;input1 Value in Deutsch Mark&#13;&#10;input2 Value in euros&#13;&#10;Symb3 DM&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre>
+editor.nod_help.full.troubleshooting=<h2>Common mistakes</h2><ul><li><b>Duplicate symbols:</b> do not use both left and right symbols for the same value, otherwise you can get text such as <code>DM 25 DM</code>.</li><li><b>Introduction without end:</b> close every <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a> block with <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</li><li><b>Math without ans:</b> use <code>ans</code> as the current value, for example <code>math ans * 100</code>.</li><li><b>No end:</b> place <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> at the end of the file.</li><li><b>Comma/dot:</b> decimals often work with comma or dot; always test with F6.</li></ul>
+editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius to Fahrenheit</div><div><b>Meaning:</b> internal converter name.</div><div><b>Example:</b> <code>Name Postcode to address demo</code>.</div>
+editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN User title</div><div><b>Meaning:</b> visible title or description for the user.</div><div><b>Example:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
+editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Meaning:</b> label of the input value.</div><div><b>Example:</b> <code>input1 Old phone number</code>.</div>
+editor.nod_help.input2=<div class="title">input2</div><div class="syntax">input2 Fahrenheit</div><div><b>Meaning:</b> label of the output value.</div><div><b>Example:</b> <code>input2 New phone number</code>.</div>
+editor.nod_help.symb1=<div class="title">Symb1</div><div class="syntax">Symb1 DM</div><div><b>Meaning:</b> symbol left of input1.</div><div><b>Example:</b> <code>Symb1 DM</code> displays <code>DM 25</code>.</div>
+editor.nod_help.symb2=<div class="title">Symb2</div><div class="syntax">Symb2 EUR</div><div><b>Meaning:</b> symbol left of input2/output.</div><div><b>Example:</b> <code>Symb2 EUR</code> displays <code>EUR 12.78</code>.</div>
+editor.nod_help.symb3=<div class="title">Symb3</div><div class="syntax">Symb3 kg</div><div><b>Meaning:</b> symbol right of input1.</div><div><b>Example:</b> <code>Symb3 kg</code> displays <code>25 kg</code>.</div>
+editor.nod_help.symb4=<div class="title">Symb4</div><div class="syntax">Symb4 lb</div><div><b>Meaning:</b> symbol right of input2/output.</div><div><b>Example:</b> <code>Symb4 lb</code> displays <code>55 lb</code>.</div>
+editor.nod_help.format=<div class="title">format</div><div class="syntax">format ##.00</div><div><b>Meaning:</b> controls how many decimals the result shows.</div><div><b>Example:</b> <code>format ##.00</code> displays <code>12.50</code>.</div>
+editor.nod_help.mode=<div class="title">mode</div><div class="syntax">mode calculator</div><div><b>Meaning:</b> extra setting for converter type.</div><div><b>Example:</b> <code>mode calculator</code>.</div>
+editor.nod_help.math=<div class="title">math</div><div class="syntax">math ans * 1.8</div><div><b>Meaning:</b> runs a calculation step with <code>ans</code> as current value.</div><div><b>Example:</b> <code>math ans + 32</code> adds 32 to the current value.</div>
+editor.nod_help.chg=<div class="title">chg</div><div class="syntax">chg "old-prefix","new-prefix"</div><div><b>Meaning:</b> changes the start of text, for example codes or phone numbers.</div><div><b>Example:</b> <code>chg "01751-xxxxx","070-51xxxxx"</code> turns <code>01751-12345</code> into <code>070-5112345</code>.</div><div><b>Patterns:</b> <code>x</code> may mark the remaining digits. If multiple rules match, the longest/most specific prefix wins.</div>
+editor.nod_help.trans=<div class="title">trans</div><div class="syntax">trans "old value","new value"</div><div><b>Meaning:</b> translates a complete value. NOD 1.0 matches exactly; NOD 2.0 can then match smarter compact text.</div><div><b>Example:</b> <code>trans "dank je","thank you"</code> also translates input such as <code>dank_je</code>.</div>
+editor.nod_help.trans.improved=<h2>Improved trans: smarter than NOD 1.0</h2><div class="notice improved"><b>Compatible:</b> classic NOD 1.0 <code>trans</code> still tries exact matches first. NOD 2.0 only then tries a smart compact match.</div><table class="syntax-compare"><tr><th>Behavior</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Example</th></tr><tr><td>Exact value</td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><code>trans "hallo","hello"</code></td></tr><tr><td>Ignore letter case</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>Hallo</code> matches <code>hallo</code></td></tr><tr><td>Ignore spaces, dots, dashes and underscore</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>dank_je</code>, <code>dank je</code> and <code>dank-je</code> can hit the same trans rule</td></tr><tr><td>Ambiguous smart match</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>When two compact matches exist, it does not silently translate wrongly; the input stays unchanged.</td></tr></table><div class="example-grid"><div class="example-card"><h3>NOD 1.0: classic exact</h3><pre>Name Classic trans&#13;&#10;input1 Dutch&#13;&#10;input2 English&#13;&#10;trans "hallo","hello"&#13;&#10;end</pre><p>Made for fixed values. Exact rules still have priority.</p></div><div class="example-card"><h3>NOD 2.0: improved trans</h3><pre>Name Smart trans&#13;&#10;input1 Dutch&#13;&#10;input2 English&#13;&#10;trans "dank je","thank you"&#13;&#10;trans "goedemorgen","good morning"&#13;&#10;end</pre><p><code>dank_je</code>, <code>DANK-JE</code> and <code>dank je</code> can all return <code>thank you</code>.</p></div></div><p><b>Rule of thumb:</b> use <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> for complete values. Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when only the beginning or a pattern changes.</p>
+editor.nod_help.reverse=<div class="title">reverse</div><div class="syntax">reverse ans / 1.8</div><div><b>Meaning:</b> manual reverse calculation rule.</div><div><b>Example:</b> with <code>math ans * 1.8</code>, use <code>reverse ans / 1.8</code>.</div>
+editor.nod_help.field=<div class="title">field</div><div class="syntax">field ColumnName</div><div><b>Meaning:</b> starts a data field definition.</div><div><b>Example:</b> <code>field Phone</code>.</div>
+editor.nod_help.table=<div class="title">table</div><div class="syntax">table TableName</div><div><b>Meaning:</b> name of the source table.</div><div><b>Example:</b> <code>table Customers</code>.</div>
+editor.nod_help.output=<div class="title">output</div><div class="syntax">output ResultColumn</div><div><b>Meaning:</b> name of the output field.</div><div><b>Example:</b> <code>output PhoneNew</code>.</div>
+editor.nod_help.phoneformat=<div class="title">phoneformat</div><div class="syntax">phoneformat country NL</div><div><b>Meaning:</b> normalizes phone numbers inside a <code>field</code> block in <code>mode data</code>.</div><div><b>Example:</b> <code>phoneformat remove_spaces true</code> removes spaces; <code>phoneformat normalize_international true</code> normalizes Dutch international notation.</div>
+editor.nod_help.lookup=<div class="title">lookup</div><div class="syntax">lookup Countries</div><div><b>Meaning:</b> starts a lookup definition.</div><div><b>Example:</b> <code>lookup Countries</code>.</div>
+editor.nod_help.match=<div class="title">match</div><div class="syntax">match code = NL</div><div><b>Meaning:</b> describes how a lookup is matched.</div><div><b>Example:</b> <code>match postcode = 2566GB</code>.</div>
+editor.nod_help.given=<div class="title">given</div><div class="syntax">given x = 10</div><div><b>Meaning:</b> known value for an equation.</div><div><b>Example:</b> <code>given y = 20</code>.</div>
+editor.nod_help.equation=<div class="title">equation</div><div class="syntax">equation y = x * 2</div><div><b>Meaning:</b> defines an equation.</div><div><b>Example:</b> <code>equation y = x * 2</code>.</div>
+editor.nod_help.solve=<div class="title">solve</div><div class="syntax">solve x</div><div><b>Meaning:</b> tells which variable should be solved.</div><div><b>Example:</b> <code>solve x</code>.</div>
+editor.nod_help.constraint=<div class="title">constraint</div><div class="syntax">constraint x >= 0</div><div><b>Meaning:</b> condition for a solution.</div><div><b>Example:</b> <code>constraint x >= 0</code> prevents negative solutions.</div>
+editor.nod_help.preview=<div class="title">preview</div><div class="syntax">preview Example text</div><div><b>Meaning:</b> text for preview/sample display.</div><div><b>Example:</b> <code>preview Enter 2566 GB 241</code>.</div>
+editor.nod_help.backup=<div class="title">backup</div><div class="syntax">backup true</div><div><b>Meaning:</b> compatibility setting from older NOD files.</div><div><b>Example:</b> <code>backup true</code>.</div>
+editor.nod_help.indoprint=<div class="title">indoprint</div><div class="syntax">indoprint Introduction text</div><div><b>Meaning:</b> line of introduction text shown before use.</div><div><b>Example:</b> <code>indoprint This converter uses the Decibel table.</code> Then close with <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</div>
+editor.nod_help.indoend=<div class="title">indoend</div><div class="syntax">indoend</div><div><b>Meaning:</b> end of an introduction text block.</div><div><b>Example:</b> <code>indoprint Help text</code> followed by <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</div>
+editor.nod_help.end=<div class="title">end</div><div class="syntax">end</div><div><b>Meaning:</b> end of the NOD file.</div><div><b>Example:</b> place <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> as the last line.</div>
+editor.nod_insert.indoprint=indoprint Introduction text\nindoend
+
+editor.nod_help.chg.extra=<h2>chg examples</h2><p><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> changes the beginning of text. It is useful for phone numbers, codes, prefixes, and old renumbering tables.</p><div class="notice"><b>Structure:</b> left is what to find, right is the new form. Use quotes when values contain spaces, commas, or special characters.</div><details open><summary>Replace a prefix</summary><table><tr><th>Goal</th><th>Rule</th><th>Example</th></tr><tr><td>Old prefix to new</td><td><code>chg "01751","07051"</code></td><td><code>0175112345</code> becomes <code>0705112345</code></td></tr><tr><td>With dash</td><td><code>chg "01751-","070-51"</code></td><td><code>01751-12345</code> becomes <code>070-5112345</code></td></tr><tr><td>Longest match wins</td><td>put specific rules above broad rules</td><td><code>01751-9xxxx</code> can be handled separately</td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: The Hague 070</h3><pre>Name Renumbering The Hague&#13;&#10;input1 Old phone number&#13;&#10;input2 New phone number&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;chg "01750-xxxxx","070-50xxxxx"&#13;&#10;end</pre></div><div class="example-card"><h3>Example: item code</h3><pre>Name Update item code&#13;&#10;input1 Old code&#13;&#10;input2 New code&#13;&#10;chg "OLD-","NEW-"&#13;&#10;end</pre></div></div></details><details><summary>Pattern with x</summary><p>Use <code>x</code> for characters that must be kept. This is useful for old phone renumbering tables.</p><pre>chg "050-2xxxxx","050-52xxxxx"</pre><div class="example-grid"><div class="example-card"><h3>Example: pattern rule</h3><pre>Name Phone pattern&#13;&#10;input1 Old&#13;&#10;input2 New&#13;&#10;chg "050-2xxxxx","050-52xxxxx"&#13;&#10;end</pre></div></div></details><details><summary>Common chg mistakes</summary><ul><li>Putting a broad rule above a specific rule.</li><li>Forgetting the comma between old and new.</li><li>Using spaces or commas without quotes.</li><li>Using <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when you need an exact full-value translation; then use <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>.</li></ul></details>
+editor.nod_help.math.extra=<h2>Math at a glance</h2>&#13;&#10;<p><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> calculates with <code>ans</code>. On the first line <code>ans</code> is the input value; on following lines it is the previous result.</p>&#13;&#10;<div class="notice"><b>Structure:</b> choose the calculation type first, then write the matching syntax. For larger formulas, use parentheses or multiple lines.</div>&#13;&#10;<div class="math-flow"><span class="math-pill">1. Basic</span><span class="math-pill">2. Functions</span><span class="math-pill">3. Complex formula</span><span class="math-pill">4. Reverse or calculus</span></div>&#13;&#10;<h2>Syntax by group</h2>&#13;&#10;<details open><summary>Basic operations</summary><table><tr><th>Goal</th><th>Syntax</th><th>Example</th></tr><tr><td>Add</td><td><code>math ans + number</code></td><td><code>math ans + 32</code></td></tr><tr><td>Subtract</td><td><code>math ans - number</code></td><td><code>math ans - 10</code></td></tr><tr><td>Multiply</td><td><code>math ans * factor</code></td><td><code>math ans * 1.8</code></td></tr><tr><td>Divide</td><td><code>math ans / factor</code></td><td><code>math ans / 1.95583</code></td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: euro to cents</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>cents</mtext><mo>=</mo><mtext>euro</mtext><mo>&#x00D7;</mo><mn>100</mn></mrow></math></div><pre>Name Euro to cents&#13;&#10;input1 Euro&#13;&#10;input2 Cents&#13;&#10;format #.00&#13;&#10;math ans * 100&#13;&#10;end</pre></div><div class="example-card"><h3>Example: discount</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>new</mtext><mo>=</mo><mtext>price</mtext><mo>-</mo><mn>10</mn></mrow></math></div><pre>Name Price minus discount&#13;&#10;input1 Price&#13;&#10;input2 After 10 discount&#13;&#10;format #.00&#13;&#10;math ans - 10&#13;&#10;end</pre></div></div></details>&#13;&#10;<details><summary>Functions and constants</summary><table><tr><th>Group</th><th>Syntax</th><th>Note</th></tr><tr><td>Power</td><td><code>math ans^2</code> or <code>math pow(ans,3)</code></td><td>Square, cube, and more.</td></tr><tr><td>Square root</td><td><code>math sqrt(ans)</code></td><td>Also usable inside larger formulas.</td></tr><tr><td>Pi and e</td><td><code>math pi * ans^2</code><br><code>math e^ans</code></td><td>Circle and exponential examples.</td></tr><tr><td>Logarithm</td><td><code>math log(ans)</code><br><code>math log(ans,2)</code><br><code>math ln(ans)</code></td><td><code>log(ans)</code> is log10.</td></tr><tr><td>Degrees</td><td><code>math sind(ans)</code><br><code>math cosd(ans)</code><br><code>math tand(ans)</code></td><td>Use <code>sin/cos/tan</code> for radians.</td></tr><tr><td>Modulo</td><td><code>math mod(ans,2)</code><br><code>math ans % 5</code></td><td>Remainders, even/odd tests.</td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: circle</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>A</mi><mo>=</mo><mi>&#x03C0;</mi><mo>&#x00B7;</mo><msup><mi>r</mi><mn>2</mn></msup></mrow></math></div><pre>Name Circle area&#13;&#10;input1 Radius&#13;&#10;input2 Area&#13;&#10;format #.00&#13;&#10;math pi * ans^2&#13;&#10;end</pre></div><div class="example-card"><h3>Example: log base 2</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mo>log</mo><mn>2</mn></msub><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math></div><pre>Name Log base 2&#13;&#10;input1 Number&#13;&#10;input2 Log2&#13;&#10;format #.00&#13;&#10;math log(ans,2)&#13;&#10;end</pre></div></div></details>&#13;&#10;<details><summary>Complex expressions</summary><p>Use parentheses when order matters. Always write multiplication explicitly with <code>*</code>.</p><pre>math sqrt(ans^2 + 25)&#13;&#10;math ((ans + 10) * 2) / 3&#13;&#10;math ans * (1 + 0.04)^5</pre><div class="example-grid"><div class="example-card"><h3>Example: parentheses</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mfrac><mrow><mo>(</mo><mo>(</mo><mi>x</mi><mo>+</mo><mn>10</mn><mo>)</mo><mo>&#x00D7;</mo><mn>2</mn><mo>)</mo></mrow><mn>3</mn></mfrac></math></div><pre>Name Parentheses example&#13;&#10;input1 Value&#13;&#10;input2 Result&#13;&#10;format #.00&#13;&#10;math ((ans + 10) * 2) / 3&#13;&#10;end</pre></div><div class="example-card"><h3>Example: interest</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>value</mtext><mo>=</mo><mtext>start</mtext><mo>&#x00D7;</mo><msup><mrow><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo></mrow><mn>5</mn></msup></mrow></math></div><pre>Name Interest 5 years&#13;&#10;input1 Start amount&#13;&#10;input2 Value&#13;&#10;format #.00&#13;&#10;math ans * (1 + 0.04)^5&#13;&#10;end</pre></div><div class="example-card"><h3>Example: Pythagoras</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>c</mi><mo>=</mo><msqrt><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></mrow></msqrt></mrow></math></div><pre>Name Hypotenuse&#13;&#10;input1 Side a&#13;&#10;input2 Side c&#13;&#10;format #.00&#13;&#10;math sqrt(ans^2 + 25)&#13;&#10;end</pre><p>Here <code>ans</code> is side <code>a</code>. The other side is fixed at <code>5</code>.</p></div></div></details>&#13;&#10;<details><summary>Calculus: diff, integral, limit</summary><table><tr><th>Goal</th><th>Syntax</th><th>Meaning</th></tr><tr><td>Derivative</td><td><code>math diff ans^2</code></td><td>Approximates the slope at the input value.</td></tr><tr><td>Integral</td><td><code>math integral 0,1 ans^2</code></td><td>Approximates area from 0 to 1.</td></tr><tr><td>Limit</td><td><code>math limit 0 sin(ans)/ans</code></td><td>Approximates the limit around 0.</td></tr></table><div class="notice"><b>Important:</b> calculus is numeric. It gives an approximation, not symbolic CAS output.</div><div class="example-grid"><div class="example-card"><h3>Example: limit</h3><pre>Name Sine limit&#13;&#10;input1 x&#13;&#10;input2 Limit&#13;&#10;format #.00&#13;&#10;math limit 0 sin(ans)/ans&#13;&#10;end</pre></div><div class="example-card"><h3>Example: derivative</h3><pre>Name Square derivative&#13;&#10;input1 x&#13;&#10;input2 Slope&#13;&#10;format #.00&#13;&#10;math diff ans^2&#13;&#10;end</pre></div><div class="example-card"><h3>Example: integral</h3><pre>Name Square integral&#13;&#10;input1 x&#13;&#10;input2 Area&#13;&#10;format #.00&#13;&#10;math integral 0,1 ans^2&#13;&#10;end</pre></div></div></details>&#13;&#10;<h2>Common math mistakes</h2><ul><li>Forgetting <code>ans</code>: write <code>math ans * 100</code>, not <code>math * 100</code>.</li><li>Putting too much into one line when steps would be clearer.</li><li>Using <code>sin</code> when you mean degrees. Use <code>sind</code>.</li><li>Expecting reverse conversion for a complex formula without <a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a>.</li></ul>
+editor.nod_help.trans.extra=<h2>trans examples</h2><p><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> translates a complete value. It is meant for words, fixed codes, statuses, postcodes, or short lists.</p><div class="notice"><b>Structure:</b> <code>trans "old value","new value"</code>. The complete input must match the left value.</div><details open><summary>Translate exact text</summary><table><tr><th>Goal</th><th>Rule</th><th>Result</th></tr><tr><td>Translate word</td><td><code>trans "hallo","hello"</code></td><td><code>hallo</code> becomes <code>hello</code></td></tr><tr><td>Translate status</td><td><code>trans "open","in progress"</code></td><td><code>open</code> becomes <code>in progress</code></td></tr><tr><td>Address lookup</td><td><code>trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"</code></td><td>postcode + house number becomes address</td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: Dutch to English</h3><pre>Name Dutch English demo&#13;&#10;input1 Dutch&#13;&#10;input2 English&#13;&#10;trans "hallo","hello"&#13;&#10;trans "dank je","thank you"&#13;&#10;trans "goedemorgen","good morning"&#13;&#10;end</pre></div><div class="example-card"><h3>Example: postcode demo</h3><pre>Name Postcode to address demo&#13;&#10;input1 Postcode house number&#13;&#10;input2 Address&#13;&#10;trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;end</pre></div></div></details><details><summary>When trans, when chg?</summary><table><tr><th>Use</th><th>When</th><th>Example</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>the entire input is known exactly</td><td><code>hallo</code> to <code>hello</code></td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>only the beginning or pattern changes</td><td><code>01751-xxxxx</code> to <code>070-51xxxxx</code></td></tr></table></details><details><summary>Common trans mistakes</summary><ul><li>Reversing direction: left is input, right is output.</li><li>Expecting a partial match. Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> for that.</li><li>Using a comma in a value without quotes.</li><li>Creating duplicate translations for the same input.</li></ul></details>
+
+editor.nod_help.mode.extra=<h2>When do you use mode?</h2>&#13;&#10;<p><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> tells what kind of NOD file you are making. For normal conversion tools, <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> is usually not needed; without mode it works as a normal converter.</p>&#13;&#10;<div class="notice"><b>Rule of thumb:</b> use <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> only when the file has a special type, such as data processing or equation solving.</div>&#13;&#10;<details open><summary>Common modes</summary><table><tr><th>Mode</th><th>Use</th><th>Important commands</th></tr><tr><td><code>mode calculator</code></td><td>Normal converter or calculation helper.</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr><tr><td><code>mode data</code></td><td>Process rows or fields in a table.</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a>, <a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td></tr><tr><td><code>mode equation</code></td><td>Solve an equation.</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td></tr></table></details>&#13;&#10;<details><summary>Example: normal converter</summary><pre>Name Celsius to Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format #.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><p>Here <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> is not required. This is the default.</p></details>&#13;&#10;<details><summary>Example: data processing</summary><pre>Name Clean customer phones&#13;&#10;mode data&#13;&#10;table customers&#13;&#10;&#13;&#10;field phone&#13;&#10;phoneformat country NL&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;output phone_new&#13;&#10;end</pre><p>Use <code>mode data</code> when the NOD file processes table fields.</p></details>&#13;&#10;<details><summary>Example: equation solving</summary><pre>Name Solve equation&#13;&#10;mode equation&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre><p>Use <code>mode equation</code> when you want to solve an unknown variable.</p></details>
+editor.nod_help.full.classic=<h2>NOD editor introduction</h2><p>The NOD editor is the workspace for converters. Write code at the top, test input and output below, and use the live preview/simulator on the right to see labels, symbols, introduction text and results.</p><h2>Classic 1.73 versus NOD 2.0</h2><table><tr><th>Syscalculator 1.73 / NOD 1.0</th><th>Syscalculator 2.0 / NOD editor</th></tr><tr><td>Classic text files with <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>, <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> and <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</td><td>The same base still works, so older NOD files remain recognizable.</td></tr><tr><td>You often had to remember where symbols appeared and test in the old calculator.</td><td>The preview immediately shows <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> left or right of the values.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> was classic prefix replacement, useful for old phone renumbering.</td><td>Old <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> stays compatible; NOD 2.0 adds pattern rules with <code>x</code> capture.</td></tr><tr><td>Help mostly came from examples and experience.</td><td>The editor has suggestions, right-click help, multiple help pages and examples by NOD type.</td></tr></table><h2>Syntax: full NOD 1.0 and NOD 2.0 overview</h2><p>This table shows which syntax comes from classic NOD files and what was added in NOD 2.0.</p><table class="syntax-compare"><tr><th>Syntax / feature</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Note</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Converter name/title.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:urln"><code>URLN</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Reference/source line remains supported.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Labels for input and output.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:result"><code>Result</code></a>, <a class="cmd-link" href="nodpage:cmd:resfou"><code>Resfou</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Result label and error text.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Symbols left/right of input and output; NOD 2.0 shows them in preview.</td></tr><tr><td><code>format #.00</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Number formatting stays the same.</td></tr><tr><td><code>mode calculator</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>NOD 2.0 uses <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> for special file types; normal converters also work without mode.</td></tr><tr><td><code>mode data</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>For table/field processing.</td></tr><tr><td><code>mode equation</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>For solving equations with <a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>.</td></tr><tr><td><code>math ans * 1.8</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Classic calculation with <code>ans</code>.</td></tr><tr><td><code>math sqrt(ans^2 + 25)</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Richer formulas and functions in NOD 2.0.</td></tr><tr><td><code>chg "01751-","070-51"</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Classic prefix replacement keeps working.</td></tr><tr><td><code>chg "0183x-xx xx","0183-x0 xx xx"</code></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>New in NOD 2.0: pattern with <code>x</code> capture.</td></tr><tr><td><code>trans "old","new"</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Exact text translation remains compatible.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Reverse direction of a converter.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>NOD 2.0 data converters with fields and output construction.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Format phone numbers in data/number converters.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:lookup"><code>lookup</code></a>, <a class="cmd-link" href="nodpage:cmd:match"><code>match</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Look up tables or connect values.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Solve equations with constraints.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:preview"><code>preview</code></a>, <a class="cmd-link" href="nodpage:cmd:backup"><code>backup</code></a></td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Editor/safety information for NOD 2.0 files.</td></tr><tr><td><code>indoprint ... indoend</code></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Introduction text remains supported.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a></td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td>Closes the NOD file.</td></tr><tr><td>Live preview, suggestions, right-click help</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>This is editor help, not old runtime syntax.</td></tr></table><h2>What stays the same?</h2><ul><li>Commands are still line-based and readable.</li><li><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> closes the file.</li><li>A simple converter remains short: name, labels, format and a few rules.</li></ul><h2>What is new?</h2><ul><li>Live preview and converter simulator.</li><li>Graph Preview for math-converter graphs.</li><li>Suggestions while typing.</li><li>Richer help per command.</li><li>More examples for <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>, symbols and <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>.</li></ul>
+editor.nod_help.page.classic=From classic NOD to NOD 2.0
+formula_card.title=Formula cards
+formula_card.count=Formula cards
+formula_card.formula_film=Formula film
+formula_card.formula_film_title=Formula film 2.1 experiment
+formula_card.formula_film_subtitle=Research for moving formula cards and teaching films
+formula_card.details_header=Details, export and example NOD
+formula_card.copy_mathml=Copy MathML
+formula_card.copy_latex=Copy LaTeX
+formula_card.copy_nod=Copy NOD
+formula_card.copy_text=Copy text
+formula_card.webview_error=WebView2 could not start.
+formula_card.subtitle=Formula cards for learning, PWS and export
+formula_card.section_formula=Formula
+formula_card.section_explanation=Explanation
+formula_card.section_example_nod=Example NOD
+formula_card.table_formula=Formula
+formula_card.table_level=Niveau
+formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
+formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
+formula_card.table_use=Wanneer?
+common.yes=Yes
+common.no=No
+clipboard.debug.window_title=Clipboard Debug
+clipboard.debug.cells=Cells
+clipboard.debug.details=Details
+clipboard.debug.summary_format=Rows {0}  |  Columns {1}  |  Text {2} chars
+clipboard.debug.report_title=Clipboard report
+clipboard.debug.report_subtitle=Clean overview of the current clipboard content.
+clipboard.debug.report_date_culture=en-US
+clipboard.debug.report_date_format=MMMM d, yyyy
+clipboard.debug.summary=Summary
+clipboard.debug.formats=Formats
+clipboard.debug.preview=Preview
+clipboard.debug.preview_rows_all={0} rows shown
+clipboard.debug.preview_rows_limited=First {0} of {1} rows shown
+clipboard.debug.owner=Owner
+clipboard.debug.text_length=Text length
+clipboard.debug.text_length_value={0} chars
+clipboard.debug.rows=Rows
+clipboard.debug.columns=Columns
+clipboard.debug.same_last_seen=Same as last seen
+clipboard.debug.same_converted=Same as conversion
+clipboard.debug.no_formats=No clipboard formats found.
+clipboard.debug.none=None
+clipboard.debug.mail_button=Report by e-mail...
+clipboard.debug.mail_subject={0} clipboard diagnosis
+clipboard.debug.mail_intro=Please look at this clipboard diagnosis.
+clipboard.debug.mail_paste_report=The full report has been copied to the clipboard. Paste it into this e-mail with Ctrl+V.
+clipboard.debug.mail_failed=Could not open e-mail program: {0}
+clipboard.debug.copy_button=Copy report
+clipboard.debug.report_copied=Report copied to clipboard.
+clipboard.debug.copy_failed=Could not copy the report to clipboard.
+clipboard.debug.conversion=Conversion
+clipboard.debug.conversion_rows=Converted rows
+clipboard.debug.conversion_cells=Cells
+clipboard.debug.conversion_success=Converted
+clipboard.debug.conversion_errors=Errors
+clipboard.debug.save_pdf_button=Save PDF...
+clipboard.debug.pdf_filter=PDF files (*.pdf)|*.pdf|All files (*.*)|*.*
+clipboard.debug.save_pdf_title=Save diagnosis report
+clipboard.debug.pdf_saved=PDF report saved.
+clipboard.debug.pdf_failed=Could not save PDF report: {0}
+clipboard.debug.before=Before
+clipboard.debug.after=After
+clipboard.debug.before_after=Before / After
+clipboard.debug.used_rule=Used rule
+clipboard.debug.formula=Formula
+clipboard.debug.mathml=MathML
+clipboard.debug.mathml_available=MathML available in copied/e-mailed report.
+clipboard.debug.formula_input=input
+help.copy.copied=Copied

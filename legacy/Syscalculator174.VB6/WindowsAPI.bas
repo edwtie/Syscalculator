@@ -24,6 +24,7 @@ End Type
 'Const SW_HIDE = 0    'Hides the window. Activation passes to another window.
 'Const SW_MINIMIZE = 6     'Minimizes the window. Activation passes to another window.
 Global Const SW_RESTORE = 9    'Displays a window at its original size and location and activates it.
+Global Const SW_SHOWNORMAL = 1     'Displays a normal visible window.
 'Const SW_SHOW = 5   'Displays a window at its current size and location, and activates it.
 'Const SW_SHOWMAXIMIZED = 3      'Maximizes a window and activates it.
 'Const SW_SHOWMINIMIZED = 2      'Minimizes a window and activates it.
@@ -346,6 +347,7 @@ Public Sub MakeDirectory(PhysicalPath As String)
     ' Date: July,30 2002 @ 18:53:46
     '---------------------------------------
     '     ---------------------
+    If Trim$(PhysicalPath) = "" Then Exit Sub
     Dim arrFolderArray() As String
     Dim strCurrentPath As String
     Dim X As Integer
@@ -556,7 +558,7 @@ Public Function WndProc(ByVal hOwner As Long, ByVal wMsg As Long, ByVal wParam A
               DoFindReplace RetFrs
            End If
       Case uHelpMsg
-          iRet = ShellExecute(Editor.Hwnd, vbNullString, Configur3, vbNullString, "c:\", SW_SHOWNORMAL)
+          OpenConfiguredHelp Editor.Hwnd
     Case Else
            If wMsg = WM_DESTROY Then
               EndDialog hDialog, 0&
@@ -770,79 +772,40 @@ Dim uProcess As Long
 uProcess = GetCurrentProcess
 TerminateProcess uProcess, 0
 End Sub
-Public Function AddSlash(ByVal PathName As String) As String
-PathName = Trim$(PathName)
-If Len(PathName) = 0 Then
-    AddSlash = ""
-ElseIf Right$(PathName, 1) = "\" Then
-    AddSlash = PathName
-Else
-    AddSlash = PathName & "\"
-End If
-End Function
-
-Public Function JoinPath(ByVal FolderName As String, ByVal FileName As String) As String
-JoinPath = AddSlash(FolderName) & FileName
-End Function
-
-Public Function ProgramFilePath(ByVal FileName As String) As String
-ProgramFilePath = JoinPath(App.Path, FileName)
-End Function
-
-Public Function UserDataFilePath(ByVal FileName As String) As String
-If Len(Apppaths) = 0 Then
-    Apppaths = JoinPath(UserDataRootFolder(), "Syscalculator")
-    MakeDirectory Apppaths
-End If
-UserDataFilePath = JoinPath(Apppaths, FileName)
-End Function
-
-Public Function UserDataRootFolder() As String
-Dim fallback As String
-fallback = Environ$("APPDATA")
-If Len(fallback) = 0 Then fallback = Environ$("USERPROFILE")
-If Len(fallback) = 0 Then fallback = Environ$("TEMP")
-If Len(fallback) = 0 Then fallback = App.Path
-UserDataRootFolder = fallback
-End Function
-
-Public Function ResolveProgramFile(ByVal FileName As String) As String
-Dim tel As Integer
-FileName = Trim$(FileName)
-If Len(FileName) = 0 Then
-    ResolveProgramFile = ""
-    Exit Function
-End If
-
-If Left$(FileName, 5) = "[App]" Then
-    ResolveProgramFile = App.Path & Mid$(FileName, 6)
-    Exit Function
-End If
-
-If Mid$(FileName, 2, 2) = ":\" Or Left$(FileName, 2) = "\\" Then
-    ResolveProgramFile = FileName
-Else
-    ResolveProgramFile = ProgramFilePath(FileName)
-End If
-End Function
-
 Public Function GetDataFolder(form4 As Form, Appdirectory As String) As String
+
 On Error GoTo GenericFolder
 Dim ReturnVal As Long
 Dim PathName As String
+Dim NullPos As Integer
 PathName = String$(260, Chr$(32))
-retval = SHGetFolderPath(form4.Hwnd, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, PathName)
-PathName = Left(PathName, InStr(PathName, vbNullChar) - 1)
-If Len(Trim$(PathName)) = 0 Then GoTo GenericFolder
-GetDataFolder = JoinPath(PathName, Appdirectory)
-MakeDirectory GetDataFolder
+ReturnVal = SHGetFolderPath(form4.Hwnd, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, PathName)
+If ReturnVal <> 0 Then GoTo GenericFolder
+NullPos = InStr(PathName, vbNullChar)
+If NullPos < 2 Then GoTo GenericFolder
+PathName = Left$(PathName, NullPos - 1)
+If Trim$(PathName) = "" Then GoTo GenericFolder
+GetDataFolder = AppendPath(PathName, Appdirectory)
 Exit Function
-
 GenericFolder:
-'Windows 7+ mag vaak niet schrijven naast de exe. Gebruik daarom
-'een gebruikersmap als fallback en pas als laatste de programmamap.
-Dim fallback As String
-fallback = UserDataRootFolder()
-GetDataFolder = JoinPath(fallback, Appdirectory)
-MakeDirectory GetDataFolder
+'On Windows 7 or newer this API can still fail on some systems. Never return
+'an empty path, because that causes runtime error 52 when opening config files.
+PathName = Environ$("APPDATA")
+If Trim$(PathName) <> "" Then
+                        GetDataFolder = AppendPath(PathName, Appdirectory)
+                        Else
+                        GetDataFolder = App.Path
+                        End If
+End Function
+
+Public Function AppendPath(ByVal BasePath As String, ByVal ChildPath As String) As String
+If Trim$(ChildPath) = "" Then
+                        AppendPath = BasePath
+                        Else
+                        If Right$(BasePath, 1) = "\" Then
+                                                AppendPath = BasePath + ChildPath
+                                                Else
+                                                AppendPath = BasePath + "\" + ChildPath
+                                                End If
+                        End If
 End Function

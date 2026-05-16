@@ -1,4 +1,4 @@
----
+﻿---
 
 # Technical Appendix — Syscalculator 2.0 Alpha 1
 
@@ -6,7 +6,7 @@
 
 ```text
 src/
-├─ NodSystem.Core
+├─ Tiedragon.NodSystem.Core
 │  ├─ NodDocument.cs
 │  ├─ NodParser.cs
 │  ├─ NodEngine.cs
@@ -40,6 +40,22 @@ src/
    ├─ freesyscal.cfg
    └─ Converters/
 ```
+
+## A1. NuGet package management
+
+Syscalculator 2.0 uses central NuGet package management through `Directory.Packages.props`.
+
+Current external package:
+
+```text
+Microsoft.Web.WebView2
+```
+
+WebView2 is a build/package dependency for the WinForms preview UI. It is separate from runtime prerequisites such as the .NET Desktop Runtime and the Microsoft Edge WebView2 Runtime that may be required on a target Windows machine.
+
+Enterprise features, including future SQL connector work, should document package choices before adding dependencies. Prefer small, direct packages over broad frameworks unless the feature needs them.
+
+Release planning lives in `docs/RELEASE_PLAN.md`. That document defines the separate 1.74 legacy line and the 2.0 daily, beta and production promotion path.
 
 ## B. Architectural split
 
@@ -75,7 +91,7 @@ In Alpha 1, these concerns are separated.
 ```text
 Syscalculator.UI.WinForms
   ↓
-NodSystem.Core
+Tiedragon.NodSystem.Core
   ↓
 NodParser / NodEngine / sub-engines
 ```
@@ -127,7 +143,7 @@ NodUiMetadata.cs
 Reason:
 
 ```text
-NodSystem.Core = conversion engine
+Tiedragon.NodSystem.Core = conversion engine
 Syscalculator.UI = display labels and form layout
 ```
 
@@ -696,8 +712,8 @@ Display name,NOD path,*
 Example:
 
 ```text
-Celsius naar Fahrenheit,Converters/celsius_fahrenheit.nod,*
-Ans maal e kwadraat,Converters/e2.nod,
+Celsius naar Fahrenheit,Converters/Temperature/celsius_fahrenheit.nod,*
+Ans maal e kwadraat,Converters/Math/e2.nod,
 ```
 
 The `*` means default converter.
@@ -724,9 +740,9 @@ No old MenuXP styling migrated
 
 ```bash
 dotnet new sln
-dotnet sln add src/NodSystem.Core/NodSystem.Core.csproj
+dotnet sln add src/Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj
 dotnet sln add src/NodSystem.Tests/NodSystem.Tests.csproj
-dotnet sln add src/Syscalculator.UI.WinForms/Syscalculator.UI.WinForms.csproj
+dotnet sln add src/syscalculator/Syscalculator.UI.WinForms.csproj
 ```
 
 2. Add real test framework:
@@ -811,3 +827,4 @@ more maintainable
 more extensible
 safer for future enterprise use
 ```
+

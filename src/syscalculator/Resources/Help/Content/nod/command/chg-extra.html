@@ -1,0 +1,14 @@
+<h2>chg examples</h2><p><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> changes the beginning of text. It is useful for phone numbers, codes, prefixes, and old renumbering tables.</p><div class="notice"><b>Structure:</b> left is what to find, right is the new form. Use quotes when values contain spaces, commas, or special characters.</div><details open><summary>Replace a prefix</summary><table><tr><th>Goal</th><th>Rule</th><th>Example</th></tr><tr><td>Old prefix to new</td><td><code>chg "01751","07051"</code></td><td><code>0175112345</code> becomes <code>0705112345</code></td></tr><tr><td>With dash</td><td><code>chg "01751-","070-51"</code></td><td><code>01751-12345</code> becomes <code>070-5112345</code></td></tr><tr><td>Longest match wins</td><td>put specific rules above broad rules</td><td><code>01751-9xxxx</code> can be handled separately</td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: The Hague 070</h3><pre>Name Renumbering The Hague
+input1 Old phone number
+input2 New phone number
+chg "01751-xxxxx","070-51xxxxx"
+chg "01750-xxxxx","070-50xxxxx"
+end</pre></div><div class="example-card"><h3>Example: item code</h3><pre>Name Update item code
+input1 Old code
+input2 New code
+chg "OLD-","NEW-"
+end</pre></div></div></details><details><summary>Pattern with x</summary><p>Use <code>x</code> for characters that must be kept. This is useful for old phone renumbering tables.</p><pre>chg "050-2xxxxx","050-52xxxxx"</pre><div class="example-grid"><div class="example-card"><h3>Example: pattern rule</h3><pre>Name Phone pattern
+input1 Old
+input2 New
+chg "050-2xxxxx","050-52xxxxx"
+end</pre></div></div></details><details><summary>Common chg mistakes</summary><ul><li>Putting a broad rule above a specific rule.</li><li>Forgetting the comma between old and new.</li><li>Using spaces or commas without quotes.</li><li>Using <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when you need an exact full-value translation; then use <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>.</li></ul></details>

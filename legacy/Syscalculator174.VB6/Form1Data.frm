@@ -253,6 +253,10 @@ Begin VB.Form Form1
          Caption         =   "Delete"
          Shortcut        =   {DEL}
       End
+      Begin VB.Menu eselect 
+         Caption         =   "Select All"
+         Shortcut        =   ^A
+      End
       Begin VB.Menu delall 
          Caption         =   "Delete All "
          Enabled         =   0   'False
@@ -299,7 +303,7 @@ Begin VB.Form Form1
          Caption         =   "&Bugreports"
       End
       Begin VB.Menu urllaunch 
-         Caption         =   "Tiedragon"
+         Caption         =   "Tiedragon.com"
       End
       Begin VB.Menu About 
          Caption         =   "&About"
@@ -323,14 +327,14 @@ End Sub
 Sub Altop_Click()
 Dim test1 As Boolean
 If Altop.Checked = True Then
-      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", "0")
+      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", "0")
       Call WindowsAPI.AlwaysOnTop(Form1, False)
       If ActiveForm2 = True Then Call WindowsAPI.AlwaysOnTop(WizardExpress, False)
       If ActiveCal = True Then Call WindowsAPI.AlwaysOnTop(standard, False)
       Altop.Checked = False
       TOPilse = False
 Else
-      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", "1")
+      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", "1")
       Call WindowsAPI.AlwaysOnTop(Form1, True)
       If ActiveForm2 = True Then Call WindowsAPI.AlwaysOnTop(WizardExpress, True)
       If ActiveCal = True Then Call WindowsAPI.AlwaysOnTop(standard, True)
@@ -351,13 +355,13 @@ End Sub
 
 Private Sub Digitchek_Click()
 If Digitchek.Value = 1 Then
-      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "1")
+      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "1")
       booldigit = True
 
       Exit Sub
       End If
 If Digitchek.Value = 0 Then
-      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "0")
+      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "0")
       booldigit = False
 
       Exit Sub
@@ -423,7 +427,7 @@ tel = Len(App.Path + "\")
 Rem If Left(Text1.Text, tel) = App.Path + "\" Then Text1.Text = Mid(Text1.Text, tel + 1)
 
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open App.Path + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 For o = 0 To max
 If defaultID = o Then def = "*"
@@ -457,21 +461,39 @@ Call cal_Click
 End Sub
 
 Private Sub Delete_Click()
-If Option1.Value = True Then Text1.Text = ""
-If Option2.Value = True Then Text2.Text = ""
+If Option1.Value = True Then
+    If Text1.SelLength > 0 Then
+        n = Text1.SelStart
+        Text1.Text = Left(Text1.Text, Text1.SelStart) & Mid(Text1.Text, Text1.SelStart + Text1.SelLength + 1)
+        Text1.SelStart = n
+    End If
+End If
+If Option2.Value = True Then
+    If Text2.SelLength > 0 Then
+        n = Text2.SelStart
+        Text2.Text = Left(Text2.Text, Text2.SelStart) & Mid(Text2.Text, Text2.SelStart + Text2.SelLength + 1)
+        Text2.SelStart = n
+    End If
+End If
 End Sub
 
 Private Sub ecopy_Click()
-Clipboard.Clear
-If Option1.Value = True Then Clipboard.SetText Text1.Text
-If Option2.Value = True Then Clipboard.SetText Text2.Text
+If Option1.Value = True And Text1.SelLength > 0 Then Clipboard.Clear: Clipboard.SetText Mid(Text1.Text, Text1.SelStart + 1, Text1.SelLength)
+If Option2.Value = True And Text2.SelLength > 0 Then Clipboard.Clear: Clipboard.SetText Mid(Text2.Text, Text2.SelStart + 1, Text2.SelLength)
     
 End Sub
 
 Private Sub ecut_Click()
-        Clipboard.Clear
-If Option1.Value = True Then Clipboard.SetText Text1.Text: Text1.Text = ""
-If Option2.Value = True Then Clipboard.SetText Text2.Text: Text2.Text = ""
+If Option1.Value = True And Text1.SelLength > 0 Then
+    Clipboard.Clear
+    Clipboard.SetText Mid(Text1.Text, Text1.SelStart + 1, Text1.SelLength)
+    Call Delete_Click
+End If
+If Option2.Value = True And Text2.SelLength > 0 Then
+    Clipboard.Clear
+    Clipboard.SetText Mid(Text2.Text, Text2.SelStart + 1, Text2.SelLength)
+    Call Delete_Click
+End If
        
 End Sub
 
@@ -481,6 +503,11 @@ Private Sub epaste_Click()
       result = ""
 If Option1.Value = True Then Text1.Text = Clipboard.GetText()
 If Option2.Value = True Then Text2.Text = Clipboard.GetText()
+End Sub
+
+Private Sub eselect_Click()
+If Option1.Value = True Then Text1.SetFocus: Text1.SelStart = 0: Text1.SelLength = Len(Text1.Text)
+If Option2.Value = True Then Text2.SetFocus: Text2.SelStart = 0: Text2.SelLength = Len(Text2.Text)
 End Sub
 
 Private Sub exit_Click()
@@ -533,8 +560,8 @@ Dim test1 As Boolean
 App.Title = "Syscalculator"
 
 
-test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch")
-If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", "0")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "0")
 If test2 = "0" Then switch1 = False Else switch1 = True
 Call Addcombo
 Call Languare(Lname, 1)
@@ -550,7 +577,7 @@ If tel >= 1 Then
                          Exit Sub
                          End If
 If App.PrevInstance = True Then
-                            test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name")
+                            test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name")
                             OtherInstanceHwnd = fActivateWindowClass("ThunderRT6FormDC", test2)
                             If Not OtherInstanceHwnd = 0 Then
                             Dim cds As COPYDATASTRUCT, ThWnd As Long, buf(1 To 255) As Byte, a As String
@@ -570,28 +597,28 @@ If App.PrevInstance = True Then
                             End If
                             End If
 Apply = False
-test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop")
-If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", "0")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", "0")
 If test2 = "1" Then
                         TOPilse = True
                         Call WindowsAPI.AlwaysOnTop(Form1, True)
                         Altop.Checked = True
                         End If
-test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro")
-If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "1")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "1")
 If test2 = "0" Then intro = False: Indo.Checked = False Else intro = True
 test2 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal")
 If test2 = "" Then startup.Checked = False
-If test2 = ProgramFilePath(App.EXEName & ".exe") + " /tray" Then startup.Checked = True Else startup.Checked = False
-test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit")
-If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "0")
+If test2 = App.Path + "\Freesyscal.exe /tray" Then startup.Checked = True Else startup.Checked = False
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "0")
 If test2 = "0" Then booldigit = False: Digitchek.Value = 0 Else booldigit = True: Digitchek.Value = 1
 fORMVALUE3 = False
 ActiveForm2 = False
 
 
-test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray")
-If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", "0")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "0")
 
 If test2 = "1" Then
                         Dim rc As Long
@@ -613,20 +640,20 @@ If test2 = "1" Then
 If max = -1 Then Form1.Hide: Form3.Show: Exit Sub
 If flags = 0 Then
                   
-                  test5 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
+                  test5 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
                   If test5 = "0" Then GoTo verder
                   Form1.Top = (Screen.Height * 0.85) / 2 - Form1.Height / 2
                   Form1.Left = Screen.Width / 2 - Form1.Width / 2
 
                   Form1.Hide
                   Form3.Show
-                  If test5 = "1" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first", "0")
+                  If test5 = "1" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first", "0")
                   Exit Sub
                   End If
 verder:
 Dim temp As String
-test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "command")
-If test2 = "" Then Kcommand = Command Else flags = 1: Kcommand = test2: test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "command", "")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "command")
+If test2 = "" Then Kcommand = Command Else flags = 1: Kcommand = test2: test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "command", "")
 
 If flags = 0 And Not Kcommand = "" Then
                          temp = addconfig(Command)
@@ -675,7 +702,7 @@ End Sub
 
 Private Sub Help2_Click()
 Dim iRet As Long
-iRet = ShellExecute(Me.Hwnd, vbNullString, Configur3, vbNullString, "c:\", SW_SHOWNORMAL)
+OpenConfiguredHelp Me.Hwnd
 
 End Sub
 
@@ -746,7 +773,7 @@ Combo1.AddItem control, max
  If UCase(Right$(newfile, 3)) = "NOD" Then newfile = Left(newfile, tel - 4)
  filestring(max) = newfile
  On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open App.Path + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 For o = 0 To max
 If defaultID = o Then def = "*"
@@ -763,12 +790,12 @@ Private Sub Indo_Click()
 Dim test1 As Boolean
 If Indo.Checked = True Then
                             intro = False
-                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "0")
+                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "0")
                             Indo.Checked = False
 
 Else
                             intro = True
-                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "1")
+                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "1")
                             Indo.Checked = True
  
                             
@@ -791,7 +818,7 @@ Private Sub Mtray_Click()
 Dim test1 As Boolean
 If Mtray.Checked = True Then
                             tray = False
-                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", "0")
+                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "0")
                             Mtray.Checked = False
                             tray1.Timer1.Enabled = False
                             Shell_NotifyIcon NIM_DELETE, Tic
@@ -799,7 +826,7 @@ If Mtray.Checked = True Then
                             
 Else
                             tray = True
-                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", "1")
+                            test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "1")
                             Mtray.Checked = True
                             
                             Tic.cbSize = Len(Tic)
@@ -831,7 +858,7 @@ If startup.Checked = True Then
                             
 Else
                             tray = True
-                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", ProgramFilePath(App.EXEName & ".exe") + " /tray")
+                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", App.Path + "\Freesyscal.exe /tray")
                             startup.Checked = True
                             
                             End If
@@ -839,10 +866,10 @@ End Sub
 
 Private Sub Switchclick_Click()
 If switch1 = True Then
-      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", "0")
+      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "0")
       switch1 = False
 Else
-      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", "1")
+      test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "1")
       switch1 = True
       End If
 If switch1 = False Then Label1.Caption = Getsym1() Else Label1.Caption = Getsym2()

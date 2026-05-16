@@ -1,18 +1,18 @@
-# Vergelijking oude Syscalculator 1.72-source vs Syscalculator 2.0 prototype
+﻿# Vergelijking oude Syscalculator 1.72/1.74-source vs Syscalculator 2.0 prototype
 
 ## Korte samenvatting
 
-Syscalculator 1.72 was de laatste oude VB6-lijn. De 2.0-lijn is geen gewone update, maar een moderne herbouw in C#/.NET.
+Syscalculator 1.72 was de oude VB6-lijn waarop de moderne herbouw eerst is vergeleken. Syscalculator 1.74 is de laatste legacy-onderhoudsrelease van die VB6-lijn. De 2.0-lijn is geen gewone update, maar een moderne herbouw in C#/.NET.
 
 ```text
-Syscalculator 1.72
+Syscalculator 1.72/1.74
 = VB6-applicatie
 = UI en engine sterk verweven
 = NOD-parser/uitvoering direct gekoppeld aan forms/modules
 
 Syscalculator 2.0
-= C#/.NET 8
-= losse NodSystem.Core engine
+= C#/.NET 10
+= losse Tiedragon.NodSystem.Core engine
 = WinForms UI-laag
 = tests, documentatie en uitbreidbare architectuur
 ```
@@ -21,10 +21,10 @@ Syscalculator 2.0
 
 ## 1. Taal en platform
 
-| Onderdeel | Syscalculator 1.72 | Syscalculator 2.0 |
+| Onderdeel | Syscalculator 1.72/1.74 | Syscalculator 2.0 |
 |---|---|---|
 | Programmeertaal | Visual Basic 6 | C# |
-| Runtime | VB6 runtime | .NET 8 |
+| Runtime | VB6 runtime | .NET 10 |
 | UI | VB6 Forms | WinForms |
 | Projectvorm | klassieke VB6-projectstructuur | meerdere .NET-projecten |
 | Testbaarheid | beperkt | aparte testprojecten mogelijk |
@@ -34,7 +34,7 @@ Syscalculator 2.0
 
 ## 2. Oude broncode-onderdelen
 
-In de oude 1.72-lijn zaten onderdelen zoals:
+In de oude 1.72/1.74-lijn zaten onderdelen zoals:
 
 ```text
 Form1.frm
@@ -56,8 +56,8 @@ freesyscal.cfg
 In de 2.0-lijn zijn die conceptueel verdeeld over:
 
 ```text
-src/NodSystem.Core
-src/Syscalculator.UI.WinForms
+src/Tiedragon.NodSystem.Core
+src/syscalculator
 src/NodSystem.Tests
 src/NodSystem.Demo
 docs/
@@ -118,7 +118,7 @@ NodResult / NodTraceResult
 UI en engine zijn gescheiden:
 
 ```text
-NodSystem.Core
+Tiedragon.NodSystem.Core
 = parser, documentmodel, engine, math, reverse, trace, data, SQL-preview
 
 Syscalculator.UI.WinForms
@@ -139,7 +139,7 @@ Syscalculator.UI.WinForms
 | frmAbout.frm | About_Click in MainForm.cs |
 | Sysmsgbox.frm | MessageBox / IntroDialogForm.cs |
 | Freesyscal.bas | NodCatalog.cs / NodEngine.cs |
-| Module1.bas | verdeeld over NodSystem.Core |
+| Module1.bas | verdeeld over Tiedragon.NodSystem.Core |
 | Languare.bas | nog niet volledig gemigreerd |
 | WindowsAPI.bas | meestal niet meer nodig in .NET |
 | freesyscal.cfg | behouden via NodCatalogService |
@@ -389,6 +389,8 @@ clipboard/inputgebied
 regel-voor-regel conversie
 vooruit/terug
 output kopiëren
+Excel/Microsoft 365 waarschuwing in de help
+LibreOffice Calc getest als bruikbare spreadsheet-route
 ```
 
 Nog later te verbeteren:
@@ -402,7 +404,38 @@ foutregels markeren
 
 ---
 
-## 12. NOD Editor
+## 12. Configuratie en oude workflow-opties
+
+### Oude 1.72/1.74
+
+De oude VB6-lijn had kleine workflow-opties die niet spectaculair lijken, maar voor vaste gebruikers belangrijk zijn:
+
+```text
+Configuratie -> Start
+Configuratie -> Overschakelen
+introductie tonen ja/nee
+last used / laatst gebruikte converter
+```
+
+`Overschakelen` draaide niet alleen de conversierichting om, maar wisselde ook de invoerrollen.
+
+### Nieuwe 2.0
+
+In 2.0 zijn deze legacy-verwachtingen opnieuw meegenomen:
+
+```text
+Start met Windows aan/uit
+Overschakelen voor richting omdraaien
+input1/input2-waarden mee omwisselen
+introductietekst opnieuw tonen of verbergen
+laatst gebruikte converter onafhankelijker opgeslagen dan via alleen registry-gedrag
+```
+
+Dit maakt 2.0 dichter bij het dagelijkse gebruik van 1.74, terwijl de opslag en UI moderner blijven.
+
+---
+
+## 13. NOD Editor
 
 ### Oude 1.72
 
@@ -429,26 +462,46 @@ Dit is functioneel veel verder dan de oude editor, maar moet qua look nog verder
 
 ---
 
-## 13. Wat is nog niet volledig gemigreerd?
+## 14. Formulekaart en help
+
+### Oude 1.72/1.74
+
+De oude lijn had klassieke HTML-helpbestanden en eenvoudige uitleg rond conversies. Formulekaarten, MathML en LaTeX hoorden nog niet bij de oude VB6-lijn.
+
+### Nieuwe 2.0
+
+2.0 voegt hier een nieuwe laag bovenop:
+
+```text
+moderne helpvensters met onderwerpennavigatie
+zoeken in helptekst
+Vorige / Home / Volgende / Sluiten als gedeelde helpknoppen
+formulekaart met MathML, LaTeX en voorbeeld-NOD
+kopieerknoppen direct bij de relevante formule-secties
+```
+
+Dit is geen 1-op-1 migratie uit 1.74, maar nieuwe 2.0-functionaliteit bovenop legacy-compatibiliteit.
+
+---
+
+## 15. Wat is nog niet volledig gemigreerd?
 
 Nog niet volledig 1-op-1 overgezet:
 
 ```text
 oude taalbestanden / language system
 oude MenuXP-stijl
-alle oude instellingen
 alle oude toolbarbeelden exact
 alle oude foutmeldingen
 alle oude WizardExpress-details
 oude WindowsAPI-specifieke functies
-installer
-helpbestand
+exacte oude helpbestand-layout
 volledige import van alle oude .nod-bestanden
 ```
 
 ---
 
-## 14. Belangrijkste winst van 2.0
+## 16. Belangrijkste winst van 2.0
 
 De oude 1.72-source was functioneel, maar moeilijker te onderhouden omdat UI en engine verweven waren.
 
@@ -478,9 +531,9 @@ Syscalculator 2.0 Release
 
 ---
 
-## 15. Conclusie
+## 17. Conclusie
 
-Syscalculator 2.0 is geen simpele port van 1.72.
+Syscalculator 2.0 is geen simpele port van 1.72/1.74.
 
 Het is:
 
@@ -491,4 +544,5 @@ Het is:
 4. een voorbereiding op een echte nieuwe Syscalculator-generatie
 ```
 
-De oude 1.72-lijn blijft belangrijk als historische bron en referentie voor look, gedrag en compatibiliteit. De nieuwe 2.0-lijn maakt het systeem onderhoudbaar, testbaar en uitbreidbaar.
+De oude 1.72/1.74-lijn blijft belangrijk als historische bron en referentie voor look, gedrag en compatibiliteit. De nieuwe 2.0-lijn maakt het systeem onderhoudbaar, testbaar en uitbreidbaar.
+

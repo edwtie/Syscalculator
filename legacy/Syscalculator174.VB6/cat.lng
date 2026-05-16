@@ -32,9 +32,9 @@
 1,302,"Calculadora",""
 1,303,"Opcions",""
 1,400,"Ajuda",""
-1,401,"Retroacció","mailto:famtie@xs4all.nl?Subject=Syscalculator feedback"
-1,402,"Tiedragon","http://www.tiedragon.nl/test?lang=eng"
-1,403,Ajuda,"[App]\help\index_en.htm"
+1,401,"Retroacció","mailto:info@tiedragon.com?Subject=Syscalculator feedback"
+1,402,"Tiedragon.com","https://www.tiedragon.com/test?lang=eng"
+1,403,Ajuda,"[App]\help\Syscalculator174-cat.chm"
 1,404,"Quant al Syscalculator",""
 1,499,"Quant a",
 1,500,"Edita",
@@ -42,6 +42,7 @@
 1,502,"Enganxa",
 1,503,"Retalla",
 1,504,"Suprimeix",
+1,506,"Selecciona-ho tot",
 1,601,"Mostra",
 1,602,"Amaga",
 1,603,"Surt",
@@ -107,9 +108,9 @@
 8,200,"Edita",""
 8,300,"Fitxer",""
 8,400,"Ajuda",""
-8,401,"Retroacció","mailto:famtie@xs4all.nl?Subject=Syscalculator feedback"
-8,402,"Tiedragon","http://www.tiedragon.nl/test?lang=eng"
-8,403,Ajuda,"[App]\help\index_en.htm"
+8,401,"Retroacció","mailto:info@tiedragon.com?Subject=Syscalculator feedback"
+8,402,"Tiedragon.com","https://www.tiedragon.com/test?lang=eng"
+8,403,Ajuda,"[App]\help\Syscalculator174-cat.chm"
 8,404,"Quant al Syscalculator",""
 8,499,"Quant a",
 end,0,"",""

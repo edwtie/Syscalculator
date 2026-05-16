@@ -1,5 +1,5 @@
 Type=Exe
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\WINDOWS\system32\stdole2.tlb#OLE Automation
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#stdole2.tlb#OLE Automation
 Form=Zeditor.frm
 Module=Module2; Languarex.bas
 Form=Editrabout.frm
@@ -9,15 +9,15 @@ Module=WindowsAPI; WindowsAPI.bas
 IconForm="Editor"
 Startup="Editor"
 HelpFile=""
-Title="SyscalEditor 1.74"
-ExeName32="SyscalEditor174.exe"
+Title="SyscalEditor"
+ExeName32="SyscalEditor.exe"
 Command32=""
 Name="SyscalEditor"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=1
-MinorVer=74
-RevisionVer=1
+MinorVer=72
+RevisionVer=420
 AutoIncrementVer=1
 ServerSupportFiles=0
 CompilationType=0
@@ -35,6 +35,7 @@ Unattended=0
 Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
+DebugStartupOption=0
 
 [MS Transaction Server]
 AutoRefresh=1

@@ -333,10 +333,12 @@ Private Sub Command1_Click(Index As Integer)
                                                 End If
            Else
             If dflag(schaal) = 0 Then
+              If InStr(result(schaal), digitSwitch) = 0 Then
               result(schaal) = result(schaal) & digitSwitch
+              End If
               dflag(schaal) = 1
             Else
-                MsgBox ("ILLEGAL SAIRAM")
+                
             End If
      End If
             

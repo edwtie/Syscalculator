@@ -48,6 +48,67 @@ Global switch1 As String
 Global iX As Integer, iY As Integer
 
 
+Sub OpenConfiguredHelp(ownerHwnd As Long)
+Dim iRet As Long
+Dim helpTarget As String
+Dim chmPos As Integer
+Dim chmPath As String
+Dim topic As String
+Dim slashPos As Integer
+Dim fallbackTarget As String
+
+helpTarget = Configur3
+chmPos = InStr(1, LCase$(helpTarget), ".chm::", vbTextCompare)
+
+If chmPos > 0 Then
+    chmPath = Left$(helpTarget, chmPos + 3)
+    topic = Mid$(helpTarget, chmPos + 6)
+    If Left$(topic, 1) = "/" Or Left$(topic, 1) = "\" Then topic = Mid$(topic, 2)
+
+    If Dir$(chmPath) <> "" Then
+        Call LaunchHtmlHelp(ownerHwnd, helpTarget, App.Path)
+        Exit Sub
+    End If
+
+    slashPos = InStrRev(chmPath, "\")
+    If slashPos > 0 And topic <> "" Then
+        fallbackTarget = Left$(chmPath, slashPos) & topic
+        iRet = ShellExecute(ownerHwnd, vbNullString, fallbackTarget, vbNullString, App.Path, SW_SHOWNORMAL)
+        Exit Sub
+    End If
+End If
+
+If LCase$(Right$(helpTarget, 4)) = ".chm" Then
+    If Dir$(helpTarget) <> "" Then
+        Call LaunchHtmlHelp(ownerHwnd, helpTarget, App.Path)
+        Exit Sub
+    End If
+End If
+
+iRet = ShellExecute(ownerHwnd, vbNullString, helpTarget, vbNullString, App.Path, SW_SHOWNORMAL)
+End Sub
+
+Sub LaunchHtmlHelp(ownerHwnd As Long, helpTarget As String, workingDir As String)
+Dim iRet As Long
+Dim hhPath As String
+
+hhPath = Environ$("WINDIR")
+If hhPath <> "" Then
+    If Right$(hhPath, 1) <> "\" Then hhPath = hhPath & "\"
+    hhPath = hhPath & "hh.exe"
+    If Dir$(hhPath) <> "" Then
+        iRet = ShellExecute(ownerHwnd, vbNullString, hhPath, """" & helpTarget & """", workingDir, SW_SHOWNORMAL)
+        If iRet > 32 Then Exit Sub
+    End If
+End If
+
+iRet = ShellExecute(ownerHwnd, vbNullString, "hh.exe", """" & helpTarget & """", workingDir, SW_SHOWNORMAL)
+If iRet > 32 Then Exit Sub
+
+iRet = ShellExecute(ownerHwnd, vbNullString, helpTarget, vbNullString, workingDir, SW_SHOWNORMAL)
+End Sub
+
+
 
 
 Function Addcombo(foras As Form, Optional clean As Integer) As Integer
@@ -55,7 +116,7 @@ Dim comm, Data, def, reserve As String
 Dim OK As Integer
 i = 0
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Input As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Input As #1
 Do Until EOF(1)
  Input #1, comm, Data, def
  If Left$(comm, 1) = "'" Then GoTo overstap 'rem only

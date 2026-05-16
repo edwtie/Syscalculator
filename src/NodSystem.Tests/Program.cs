@@ -1,4 +1,4 @@
-/*
+﻿/*
 NOD SYSTEM -- TESTS
 
 Dit testproject gebruikt geen externe testframeworks.
@@ -16,7 +16,7 @@ De tests controleren:
 - data field math
 */
 
-using NodSystem.Core;
+using Tiedragon.NodSystem.Core;
 
 var total = 0;
 var passed = 0;
@@ -178,8 +178,9 @@ Test("intersection solver demo nod parses and solves", () =>
 {
     var path = Path.Combine(
         "src",
-        "Syscalculator.UI.WinForms",
+        "syscalculator",
         "Converters",
+        "Math",
         "snijpunt_lijnen_solver_demo.nod");
 
     if (!File.Exists(path))
@@ -802,6 +803,16 @@ Test("parser auto normalizes concatenated nod", () =>
     AssertText("71.60", result.Text);
 });
 
+Test("normalizer repairs concatenated nod metadata lines", () =>
+{
+    var nod = "Name Ans maal e kwadraatURLN e-kwadraat conversieinput1 getalinput2 resultaatResult resformat ##.00math ans * e^2end";
+    var normalized = NodTextNormalizer.NormalizeForEditor(nod);
+    AssertContains($"{Environment.NewLine}URLN e-kwadraat conversie", normalized);
+    AssertContains($"{Environment.NewLine}input1 getal", normalized);
+    AssertContains($"{Environment.NewLine}input2 resultaat", normalized);
+    AssertContains($"{Environment.NewLine}Result res", normalized);
+});
+
 Test("parser marks input1 input2 as deprecated until 3.0", () =>
 {
     var doc = NodParser.Parse("""
@@ -1333,8 +1344,9 @@ Test("full decibel table parses and converts known cases", () =>
     var path = Path.GetFullPath(Path.Combine(
         AppContext.BaseDirectory,
         "..", "..", "..", "..",
-        "Syscalculator.UI.WinForms",
+        "syscalculator",
         "Converters",
+        "Text",
         "operatie_decibel_1995_demo.nod"));
 
     var doc = NodParser.Parse(File.ReadAllText(path));
@@ -1342,6 +1354,32 @@ Test("full decibel table parses and converts known cases", () =>
     AssertText("070-5112345", NodEngine.ConvertForward(doc, "01751-12345").Text);
     AssertText("050-5212345", NodEngine.ConvertForward(doc, "050-212345").Text);
     AssertText("024-671234", NodEngine.ConvertForward(doc, "08897-1234").Text);
+});
+
+Test("all legacy Syscalculator 1.74 nod files parse", () =>
+{
+    var root = Path.GetFullPath(Path.Combine(
+        AppContext.BaseDirectory,
+        "..", "..", "..", "..", "..",
+        "legacy",
+        "Syscalculator174.VB6"));
+
+    var files = Directory.GetFiles(root, "*.nod", SearchOption.AllDirectories);
+    if (files.Length == 0)
+        throw new Exception("No legacy .nod files found.");
+
+    foreach (var file in files)
+    {
+        try
+        {
+            NodParser.Parse(File.ReadAllText(file));
+        }
+        catch (Exception ex)
+        {
+            var relative = Path.GetRelativePath(root, file);
+            throw new Exception($"{relative}: {ex.Message}");
+        }
+    }
 });
 
 
@@ -1372,6 +1410,12 @@ static void AssertText(string expected, string actual)
         throw new Exception($"Expected text '{expected}', got '{actual}'.");
 }
 
+static void AssertContains(string expected, string actual)
+{
+    if (!actual.Contains(expected, StringComparison.Ordinal))
+        throw new Exception($"Expected text to contain '{expected}', got '{actual}'.");
+}
+
 static void AssertDecimal(decimal expected, decimal actual)
 {
     if (expected != actual)
@@ -1400,3 +1444,4 @@ static void AssertThrows(string expectedMessage, Action action)
 
     throw new Exception($"Expected error '{expectedMessage}', but no exception was thrown.");
 }
+

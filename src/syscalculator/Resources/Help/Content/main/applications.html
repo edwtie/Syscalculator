@@ -1,0 +1,28 @@
+<p>WizardExpress can be used with several applications, but clipboard behavior differs per program.</p>
+<h2>Works well with</h2>
+<ul>
+  <li>plain text programs</li>
+  <li>LibreOffice Calc</li>
+</ul>
+<p>For spreadsheet work, plain values without unit symbols are usually the safest result.</p>
+<h2>Excel / Microsoft 365</h2>
+<p>Microsoft Excel can handle clipboard data differently from plain text programs and LibreOffice Calc.</p>
+<ul>
+  <li>Excel often uses richer Office clipboard formats.</li>
+  <li>WizardExpress follows the classic clipboard reset and write-back model.</li>
+  <li>Because of that, Excel can behave differently after conversion.</li>
+</ul>
+<div class="warning">
+  <b>Excel clipboard management:</b> after WizardExpress writes the converted result, paste immediately with <b>Ctrl+V</b>. Avoid right-click paste in Excel, because Excel can replace the converted clipboard data with its own clipboard state. If paste still does not work, copy the values from Excel again and run WizardExpress again.
+</div>
+<p>If paste behavior is difficult in Excel, use one of these routes:</p>
+<ul>
+  <li>try LibreOffice Calc</li>
+  <li>work through files instead of clipboard</li>
+  <li>use normal plain value paste</li>
+</ul>
+<p>Excel for the web / Microsoft 365 online can be even stricter because browser clipboard behavior is added on top.</p>
+<h2>Data and reporting</h2>
+<p>The advanced WizardExpress window combines data view and debug reporting. The <b>Input</b> and <b>Output</b> tabs show the working data as grids.</p>
+<p><b>Reporting</b> means a compact diagnosis of the clipboard conversion: row and column counts, clipboard formats, the used rule, before/after information, and a short preview.</p>
+<p>The report deliberately shows only the first rows when there is a lot of data. That keeps copied, e-mailed, and PDF reports readable. It is a report, not a full data export.</p>

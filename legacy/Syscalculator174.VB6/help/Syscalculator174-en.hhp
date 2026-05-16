@@ -1,0 +1,33 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Syscalculator174-en.chm
+Contents file=Syscalculator174-en.hhc
+Index file=Syscalculator174-en.hhk
+Default Window=main
+Default topic=index_en.htm
+Display compile progress=No
+Full-text search=Yes
+Language=0x409 English (United States)
+Title=Syscalculator 1.74 Help - English
+
+[WINDOWS]
+main="Syscalculator 1.74 Help - English","Syscalculator174-en.hhc","Syscalculator174-en.hhk","index_en.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+
+[FILES]
+index_en.htm
+help_en_convert.htm
+help_en_fields.htm
+help_en_wizardexpress.htm
+help_en_calculator.htm
+help_en_configuration.htm
+help_en_window_options.htm
+help_en_nod_catalog.htm
+help_en_support.htm
+logo_phpBB.gif
+Logo_phpBB_med.gif
+syscal_1.png
+syscal_2.png
+Syscal_3.png
+Syscal_4.png
+triconvert_3.jpg
+warning_triangle.png

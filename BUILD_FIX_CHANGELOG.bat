@@ -2,7 +2,7 @@
 setlocal
 
 set "ROOT=%~dp0"
-set "SCRIPT=%ROOT%src\Syscalculator.UI.WinForms\Build\BuildFixChangelog.ps1"
+set "SCRIPT=%ROOT%src\syscalculator\Build\BuildFixChangelog.ps1"
 
 if not exist "%SCRIPT%" (
     echo Build script not found:

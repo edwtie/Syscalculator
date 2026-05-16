@@ -1,0 +1,40 @@
+<!--
+  Gereedschapskist voor schrijvers.
+
+  Dit bestand is alleen een voorbeeld.
+  Kopieer een blok naar een echte help-pagina en verander de [tekst.naam].
+-->
+
+<!-- Waarschuwing in gewone help onder main/*.html -->
+<div class="warning">
+  <b>[help.warning.title]</b> [help.warning.text]
+</div>
+
+<!-- Waarschuwing in NOD-help onder nod/full/*.html of nod/command/*.html -->
+<div class="warning-sign">
+  <div><b>[help.warning.title]</b> [help.warning.text]</div>
+</div>
+
+<!-- Tip of opmerking in NOD-help -->
+<div class="notice">
+  <b>[help.note.title]</b> [help.note.text]
+</div>
+
+<!-- Uitklapblok: werkt zonder JavaScript -->
+<details>
+  <summary>[help.example.summary]</summary>
+  <p>[help.example.details]</p>
+</details>
+
+<!-- Codeblok: in NOD-help krijgt dit automatisch een kopieerknop -->
+<pre>Name Voorbeeld
+input1 Waarde
+input2 Resultaat
+end</pre>
+
+<!-- Link naar een NOD-command -->
+<a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>
+
+<!-- Screenshot plus onderschrift -->
+{NodEditorScreenshot}
+<p class="shot-caption">[help.example.screenshot_caption]</p>

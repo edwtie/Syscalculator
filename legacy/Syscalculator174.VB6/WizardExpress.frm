@@ -2,16 +2,16 @@ VERSION 5.00
 Begin VB.Form WizardExpress 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Wizard"
-   ClientHeight    =   2025
+   ClientHeight    =   2265
    ClientLeft      =   3915
    ClientTop       =   2805
-   ClientWidth     =   1875
+   ClientWidth     =   1980
    Icon            =   "WizardExpress.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   2025
-   ScaleWidth      =   1875
+   ScaleHeight     =   2265
+   ScaleWidth      =   1980
    ShowInTaskbar   =   0   'False
    Begin VB.Frame Status 
       Caption         =   "Status"
@@ -108,8 +108,8 @@ End Sub
 Private Sub Form_Load()
 Dim test2 As String
 Dim test1 As Boolean
-test2 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool")
-If test2 = "" Then test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
+test2 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool")
+If test2 = "" Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool", "0")
 If test2 = "1" Then
                         symbool.Checked = True
                         End If
@@ -295,10 +295,10 @@ End Sub
 Private Sub symbool_Click()
 Dim test1 As Boolean
 If symbool.Checked = True Then
-                                 test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
+                                 test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool", "0")
                                  symbool.Checked = False
 Else
-                                 test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "1")
+                                 test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool", "1")
                                  symbool.Checked = True
                                  End If
 End Sub

@@ -58,7 +58,7 @@ BUILD_FIX_CHANGELOG.bat -Channel production -Fix "Stability fixes" -Addition "Re
 
 ## What The Batch Does
 
-1. Builds `src\Syscalculator.UI.WinForms\Syscalculator.UI.WinForms.csproj`.
+1. Builds `src\syscalculator\Syscalculator.UI.WinForms.csproj`.
 2. The project build automatically increments `AppVersionInfo.Generated.cs`.
 3. The script reads the build date.
 4. The script creates or updates the matching channel section in `CHANGELOG.md`.

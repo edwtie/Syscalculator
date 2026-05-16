@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Tiedragon.Graph2D</AssemblyName>
+    <Title>Tiedragon.Graph2D</Title>
+    <Product>Tiedragon.Graph2D</Product>
+    <Company>Tiedragon</Company>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+</Project>

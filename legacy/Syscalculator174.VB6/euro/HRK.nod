@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Kroatische kuna is vastgesteld.
+'
+'
+
+Name Kroatische kuna naar euro
+Urln HRK-Euro
+indoprint Croatia adopted the euro on 1 January 2023.
+indoprint Fixed conversion rate: 1 euro = 7,53450 Croatian kuna.
+indoprint Converting with Croatian kuna to euro
+indoprint 
+indoend
+format #.00
+Symb1 HRK
+Symb2 €
+input1 Amounts in Croatian kuna
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 7,53450
+end
+

@@ -1,0 +1,20 @@
+<h2>Example in the window</h2>
+<p>{note}</p>
+<table class="symbol-mini">
+  <tr><td></td><td colspan="4" class="mini-label">{rowLabel}</td></tr>
+  <tr>
+    <td class="mini-radio"><span class="shot-radio {shotRadioClass}"></span></td>
+    <td class="mini-before">{rowBefore}</td>
+    <td class="mini-field"><span class="shot-input">{rowValue}</span></td>
+    <td class="mini-after">{rowAfter}</td>
+    <td class="mini-help"><span class="legend">{label}</span></td>
+  </tr>
+</table>
+<pre>Name German mark to euro
+input1 Value in Deutsch Mark
+input2 Value in euros
+{code}
+format #.00
+math ans / 1.95583
+end</pre>
+<p><b>Note:</b> for the same value, usually use left or right, not both.</p>

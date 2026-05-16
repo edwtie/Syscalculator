@@ -1,0 +1,22 @@
+'Officiele omrekenkoers voor Letse lats is vastgesteld.
+'
+'
+
+Name Letse lats naar euro
+Urln LVL-Euro
+indoprint Latvia adopted the euro on 1 January 2014.
+indoprint Fixed conversion rate: 1 euro = 0,702804 Latvian lats.
+indoprint Converting with Latvian lats to euro
+indoprint 
+indoend
+format #.00
+Symb1 LVL
+Symb2 €
+input1 Amounts in Latvian lats
+input2 Amounts in euros
+Result result:
+Resfou New number:
+errres A wrong or BAD number
+math ans / 0,702804
+end
+

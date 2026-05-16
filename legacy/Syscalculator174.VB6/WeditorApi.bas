@@ -30,6 +30,7 @@ Type COPYDATASTRUCT
 End Type
 Public Const GWL_WNDPROC = (-4)
 Public Const WM_COPYDATA = &H4A
+Public Const SW_SHOWNORMAL = 1
 Public Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (hpvDest As Any, hpvSource As Any, ByVal cbCopy As Long)
 
 Private Declare Function FindText Lib "comdlg32.dll" Alias "FindTextA" (pFindreplace As Long) As Long
@@ -502,7 +503,7 @@ Public Function WndProc(ByVal hOwner As Long, ByVal wMsg As Long, ByVal wParam A
               DoFindReplace RetFrs
            End If
       Case uHelpMsg
-          iRet = ShellExecute(Editor.Hwnd, vbNullString, Configur3, vbNullString, "c:\", SW_SHOWNORMAL)
+          OpenConfiguredHelp Editor.Hwnd
     Case Else
            If wMsg = WM_DESTROY Then
               EndDialog hDialog, 0&

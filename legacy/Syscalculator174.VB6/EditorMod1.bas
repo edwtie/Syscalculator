@@ -258,7 +258,7 @@ OpenNOD = True
 Exit Function
 61:
 Close #1
-Status = MsgBox(ResolveProgramFile(name) + isNotFound, vbCritical, errorf)
+Status = MsgBox(App.Path + "\" + name + isNotFound, vbCritical, errorf)
 OpenNOD = False
 End Function
 
@@ -270,7 +270,7 @@ Sform = Vform
 End Sub
 Sub LetName(Vform As String)
 Appsnaam = Vform
-If onlyeditor = 0 Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name", Appsnaam)
+If onlyeditor = 0 Then test1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name", Appsnaam)
 End Sub
 Sub trans(Vform As String, max As Integer)
 Dim i, o, n As Integer
@@ -284,8 +284,14 @@ transn(max) = Left(Mid(transn(max), 2), n - 2)
 
 End Sub
 Public Function filenod(inv As String) As String
+Dim tel As Integer
+tel = Len(App.Path)
 If Not UCase(Right$(inv, 4)) = ".NOD" Then inv = inv + ".nod"
-filenod = ResolveProgramFile(inv)
+If Not (Left(inv, tel) = App.Path) Then
+                                        tel = InStr(1, inv, ":\")
+                                        If tel = 0 Then filenod = App.Path + "\" + inv: Exit Function
+                                        End If
+filenod = inv
 End Function
 Sub chg(Vform As String, max As Integer)
 Dim i As Integer
@@ -356,7 +362,7 @@ If inv = True Then
                     For o = 0 To ichg - 1
                     b = Len(chgo(o))
                     If chgo(o) = Left(ask, b) Then
-                                                    ask = chgn(o) + Mid$(ask, b)
+                                                    ask = chgn(o) + Mid$(ask, b + 1)
                                                     If xsr = True Then
                                                                         a = Len(lndrn)
                                                                         If lndrn = Left(ask, a) Then ChgMath = lndro + Mid(ask, a + 1)
@@ -369,7 +375,7 @@ If inv = False Then
                     For o = 0 To ichg - 1
                     b = Len(chgn(o))
                     If chgn(o) = Left(ask, b) Then
-                                                    ask = chgo(o) + Mid$(ask, b + 2)
+                                                    ask = chgo(o) + Mid$(ask, b + 1)
                                                     If xsr = True Then
                                                                         a = Len(lndrn)
                                                                         If lndrn = Left(ask, a) Then ChgMath = lndro + Mid(ask, a + 1)

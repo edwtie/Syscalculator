@@ -53,8 +53,26 @@ nulnul
 - 1.74 blijft VB6/NOD 1.0.
 - 2.0 blijft C#/.NET/NOD 2.0 met legacy compatibility.
 
+## Compatibility Matrix
+
+Syscalculator 1.74 moet als legacy-lijn getest worden op:
+
+```text
+Windows XP 32-bit     = legacy smoke test / oude gebruikers
+Windows 7 32/64-bit   = Program Files + AppData padtest
+Windows 11 64-bit     = moderne startup + HKCU/AppData test
+```
+
+Release-gate:
+
+- XP: applicatie start, klassieke `.nod` converters openen, geen NOD 2.0 syntax gebruiken.
+- Windows 7: `freesyscal.cfg` wordt in `%APPDATA%\Syscalculator` gemaakt/gelezen.
+- Windows 11: schone start zonder oude HKLM-migratiewaarden werkt.
+- Alle drie: euro-groep toont oude en nieuwe euro `.nod` bestanden.
+
 ## Kandidaten Voor Fixes
 
+- Windows 11 startup controleren wanneer oude HKLM-registrywaarden ontbreken en `freesyscal.cfg` nog niet in AppData staat.
 - `chg` en `trans` legacy-volgorde vergelijken met Syscalculator 2.0.
 - Decimalen, komma/punt en digit grouping controleren.
 - Taalbestanden nalopen op kapotte tekens.
@@ -75,6 +93,116 @@ nulnul
 Syscalculator 1.74.x = onderhoud / legacy fix
 Syscalculator 2.0 beta = moderne opvolger
 ```
+
+### Euro NOD Candidate
+
+Nieuwe euro-landen kunnen eerst als data-only candidate voor 1.74 worden klaargezet. Dit verandert geen VB6-code en voegt geen NOD 2.0 syntax toe.
+
+Noem dit pas een release nadat de 1.74-bron getest en gecompileerd is.
+
+Gebruik:
+
+```bat
+BUILD_SYSCALCULATOR174_EURO_NOD_CANDIDATE.bat
+```
+
+De batch maakt:
+
+```text
+artifacts/legacy/Syscalculator174-EuroNodCandidate/
+artifacts/legacy/Syscalculator174-EuroNodCandidate.zip
+```
+
+Deze candidate bewaart de oude groepen uit `broncode.zip`:
+
+```text
+Distance
+euro
+Mass
+Pressure
+Temperature
+Volume
+```
+
+En voegt de nieuwere euro-`.nod` bestanden toe:
+
+```text
+BGN
+CYP
+EEK
+HRK
+LTL
+LVL
+MTL
+SIT
+SKK
+```
+
+De 1.74 legacy-bron bevat ook een VB6-compatible Operatie Decibel converter:
+
+```text
+Text/operatie_decibel_1995.nod
+```
+
+Deze gebruikt oude `chg old,new` prefixregels zonder quotes, omdat de VB6 1.74 `chg` parser quotes niet verwijdert.
+
+Compile-stap voor release:
+
+```text
+legacy/Syscalculator174.VB6/Syscalculator174.local.vbp
+```
+
+Als `VB6.EXE` niet beschikbaar is, blijft dit een candidate en geen release.
+
+Compile-check via batch:
+
+```bat
+BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat
+```
+
+Of met expliciet VB6-pad:
+
+```bat
+BUILD_SYSCALCULATOR174_VB6_CANDIDATE.bat -Vb6Path "C:\Program Files (x86)\Microsoft Visual Studio\VB98\VB6.EXE"
+```
+
+De batch gebruikt de klassieke VB6 command line compile:
+
+```text
+VB6.EXE /MAKE Project1.vbp /OUT artifacts\legacy\vb6-compile\Syscalculator174.compile.log
+```
+
+### Legacy Tests
+
+Voor de oude VB6-bron is er een lichte test-runner. Dit zijn geen moderne in-process VB6 unit tests, maar onderhoudstests rond de broncode:
+
+- verplichte VB6-bestanden bestaan
+- `Project1.vbp` bevat de 1.74 candidate-instellingen
+- oude bronmap-paden zijn niet teruggekomen
+- `freesyscal.cfg` en `freesysc.cfg` verwijzen naar bestaande `.nod` en taalbestanden
+- eerder gevonden bugfixes blijven aanwezig
+
+Gebruik:
+
+```bat
+TEST_SYSCALCULATOR174_LEGACY.bat
+```
+
+Met echte VB6 compile erbij:
+
+```bat
+TEST_SYSCALCULATOR174_LEGACY.bat -Compile
+```
+
+### Windows 11 Startup Fix Candidate
+
+De 1.74-bron bevat een candidate-fix voor starten op nieuwere Windows 11 installaties:
+
+- lees `first` eerst uit HKCU en pas daarna uit HKLM
+- behandel ontbrekende `Migration` als eerste start wanneer `freesyscal.cfg` ontbreekt
+- maak `freesyscal.cfg` automatisch in `%APPDATA%\Syscalculator`
+
+Ook hiervoor geldt: eerst testen en `Syscalculator174.local.vbp` compileren voordat dit release mag heten.
 
 De changelog moet per fix duidelijk vermelden:
 

@@ -25,6 +25,19 @@ publish/
 # Legacy packaged releases / installer output
 legacy/Syscalculator174.VB6/Output/
 src/Syscalculator.UI.WinForms/Converters/Output/
+src/syscalculator/Converters/Output/
+legacy/Syscalculator174.VB6/*.OBJ
+legacy/Syscalculator174.VB6/*.vbw
+legacy/Syscalculator174.VB6/*.vbg
+legacy/Syscalculator174.VB6/*.SCC
+legacy/Syscalculator174.VB6/*.exe
+legacy/Syscalculator174.VB6/*.zip
+legacy/Syscalculator174.VB6/*.FXP
+legacy/Syscalculator174.VB6/*.FRT
+legacy/Syscalculator174.VB6/*.f2x
+legacy/Syscalculator174.VB6/FOXUSER.*
+legacy/Syscalculator174.VB6/freesysc.cfg
+legacy/Syscalculator174.VB6/~$*
 
 # Logs and local crash dumps
 *.log
@@ -36,3 +49,7 @@ Desktop.ini
 
 # Legacy/source archives kept outside version control by default
 broncode.zip
+Syscalculator20_UI_Prototype_OldModelConverterLook_BuildFix.zip
+
+# Downloaded third-party installers
+tools/InnoSetup/*.exe

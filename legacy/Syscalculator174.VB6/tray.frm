@@ -146,34 +146,34 @@ lasttime = lasttime + 1
 Rem Call eupdate
 End Sub
 
-Private Sub eupdate()
-  Dim sourceUrl As String
-   Dim SlocalFile As String
-   Dim hfile As Long
-   
-   sourceUrl = "http://www.tiedragon.nl/update/version.txt"
-   SlocalFile = Apppaths + "\check.tmp"
-   
-   
-   If DownloadFile(sourceUrl, SlocalFile) Then
-   
-      hfile = FreeFile
-      Open SlocalFile For Input As #1
-      Do Until EOF(1)
-      Line Input #1, Commando
-      If Left$(Commando, 1) = "'" Then GoTo overstap 'rem only
-      Select Case UCase(Left$(Commando, 3))
-      Case "STS":
-        Value = Mid$(Commando, 5) 'reserved, Universal version
-      Case "URL":
-        temppath = Mid$(Commando, 5)
-      Case "END":
-        Exit Do
-      End Select
-overstap:
-      Loop
-      Close #1
-   
-   Else
-   End If
-End Sub
+'Private Sub eupdate()
+'  Dim sourceUrl As String
+'   Dim SlocalFile As String
+'   Dim hfile As Long
+'
+'   sourceUrl = "https://www.tiedragon.com/update/version.txt"
+'   SlocalFile = Apppaths + "\check.tmp"
+'
+'
+'   If DownloadFile(sourceUrl, SlocalFile) Then
+'
+'      hfile = FreeFile
+'      Open SlocalFile For Input As #1
+'      Do Until EOF(1)
+'      Line Input #1, Commando
+'      If Left$(Commando, 1) = "'" Then GoTo overstap 'rem only
+'      Select Case UCase(Left$(Commando, 3))
+'      Case "STS":
+'        Value = Mid$(Commando, 5) 'reserved, Universal version
+'      Case "URL":
+'        temppath = Mid$(Commando, 5)
+'      Case "END":
+'        Exit Do
+'      End Select
+'overstap:
+'      Loop
+'      Close #1
+'
+'   Else
+'   End If
+'End Sub

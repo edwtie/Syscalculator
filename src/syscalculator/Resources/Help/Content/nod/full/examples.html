@@ -1,0 +1,36 @@
+<h2>Examples by NOD type</h2><p>NOD files can describe different kinds of converters. Choose the pattern that fits what you want to build.</p><h3>1. Calculation tool with math</h3><p>Use this for numbers: temperature, distance, weight, currency, percentage.</p><pre>Name Celsius to Fahrenheit
+input1 Celsius
+input2 Fahrenheit
+format ##.00
+math ans * 1.8
+math ans + 32
+end</pre><h3>2. Translation tool with trans</h3><p>Use this when the full input must exactly match a known value. Separate old and new with a comma. Use quotes when values contain spaces or commas.</p><pre>Name Postcode to address demo
+input1 Postcode house number
+input2 Address
+trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"
+end</pre><h3>3. Prefix/pattern tool with chg</h3><p>Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when only the start of the text changes. Separate old and new with a comma. <code>x</code> patterns are allowed, useful for old phone renumbering tables.</p><pre>Name Operation Decibel example
+input1 Old phone number
+input2 New phone number
+chg "01751-xxxxx","070-51xxxxx"
+chg "050-2xxxxx","050-52xxxxx"
+end</pre><h3>4. Tool with left/right symbols</h3><p>Use symbols to display values neatly. Choose left or right per value.</p><pre>Name German mark to euro
+input1 Mark
+input2 Euro
+Symb1 DM
+Symb2 EUR
+format ##.00
+math ans / 1.95583
+end</pre><h3>5. Introduction text with indoprint</h3><p>Use this when the user should see instructions before using the converter.</p><pre>indoprint This converter changes Celsius to Fahrenheit.
+indoprint Enter a temperature in degrees Celsius.
+indoend</pre><h3>6. Equation solving with equation</h3><p>Use this for formula-like problems where an unknown variable should be solved.</p><pre>Name Solve equation
+given y = 20
+equation y = x * 2
+solve x
+constraint x >= 0
+end</pre><h3>7. Example as shown in the window</h3><p>This shows where labels, input, result, and symbols appear on screen.</p><div class="dialog-example"><div class="dialog-title">EuroCalculator</div><div class="dialog-menu"><span>File</span><span>Edit</span><span>Config</span><span>Tools</span><span>About</span></div><div class="dialog-body"><div class="dialog-row"><span></span><div class="dialog-label">Value in Deutsch Mark</div><span></span></div><div class="dialog-row"><span class="dialog-radio on"></span><div class="dialog-input">22</div><div class="dialog-symbol">DM</div></div><div class="dialog-row"><span></span><div class="dialog-label">Value in euros</div><span></span></div><div class="dialog-row"><span class="dialog-radio"></span><div class="dialog-input">11.25</div><span></span></div><div class="dialog-options"><span>&#9633; Digit group</span><span>&#9745; Decimals</span><span>2</span></div></div></div><pre>Name German mark to euro
+input1 Value in Deutsch Mark
+input2 Value in euros
+Symb3 DM
+format ##.00
+math ans / 1.95583
+end</pre>

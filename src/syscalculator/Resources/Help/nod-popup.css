@@ -1,0 +1,16 @@
+* { box-sizing:border-box; }
+html, body { overflow:visible; }
+body { margin:0; padding:10px 13px 7px; font-family:"Segoe UI", Arial, sans-serif; font-size:12px; line-height:1.34; color:#1f2937; background:transparent; }
+.title { font-weight:750; color:#0f3f8f; margin-bottom:5px; font-size:13px; }
+.syntax { font-family:Consolas, "Cascadia Mono", monospace; background:#f6f8fb; border:1px solid #d7e0ee; border-radius:6px; padding:5px 7px; margin:4px 0 7px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.muted { color:#6b7280; }
+.insert { display:inline-block; margin-top:6px; padding:5px 10px; border-radius:999px; background:#0f3f8f; color:#fff; text-decoration:none; font-weight:700; }
+.more { display:inline-block; margin:6px 0 0 8px; color:#0f3f8f; font-weight:700; text-decoration:none; }
+.actions { margin:7px 0 0; }
+.suggest { color:#0f3f8f; text-decoration:none; font-weight:750; }
+code { font-family:Consolas, "Cascadia Mono", monospace; background:#eef4ff; border:1px solid #d7e3f7; border-radius:5px; padding:1px 4px; color:#0f3f8f; overflow-wrap:anywhere; }
+.cmd-link { text-decoration:none; }
+.cmd-link:hover code { background:#dcecff; border-color:#6fa2e9; }
+ul { margin:4px 0 0 0; padding:0; list-style:none; }
+li { margin:4px 0; padding:5px 7px; border:1px solid #e0e7f2; border-radius:6px; background:#fff; }
+b { color:#0f3f8f; }

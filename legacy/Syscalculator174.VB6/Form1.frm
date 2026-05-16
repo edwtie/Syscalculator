@@ -272,6 +272,10 @@ Begin VB.Form Form1
          Caption         =   "Delete"
          Shortcut        =   {DEL}
       End
+      Begin VB.Menu eselect 
+         Caption         =   "Select All"
+         Shortcut        =   ^A
+      End
       Begin VB.Menu delall 
          Caption         =   "Delete All "
          Enabled         =   0   'False
@@ -318,7 +322,7 @@ Begin VB.Form Form1
          Caption         =   "&Bugreports"
       End
       Begin VB.Menu urllaunch 
-         Caption         =   "Tiedragon"
+         Caption         =   "Tiedragon.com"
       End
       Begin VB.Menu Donate 
          Caption         =   "Donate us"
@@ -347,14 +351,14 @@ End Sub
 Sub Altop_Click()
 Dim test1 As Boolean
 If Altop.Checked = True Then
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", "0")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", "0")
       Call WindowsAPI.AlwaysOnTop(Form1, False)
       If ActiveForm2 = True Then Call WindowsAPI.AlwaysOnTop(WizardExpress, False)
       If ActiveCal = True Then Call WindowsAPI.AlwaysOnTop(standard, False)
       Altop.Checked = False
       TOPilse = False
 Else
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", "1")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", "1")
       Call WindowsAPI.AlwaysOnTop(Form1, True)
       If ActiveForm2 = True Then Call WindowsAPI.AlwaysOnTop(WizardExpress, True)
       If ActiveCal = True Then Call WindowsAPI.AlwaysOnTop(standard, True)
@@ -370,14 +374,14 @@ End Sub
 
 Private Sub Check1_Click()
 If Check1.Value = 1 Then
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", "1")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision", "1")
       Combo2.Enabled = True
       setDec (Combo2.ListIndex)
       Decimals = True
       Exit Sub
       End If
 If Check1.Value = 0 Then
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", "0")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision", "0")
       Combo2.Enabled = False
       setDec (-1)
       Decimals = False
@@ -478,7 +482,7 @@ End Sub
 Private Sub Combo2_Click()
 If Check1.Value = 1 Then
                          setDec (Combo2.ListIndex)
-                         test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "decnum", Combo2.ListIndex)
+                         test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "decnum", Combo2.ListIndex)
                          End If
 End Sub
 
@@ -574,13 +578,13 @@ End Sub
 
 Private Sub Digitchek_Click()
 If Digitchek.Value = 1 Then
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "1")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "1")
       booldigit = True
 
       Exit Sub
       End If
 If Digitchek.Value = 0 Then
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "0")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "0")
       booldigit = False
 
       Exit Sub
@@ -641,7 +645,7 @@ If formchg Then
                 'Combo2.ListIndex = Getformat()
                 End If
                 
-test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name", Caption)
+test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name", Caption)
 If switch1 = False Then Label1.Caption = Getsym1() Else Label1.Caption = Getsym2()
 If switch1 = False Then Label2.Caption = Getsym2() Else Label2.Caption = Getsym1()
 If switch1 = False Then Label5.Caption = Getsym3() Else Label5.Caption = Getsym4()
@@ -678,21 +682,39 @@ Call cal_Click
 End Sub
 
 Private Sub Delete_Click()
-If Option1.Value = True Then Text1.Text = ""
-If Option2.Value = True Then Text2.Text = ""
+If Option1.Value = True Then
+    If Text1.SelLength > 0 Then
+        n = Text1.SelStart
+        Text1.Text = Left(Text1.Text, Text1.SelStart) & Mid(Text1.Text, Text1.SelStart + Text1.SelLength + 1)
+        Text1.SelStart = n
+    End If
+End If
+If Option2.Value = True Then
+    If Text2.SelLength > 0 Then
+        n = Text2.SelStart
+        Text2.Text = Left(Text2.Text, Text2.SelStart) & Mid(Text2.Text, Text2.SelStart + Text2.SelLength + 1)
+        Text2.SelStart = n
+    End If
+End If
 End Sub
 
 Private Sub ecopy_Click()
-Clipboard.Clear
-If Option1.Value = True Then Clipboard.SetText Text1.Text
-If Option2.Value = True Then Clipboard.SetText Text2.Text
+If Option1.Value = True And Text1.SelLength > 0 Then Clipboard.Clear: Clipboard.SetText Mid(Text1.Text, Text1.SelStart + 1, Text1.SelLength)
+If Option2.Value = True And Text2.SelLength > 0 Then Clipboard.Clear: Clipboard.SetText Mid(Text2.Text, Text2.SelStart + 1, Text2.SelLength)
     
 End Sub
 
 Private Sub ecut_Click()
-        Clipboard.Clear
-If Option1.Value = True Then Clipboard.SetText Text1.Text: Text1.Text = ""
-If Option2.Value = True Then Clipboard.SetText Text2.Text: Text2.Text = ""
+If Option1.Value = True And Text1.SelLength > 0 Then
+    Clipboard.Clear
+    Clipboard.SetText Mid(Text1.Text, Text1.SelStart + 1, Text1.SelLength)
+    Call Delete_Click
+End If
+If Option2.Value = True And Text2.SelLength > 0 Then
+    Clipboard.Clear
+    Clipboard.SetText Mid(Text2.Text, Text2.SelStart + 1, Text2.SelLength)
+    Call Delete_Click
+End If
        
 End Sub
 
@@ -702,6 +724,11 @@ Private Sub epaste_Click()
       result = ""
 If Option1.Value = True Then Text1.Text = Clipboard.GetText()
 If Option2.Value = True Then Text2.Text = Clipboard.GetText()
+End Sub
+
+Private Sub eselect_Click()
+If Option1.Value = True Then Text1.SetFocus: Text1.SelStart = 0: Text1.SelLength = Len(Text1.Text)
+If Option2.Value = True Then Text2.SetFocus: Text2.SelStart = 0: Text2.SelLength = Len(Text2.Text)
 End Sub
 
 Private Sub exit_Click()
@@ -770,7 +797,7 @@ App.Title = "Syscalculator"
 
 
 If App.PrevInstance Then
-                            test2 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name")
+                            test2 = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name")
                             OtherInstanceHwnd = fActivateWindowClass("ThunderRT6FormDC", test2)
                             Dim cds As COPYDATASTRUCT, ThWnd As Long, buf(1 To 255) As Byte, a As String
                              ' Get the hWnd of the target application
@@ -788,88 +815,91 @@ If App.PrevInstance Then
                             End If
 
 Apppaths = GetDataFolder(Form1, "Syscalculator")
-migration = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration")
-Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
+If Trim$(Apppaths) = "" Then Apppaths = App.Path
+MakeDirectory (Apppaths)
+If Dir$(Apppaths + "\freesyscal.cfg") = "" And Dir$(App.Path + "\freesyscal.cfg") <> "" Then FileCopy App.Path + "\freesyscal.cfg", Apppaths + "\freesyscal.cfg"
+If Dir$(Apppaths + "\freesysc.cfg") = "" And Dir$(App.Path + "\freesysc.cfg") <> "" Then FileCopy App.Path + "\freesysc.cfg", Apppaths + "\freesysc.cfg"
+migration = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration")
+Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
 If Firsttime = "" Then Firsttime = "1"
 
 
 If Firsttime = "0" And migration = "1" Then
-Switchs = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch")
-Ontop = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop")
-intros = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro")
-digitnr = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit")
-decnum = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "decnum")
-traysn = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray")
-precision = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision")
-symbtest1 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool")
+Switchs = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch")
+Ontop = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop")
+intros = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro")
+digitnr = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit")
+decnum = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "decnum")
+traysn = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray")
+precision = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision")
+symbtest1 = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool")
 switch1 = False
 Call Addcombo(2)
 MakeDirectory (Apppaths)
 Call saveconfig(Lname, Combo1)
-On Error Resume Next
-If Dir$(ProgramFilePath("freesyscal.cfg")) <> "" Then Kill ProgramFilePath("freesyscal.cfg")
-On Error GoTo 0
-If Not decnum = "" Then decnum = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "decnum", decnum)
-If Not Switchs = "" Then Switchs = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", Switchs)
-If Not Ontop = "" Then Ontop = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", Ontop)
-If Not intros = "" Then intros = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", intros)
-If Not digitnr = "" Then digitnr = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", digit) Else test5 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "2")
-If Not precision = "" Then precision = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", precision) Else test5 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", "1")
-If Not traysn = "" Then traysn = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", traysn)
-If Not symbtest1 = "" Then symbtest1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", symbtest1)
+If Dir$(App.Path + "\freesyscal.cfg") <> "" Then Kill App.Path + "\freesyscal.cfg"
+If Not decnum = "" Then decnum = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "decnum", decnum)
+If Not Switchs = "" Then Switchs = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", Switchs)
+If Not Ontop = "" Then Ontop = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", Ontop)
+If Not intros = "" Then intros = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", intros)
+If Not digitnr = "" Then digitnr = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", digit) Else test5 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "2")
+If Not precision = "" Then precision = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision", precision) Else test5 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision", "1")
+If Not traysn = "" Then traysn = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", traysn)
+If Not symbtest1 = "" Then symbtest1 = bSetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool", symbtest1)
 
-If Not Ontop = "" Then Ontop = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop")
-If Not intros = "" Then intros = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro")
-If Not digitnr = "" Then digitnr = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit")
-If Not decnum = "" Then decnum = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "decnum")
-If Not traysn = "" Then traysn = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray")
-If Not precision = "" Then precision = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision")
-If Not Names = "" Then Names = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Name")
-If Not symbtest1 = "" Then symbtest1 = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool")
-If Not Switchs = "" Then Switchs = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch")
-If Not Firsttime = "" Then First = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
-If Firsttime = "0" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first", "0")
-If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration", "0")
+If Not Ontop = "" Then Ontop = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop")
+If Not intros = "" Then intros = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro")
+If Not digitnr = "" Then digitnr = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit")
+If Not decnum = "" Then decnum = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "decnum")
+If Not traysn = "" Then traysn = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray")
+If Not precision = "" Then precision = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision")
+If Not Names = "" Then Names = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Name")
+If Not symbtest1 = "" Then symbtest1 = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool")
+If Not Switchs = "" Then Switchs = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch")
+If Not Firsttime = "" Then First = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
+If Firsttime = "0" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first", "0")
+If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration", "0")
 
 End If
-Firsttime = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first")
+Firsttime = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
 
 If Firsttime = "1" And migration = "1" Then
- Switchs = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", "0")
- Ontop = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Ontop", "1")
- intros = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "0")
- digitnr = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Digit", "0")
- precision = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "precision", "0")
- symbtest1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "symbool", "0")
- decnum = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "decnum", "2")
+ Switchs = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "0")
+ Ontop = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Ontop", "1")
+ intros = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "0")
+ digitnr = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Digit", "0")
+ precision = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "precision", "0")
+ symbtest1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "symbool", "0")
+ decnum = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "decnum", "2")
  
  startup.Checked = False
- traysn = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", "1")
+ traysn = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "1")
  Form1.Top = (Screen.Height * 0.85) / 2 - Form1.Height / 2
     Form1.Left = Screen.Width / 2 - Form1.Width / 2
     If Addcombo = -1 Then
     MakeDirectory (Apppaths)
     Call savefirstconfig
     End If
-    If Firsttime = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "first", "0")
-    If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Migration", "0")
+    If Firsttime = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first", "0")
+    If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration", "0")
 End If
 
 
-Ontop = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Ontop")
-intros = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Intro")
+Ontop = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "Ontop")
+intros = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "Intro")
 srun = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal")
-digitnr = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Digit")
-decnum = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "decnum")
-traysn = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Tray")
-precision = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "precision")
-Switchs = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition", "Switch")
+digitnr = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "Digit")
+decnum = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "decnum")
+traysn = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "Tray")
+precision = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "precision")
+Switchs = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "Switch")
 If Switchs = "0" Then switch1 = False Else switch1 = True
 Call Addcombo
 
 If Firsttime = "0" Then
     If LCase(Left$(Command, 4)) = "/lng" Then Lname = Mid$(Command, 6): Lname = saveconfig(Lname, Combo1)
 End If
+If Lname = "" Then Lname = "eng.lng"
 Call Languare(Lname, 1)
 
 Apply = False
@@ -880,7 +910,7 @@ If Ontop = "1" Then
                         End If
 If intros = "0" Then intro = False: Indo.Checked = False Else intro = True
 If srun = "" Then startup.Checked = False
-If srun = ProgramFilePath(App.EXEName & ".exe") + " /tray" Then startup.Checked = True Else startup.Checked = False
+If srun = App.Path + "\Freesyscal.exe /tray" Then startup.Checked = True Else startup.Checked = False
 If digitnr = "0" Then booldigit = False: Digitchek.Value = 0 Else booldigit = True: Digitchek.Value = 1
 fORMVALUE3 = False
 ActiveForm2 = False
@@ -967,7 +997,7 @@ End Sub
 
 Private Sub Help2_Click()
 Dim iRet As Long
-iRet = ShellExecute(Me.Hwnd, vbNullString, Configur3, vbNullString, "c:\", SW_SHOWNORMAL)
+OpenConfiguredHelp Me.Hwnd
 
 End Sub
 
@@ -1042,7 +1072,7 @@ Combo1.AddItem Control, max
  If UCase(Right$(newfile, 3)) = "NOD" Then newfile = Left(newfile, tel - 4)
  filestring(max) = newfile
  On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
 For o = 0 To max
 If defaultID = o Then def = "*"
@@ -1059,12 +1089,12 @@ Private Sub Indo_Click()
 Dim test1 As Boolean
 If Indo.Checked = True Then
                             intro = False
-                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "0")
+                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "0")
                             Indo.Checked = False
 
 Else
                             intro = True
-                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Intro", "1")
+                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Intro", "1")
                             Indo.Checked = True
  
                             
@@ -1087,7 +1117,7 @@ Private Sub Mtray_Click()
 Dim test1 As Boolean
 If Mtray.Checked = True Then
                             tray = False
-                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", "0")
+                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "0")
                             Mtray.Checked = False
                             tray1.Timer1.Enabled = False
                             Shell_NotifyIcon NIM_DELETE, Tic
@@ -1095,7 +1125,7 @@ If Mtray.Checked = True Then
                             
 Else
                             tray = True
-                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Tray", "1")
+                            test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "1")
                             Mtray.Checked = True
                             
                             Tic.cbSize = Len(Tic)
@@ -1127,20 +1157,24 @@ If startup.Checked = True Then
                             
 Else
                             tray = True
-                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", ProgramFilePath(App.EXEName & ".exe") + " /tray")
+                            test2 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "Syscal", App.Path + "\Freesyscal.exe /tray")
                             startup.Checked = True
                             
                             End If
 End Sub
 
 Private Sub Switchclick_Click()
+Dim tempText As String
 If switch1 = True Then
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", "0")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "0")
       switch1 = False
 Else
-      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\TCsoftware\Syscalculcator Euro Edition\", "Switch", "1")
+      test1 = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "1")
       switch1 = True
       End If
+tempText = Text1.Text
+Text1.Text = Text2.Text
+Text2.Text = tempText
 If switch1 = False Then Label1.Caption = Getsym1() Else Label1.Caption = Getsym2()
 If switch1 = False Then Label2.Caption = Getsym2() Else Label2.Caption = Getsym1()
 If switch1 = False Then Label5.Caption = Getsym3() Else Label5.Caption = Getsym4()
@@ -1251,12 +1285,30 @@ Dim OK As Integer
 Dim tel As Integer
 If LCase(Left$(Command, 4)) = "/lng" Then Lname = Mid$(Command, 6) Else Lname = "eng.lng"
 On Error GoTo geenconfig
-Open UserDataFilePath("freesyscal.cfg") For Output As #1
+Open Apppaths + "\" + "freesyscal.cfg" For Output As #1
 Write #1, "[lang]", Lname, ""
-Write #1, "Graden - Fahrenheit", "Temperature\graden fahrenheit", "*"
-Write #1, "meters - feets", "Distance\feet meter", "*"
-Write #1, "Graden - Kelvin", "Temperature\graden kelvin", ""
-Write #1, "Euro-NLG", "Euro\NLG", ""
+Write #1, "ATS", "euro\ATS", ""
+Write #1, "BEF", "euro\BEF", ""
+Write #1, "DEM", "euro\DEM", ""
+Write #1, "ESP", "euro\ESP", ""
+Write #1, "FIM", "euro\FIM", ""
+Write #1, "FRF", "euro\FRF", ""
+Write #1, "GRD", "euro\GRD", ""
+Write #1, "IEP", "euro\IEP", ""
+Write #1, "ITL", "euro\ITL", ""
+Write #1, "LUF", "euro\LUF", ""
+Write #1, "PTE", "euro\PTE", ""
+Write #1, "Euro-NLG", "euro\NLG", "*"
+Write #1, "BGN", "euro\BGN", ""
+Write #1, "CYP", "euro\CYP", ""
+Write #1, "EEK", "euro\EEK", ""
+Write #1, "HRK", "euro\HRK", ""
+Write #1, "LTL", "euro\LTL", ""
+Write #1, "LVL", "euro\LVL", ""
+Write #1, "MTL", "euro\MTL", ""
+Write #1, "SIT", "euro\SIT", ""
+Write #1, "SKK", "euro\SKK", ""
+Write #1, "Operatie Decibel 1995", "Text\operatie_decibel_1995", ""
 Close #1
 Exit Sub
 geenconfig:

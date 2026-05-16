@@ -1,0 +1,426 @@
+# Syscalculator 2.0 Sprachdatei
+# Format: key=value
+
+language.name=Deutsch
+
+menu.file=Datei
+menu.file.open_nod=NOD oeffnen...
+menu.file.reload=Konverterliste neu laden
+menu.file.exit=Beenden
+menu.edit=Bearbeiten
+menu.edit.cut=Ausschneiden
+menu.edit.copy=Kopieren
+menu.edit.paste=Einfuegen
+menu.edit.delete=Loeschen
+menu.edit.select_all=Alles auswaehlen
+menu.edit.copy_input=Eingabe kopieren
+menu.edit.copy_output=Ausgabe kopieren
+menu.edit.paste_active=In aktives Feld einfuegen
+menu.edit.clear=Felder leeren
+menu.config=Config
+menu.config.digit_group=Zifferngruppen
+menu.config.decimals=Dezimalstellen
+menu.config.reverse_direction=Richtung umkehren
+menu.config.live_convert=Live konvertieren
+menu.config.trace_control=Trace-Steuerung
+menu.config.language=Sprache...
+menu.config.always_on_top=Immer im Vordergrund
+menu.config.minimize_to_tray=In Infobereich minimieren
+menu.config.start_with_windows=Mit Windows starten
+menu.config.show_introduction=Einleitungen anzeigen
+menu.config.catalog_manager=Katalogverwaltung
+menu.tools=Extras
+menu.tools.wizard=WizardExpress
+menu.tools.calculator=Rechner
+menu.tools.nod_editor=NOD Editor
+menu.tools.trace=Trace
+menu.tools.show_intro=Einleitung erneut anzeigen
+menu.about=Info
+menu.about.syscalculator=Info zu Syscalculator
+
+toolbar.file=Datei:
+
+option.digit_group=Zifferngruppen
+option.decimals=Dezimalstellen
+option.live_convert=Live konvertieren
+
+language.ned=Nederlands
+language.eng=English
+language.restart_required=Sprache geaendert. Starten Sie Syscalculator neu, um alle Texte anzuwenden.
+
+status.ready=Bereit
+status.catalog_loaded=Konverterliste geladen.
+status.loaded=Geladen: {0}
+status.forward=Vorwaerts berechnet.
+status.reverse=Rueckwaerts berechnet.
+status.direction_reversed=Richtung umgekehrt.
+status.direction_normal=Richtung wiederhergestellt.
+status.start_with_windows_on=Syscalculator startet mit Windows.
+status.start_with_windows_off=Syscalculator startet nicht mehr mit Windows.
+status.show_introduction_on=Einleitungen werden angezeigt.
+status.show_introduction_off=Einleitungen werden ausgeblendet.
+status.calculator_to_input1=Rechner -> Eingabe 1.
+status.calculator_to_input2=Rechner -> Eingabe 2.
+status.calculator_disabled=Der Rechner ist nur fuer numerische Konverter verfuegbar.
+status.error=Fehler: {0}
+status.language_changed=Sprache geaendert.
+
+dialog.open_nod.title=NOD oeffnen
+dialog.open_nod.failed_title=NOD konnte nicht geladen werden
+dialog.open_nod.filter=NOD-Dateien (*.nod)|*.nod|Alle Dateien (*.*)|*.*
+dialog.error_title=Fehler
+dialog.intro_title=Einleitung
+dialog.no_intro=Dieser Konverter hat keinen Einleitungstext.
+dialog.about_title=Info zu Syscalculator 2.0
+dialog.about_text=Syscalculator 2.0 Beta\nNOD System 2.0\n\nBasierend auf der alten Syscalculator/NOD-Idee.
+dialog.tray_title=Syscalculator
+dialog.tray_message=Syscalculator laeuft im Infobereich.
+dialog.open_nod.file_not_found=Datei nicht gefunden: {0}
+dialog.language.title=Sprache waehlen
+dialog.language.search=Sprache suchen...
+dialog.language.ok=OK
+dialog.language.cancel=Abbrechen
+dialog.language.count={0} Sprachen
+
+calculator.title=Rechner
+calculator.title_input1=Rechner - Eingabe 1
+calculator.title_input2=Rechner - Eingabe 2
+calculator.copy=Kopieren
+calculator.paste=Einfuegen
+calculator.use=Verwenden
+calculator.use_close=Verwenden+Schliessen
+
+tray.show=Syscalculator anzeigen
+tray.hide=In Infobereich ausblenden
+tray.wizard=WizardExpress
+tray.calculator=Rechner
+tray.exit=Beenden
+
+trace.title=Berechnungstrace
+trace.none=Kein Trace verfuegbar.
+
+about.version_title=Versionsinformationen
+about.product_name=Produktname:
+about.version=Version:
+about.build=Buildnummer:
+about.release_date=Veroeffentlichungsdatum:
+about.copyright_title=Copyright
+about.rights=Alle Rechte vorbehalten.
+about.description_title=Beschreibung
+about.description_text=NOD-Konvertierungs- und Rechensystem fuer Temperatur, Gewichte, Masse, Waehrungsumrechnung und mehr. Schnell, genau und flexibel.
+about.website_title=Website
+about.email_title=E-Mail
+about.language_title=Sprache
+about.system_info=Systeminformationen...
+about.license=Lizenz...
+about.license_text=Syscalculator 2.0 Beta-Build. Interne Evaluierungslizenz.
+
+find.title=Suchen / Ersetzen
+find.find=Suchen
+find.next=Weiter
+find.replace=Ersetzen
+find.replace_button=Ersetzen
+find.match_case=Gross-/Kleinschreibung
+find.replace_all=Alle ersetzen
+find.close=Schliessen
+find.not_found=Nicht gefunden.
+find.replaced_count={0} Ersetzungen vorgenommen.
+
+catalog.title=Konverterkatalog
+catalog.column.name=Name
+catalog.column.nod_file=NOD-Datei
+catalog.column.default=Standard
+catalog.add=Hinzufuegen
+catalog.new_converter=Neuer Konverter
+catalog.choose_nod=NOD auswaehlen...
+catalog.save=Speichern
+
+editor.title=NOD Editor Plus
+editor.mode.advanced=Erweiterter Modus
+editor.tab.new=neu
+editor.menu.file=Datei
+editor.menu.file.new_tab=Neuer Tab
+editor.menu.file.open=Oeffnen...
+editor.menu.file.save=Speichern
+editor.menu.file.save_as=Speichern unter...
+editor.menu.file.close_tab=Tab schliessen
+editor.menu.file.recent_files=Zuletzt verwendete Dateien
+editor.menu.file.recent_empty=Keine zuletzt verwendeten Dateien
+editor.menu.file.close=Schliessen
+editor.menu.edit=Bearbeiten
+editor.menu.edit.undo=Rueckgaengig
+editor.menu.edit.redo=Wiederholen
+editor.menu.edit.cut=Ausschneiden
+editor.menu.edit.copy=Kopieren
+editor.menu.edit.paste=Einfuegen
+editor.menu.edit.select_all=Alles auswaehlen
+editor.menu.edit.find_replace=Suchen / Ersetzen
+editor.menu.tools=Extras
+editor.menu.tools.validate=Validieren
+editor.menu.tools.test=Test ausfuehren
+editor.menu.tools.repair=Zeilen reparieren
+editor.menu.tools.restore_original=Original wiederherstellen
+editor.menu.tools.repair_lines=Zeilen reparieren
+editor.menu.tools.recolor=Syntax neu faerben
+editor.menu.tools.example_celsius=Beispiel: Celsius
+editor.menu.tools.example_e2=Beispiel: e^2
+editor.menu.tools.example_sine=Beispiel: Sinus Grad
+editor.menu.view=Ansicht
+editor.menu.view.test_panel=Testbereich ein-/ausblenden
+editor.menu.view.live_preview=Live-Vorschau ein-/ausblenden
+editor.menu.view.simulator=Simulator ein-/ausblenden
+editor.menu.view.restore_panels=Panels wiederherstellen
+editor.menu.view.undock_test_panel=Testpanel losloesen
+editor.menu.view.dock_test_panel=Testpanel andocken
+editor.menu.view.undock_live_preview=Live-Vorschau losloesen
+editor.menu.view.dock_live_preview=Live-Vorschau andocken
+editor.graph.title=Graph-Vorschau
+editor.graph.copy_points=Punkte kopieren
+editor.graph.open_large=Große Grafik öffnen
+editor.graph.hide_table=Tabelle ausblenden
+editor.graph.show_table=Tabelle anzeigen
+editor.graph.reset_view=Ansicht zurücksetzen
+editor.graph.zoom_in=Vergrößern
+editor.graph.zoom_out=Verkleinern
+editor.graph.points=Punkte
+editor.graph.position_empty=Position: (-, -)
+editor.graph.position=Position: {0}
+editor.graph.step=Schritt
+editor.graph.step_positive=Schritt muss groesser als 0 sein.
+editor.graph.no_numeric_points=Keine numerischen Punkte. Uebersprungen: {0}.
+editor.graph.points_status=Punkte: {0}. Uebersprungen: {1}. Bereich: {2:0.####} bis {3:0.####}.
+editor.graph.error=Graph-Fehler: {0}
+editor.graph.disabled=Graph Preview deaktiviert
+editor.graph.disabled_chg=Graph Preview ist fuer chg-Konverter deaktiviert.
+editor.graph.disabled_trans=Graph Preview ist fuer trans-Konverter deaktiviert.
+editor.graph.disabled_math=Graph Preview ist nur fuer numerische math-Konverter verfuegbar.
+editor.menu.view.intro_preview=Einleitungsvorschau
+editor.menu.view.undock_simulator=Simulator abdocken
+editor.menu.view.dock_simulator=Simulator andocken
+editor.toolbar.new=Neu
+editor.toolbar.open=Oeffnen
+editor.toolbar.save=Speichern
+editor.toolbar.template_wizard=Vorlagen
+editor.toolbar.undo=Rueckgaengig
+editor.toolbar.redo=Wiederholen
+editor.toolbar.find=Suchen
+editor.toolbar.validate=Validieren
+editor.toolbar.test=Test
+editor.toolbar.solver_steps=Solver
+editor.toolbar.repair=Reparieren
+editor.toolbar.restore_original=Wiederherstellen
+editor.preview.title=Live-Vorschau
+editor.preview.dialog=Dialog
+editor.preview.input1=Eingabe1
+editor.preview.input2=Eingabe2
+editor.preview.sample=Beispiel
+editor.preview.result=Ergebnis
+editor.preview.format=Format
+editor.preview.intro=Einleitung
+editor.sim.title=Konverter-Simulator
+editor.sim.window_title=Konvertervorschau
+editor.sim.file=Datei:
+editor.sim.digit_group=Zifferngruppen
+editor.sim.decimals=Dezimalstellen
+editor.sim.current_converter=Aktueller Konverter
+editor.test.input=Testeingabe
+editor.test.output=Ausgabe
+editor.test.title=Konvertertest
+editor.test.formula=Formel
+editor.test.calculation=Berechnung
+editor.status.ready=Bereit
+editor.status.loaded=Geoeffnet: {0}
+editor.status.saved=Gespeichert: {0}
+editor.status.valid=NOD gueltig.
+editor.status.test_done=Test abgeschlossen.
+editor.status.lines_repaired=Zeilen repariert.
+editor.status.original_restored=Originaltext wiederhergestellt.
+editor.status.saved_short=Gespeichert
+help.main.page.nodeditor.screenshot_alt=Screenshot des NOD Editors mit Toolbar, Code-Editor und Befehlstipp.
+editor.status.position=Zeile {0}, Spalte {1}
+editor.status.lines=Zeilen {0}
+editor.dialog.open_title=NOD oeffnen
+editor.dialog.save_title=NOD speichern unter
+editor.dialog.filter=NOD-Dateien (*.nod)|*.nod|Alle Dateien (*.*)|*.*
+editor.dialog.close_dirty=Tab enthaelt ungespeicherte Aenderungen. Schliessen?
+editor.dialog.close_tab_title=Tab schliessen
+editor.dialog.validation_error=Validierungsfehler
+editor.dialog.test_error=Testfehler
+editor.dialog.no_intro=Kein Einleitungstext gefunden.
+
+wizard.title=WizardExpress
+wizard.forward=Vorwaerts
+wizard.reverse=Rueckwaerts
+wizard.paste=Aus Zwischenablage einfuegen
+wizard.convert=Konvertieren
+wizard.copy_output=Ausgabe in Zwischenablage
+wizard.hint=Links: Eingabe / rechts: Ausgabe. Tabellen mit Tabs bleiben erhalten.
+wizard.office365.warning=Office 365 / Microsoft 365 kann die Zwischenablage ueberschreiben. Nach der Konvertierung sofort Ctrl+V verwenden. LibreOffice Calc funktioniert OK.
+wizard.status.empty=Keine Eingabe
+wizard.status.ready=Bereit
+wizard.status.done=Konvertiert
+wizard.status.clipboard_overwritten=Excel hat die Zwischenablage ueberschrieben. Ctrl+V verwenden.
+wizard.excel_clipboard_overwritten.title=Excel Zwischenablage-Warnung
+wizard.excel_clipboard_overwritten.message=Excel hat die Zwischenablage ueberschrieben. Verwenden Sie Ctrl+V sofort nachdem WizardExpress den konvertierten Wert geschrieben hat. Wenn Einfuegen nicht klappt, kopieren Sie die Werte erneut aus Excel und starten Sie WizardExpress erneut.
+wizard.excel_clipboard_restored.message=Excel hat die Zwischenablage ueberschrieben. WizardExpress hat den konvertierten Wert wiederhergestellt. Verwenden Sie jetzt Ctrl+V. Wenn Einfuegen immer noch nicht klappt, kopieren Sie die Werte erneut aus Excel und starten Sie WizardExpress erneut.
+wizard.status.error=Mit Fehlern abgeschlossen
+
+editor.nod_help.suggestions=Vorschläge
+help.nod_screenshot.converter_name=Celsius nach Fahrenheit
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=Bedeutung:
+help.nod_screenshot.name_meaning=interner Konvertername.
+help.nod_screenshot.example_label=Beispiel:
+help.nod_screenshot.example_name=Name Postleitzahl zu Adresse Demo
+editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius nach Fahrenheit</div><div><b>Bedeutung:</b> interner Name des Converters.</div><div><b>Beispiel:</b> <code>Name Postleitzahl zu Adresse Demo</code>.</div>
+editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Benutzertitel</div><div><b>Bedeutung:</b> sichtbarer Titel oder Beschreibung für den Benutzer.</div><div><b>Beispiel:</b> <code>URLN Telefon-Umnummerung 1995 komplett</code>.</div>
+editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Bedeutung:</b> Beschriftung des Eingabewerts.</div><div><b>Beispiel:</b> <code>input1 Alte Telefonnummer</code>.</div>
+editor.nod_help.input2=<div class="title">input2</div><div class="syntax">input2 Fahrenheit</div><div><b>Bedeutung:</b> Beschriftung des Ausgabewerts.</div><div><b>Beispiel:</b> <code>input2 Neue Telefonnummer</code>.</div>
+editor.nod_help.symb1=<div class="title">Symb1</div><div class="syntax">Symb1 DM</div><div><b>Bedeutung:</b> Symbol links von input1.</div><div><b>Beispiel:</b> <code>Symb1 DM</code> zeigt <code>DM 25</code>.</div>
+editor.nod_help.symb2=<div class="title">Symb2</div><div class="syntax">Symb2 EUR</div><div><b>Bedeutung:</b> Symbol links von input2/Ausgabe.</div><div><b>Beispiel:</b> <code>Symb2 EUR</code> zeigt <code>EUR 12.78</code>.</div>
+editor.nod_help.symb3=<div class="title">Symb3</div><div class="syntax">Symb3 kg</div><div><b>Bedeutung:</b> Symbol rechts von input1.</div><div><b>Beispiel:</b> <code>Symb3 kg</code> zeigt <code>25 kg</code>.</div>
+editor.nod_help.symb4=<div class="title">Symb4</div><div class="syntax">Symb4 lb</div><div><b>Bedeutung:</b> Symbol rechts von input2/Ausgabe.</div><div><b>Beispiel:</b> <code>Symb4 lb</code> zeigt <code>55 lb</code>.</div>
+editor.nod_help.format=<div class="title">format</div><div class="syntax">format ##.00</div><div><b>Bedeutung:</b> steuert, wie viele Dezimalstellen angezeigt werden.</div><div><b>Beispiel:</b> <code>format ##.00</code> zeigt <code>12.50</code>.</div>
+editor.nod_help.mode=<div class="title">mode</div><div class="syntax">mode calculator</div><div><b>Bedeutung:</b> zusätzliche Einstellung für den Converter-Typ.</div><div><b>Beispiel:</b> <code>mode calculator</code>.</div>
+editor.nod_help.math=<div class="title">math</div><div class="syntax">math ans * 1.8</div><div><b>Bedeutung:</b> führt einen Rechenschritt aus; <code>ans</code> ist der aktuelle Wert.</div><div><b>Beispiel:</b> <code>math ans + 32</code> addiert 32.</div>
+editor.nod_help.chg=<div class="title">chg</div><div class="syntax">chg "alter-prefix","neuer-prefix"</div><div><b>Bedeutung:</b> ändert den Anfang eines Textes, zum Beispiel Codes oder Telefonnummern.</div><div><b>Beispiel:</b> <code>chg "01751-xxxxx","070-51xxxxx"</code> macht aus <code>01751-12345</code> den Wert <code>070-5112345</code>.</div><div><b>Muster:</b> <code>x</code> kann Ziffern erfassen. Bei mehreren Treffern gewinnt die längste/spezifischste Regel.</div>
+editor.nod_help.trans=<div class="title">trans</div><div class="syntax">trans "alter Wert","neuer Wert"</div><div><b>Bedeutung:</b> übersetzt einen exakten Textwert.</div><div><b>Beispiel:</b> <code>trans "hallo","hello"</code> übersetzt <code>hallo</code> nach <code>hello</code>.</div>
+
+editor.nod_help.trans.improved=<h2>Verbessertes trans: schlauer als NOD 1.0</h2><div class="notice improved"><b>Kompatibel:</b> klassisches NOD 1.0 <code>trans</code> versucht zuerst exakte Treffer. NOD 2.0 versucht erst danach einen kompakten, smarten Treffer.</div><table class="syntax-compare"><tr><th>Verhalten</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Beispiel</th></tr><tr><td>Exakter Wert</td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><code>trans "hallo","hello"</code></td></tr><tr><td>Groß-/Kleinschreibung ignorieren</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>Hallo</code> trifft <code>hallo</code></td></tr><tr><td>Leerzeichen, Punkte, Bindestriche und Unterstrich ignorieren</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>dank_je</code>, <code>dank je</code> und <code>dank-je</code> können dieselbe Regel treffen</td></tr><tr><td>Mehrdeutiger smarter Treffer</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>Bei zwei kompakten Treffern wird nicht still falsch übersetzt; die Eingabe bleibt stehen.</td></tr></table>
+editor.nod_help.reverse=<div class="title">reverse</div><div class="syntax">reverse ans / 1.8</div><div><b>Bedeutung:</b> manuelle Rückrechnungsregel.</div><div><b>Beispiel:</b> zu <code>math ans * 1.8</code> passt <code>reverse ans / 1.8</code>.</div>
+editor.nod_help.field=<div class="title">field</div><div class="syntax">field Spaltenname</div><div><b>Bedeutung:</b> startet eine Datenfeld-Definition.</div><div><b>Beispiel:</b> <code>field Phone</code>.</div>
+editor.nod_help.table=<div class="title">table</div><div class="syntax">table Tabellenname</div><div><b>Bedeutung:</b> Name der Quelltabelle.</div><div><b>Beispiel:</b> <code>table Customers</code>.</div>
+editor.nod_help.output=<div class="title">output</div><div class="syntax">output ErgebnisSpalte</div><div><b>Bedeutung:</b> Name des Ausgabefeldes.</div><div><b>Beispiel:</b> <code>output PhoneNew</code>.</div>
+editor.nod_help.phoneformat=<div class="title">phoneformat</div><div class="syntax">phoneformat country NL</div><div><b>Bedeutung:</b> normalisiert Telefonnummern innerhalb eines <code>field</code>-Blocks in <code>mode data</code>.</div><div><b>Beispiel:</b> <code>phoneformat remove_spaces true</code> entfernt Leerzeichen; <code>phoneformat normalize_international true</code> normalisiert niederländische internationale Schreibweise.</div>
+editor.nod_help.lookup=<div class="title">lookup</div><div class="syntax">lookup Countries</div><div><b>Bedeutung:</b> startet eine Nachschlage-Definition.</div><div><b>Beispiel:</b> <code>lookup Countries</code>.</div>
+editor.nod_help.match=<div class="title">match</div><div class="syntax">match code = NL</div><div><b>Bedeutung:</b> beschreibt, wie ein Lookup gefunden wird.</div><div><b>Beispiel:</b> <code>match postcode = 2566GB</code>.</div>
+editor.nod_help.given=<div class="title">given</div><div class="syntax">given x = 10</div><div><b>Bedeutung:</b> bekannter Wert für eine Gleichung.</div><div><b>Beispiel:</b> <code>given y = 20</code>.</div>
+editor.nod_help.equation=<div class="title">equation</div><div class="syntax">equation y = x * 2</div><div><b>Bedeutung:</b> definiert eine Gleichung.</div><div><b>Beispiel:</b> <code>equation y = x * 2</code>.</div>
+editor.nod_help.solve=<div class="title">solve</div><div class="syntax">solve x</div><div><b>Bedeutung:</b> sagt, welche Variable gelöst werden soll.</div><div><b>Beispiel:</b> <code>solve x</code>.</div>
+editor.nod_help.constraint=<div class="title">constraint</div><div class="syntax">constraint x >= 0</div><div><b>Bedeutung:</b> Bedingung für eine Lösung.</div><div><b>Beispiel:</b> <code>constraint x >= 0</code> verhindert negative Lösungen.</div>
+editor.nod_help.preview=<div class="title">preview</div><div class="syntax">preview Beispieltext</div><div><b>Bedeutung:</b> Text für Vorschau oder Beispieldarstellung.</div><div><b>Beispiel:</b> <code>preview Gib 2566 GB 241 ein</code>.</div>
+editor.nod_help.backup=<div class="title">backup</div><div class="syntax">backup true</div><div><b>Bedeutung:</b> Kompatibilitätseinstellung aus älteren NOD-Dateien.</div><div><b>Beispiel:</b> <code>backup true</code>.</div>
+editor.nod_help.indoprint=<div class="title">indoprint</div><div class="syntax">indoprint Einführungstext</div><div><b>Bedeutung:</b> eine Zeile Einführungstext, die vor der Nutzung gezeigt wird.</div><div><b>Beispiel:</b> <code>indoprint Dieser Converter nutzt die Decibel-Tabelle.</code> Danach mit <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a> schließen.</div>
+editor.nod_help.indoend=<div class="title">indoend</div><div class="syntax">indoend</div><div><b>Bedeutung:</b> Ende eines Einführungstextblocks.</div><div><b>Beispiel:</b> <code>indoprint Hilfetext</code> gefolgt von <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</div>
+editor.nod_help.end=<div class="title">end</div><div class="syntax">end</div><div><b>Bedeutung:</b> Ende der NOD-Datei.</div><div><b>Beispiel:</b> <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> als letzte Zeile setzen.</div>
+editor.nod_help.insert=Einfügen
+editor.nod_insert.indoprint=indoprint Einführungstext\nindoend
+editor.menu.help=Help
+editor.menu.help.nod=NOD help
+
+editor.menu.help.about=Info zum NOD-Editor
+editor.nod_help.more=Mehr Hilfe
+editor.nod_help.full.title=NOD-Hilfe
+editor.nod_help.full.keyword_title=Befehlsreferenz
+editor.nod_help.full.intro=<p><b>NOD</b> ist die Sprache, mit der Syscalculator-Converter beschrieben werden. Eine NOD-Datei legt fest, wie das Fenster heißt, welche Felder sichtbar sind, welche Symbole neben Werten stehen und welche Regeln die Umrechnung ausführen.</p><p>Der NOD-Editor macht das sichtbar: beim Tippen erscheinen Vorschläge, Rechtsklick zeigt Befehlshilfe, unten testest du Eingaben und rechts zeigt die Vorschau das Converterfenster.</p>
+editor.nod_help.full.structure=<h2>Grundstruktur</h2><pre>Name Celsius nach Fahrenheit&#13;&#10;URLN Celsius nach Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre>
+editor.nod_help.full.symbols=<h2>Symbole</h2><table><tr><th>Befehl</th><th>Position</th><th>Beispiel</th></tr><tr><td>Symb1</td><td>links von input1</td><td>DM 25</td></tr><tr><td>Symb2</td><td>links von input2/Ausgabe</td><td>EUR 25</td></tr><tr><td>Symb3</td><td>rechts von input1</td><td>25 kg</td></tr><tr><td>Symb4</td><td>rechts von input2/Ausgabe</td><td>25 lb</td></tr></table><p>Wähle pro Wert meistens links oder rechts, nicht beides. Sonst entsteht doppelte Anzeige wie <code>DM 25 DM</code>.</p>
+editor.nod_help.full.commands=<h2>Wichtige Befehle</h2><ul><li><b>math</b>: rechnet mit <code>ans</code>.</li><li><b>trans</b>: übersetzt exakte Textwerte.</li><li><b>chg</b>: ändert Anfangstext/Prefix; unterstützt auch <code>x</code>-Muster wie <code>050-2xxxxx</code>. Die spezifischste Regel gewinnt.</li><li><b>indoprint ... indoend</b>: Einführungstextblock. <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a> nicht vergessen.</li><li><b>end</b>: schließt die NOD-Datei ab.</li></ul>
+editor.nod_help.full.workflow=<h2>Arbeitsweise</h2><ol><li>Beginne mit <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> und <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>; dann hat der Converter einen Namen und sichtbare Beschriftungen.</li><li>Wähle optional Symbole mit <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> bis <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a>. Benutze pro Wert links oder rechts, nicht beides.</li><li>Füge Umrechnungsregeln hinzu: <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> für Berechnungen, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> für exakte Textübersetzung, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> für Prefix- oder Musteränderungen.</li><li>Nutze <b>Validieren</b> oder F5 für Syntaxprüfung und <b>Test</b> oder F6 für das Ergebnis.</li><li>Setze <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> ans Ende.</li></ol>
+editor.nod_help.full.examples=<h2>Beispiele nach NOD-Typ</h2><p>NOD-Dateien können verschiedene Arten von Convertern beschreiben. Wähle das Muster, das zu deinem Werkzeug passt.</p><h3>1. Rechentool mit math</h3><p>Für Zahlen: Temperatur, Abstand, Gewicht, Währung, Prozent.</p><pre>Name Celsius nach Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><h3>2. Übersetzungstool mit trans</h3><p>Benutze dies, wenn die ganze Eingabe exakt einem bekannten Wert entsprechen muss. Alt und neu werden mit Komma getrennt. Werte mit Leerzeichen oder Komma kommen in Anführungszeichen.</p><pre>Name Postleitzahl zu Adresse Demo&#13;&#10;input1 Postleitzahl Hausnummer&#13;&#10;input2 Adresse&#13;&#10;trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;end</pre><h3>3. Prefix-/Muster-Tool mit chg</h3><p>Benutze <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>, wenn nur der Anfang oder ein Muster geändert wird. <code>x</code>-Muster sind erlaubt, nützlich für alte Telefon-Umnummerungstabellen.</p><pre>Name Operation Decibel Beispiel&#13;&#10;input1 Alte Telefonnummer&#13;&#10;input2 Neue Telefonnummer&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;chg "050-2xxxxx","050-52xxxxx"&#13;&#10;end</pre><h3>4. Tool mit Symbolen links/rechts</h3><p>Symbole zeigen Einheiten sauber im Fenster. Wähle pro Wert links oder rechts.</p><pre>Name Deutsche Mark nach Euro&#13;&#10;input1 Mark&#13;&#10;input2 Euro&#13;&#10;Symb1 DM&#13;&#10;Symb2 EUR&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre><h3>5. Einführungstext mit indoprint</h3><p>Damit sieht der Benutzer zuerst eine Erklärung.</p><pre>indoprint Dieser Converter rechnet Celsius nach Fahrenheit.&#13;&#10;indoprint Gib eine Temperatur in Grad Celsius ein.&#13;&#10;indoend</pre><h3>6. Gleichung lösen mit equation</h3><p>Für formelartige Probleme, bei denen eine unbekannte Variable gelöst werden soll.</p><pre>Name Gleichung lösen&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre><h3>7. Beispiel wie im Fenster</h3><p>Dieses Beispiel zeigt, wo Beschriftungen, Eingabe, Ergebnis und Symbole im Fenster erscheinen.</p><div class="dialog-example"><div class="dialog-title">EuroCalculator</div><div class="dialog-menu"><span>Datei</span><span>Bearbeiten</span><span>Config</span><span>Extra</span><span>Über</span></div><div class="dialog-body"><div class="dialog-row"><span></span><div class="dialog-label">Wert in Deutscher Mark</div><span></span></div><div class="dialog-row"><span class="dialog-radio on"></span><div class="dialog-input">22</div><div class="dialog-symbol">DM</div></div><div class="dialog-row"><span></span><div class="dialog-label">Wert in Euro</div><span></span></div><div class="dialog-row"><span class="dialog-radio"></span><div class="dialog-input">11.25</div><span></span></div><div class="dialog-options"><span>□ Gruppieren</span><span>☑ Dezimalen</span><span>2</span></div></div></div><pre>Name Deutsche Mark nach Euro&#13;&#10;input1 Wert in Deutscher Mark&#13;&#10;input2 Wert in Euro&#13;&#10;Symb3 DM&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre>
+editor.nod_help.full.troubleshooting=<h2>Häufige Fehler</h2><ul><li><b>Doppelte Symbole:</b> benutze nicht links und rechts für denselben Wert, sonst entsteht Text wie <code>DM 25 DM</code>.</li><li><b>Einführung ohne Ende:</b> jeden <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>-Block mit <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a> schließen.</li><li><b>Math ohne ans:</b> benutze <code>ans</code> als aktuellen Wert, zum Beispiel <code>math ans * 100</code>.</li><li><b>Kein end:</b> setze <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> ans Dateiende.</li><li><b>Komma/Punkt:</b> Dezimalzahlen können oft mit Komma oder Punkt funktionieren; immer mit F6 testen.</li></ul>
+editor.nod_help.page.workflow=Arbeitsweise
+editor.nod_help.page.history=Geschichte
+editor.nod_help.page.structure=Grundstruktur
+editor.nod_help.page.symbols=Symbole
+editor.nod_help.page.commands=Wichtige Befehle
+editor.nod_help.page.examples=Beispiele
+editor.nod_help.page.troubleshooting=Häufige Fehler
+
+
+editor.nod_help.chg.extra=<h2>chg-Beispiele</h2><p><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> ändert den Anfang oder ein Muster eines Textes. Das ist nützlich für Telefonnummern, Codes, Präfixe und alte Umnummerungstabellen.</p><div class="notice"><b>Struktur:</b> links steht, was gesucht wird; rechts steht die neue Form. Benutze Anführungszeichen bei Leerzeichen, Kommas oder Sonderzeichen.</div><details open><summary>Präfix ersetzen</summary><table><tr><th>Ziel</th><th>Regel</th><th>Beispiel</th></tr><tr><td>Altes Präfix zu neuem Präfix</td><td><code>chg "01751","07051"</code></td><td><code>0175112345</code> wird <code>0705112345</code></td></tr><tr><td>Mit Bindestrich</td><td><code>chg "01751-","070-51"</code></td><td><code>01751-12345</code> wird <code>070-5112345</code></td></tr><tr><td>Spezifische Regeln zuerst</td><td>lange/spezielle Regeln oben setzen</td><td>So wird die richtige Regel zuerst gefunden.</td></tr></table></details><details><summary>Muster mit x</summary><p>In NOD 2.0 kann <code>x</code> eine Ziffer aufnehmen und rechts wieder einsetzen. Leerzeichen und Bindestriche links dienen nur der Lesbarkeit.</p><pre>chg "0183x-xx xx","0183-x0 xx xx"</pre><p><code>01835-1234</code> wird <code>0183-501234</code>.</p></details><details><summary>Häufige chg-Fehler</summary><ul><li>Eine allgemeine Regel über eine spezifische Regel setzen.</li><li>Das Komma zwischen alt und neu vergessen.</li><li>Leerzeichen oder Kommas ohne Anführungszeichen verwenden.</li><li><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> verwenden, obwohl der ganze Wert exakt übersetzt werden muss; dann <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> nehmen.</li></ul></details>
+editor.nod_help.math.extra=<h2>Math kurz erklärt</h2>&#13;&#10;<p><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> rechnet mit <code>ans</code>. In der ersten Zeile ist <code>ans</code> der Eingabewert; danach ist <code>ans</code> immer das vorherige Ergebnis.</p>&#13;&#10;<div class="notice"><b>Struktur:</b> Wähle zuerst die Art der Berechnung und schreibe dann die passende Syntax. Bei größeren Formeln helfen Klammern oder mehrere <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>-Zeilen.</div>&#13;&#10;<div class="math-flow"><span class="math-pill">1. Grundrechenarten</span><span class="math-pill">2. Funktionen</span><span class="math-pill">3. Komplexe Formel</span><span class="math-pill">4. Diff, Integral, Limit</span></div>&#13;&#10;<h2>Syntax nach Gruppe</h2>&#13;&#10;<details open><summary>Grundrechenarten</summary><table><tr><th>Ziel</th><th>Syntax</th><th>Beispiel</th></tr><tr><td>Addieren</td><td><code>math ans + Zahl</code></td><td><code>math ans + 32</code></td></tr><tr><td>Subtrahieren</td><td><code>math ans - Zahl</code></td><td><code>math ans - 10</code></td></tr><tr><td>Multiplizieren</td><td><code>math ans * Faktor</code></td><td><code>math ans * 1.8</code></td></tr><tr><td>Dividieren</td><td><code>math ans / Faktor</code></td><td><code>math ans / 1.95583</code></td></tr></table><div class="example-grid"><div class="example-card"><h3>Beispiel: Euro in Cent</h3><pre>Name Euro in Cent&#13;&#10;input1 Euro&#13;&#10;input2 Cent&#13;&#10;format #.00&#13;&#10;math ans * 100&#13;&#10;end</pre></div><div class="example-card"><h3>Beispiel: Rabatt</h3><pre>Name Preis minus Rabatt&#13;&#10;input1 Preis&#13;&#10;input2 Neuer Preis&#13;&#10;format #.00&#13;&#10;math ans - 10&#13;&#10;end</pre></div></div></details>&#13;&#10;<details><summary>Funktionen und Konstanten</summary><table><tr><th>Gruppe</th><th>Syntax</th><th>Hinweis</th></tr><tr><td>Potenz</td><td><code>math ans^2</code> oder <code>math pow(ans,3)</code></td><td>Quadrat, Kubikzahl und mehr.</td></tr><tr><td>Wurzel</td><td><code>math sqrt(ans)</code></td><td>Auch in größeren Formeln nutzbar.</td></tr><tr><td>Pi und e</td><td><code>math pi * ans^2</code><br><code>math e^ans</code></td><td>Kreis und Exponentialrechnung.</td></tr><tr><td>Logarithmus</td><td><code>math log(ans)</code><br><code>math log(ans,2)</code><br><code>math ln(ans)</code></td><td><code>log(ans)</code> ist log10.</td></tr><tr><td>Grad</td><td><code>math sind(ans)</code><br><code>math cosd(ans)</code><br><code>math tand(ans)</code></td><td>Für Radiant: <code>sin/cos/tan</code>.</td></tr></table></details>&#13;&#10;<details><summary>Komplexe Formeln</summary><p>Setze Klammern, wenn die Reihenfolge wichtig ist. Schreibe Multiplikation immer ausdrücklich mit <code>*</code>.</p><pre>math sqrt(ans^2 + 25)&#13;&#10;math ((ans + 10) * 2) / 3&#13;&#10;math ans * (1 + 0.04)^5</pre><div class="example-grid"><div class="example-card"><h3>Beispiel: Pythagoras</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>c</mi><mo>=</mo><msqrt><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mn>5</mn><mn>2</mn></msup></mrow></msqrt></mrow></math></div><pre>Name Hypotenuse&#13;&#10;input1 Seite a&#13;&#10;input2 Seite c&#13;&#10;format #.00&#13;&#10;math sqrt(ans^2 + 25)&#13;&#10;end</pre><p>Hier ist <code>ans</code> die Seite <code>a</code>; die andere Seite ist fest <code>5</code>.</p></div></div></details>&#13;&#10;<details><summary>Calculus: diff, integral, limit</summary><table><tr><th>Ziel</th><th>Syntax</th><th>Bedeutung</th></tr><tr><td>Ableitung</td><td><code>math diff ans^2</code></td><td>Numerische Steigung beim Eingabewert.</td></tr><tr><td>Integral</td><td><code>math integral 0,1 ans^2</code></td><td>Numerische Fläche von 0 bis 1.</td></tr><tr><td>Grenzwert</td><td><code>math limit 0 sin(ans)/ans</code></td><td>Näherung des Grenzwerts um 0.</td></tr></table><div class="notice"><b>Wichtig:</b> Das ist numerisch, keine symbolische CAS-Ausgabe.</div></details>&#13;&#10;<h2>Häufige math-Fehler</h2><ul><li><code>ans</code> vergessen: schreibe <code>math ans * 100</code>.</li><li>Zu viel in eine Zeile packen, wenn mehrere Schritte klarer sind.</li><li><code>sin</code> verwenden, obwohl Grad gemeint sind; dann <code>sind</code> nutzen.</li></ul>
+editor.nod_help.mode.extra=<h2>Wann benutzt man mode?</h2><p><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> sagt, welche Art NOD-Datei du machst. Für normale Umrechner ist <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> meist nicht nötig; ohne <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> arbeitet die Datei als normaler Converter.</p><div class="notice"><b>Faustregel:</b> Nutze <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> nur für besondere Typen wie Datenverarbeitung oder Gleichungslösung.</div><details open><summary>Häufige Modi</summary><table><tr><th>Modus</th><th>Verwendung</th><th>Wichtige Befehle</th></tr><tr><td><code>mode calculator</code></td><td>Normaler Umrechner oder Rechenhilfe.</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr><tr><td><code>mode data</code></td><td>Zeilen oder Felder einer Tabelle verarbeiten.</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td></tr><tr><td><code>mode equation</code></td><td>Eine Gleichung lösen.</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a></td></tr></table></details><details><summary>Beispiel: normaler Converter</summary><pre>Name Celsius nach Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format #.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><p>Hier ist <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> nicht erforderlich.</p></details><details><summary>Beispiel: Datenverarbeitung</summary><pre>Name Telefone bereinigen&#13;&#10;mode data&#13;&#10;table customers&#13;&#10;field phone&#13;&#10;phoneformat country NL&#13;&#10;output phone_new&#13;&#10;end</pre></details><details><summary>Beispiel: Gleichung lösen</summary><pre>Name Gleichung lösen&#13;&#10;mode equation&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre></details>
+editor.nod_help.trans.extra=<h2>trans-Beispiele</h2><p><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> übersetzt einen vollständigen Wert. Es ist gedacht für Wörter, feste Codes, Statuswerte, Postleitzahlen oder kurze Listen.</p><div class="notice"><b>Struktur:</b> <code>trans "alter Wert","neuer Wert"</code>. Die Eingabe muss vollständig mit der linken Seite übereinstimmen.</div><details open><summary>Exakten Text übersetzen</summary><table><tr><th>Ziel</th><th>Regel</th><th>Ergebnis</th></tr><tr><td>Wort übersetzen</td><td><code>trans "hallo","hello"</code></td><td><code>hallo</code> wird <code>hello</code></td></tr><tr><td>Status übersetzen</td><td><code>trans "offen","in Bearbeitung"</code></td><td><code>offen</code> wird <code>in Bearbeitung</code></td></tr><tr><td>Adresse nachschlagen</td><td><code>trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"</code></td><td>Postleitzahl + Hausnummer wird Adresse.</td></tr></table></details><details><summary>Wann trans, wann chg?</summary><table><tr><th>Befehl</th><th>Wann</th><th>Beispiel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>Der ganze Eingabewert ist exakt bekannt.</td><td><code>hallo</code> zu <code>hello</code></td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>Nur Anfang oder Muster ändert sich.</td><td><code>01751-xxxxx</code> zu <code>070-51xxxxx</code></td></tr></table></details><details><summary>Häufige trans-Fehler</summary><ul><li>Richtung verwechseln: links ist Eingabe, rechts ist Ausgabe.</li><li>Teiltreffer erwarten; dafür <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> verwenden.</li><li>Komma im Wert ohne Anführungszeichen benutzen.</li><li>Doppelte Übersetzungen für dieselbe Eingabe anlegen.</li></ul></details>
+editor.nod_help.full.classic=<h2>NOD-Editor Einführung</h2><p>Der NOD-Editor ist die Werkstatt für Converter. Oben steht der Code, unten testest du Eingabe und Ergebnis, rechts zeigt die Live-Vorschau Beschriftungen, Symbole, Einführungstext und Resultate.</p><h2>Klassisch 1.73 gegenüber NOD 2.0</h2><table><tr><th>Syscalculator 1.73 / NOD 1.0</th><th>Syscalculator 2.0 / NOD-Editor</th></tr><tr><td>Klassische Textdateien mit <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>, <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> und <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</td><td>Diese Basis bleibt erhalten, damit alte NOD-Dateien wiedererkennbar bleiben.</td></tr><tr><td>Symbole musste man oft auswendig prüfen und danach im alten Rechner testen.</td><td>Die Vorschau zeigt sofort <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> bis <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> links oder rechts der Werte.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> war klassische Prefix-Ersetzung, nützlich für alte Telefonnummern.</td><td>Altes <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> bleibt kompatibel; NOD 2.0 ergänzt Muster mit <code>x</code>-Capture.</td></tr><tr><td>Hilfe kam vor allem aus Beispielen und Erfahrung.</td><td>Der Editor hat Vorschläge, Rechtsklick-Hilfe, mehrere Hilfeseiten und Beispiele pro NOD-Typ.</td></tr></table><h2>Syntax: vollständige Übersicht NOD 1.0 und NOD 2.0</h2><p>Diese Tabelle zeigt, welche Syntax aus klassischen NOD-Dateien stammt und was in NOD 2.0 ergänzt wurde.</p><table class="syntax-compare"><tr><th>Syntax / Funktion</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Hinweis</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Name/Titel des Converters.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:urln"><code>URLN</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Referenz- oder Quellenzeile bleibt unterstützt.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Beschriftungen für Eingabe und Ausgabe.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:result"><code>Result</code></a>, <a class="cmd-link" href="nodpage:cmd:resfou"><code>Resfou</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Ergebnisbezeichnung und Fehlertext.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Symbols left/right of input and output; NOD 2.0 shows them in preview.</td></tr><tr><td><code>format #.00</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Zahlenformatierung bleibt gleich.</td></tr><tr><td><code>mode calculator</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>NOD 2.0 uses <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> for special file types; normal converters also work without mode.</td></tr><tr><td><code>mode data</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Für Tabellen- und Feldverarbeitung.</td></tr><tr><td><code>mode equation</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>For solving equations with <a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>.</td></tr><tr><td><code>math ans * 1.8</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Classic calculation with <code>ans</code>.</td></tr><tr><td><code>math sqrt(ans^2 + 25)</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Erweiterte Formeln und Funktionen in NOD 2.0.</td></tr><tr><td><code>chg "01751-","070-51"</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Klassische Prefix-Ersetzung funktioniert weiter.</td></tr><tr><td><code>chg "0183x-xx xx","0183-x0 xx xx"</code></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Neu in NOD 2.0: Muster mit <code>x</code>-Capture.</td></tr><tr><td><code>trans "old","new"</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Exakte Textübersetzung bleibt kompatibel.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Umgekehrte Richtung eines Converters.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>NOD 2.0 data converters with fields and output construction.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Format phone numbers in data/number converters.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:lookup"><code>lookup</code></a>, <a class="cmd-link" href="nodpage:cmd:match"><code>match</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Tabellen nachschlagen oder Werte verbinden.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Gleichungen mit Bedingungen lösen.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:preview"><code>preview</code></a>, <a class="cmd-link" href="nodpage:cmd:backup"><code>backup</code></a></td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Editor- und Sicherheitsinformationen für NOD-2.0-Dateien.</td></tr><tr><td><code>indoprint ... indoend</code></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Einführungstext bleibt unterstützt.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td>Schließt die NOD-Datei.</td></tr><tr><td>Live preview, suggestions, right-click help</td><td><span class="no">×</span></td><td><span class="yes">✓</span></td><td>Das ist Editorhilfe, keine alte Runtime-Syntax.</td></tr></table><h2>Was bleibt gleich?</h2><ul><li>Befehle bleiben zeilenbasiert und lesbar.</li><li><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> schließt die Datei.</li><li>Ein einfacher Converter bleibt kurz: Name, Labels, Format und wenige Regeln.</li></ul><h2>Was ist neu?</h2><ul><li>Live-Vorschau und Converter-Simulator.</li><li>Graph Preview für Diagramme von math-Convertern.</li><li>Vorschläge beim Tippen.</li><li>Ausführlichere Hilfe pro Befehl.</li><li>Mehr Beispiele für <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>, Symbole und <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>.</li></ul>
+editor.nod_help.page.classic=NOD-Editor Einführung
+formula_card.title=Formulekaart
+formula_card.count=Formulekaarten
+formula_card.details_header=Details, export en voorbeeld-NOD
+formula_card.copy_mathml=Kopieer MathML
+formula_card.copy_latex=Kopieer LaTeX
+formula_card.copy_nod=Kopieer NOD
+formula_card.copy_text=Kopieer tekst
+formula_card.webview_error=WebView2 kon niet starten.
+formula_card.subtitle=Formulekaart voor leren, PWS en export
+formula_card.section_formula=Formule
+formula_card.section_explanation=Uitleg
+formula_card.section_example_nod=Voorbeeld-NOD
+formula_card.table_formula=Formule
+formula_card.table_level=Niveau
+formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
+formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
+formula_card.table_use=Wanneer?
+
+common.yes=Ja
+common.no=Nein
+clipboard.debug.window_title=Clipboard debug
+clipboard.debug.cells=Zellen
+clipboard.debug.details=Details
+clipboard.debug.summary_format=Zeilen {0}  |  Spalten {1}  |  Text {2} Zeichen
+clipboard.debug.report_title=Clipboard-Bericht
+clipboard.debug.report_subtitle=Uebersicht des aktuellen Clipboard-Inhalts.
+clipboard.debug.report_date_culture=de-DE
+clipboard.debug.report_date_format=d. MMMM yyyy
+clipboard.debug.summary=Zusammenfassung
+clipboard.debug.formats=Formate
+clipboard.debug.preview=Vorschau
+clipboard.debug.preview_rows_all={0} Zeilen angezeigt
+clipboard.debug.preview_rows_limited=Erste {0} von {1} Zeilen angezeigt
+clipboard.debug.owner=Besitzer
+clipboard.debug.text_length=Textlaenge
+clipboard.debug.text_length_value={0} Zeichen
+clipboard.debug.rows=Zeilen
+clipboard.debug.columns=Spalten
+clipboard.debug.same_last_seen=Gleich wie zuletzt gesehen
+clipboard.debug.same_converted=Gleich wie Konvertierung
+clipboard.debug.no_formats=Keine Clipboard-Formate gefunden.
+clipboard.debug.none=Keine
+clipboard.debug.mail_button=Bericht per E-Mail...
+clipboard.debug.mail_subject={0} Clipboard-Diagnose
+clipboard.debug.mail_intro=Bitte sehen Sie sich diese Clipboard-Diagnose an.
+clipboard.debug.mail_paste_report=Der vollstaendige Bericht wurde in die Zwischenablage kopiert. Fuegen Sie ihn mit Ctrl+V in diese E-Mail ein.
+clipboard.debug.mail_failed=E-Mail-Programm konnte nicht geoeffnet werden: {0}
+clipboard.debug.copy_button=Bericht kopieren
+clipboard.debug.report_copied=Bericht in die Zwischenablage kopiert.
+clipboard.debug.copy_failed=Bericht konnte nicht in die Zwischenablage kopiert werden.
+clipboard.debug.conversion=Konvertierung
+clipboard.debug.conversion_rows=Konvertierte Zeilen
+clipboard.debug.conversion_cells=Zellen
+clipboard.debug.conversion_success=Konvertiert
+clipboard.debug.conversion_errors=Fehler
+clipboard.debug.save_pdf_button=PDF speichern...
+clipboard.debug.pdf_filter=PDF-Dateien (*.pdf)|*.pdf|Alle Dateien (*.*)|*.*
+clipboard.debug.save_pdf_title=Diagnosebericht speichern
+clipboard.debug.pdf_saved=PDF-Bericht gespeichert.
+clipboard.debug.pdf_failed=PDF-Bericht konnte nicht gespeichert werden: {0}
+clipboard.debug.before=Vorher
+clipboard.debug.after=Nachher
+clipboard.debug.before_after=Vorher / Nachher
+clipboard.debug.used_rule=Verwendete Regel
+clipboard.debug.formula=Formel
+clipboard.debug.mathml=MathML
+clipboard.debug.mathml_available=MathML im kopierten/gemailten Bericht verfuegbar.
+clipboard.debug.formula_input=Eingabe
+help.main.page.applications.title=Anwendungen
+help.main.page.applications.body=<p>WizardExpress kann mit mehreren Anwendungen verwendet werden, aber das Verhalten der Zwischenablage ist je Programm unterschiedlich.</p><h2>Funktioniert gut mit</h2><ul><li>normalen Textprogrammen</li><li>LibreOffice Calc</li></ul><p>Fuer Tabellen sind einfache Werte ohne zusaetzliche Symbole meist am sichersten.</p><h2>Excel / Microsoft 365</h2><p>Microsoft Excel kann Zwischenablagedaten anders behandeln als Textprogramme und LibreOffice Calc.</p><ul><li>Excel verwendet oft reichere Office-Zwischenablageformate.</li><li>WizardExpress leert die Zwischenablage und schreibt das konvertierte Ergebnis neu zurueck.</li><li>Dadurch kann Excel sich nach der Konvertierung anders verhalten.</li></ul><div class="warning"><b>Excel-Zwischenablage:</b> fuegen Sie nach WizardExpress sofort mit <b>Ctrl+V</b> ein. Vermeiden Sie Rechtsklick-Einfuegen in Excel, weil Excel die konvertierten Daten durch seinen eigenen Zwischenablagezustand ersetzen kann.</div><p>Wenn Einfuegen in Excel schwierig ist, probieren Sie LibreOffice Calc, arbeiten Sie ueber Dateien oder verwenden Sie normales Werte-Einfuegen.</p>
+help.main.page.intro.title=Start
+help.main.page.intro.body=<p><b>Syscalculator 2.0</b> ist fuer schnelle Umrechnungen gedacht. Waehlen Sie einen Konverter, geben Sie einen Wert ein und lesen Sie das Ergebnis. Fuer schnelle Zwischenablage-Arbeit verwenden Sie WizardExpress. Zum Erstellen oder Anpassen von Konvertern verwenden Sie den NOD Editor.</p><p>Diese Hilfe folgt der praktischen Reihenfolge der klassischen Syscalculator-1.74-Hilfe, mit Zusatzhinweisen fuer die moderne 2.0-Daily-Version.</p><ul><li><a href="nodpage:main">Wert umrechnen</a></li><li><a href="nodpage:fields">Felder, Bearbeiten und Zwischenablage</a></li><li><a href="nodpage:wizard">WizardExpress</a></li><li><a href="nodpage:calculator">Rechner</a></li><li><a href="nodpage:configuration">Konfiguration</a></li><li><a href="nodpage:window">Fenster, Tray und Dezimalstellen</a></li><li><a href="nodpage:nodfiles">NOD-Dateien und Katalog</a></li><li><a href="nodpage:applications">Anwendungen</a></li><li><a href="nodpage:support">Begrenzungen und Support</a></li></ul>
+help.main.page.main.title=Wert umrechnen
+help.main.page.main.body=<p>Das Hauptfenster ist der normale Konverterbildschirm. Der gewaehlte Konverter bestimmt, was das erste und zweite Feld bedeuten.</p><ol><li>Waehlen Sie oben einen Konverter aus der Liste.</li><li>Geben Sie den Ausgangswert in das erste Feld ein.</li><li>Druecken Sie <b>Enter</b>, oder verwenden Sie Live-Umrechnung, wenn sie aktiviert ist.</li><li>Lesen Sie den umgerechneten Wert im zweiten Feld.</li></ol><p>Wenn <b>Richtung umkehren</b> aktiviert ist, vertauscht Syscalculator die Bedeutung der Felder, damit Sie zurueckrechnen koennen.</p><p>Wenn der Konverter eine Einfuehrung enthaelt, kann Syscalculator sie beim ersten Oeffnen anzeigen. Verwenden Sie <b>Extras &gt; Einfuehrung erneut anzeigen</b>, wenn Sie sie nochmals lesen moechten.</p>
+help.main.page.fields.title=Felder, Bearbeiten und Zwischenablage
+help.main.page.fields.body=<p>Die Eingabe- und Ausgabefelder verhalten sich wie normale Windows-Textfelder. Das aktive Feld ist das Feld mit Cursor oder Auswahl.</p><h2>Felder bearbeiten</h2><ul><li><b>Ausschneiden / Kopieren / Loeschen</b> wirken auf den ausgewaehlten Text im aktiven Feld.</li><li><b>Einfuegen</b> fuegt Zwischenablage-Text in das aktive Feld ein.</li><li><b>Alles auswaehlen</b> markiert den kompletten Wert im aktiven Feld.</li><li><b>Eingabe kopieren</b> kopiert das komplette erste Feld, wenn Text vorhanden ist.</li><li><b>Ausgabe kopieren</b> kopiert das komplette zweite Feld, wenn Text vorhanden ist.</li><li><b>Felder leeren</b> leert beide Felder.</li></ul><p>Das Kontextmenue zeigt dieselben praktischen Bearbeitungen. Syscalculator blendet unbenutzte Windows-IME-Eintraege fuer normale europaeische Eingabesprachen aus. Fuer Chinesisch, Japanisch und Koreanisch bleibt das Windows-IME-Menue sichtbar.</p><h2>Zwischenablage-Befehle</h2><ul><li><b>Ctrl+X</b>: Auswahl ausschneiden.</li><li><b>Ctrl+C</b>: Auswahl kopieren.</li><li><b>Ctrl+V</b>: Zwischenablage einfuegen.</li><li><b>Ctrl+A</b>: alles im aktiven Feld auswaehlen.</li><li><b>Del</b>: Auswahl oder naechstes Zeichen loeschen.</li></ul>
+help.main.page.wizard.title=WizardExpress
+help.main.page.wizard.screenshot_alt=Screenshot von WizardExpress vor Syscalculator und einer Tabelle.
+help.main.page.wizard.body=<p>WizardExpress ist der schnelle Zwischenablage-Modus. Er ist fuer Benutzer gedacht, die Werte kopieren, schnell umrechnen und wieder einfuegen moechten, ohne den erweiterten Editor zu oeffnen.</p><ol><li>Kopieren Sie Werte in die Zwischenablage.</li><li>Oeffnen Sie WizardExpress.</li><li>Klicken Sie auf <b>OK</b>.</li><li>Fuegen Sie die umgerechneten Werte mit <b>Ctrl+V</b> wieder ein, oder verwenden Sie das Einfuegemenue in Anwendungen ausser Excel.</li></ol><h2>Screenshot</h2>{WizardExpressScreenshot}<p class="shot-caption">Beispiel: Werte werden aus einer Tabelle kopiert, WizardExpress rechnet sie um, und das Ergebnis kann wieder eingefuegt werden.</p><div class="warning"><b>Excel / Microsoft 365:</b> Excel hat eine eigene Zwischenablage-Verwaltung. Fuegen Sie nach WizardExpress sofort mit <b>Ctrl+V</b> ein. Siehe <a href="nodpage:applications">Anwendungen</a> fuer Details zu Excel.</div>
+help.main.page.calculator.title=Rechner
+help.main.page.calculator.body=<p>Der Rechner ist fuer schnelle Rechenarbeit waehrend einer Konvertierung gedacht. Das Ergebnis kann direkt in das aktive Eingabe- oder Ausgabefeld gesetzt werden.</p><ol><li>Klicken Sie in das Feld, in das das Ergebnis kommen soll.</li><li>Oeffnen Sie <b>Extras &gt; Rechner</b> oder verwenden Sie die Rechner-Schaltflaeche.</li><li>Berechnen Sie den Wert.</li><li>Fuegen oder kopieren Sie das Ergebnis zurueck in Syscalculator.</li></ol><p>Fuer Konverterformeln, NOD-Dateien und Formel-Karten verwenden Sie den NOD Editor statt des einfachen Rechners.</p>
+help.main.page.configuration.title=Konfiguration
+help.main.page.configuration.body=<p>Das Menue <b>Konfiguration</b> enthaelt die taeglichen Verhaltenseinstellungen von Syscalculator.</p><ul><li><b>Richtung umkehren</b>: vertauscht die Konvertierungsrichtung inklusive Ein- und Ausgabefeldern.</li><li><b>Einfuehrungen anzeigen</b>: zeigt oder verbirgt Einfuehrungstext, wenn ein Konverter ihn besitzt.</li><li><b>Mit Windows starten</b>: startet Syscalculator automatisch mit Windows.</li><li><b>Immer im Vordergrund</b>: haelt Syscalculator, WizardExpress und Rechner ueber anderen Fenstern.</li><li><b>In Tray minimieren</b>: verbirgt Syscalculator im System-Tray statt in der Taskleiste.</li><li><b>Sprache</b>: aendert die Oberflaechensprache.</li><li><b>Live-Umrechnung</b>: rechnet waehrend der Eingabe um.</li><li><b>Katalogverwaltung</b>: verwaltet den Konverterkatalog.</li></ul><p>Verwenden Sie <b>Extras &gt; Einfuehrung erneut anzeigen</b>, wenn Sie die Einfuehrung des aktuellen Konverters nochmals lesen moechten.</p>
+help.main.page.window.title=Fenster, Tray und Dezimalstellen
+help.main.page.window.body=<p>Die Fenstereinstellungen bestimmen, wie Syscalculator verfuegbar bleibt, waehrend Sie in anderen Programmen arbeiten.</p><h2>Fenster und Tray</h2><ul><li><b>Immer im Vordergrund</b>: haelt Syscalculator, WizardExpress und Rechner ueber anderen Fenstern.</li><li><b>In Tray minimieren</b>: verbirgt Syscalculator im System-Tray statt in der Taskleiste.</li><li><b>Mit Windows starten</b>: startet Syscalculator automatisch mit Windows.</li></ul><p>Das Tray-Menue kann Syscalculator anzeigen, wieder verbergen, WizardExpress oder den Rechner oeffnen und das Programm beenden.</p><h2>Dezimalstellen und Zifferngruppen</h2><ul><li><b>Dezimalstellen</b> bestimmt, wie viele Nachkommastellen numerische Ergebnisse zeigen.</li><li><b>Zifferngruppen</b> schaltet Tausendergruppen in der Anzeige ein oder aus.</li></ul><p>Diese Anzeigeeinstellungen aendern die Konverterregel selbst nicht.</p>
+help.main.page.nodfiles.title=NOD-Dateien und Katalog
+help.main.page.nodfiles.body=<p>Syscalculator-Konverter werden als NOD-Dateien gespeichert. Eine NOD-Datei beschreibt Name, Beschriftungen und Umrechnungsregeln eines Konverters.</p><h2>Taegliche Nutzung</h2><ul><li><b>NOD oeffnen</b>: eine bestimmte Konverterdatei laden.</li><li><b>Konverterliste neu laden</b>: die Liste aktualisieren, nachdem Dateien hinzugefuegt oder geaendert wurden.</li><li><b>Katalogverwaltung</b>: den Konverterkatalog ansehen und verwalten.</li></ul><h2>Bearbeiten und Kompatibilitaet</h2><p>Verwenden Sie den <b>NOD Editor</b>, um Konverterdateien zu erstellen, zu pruefen oder zu reparieren. Syscalculator 2.0 haelt den klassischen NOD-1.0-Stil erkennbar und erklaert zugleich neuere NOD-2.0-Funktionen.</p><p>Alte Syscalculator-1.74-NOD-Dateien sollen lesbar bleiben. Wenn eine Datei alte Befehle wie <code>input1</code> und <code>input2</code> verwendet, kann der Editor die moderne Alternative erklaeren.</p>
+help.main.page.support.title=Begrenzungen und Support
+help.main.page.support.body=<div class="warning"><b>Daily build:</b> Syscalculator-2.0-Daily-Builds sind zum Testen der modernen Version gedacht. Bewahren Sie Sicherungen wichtiger NOD-Dateien auf und verwenden Sie Syscalculator 1.74, wenn Sie die alte VB6-Legacy-Version brauchen.</div><h2>Bekannte Begrenzungen</h2><ul><li>Zwischenablage-Verhalten kann je Anwendung unterschiedlich sein. Excel und Microsoft 365 brauchen besondere Aufmerksamkeit.</li><li>Der Installer ist framework-dependent und kann auf dem Zielcomputer die Microsoft .NET Desktop Runtime benoetigen.</li><li>NOD 2.0 beta enthaelt noch nicht jede Zukunftsidee. Nicht unterstuetzte Modi wie volle 3D-Geometrie oder matrix3x3 werden abgelehnt statt halb verarbeitet.</li></ul><h2>Support-Informationen</h2><p>Nennen Sie bei einem Problem die Syscalculator-Version, die gewaehlte Sprache, den Konverternamen und die genauen Schritte. Bei Zwischenablageproblemen nennen Sie auch die Anwendung, aus der kopiert und in die eingefuegt wurde.</p>
+help.copy.copied=Kopiert

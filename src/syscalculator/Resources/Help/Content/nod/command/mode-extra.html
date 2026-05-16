@@ -1,0 +1,27 @@
+<h2>When do you use mode?</h2>
+<p><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> tells what kind of NOD file you are making. For normal conversion tools, <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> is usually not needed; without mode it works as a normal converter.</p>
+<div class="notice"><b>Rule of thumb:</b> use <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> only when the file has a special type, such as data processing or equation solving.</div>
+<details open><summary>Common modes</summary><table><tr><th>Mode</th><th>Use</th><th>Important commands</th></tr><tr><td><code>mode calculator</code></td><td>Normal converter or calculation helper.</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr><tr><td><code>mode data</code></td><td>Process rows or fields in a table.</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a>, <a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td></tr><tr><td><code>mode equation</code></td><td>Solve an equation.</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td></tr></table></details>
+<details><summary>Example: normal converter</summary><pre>Name Celsius to Fahrenheit
+input1 Celsius
+input2 Fahrenheit
+format #.00
+math ans * 1.8
+math ans + 32
+end</pre><p>Here <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> is not required. This is the default.</p></details>
+<details><summary>Example: data processing</summary><pre>Name Clean customer phones
+mode data
+table customers
+
+field phone
+phoneformat country NL
+chg "01751-xxxxx","070-51xxxxx"
+output phone_new
+end</pre><p>Use <code>mode data</code> when the NOD file processes table fields.</p></details>
+<details><summary>Example: equation solving</summary><pre>Name Solve equation
+mode equation
+given y = 20
+equation y = x * 2
+solve x
+constraint x >= 0
+end</pre><p>Use <code>mode equation</code> when you want to solve an unknown variable.</p></details>
