@@ -196,7 +196,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added localized graph line marker label for all UI languages
 
 **Additions:**
-- None yet.
+- Published the beta installer as `Syscalculator-2.0-beta-2.0.2026.05.16.091.exe`.
 
 #### 2.0.2026.05.16.062 Beta 1
 
