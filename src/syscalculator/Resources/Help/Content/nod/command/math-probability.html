@@ -1,0 +1,31 @@
+<details><summary>Probability</summary>
+<p>NOD 2.0 supports factorial and common probability functions in <code>math</code>.</p>
+<div class="example-grid">
+  <div class="example-card"><h3>Factorial</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>n</mi><mo>!</mo><mo>=</mo><mn>1</mn><mo>&#x00D7;</mo><mn>2</mn><mo>&#x00D7;</mo><mo>...</mo><mo>&#x00D7;</mo><mi>n</mi></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>ans</mtext><mo>=</mo><mi>n</mi></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mn>5</mn><mo>!</mo><mo>=</mo><mn>1</mn><mo>&#x00D7;</mo><mn>2</mn><mo>&#x00D7;</mo><mn>3</mn><mo>&#x00D7;</mo><mn>4</mn><mo>&#x00D7;</mo><mn>5</mn><mo>=</mo><mn>120</mn></mrow></math></div><pre>math ans!</pre><p>If the input is <code>5</code>, then <code>ans = 5</code> and NOD calculates <code>5!</code>.</p></div>
+  <div class="example-card"><h3>Combinations</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mrow><mo>(</mo><mfrac linethickness="0"><mi>n</mi><mi>r</mi></mfrac><mo>)</mo></mrow><mo>=</mo><mfrac><mrow><mi>n</mi><mo>!</mo></mrow><mrow><mi>r</mi><mo>!</mo><mo>(</mo><mi>n</mi><mo>-</mo><mi>r</mi><mo>)</mo><mo>!</mo></mrow></mfrac></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>ans</mtext><mo>=</mo><mi>n</mi><mo>,</mo><mspace width="0.4em"/><mn>2</mn><mo>=</mo><mi>r</mi></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mrow><mo>(</mo><mfrac linethickness="0"><mn>5</mn><mn>2</mn></mfrac><mo>)</mo></mrow><mo>=</mo><mfrac><mrow><mn>5</mn><mo>!</mo></mrow><mrow><mn>2</mn><mo>!</mo><mn>3</mn><mo>!</mo></mrow></mfrac><mo>=</mo><mn>10</mn></mrow></math></div><pre>math comb(ans,2)</pre><p>If the input is <code>5</code>, then <code>ans = n = 5</code> and <code>r = 2</code>: choose 2 from 5.</p></div>
+  <div class="example-card"><h3>Permutations</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>P</mi><mo>(</mo><mi>n</mi><mo>,</mo><mi>r</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>n</mi><mo>!</mo></mrow><mrow><mo>(</mo><mi>n</mi><mo>-</mo><mi>r</mi><mo>)</mo><mo>!</mo></mrow></mfrac></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>ans</mtext><mo>=</mo><mi>n</mi><mo>,</mo><mspace width="0.4em"/><mn>2</mn><mo>=</mo><mi>r</mi></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>P</mi><mo>(</mo><mn>5</mn><mo>,</mo><mn>2</mn><mo>)</mo><mo>=</mo><mfrac><mrow><mn>5</mn><mo>!</mo></mrow><mrow><mn>3</mn><mo>!</mo></mrow></mfrac><mo>=</mo><mn>20</mn></mrow></math></div><pre>math perm(ans,2)</pre><p>If the input is <code>5</code>, NOD calculates <code>P(5,2)</code>. Use <code>perm(ans,3)</code> for 3 places.</p></div>
+  <div class="example-card"><h3>Expected value</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>E</mi><mo>(</mo><mi>X</mi><mo>)</mo><mo>=</mo><munderover><mo>&#x2211;</mo><mi>i</mi><mi>n</mi></munderover><msub><mi>x</mi><mi>i</mi></msub><mo>&#x00D7;</mo><msub><mi>p</mi><mi>i</mi></msub></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>=</mo><mn>0</mn><mo>,</mo><mspace width="0.4em"/><msub><mi>p</mi><mn>1</mn></msub><mo>=</mo><mn>0.5</mn><mo>,</mo><mspace width="0.4em"/><msub><mi>x</mi><mn>2</mn></msub><mo>=</mo><mn>10</mn><mo>,</mo><mspace width="0.4em"/><msub><mi>p</mi><mn>2</mn></msub><mo>=</mo><mn>0.5</mn></mrow></math></div><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>E</mi><mo>(</mo><mi>X</mi><mo>)</mo><mo>=</mo><mn>0</mn><mo>&#x00D7;</mo><mn>0.5</mn><mo>+</mo><mn>10</mn><mo>&#x00D7;</mo><mn>0.5</mn><mo>=</mo><mn>5</mn></mrow></math></div><pre>math expected(0,0.5,10,0.5)</pre><p>The function reads pairs: value, probability, value, probability.</p></div>
+</div>
+<table>
+  <tr><th>Goal</th><th>Syntax</th><th>Example</th></tr>
+  <tr><td>Factorial</td><td><code>math ans!</code> or <code>math factorial(ans)</code></td><td><code>5!</code> gives <code>120</code>.</td></tr>
+  <tr><td>Combinations</td><td><code>math comb(n,r)</code> or <code>math ncr(n,r)</code></td><td><code>comb(5,2)</code> gives <code>10</code>.</td></tr>
+  <tr><td>Permutations</td><td><code>math perm(n,r)</code> or <code>math npr(n,r)</code></td><td><code>perm(5,2)</code> gives <code>20</code>.</td></tr>
+  <tr><td>Expected value</td><td><code>math expected(value,probability,...)</code></td><td><code>expected(0,0.5,10,0.5)</code> gives <code>5</code>.</td></tr>
+</table>
+<div class="notice"><b>Note:</b> inside functions, commas separate arguments. Use a dot for decimals there, for example <code>0.5</code>. Outside functions the decimal comma still works, such as <code>math ans / 1,95583</code>.</div>
+<div class="example-grid">
+  <div class="example-card"><h3>Example: combinations</h3><pre>Name N kies 2
+input1 n
+input2 nCr met r = 2
+format #.00
+math comb(ans,2)
+end</pre><p>The input is <code>n</code>; <code>r</code> is fixed at <code>2</code> in this converter.</p></div>
+  <div class="example-card"><h3>Example: expected value</h3><pre>Name Verwachtingswaarde dobbel
+input1 Invoer
+input2 E
+format #.00
+math expected(0,0.5,10,0.5)
+end</pre><p><code>E</code> or <code>e</code> is still Euler's constant; for expected value use <code>expected</code>.</p></div>
+</div>
+</details>

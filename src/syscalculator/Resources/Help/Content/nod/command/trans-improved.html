@@ -1,0 +1,10 @@
+<h2>Improved trans: smarter than NOD 1.0</h2><div class="notice improved"><b>Compatible:</b> classic NOD 1.0 <code>trans</code> still tries exact matches first. NOD 2.0 only then tries a smart compact match.</div><table class="syntax-compare"><tr><th>Behavior</th><th>NOD 1.0</th><th>NOD 2.0</th><th>Example</th></tr><tr><td>Exact value</td><td><span class="yes">&#10003;</span></td><td><span class="yes">&#10003;</span></td><td><code>trans "hallo","hello"</code></td></tr><tr><td>Ignore letter case</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>Hallo</code> matches <code>hallo</code></td></tr><tr><td>Ignore spaces, dots, dashes and underscore</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td><code>dank_je</code>, <code>dank je</code> and <code>dank-je</code> can hit the same trans rule</td></tr><tr><td>Ambiguous smart match</td><td><span class="no">&#10005;</span></td><td><span class="yes">&#10003;</span></td><td>When two compact matches exist, it does not silently translate wrongly; the input stays unchanged.</td></tr></table><div class="example-grid"><div class="example-card"><h3>NOD 1.0: classic exact</h3><pre>Name Classic trans
+input1 Dutch
+input2 English
+trans "hallo","hello"
+end</pre><p>Made for fixed values. Exact rules still have priority.</p></div><div class="example-card"><h3>NOD 2.0: improved trans</h3><pre>Name Smart trans
+input1 Dutch
+input2 English
+trans "dank je","thank you"
+trans "goedemorgen","good morning"
+end</pre><p><code>dank_je</code>, <code>DANK-JE</code> and <code>dank je</code> can all return <code>thank you</code>.</p></div></div><p><b>Rule of thumb:</b> use <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> for complete values. Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when only the beginning or a pattern changes.</p>

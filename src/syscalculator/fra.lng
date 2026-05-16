@@ -136,6 +136,7 @@ catalog.choose_nod=Choisir NOD...
 catalog.save=Enregistrer
 
 editor.title=Editeur NOD Plus
+editor.mode.advanced=Mode avance
 editor.tab.new=nouveau
 editor.menu.file=Fichier
 editor.menu.file.new_tab=Nouvel onglet
@@ -199,11 +200,13 @@ editor.menu.view.dock_simulator=Ancrer le simulateur
 editor.toolbar.new=Nouveau
 editor.toolbar.open=Ouvrir
 editor.toolbar.save=Enregistrer
+editor.toolbar.template_wizard=Modeles
 editor.toolbar.undo=Annuler
 editor.toolbar.redo=Retablir
 editor.toolbar.find=Rechercher
 editor.toolbar.validate=Valider
 editor.toolbar.test=Test
+editor.toolbar.solver_steps=Solveur
 editor.toolbar.repair=Reparer
 editor.toolbar.restore_original=Restaurer
 editor.preview.title=Apercu en direct
@@ -233,6 +236,7 @@ editor.status.test_done=Test termine.
 editor.status.lines_repaired=Lignes reparees.
 editor.status.original_restored=Texte original restaure.
 editor.status.saved_short=Enregistre
+help.main.page.nodeditor.screenshot_alt=Capture d'ecran de l'Editeur NOD avec barre d'outils, editeur de code et conseil de commande.
 editor.status.position=Ligne {0}, Colonne {1}
 editor.status.lines=Lignes {0}
 editor.dialog.open_title=Ouvrir NOD
@@ -262,6 +266,12 @@ wizard.excel_clipboard_restored.message=Excel a remplace le presse-papiers. Wiza
 wizard.status.error=Termine avec erreurs
 
 editor.nod_help.suggestions=Suggestions
+help.nod_screenshot.converter_name=Celsius vers Fahrenheit
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=Signification:
+help.nod_screenshot.name_meaning=nom interne du convertisseur.
+help.nod_screenshot.example_label=Exemple:
+help.nod_screenshot.example_name=Name Postcode vers adresse demo
 editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius vers Fahrenheit</div><div><b>Signification:</b> nom interne du convertisseur.</div><div><b>Exemple:</b> <code>Name Postcode vers Address demo</code>.</div>
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Titre utilisateur</div><div><b>Signification:</b> titre visible ou description pour l utilisateur.</div><div><b>Exemple:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Signification:</b> libellé de la valeur d entrée.</div><div><b>Exemple:</b> <code>input1 Old phone number</code>.</div>
@@ -374,6 +384,7 @@ clipboard.debug.mail_failed=Impossible d'ouvrir le programme e-mail: {0}
 clipboard.debug.copy_button=Copier le rapport
 clipboard.debug.report_copied=Rapport copie dans le presse-papiers.
 clipboard.debug.copy_failed=Impossible de copier le rapport dans le presse-papiers.
+help.copy.copied=Copie
 clipboard.debug.conversion=Conversion
 clipboard.debug.conversion_rows=Lignes converties
 clipboard.debug.conversion_cells=Cellules

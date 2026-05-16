@@ -1,9 +1,9 @@
-﻿using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using Microsoft.Win32;
 using Tiedragon.NodSystem.Core;
 using System.IO;
-using System.Net;
+using Tiedragon.Help;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -47,6 +47,7 @@ public sealed class MainForm : Form
 
     private readonly NodCatalogService _catalogService;
     private LanguageCatalog _language;
+    private readonly LanguageCatalog _englishLanguage;
     private readonly List<NodCatalogItem> _catalogItems = new();
     private readonly HashSet<string> _shownIntroConverters = new(StringComparer.OrdinalIgnoreCase);
     private readonly System.Windows.Forms.Timer _liveConvertTimer = new();
@@ -112,7 +113,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
     _startInTray = startInTray;
 
     Text = AppVersionInfo.DisplayVersion;
-    Icon = new Icon(Path.Combine(AppContext.BaseDirectory, "Resources", "Syscalculator.ico"));
+    AppWindowIcon.ApplyTo(this);
         Width = 450;
         Height = 280;
         FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -122,6 +123,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(236, 236, 236);
 
+        _englishLanguage = LanguageCatalog.Load(AppContext.BaseDirectory, "eng.lng");
         _catalogService = new NodCatalogService(AppContext.BaseDirectory);
         _language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
         _alwaysOnTop = LoadAlwaysOnTopSetting();
@@ -1224,19 +1226,6 @@ private void RebuildTrayMenu()
         g.DrawLine(pen, 20, 6, 27, 25);
     }
 
-    // Zoek/commentaar: Tekent een visueel onderdeel voor DrawCalculatorIcon.
-    private static void DrawCalculatorIcon(Graphics g)
-    {
-        using var body = new SolidBrush(Color.FromArgb(0, 65, 170));
-        using var key = new SolidBrush(Color.White);
-        g.FillRectangle(body, 5, 2, 21, 27);
-        for (var y = 7; y <= 23; y += 5)
-        {
-            for (var x = 9; x <= 21; x += 5)
-                g.FillRectangle(key, x, y, 3, 3);
-        }
-    }
-
     // Zoek/commentaar: Tekent een visueel onderdeel voor DrawOpenFolderIcon.
     private static void DrawOpenFolderIcon(Graphics g)
     {
@@ -1882,216 +1871,37 @@ private void LoadStartupNodIfNeeded()
 
     private IReadOnlyList<NodHelpPage> BuildMainHelpPages()
     {
-        var intro = T("help.main.page.intro.body", """
-<p><b>Syscalculator 2.0</b> is for quick conversions. Choose a converter, type a value, and read the result. For fast clipboard work you can use WizardExpress. For making or changing converters use the NOD Editor.</p>
-<p>This help follows the practical order of the classic Syscalculator 1.74 help, with extra notes for the modern 2.0 daily version.</p>
-<ul>
-  <li><a href="nodpage:main">Value conversion</a></li>
-  <li><a href="nodpage:fields">Fields, editing and clipboard</a></li>
-  <li><a href="nodpage:wizard">WizardExpress</a></li>
-  <li><a href="nodpage:calculator">Calculator</a></li>
-  <li><a href="nodpage:configuration">Configuration</a></li>
-  <li><a href="nodpage:window">Window, tray and decimals</a></li>
-  <li><a href="nodpage:nodfiles">NOD files and catalog</a></li>
-  <li><a href="nodpage:nodeditor">NOD Editor guide</a></li>
-  <li><a href="nodpage:applications">Applications</a></li>
-  <li><a href="nodpage:support">Limitations and support</a></li>
-</ul>
-""");
+        var intro = HelpContent("help.main.page.intro.body", "main/intro.html");
 
-        var main = T("help.main.page.main.body", """
-<p>The main window is the normal converter screen. The selected converter decides what the first and second fields mean.</p>
-<ol>
-  <li>Choose a converter from the list at the top.</li>
-  <li>Type the source value in the first field.</li>
-  <li>Press <b>Enter</b>, or use live convert when it is enabled.</li>
-  <li>Read the converted value in the second field.</li>
-</ol>
-<p>When <b>Reverse direction</b> is enabled, Syscalculator swaps the meaning of the fields so you can convert back.</p>
-<p>If the converter contains an introduction, Syscalculator can show it when the converter is first opened. Use <b>Tools &gt; Show introduction again</b> when you want to reread it.</p>
-""");
+        var main = HelpContent("help.main.page.main.body", "main/main.html");
 
-        var fields = T("help.main.page.fields.body", """
-<p>The input and output fields behave like normal Windows edit fields. The active field is the field that currently has the text cursor or selection.</p>
-<h2>Editing fields</h2>
-<ul>
-  <li><b>Cut / Copy / Delete</b> work on the selected text in the active field.</li>
-  <li><b>Paste</b> inserts clipboard text into the active field.</li>
-  <li><b>Select all</b> selects the complete active field. After that, Copy, Cut or Delete applies to the whole value.</li>
-  <li><b>Copy input</b> copies the full first field when it has text.</li>
-  <li><b>Copy output</b> copies the full second field when it has text.</li>
-  <li><b>Clear fields</b> empties both fields.</li>
-</ul>
-<p>The right-click menu shows the same practical edit actions. Syscalculator hides unused Windows IME entries for normal European input languages. For Chinese, Japanese and Korean input, Windows keeps its own IME menu so those input methods still work.</p>
-<h2>Clipboard commands</h2>
-<ul>
-  <li><b>Ctrl+X</b>: cut selected text.</li>
-  <li><b>Ctrl+C</b>: copy selected text.</li>
-  <li><b>Ctrl+V</b>: paste clipboard text.</li>
-  <li><b>Ctrl+A</b>: select all text in the active field.</li>
-  <li><b>Del</b>: delete the selection or the next character.</li>
-</ul>
-""");
+        var fields = HelpContent("help.main.page.fields.body", "main/fields.html");
 
-        var wizard = T("help.main.page.wizard.body", """
-<p>WizardExpress is the quick clipboard mode. It is meant for users who want to copy values, convert them quickly, and paste them back without opening the advanced editor.</p>
-<ol>
-  <li>Copy values to the clipboard.</li>
-  <li>Open WizardExpress.</li>
-  <li>Click <b>OK</b>.</li>
-  <li>Paste the converted values back with <b>Ctrl+V</b>, or use the paste menu in applications other than Excel.</li>
-</ol>
-<h2>Screenshot</h2>
-{WizardExpressScreenshot}
-<p class="shot-caption">Example: values are copied from a spreadsheet, WizardExpress converts them, and the result can be pasted back.</p>
-<div class="warning">
-  <b>Excel / Microsoft 365:</b> Excel has its own clipboard management. Paste immediately with <b>Ctrl+V</b> after WizardExpress. See <a href="nodpage:applications">Applications</a> for the Excel details.
-</div>
-""");
+        var wizard = HelpContent("help.main.page.wizard.body", "main/wizard.html");
         wizard = wizard.Replace(
             "{WizardExpressScreenshot}",
             BuildHelpImageTag(
                 "WizardExpressHelp.png",
                 T("help.main.page.wizard.screenshot_alt", "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.")));
 
-        var calculator = T("help.main.page.calculator.body", """
-<p>The calculator is for quick arithmetic while you are working with a converter. It can place the calculated result directly in the active input or output field.</p>
-<ol>
-  <li>Click in the field where the result should go.</li>
-  <li>Open <b>Tools &gt; Calculator</b>, or use the calculator button.</li>
-  <li>Calculate the value.</li>
-  <li>Insert or copy the result back into Syscalculator.</li>
-</ol>
-<p>For converter formulas, NOD files and educational formula cards, use the NOD Editor instead of the simple calculator.</p>
-""");
+        var calculator = HelpContent("help.main.page.calculator.body", "main/calculator.html");
 
-        var applications = T("help.main.page.applications.body", """
-<p>WizardExpress can be used with several applications, but clipboard behavior differs per program.</p>
-<h2>Works well with</h2>
-<ul>
-  <li>plain text programs</li>
-  <li>LibreOffice Calc</li>
-</ul>
-<p>For spreadsheet work, plain values without unit symbols are usually the safest result.</p>
-<h2>Excel / Microsoft 365</h2>
-<p>Microsoft Excel can handle clipboard data differently from plain text programs and LibreOffice Calc.</p>
-<ul>
-  <li>Excel often uses richer Office clipboard formats.</li>
-  <li>WizardExpress follows the classic clipboard reset and write-back model.</li>
-  <li>Because of that, Excel can behave differently after conversion.</li>
-</ul>
-<div class="warning">
-  <b>Excel clipboard management:</b> after WizardExpress writes the converted result, paste immediately with <b>Ctrl+V</b>. Avoid right-click paste in Excel, because Excel can replace the converted clipboard data with its own clipboard state. If paste still does not work, copy the values from Excel again and run WizardExpress again.
-</div>
-<p>If paste behavior is difficult in Excel, use one of these routes:</p>
-<ul>
-  <li>try LibreOffice Calc</li>
-  <li>work through files instead of clipboard</li>
-  <li>use normal plain value paste</li>
-</ul>
-<p>Excel for the web / Microsoft 365 online can be even stricter because browser clipboard behavior is added on top.</p>
-<h2>Data and reporting</h2>
-<p>The advanced WizardExpress window combines data view and debug reporting. The <b>Input</b> and <b>Output</b> tabs show the working data as grids.</p>
-<p><b>Reporting</b> means a compact diagnosis of the clipboard conversion: row and column counts, clipboard formats, the used rule, before/after information, and a short preview.</p>
-<p>The report deliberately shows only the first rows when there is a lot of data. That keeps copied, e-mailed, and PDF reports readable. It is a report, not a full data export.</p>
-""");
+        var applications = HelpContent("help.main.page.applications.body", "main/applications.html");
 
-        var configuration = T("help.main.page.configuration.body", """
-<p>The <b>Config</b> menu contains the daily behavior settings for Syscalculator.</p>
-<ul>
-  <li><b>Reverse direction</b>: swaps the converter direction, including input and output fields.</li>
-  <li><b>Show introductions</b>: shows or hides converter introduction text when a converter has one.</li>
-  <li><b>Start with Windows</b>: starts Syscalculator automatically when Windows starts.</li>
-  <li><b>Always on top</b>: keeps Syscalculator, WizardExpress, and Calculator above other windows.</li>
-  <li><b>Minimize to tray</b>: hides Syscalculator in the system tray instead of leaving it on the taskbar.</li>
-  <li><b>Language</b>: changes the interface language.</li>
-  <li><b>Live convert</b>: converts while you type instead of waiting for a separate action.</li>
-  <li><b>Catalog manager</b>: manages the converter catalog.</li>
-</ul>
-<p>Use <b>Tools &gt; Show introduction again</b> when you want to reread the introduction for the current converter.</p>
-""");
+        var configuration = HelpContent("help.main.page.configuration.body", "main/configuration.html");
 
-        var window = T("help.main.page.window.body", """
-<p>The window settings control how Syscalculator stays available while you work in other programs.</p>
-<h2>Window and tray</h2>
-<ul>
-  <li><b>Always on top</b>: keeps Syscalculator, WizardExpress and Calculator above other windows.</li>
-  <li><b>Minimize to tray</b>: hides Syscalculator in the system tray instead of leaving it on the taskbar.</li>
-  <li><b>Start with Windows</b>: starts Syscalculator automatically when Windows starts.</li>
-</ul>
-<p>The tray menu can show Syscalculator, hide it again, open WizardExpress or the Calculator, and exit the program.</p>
-<h2>Decimals and digit grouping</h2>
-<ul>
-  <li><b>Decimals</b> controls how many decimal places are shown for numeric results.</li>
-  <li><b>Digit group</b> adds or removes thousands grouping in displayed numbers.</li>
-</ul>
-<p>These display settings do not change the converter rule itself. They only control how the result is shown.</p>
-""");
+        var window = HelpContent("help.main.page.window.body", "main/window.html");
 
-        var nodFiles = T("help.main.page.nodfiles.body", """
-<p>Syscalculator converters are stored as NOD files. A NOD file describes the name, labels and conversion rules for one converter.</p>
-<h2>Daily use</h2>
-<ul>
-  <li><b>Open NOD</b>: load a specific converter file.</li>
-  <li><b>Reload converter list</b>: refresh the list after converter files were added or changed.</li>
-  <li><b>Catalog manager</b>: inspect and manage the converter catalog.</li>
-</ul>
-<h2>Editing and compatibility</h2>
-<p>Use the <b>NOD Editor</b> to create, inspect or repair converter files. Syscalculator 2.0 keeps the classic NOD 1.0 style recognizable, while the editor also explains newer NOD 2.0 features.</p>
-<p>Old Syscalculator 1.74 NOD files should remain readable. When a file uses old commands such as <code>input1</code> and <code>input2</code>, the editor can explain the modern equivalent.</p>
-""");
+        var nodFiles = HelpContent("help.main.page.nodfiles.body", "main/nodfiles.html");
 
-        var nodEditorGuide = T("help.main.page.nodeditor.body", """
-<p>The <b>NOD Editor</b> is the workspace for creating and maintaining converter files. It combines a code editor, command tips, validation, test tools, templates and repair actions.</p>
-<h2>Screenshot</h2>
-{NodEditorScreenshot}
-<p class="shot-caption">Example: a Celsius/Fahrenheit converter with the command tip for <code>input1</code>.</p>
-<h2>Basic workflow</h2>
-<ol>
-  <li>Open the editor with <b>Tools &gt; NOD Editor</b>, or open a specific <code>.nod</code> file.</li>
-  <li>Use <b>Templates</b> for a starter file, or type commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> and <code>end</code>.</li>
-  <li>Read the blue command tip while typing. It explains the command and often shows a modern replacement.</li>
-  <li>Use <b>Validate</b> to check syntax and <b>Test</b> to run the converter with a sample value.</li>
-  <li>Use <b>Save</b> when the converter works.</li>
-</ol>
-<h2>Toolbar</h2>
-<ul>
-  <li><b>New / Open / Save</b>: create, load and save NOD files.</li>
-  <li><b>Undo / Redo</b>: undo and redo text edits without including syntax coloring.</li>
-  <li><b>Templates</b>: start from a ready-made converter pattern.</li>
-  <li><b>Find</b>: search and replace inside the current NOD file.</li>
-  <li><b>Validate</b>: parse the file and report syntax problems.</li>
-  <li><b>Test</b>: run the converter with the test input.</li>
-  <li><b>Solver</b>: open solver steps for equation, diff and integral files.</li>
-  <li><b>Restore</b>: return the current tab to the last opened or saved version.</li>
-</ul>
-<h2>Command tips</h2>
-<p>When the caret is on a known command, the editor can show a small help balloon. Use <b>Replace</b> when the tip offers a modern command form, or <b>More help</b> to open the full NOD command reference.</p>
-<h2>Restore and repair</h2>
-<ul>
-  <li><b>Restore</b> means: go back to the original/opened/saved text for this tab.</li>
-  <li><b>Tools &gt; Repair lines</b> means: repair NOD text, for example when old metadata lines were pasted together.</li>
-</ul>
-""");
+        var nodEditorGuide = HelpContent("help.main.page.nodeditor.body", "main/nodeditor.html");
         nodEditorGuide = nodEditorGuide.Replace(
             "{NodEditorScreenshot}",
             BuildHelpImageTag(
-                "NodEditorHelp.png",
+                "NodEditorHelp.svg",
                 T("help.main.page.nodeditor.screenshot_alt", "Screenshot of the NOD Editor with toolbar, code editor and command tip.")));
 
-        var support = T("help.main.page.support.body", """
-<div class="warning">
-  <b>Daily build:</b> Syscalculator 2.0 daily builds are for testing the modern version. Keep backups of important NOD files and use Syscalculator 1.74 when you need the old VB6 legacy release.
-</div>
-<h2>Known limitations</h2>
-<ul>
-  <li>Clipboard behavior can differ per application. Excel and Microsoft 365 need extra care.</li>
-  <li>The installer is framework-dependent and may need the Microsoft .NET Desktop Runtime on the target computer.</li>
-  <li>NOD 2.0 beta does not include every future idea yet. Unsupported modes such as full 3D geometry or matrix3x3 are rejected instead of half-handled.</li>
-</ul>
-<h2>Support information</h2>
-<p>When reporting a problem, include the Syscalculator version, the selected language, the converter name, and the exact steps that caused the problem. For clipboard issues, mention the application you copied from and pasted into.</p>
-""");
+        var support = HelpContent("help.main.page.support.body", "main/support.html");
 
         return new[]
         {
@@ -2109,94 +1919,14 @@ private void LoadStartupNodIfNeeded()
         };
     }
 
-    private static string WrapMainHelpPage(string title, string body)
+    private string WrapMainHelpPage(string title, string body)
     {
-        return $$"""
-        <!doctype html>
-        <html>
-        <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <style>
-        {{GetMainHelpCss()}}
-        </style>
-        </head>
-        <body><h1>{{WebUtility.HtmlEncode(title)}}</h1>{{body}}</body>
-        </html>
-        """;
+        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapTopicPage(title, body, HelpApi.MainHelpCss()));
     }
 
     private string BuildHelpImageTag(string fileName, string altText)
     {
-        var path = ResolveLocalizedHelpImagePath(fileName);
-        if (!File.Exists(path))
-            return "";
-
-        var extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
-        var mime = extension switch
-        {
-            "jpg" or "jpeg" => "image/jpeg",
-            "svg" => "image/svg+xml",
-            _ => "image/png"
-        };
-        var base64 = Convert.ToBase64String(File.ReadAllBytes(path));
-        return $"""<div class="screenshot-frame"><img src="data:{mime};base64,{base64}" alt="{WebUtility.HtmlEncode(altText)}" /></div>""";
-    }
-
-    private string ResolveLocalizedHelpImagePath(string fileName)
-    {
-        var resourcesPath = Path.Combine(AppContext.BaseDirectory, "Resources");
-        var languageCode = CurrentLanguageCode();
-        var name = Path.GetFileNameWithoutExtension(fileName);
-        var extension = Path.GetExtension(fileName);
-        var candidates = new[]
-        {
-            Path.Combine(resourcesPath, $"{name}.{languageCode}.svg"),
-            Path.Combine(resourcesPath, $"{name}.{languageCode}{extension}"),
-            Path.Combine(resourcesPath, $"{name}.svg"),
-            Path.Combine(resourcesPath, fileName)
-        };
-
-        return candidates.FirstOrDefault(File.Exists) ?? Path.Combine(resourcesPath, fileName);
-    }
-
-    private string CurrentLanguageCode()
-    {
-        var fileName = _language.FileName;
-        var slashIndex = Math.Max(fileName.LastIndexOf('\\'), fileName.LastIndexOf('/'));
-        if (slashIndex >= 0)
-            fileName = fileName[(slashIndex + 1)..];
-
-        if (fileName.EndsWith(".lng", StringComparison.OrdinalIgnoreCase))
-            fileName = fileName[..^4];
-
-        return fileName.ToLowerInvariant();
-    }
-
-    private static string GetMainHelpCss()
-    {
-        return """
-        ::-webkit-scrollbar { width:15px; height:15px; }
-        ::-webkit-scrollbar-track { background:#f8fafc; }
-        ::-webkit-scrollbar-thumb { background:#8b949e; border:3px solid #f8fafc; border-radius:999px; min-height:44px; }
-        ::-webkit-scrollbar-thumb:hover { background:#6b7280; }
-        ::-webkit-scrollbar-corner { background:#f8fafc; }
-        body { font-family: "Segoe UI", Arial, sans-serif; margin: 22px 38px 22px 22px; padding-bottom:18px; color:#1f2937; line-height:1.5; background:#ffffff; }
-        h1 { font-size: 26px; margin: 0 0 16px; color:#1d4f91; }
-        h2 { font-size: 19px; margin: 22px 0 10px; color:#234f84; }
-        p { margin: 0 0 12px; }
-        ul, ol { margin: 10px 0 14px 22px; padding: 0; }
-        li { margin: 6px 0; }
-        a { color:#1d5fa7; text-decoration:none; }
-        a:hover { text-decoration:underline; }
-        code { background:#f2f5f8; border:1px solid #d9e2ec; padding:1px 5px; border-radius:4px; font-family: Consolas, monospace; }
-        .screenshot-frame { margin:12px 0 8px; border:1px solid #d7dee8; border-radius:8px; overflow:hidden; background:#f8fafc; box-shadow:0 8px 22px rgba(15,23,42,.12); }
-        .screenshot-frame img { display:block; width:100%; height:auto; }
-        .shot-caption { font-size:12px; color:#475569; margin-top:6px; }
-        .warning { position:relative; background:#fff8e1; border:1px solid #fbbf24; border-left:6px solid #dc2626; border-radius:8px; padding:12px 12px 12px 62px; margin:12px 0 16px; color:#7f1d1d; box-shadow:0 4px 14px rgba(220,38,38,.08); min-height:42px; scroll-margin-bottom:92px; }
-        .warning::before { content:""; position:absolute; left:14px; top:14px; width:36px; height:33px; background:center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 48'%3E%3Cpath d='M26 3 50 45H2L26 3Z' fill='%23facc15' stroke='%23111827' stroke-width='3'/%3E%3Cpath d='M26 16v15' stroke='%23111827' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='26' cy='37' r='2.6' fill='%23111827'/%3E%3C/svg%3E"); filter:drop-shadow(0 2px 3px rgba(153,27,27,.24)); }
-        .warning b { color:#b91c1c; }
-        """;
+        return HelpApi.ScreenshotImage(HelpLanguageCode(), ResolveHelpLanguageText, fileName, altText);
     }
 
     // Zoek/commentaar: Toont een venster, melding of detailweergave voor ShowIntroAgain.
@@ -2268,26 +1998,12 @@ private void LoadStartupNodIfNeeded()
         _notifyIcon = new NotifyIcon
         {
             Text = "Syscalculator 2.0",
-            Icon = CreateTrayIcon(),
+            Icon = AppWindowIcon.CreateTrayIcon(),
             ContextMenuStrip = _trayMenu,
             Visible = false
         };
 
         _notifyIcon.DoubleClick += (_, _) => RestoreFromTray();
-    }
-
-    // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateTrayIcon.
-    private static Icon CreateTrayIcon()
-    {
-        var bmp = new Bitmap(32, 32);
-
-        using (var g = Graphics.FromImage(bmp))
-        {
-            g.Clear(Color.Transparent);
-            DrawCalculatorIcon(g);
-        }
-
-        return (Icon)Icon.FromHandle(bmp.GetHicon()).Clone();
     }
 
     // Zoek/commentaar: Verbergt het venster of onderdeel voor HideToTray.
@@ -2371,8 +2087,31 @@ private void LoadStartupNodIfNeeded()
         base.Dispose(disposing);
     }
 
+    private string HelpLanguageCode() => HelpApi.LanguageCodeFromFileName(_language.FileName);
+
+    private string? ResolveHelpLanguageText(string key)
+    {
+        if (_language.TryText(key, out var value))
+            return value;
+
+        return _englishLanguage.TryText(key, out var englishValue)
+            ? englishValue
+            : null;
+    }
+
     // Zoek/commentaar: Methode T: centrale logica voor deze stap.
-    private string T(string key, string fallback) => _language.Text(key, fallback);
+    private string T(string key, string fallback) => HelpApi.Text(ResolveHelpLanguageText, key, fallback);
+
+    private string HelpContent(string key, string fileName, string fallback = "")
+    {
+        return HelpApi.Content(HelpLanguageCode(), ResolveHelpLanguageText, key, fileName, fallback);
+    }
+
+    // [some.lng.key] in bewerkbare help-HTML komt uit de actieve taal, met eng.lng als default.
+    private string ApplyHelpLanguagePlaceholders(string template)
+    {
+        return HelpApi.ApplyLanguagePlaceholders(ResolveHelpLanguageText, template);
+    }
 
     // Zoek/commentaar: Zet een waarde of status voor SetStatus.
     private void SetStatus(string text) => _statusLabel.Text = text;

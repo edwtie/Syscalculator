@@ -133,6 +133,7 @@ catalog.choose_nod=NOD kiezen...
 catalog.save=Opslaan
 
 editor.title=NOD Editor Plus
+editor.mode.advanced=Geavanceerde modus
 editor.tab.new=nieuw
 editor.menu.file=Bestand
 editor.menu.file.new_tab=Nieuw tabblad
@@ -239,11 +240,13 @@ wizard.menu.extra.debug=Klemborddebug
 editor.toolbar.new=Nieuw
 editor.toolbar.open=Open
 editor.toolbar.save=Opslaan
+editor.toolbar.template_wizard=Templates
 editor.toolbar.undo=Ongedaan maken
 editor.toolbar.redo=Opnieuw uitvoeren
 editor.toolbar.find=Zoek
 editor.toolbar.validate=Valideren
 editor.toolbar.test=Test
+editor.toolbar.solver_steps=Solver
 editor.toolbar.repair=Herstel
 editor.toolbar.restore_original=Herstel
 editor.preview.title=Live preview
@@ -275,6 +278,29 @@ editor.status.original_restored=Oorspronkelijke tekst hersteld.
 editor.status.saved_short=Opgeslagen
 help.main.page.nodeditor.title=NOD Editor gebruiksaanwijzing
 help.main.page.nodeditor.screenshot_alt=Schermafbeelding van de NOD Editor met toolbar, code-editor en commandotip.
+help.section.screenshot=Screenshot
+help.section.basic_workflow=Basisworkflow
+help.section.toolbar=Toolbar
+help.section.command_tips=Commandotips
+help.section.restore_repair=Herstel en repareren
+help.main.nodeditor.intro=De <b>NOD Editor</b> is de werkruimte voor het maken en onderhouden van converterbestanden. Hij combineert een code-editor, commandotips, validatie, testen, templates en herstelacties.
+help.main.nodeditor.screenshot_caption=Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>input1</code>.
+help.main.nodeditor.workflow.open=Open de editor via <b>Extra &gt; NOD Editor</b>, of open een specifiek <code>.nod</code>-bestand.
+help.main.nodeditor.workflow.templates=Gebruik <b>Templates</b> voor een startbestand, of typ commands zoals <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> en <code>end</code>.
+help.main.nodeditor.workflow.tip=Lees de blauwe commandotip tijdens het typen. Die legt het command uit en toont soms een moderne vervanging.
+help.main.nodeditor.workflow.validate=Gebruik <b>Valideren</b> om de syntax te controleren en <b>Test</b> om de converter met een voorbeeldwaarde uit te voeren.
+help.main.nodeditor.workflow.save=Gebruik <b>Opslaan</b> wanneer de converter klopt.
+help.main.nodeditor.toolbar.files=NOD-bestanden maken, laden en opslaan.
+help.main.nodeditor.toolbar.undo=tekstbewerkingen terugdraaien of opnieuw uitvoeren zonder syntaxkleuring mee te nemen.
+help.main.nodeditor.toolbar.templates=starten vanuit een kant-en-klaar converterpatroon.
+help.main.nodeditor.toolbar.find=zoeken en vervangen in het huidige NOD-bestand.
+help.main.nodeditor.toolbar.validate=het bestand parsen en syntaxproblemen melden.
+help.main.nodeditor.toolbar.test=de converter uitvoeren met de testinvoer.
+help.main.nodeditor.toolbar.solver=solverstappen openen voor equation-, diff- en integral-bestanden.
+help.main.nodeditor.toolbar.restore=de huidige tab terugzetten naar de laatst geopende of opgeslagen versie.
+help.main.nodeditor.command_tips=Wanneer de cursor op een bekend command staat, toont de editor een kleine helpballon. Gebruik <b>Vervangen</b> wanneer de tip een moderne commandovorm aanbiedt, of <b>Meer help</b> voor de volledige NOD-commandoreferentie.
+help.main.nodeditor.restore=<b>Herstel</b> betekent: terug naar de oorspronkelijke/geopende/opgeslagen tekst van deze tab.
+help.main.nodeditor.repair=<b>Extra &gt; Regels repareren</b> betekent: NOD-tekst repareren, bijvoorbeeld wanneer oude metadataregels aan elkaar zijn geplakt.
 help.main.page.nodeditor.body=<p>De <b>NOD Editor</b> is de werkruimte voor het maken en onderhouden van converterbestanden. Hij combineert een code-editor, commandotips, validatie, testen, templates en herstelacties.</p><h2>Screenshot</h2>{NodEditorScreenshot}<p class="shot-caption">Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>input1</code>.</p><h2>Basisworkflow</h2><ol><li>Open de editor via <b>Extra &gt; NOD Editor</b>, of open een specifiek <code>.nod</code>-bestand.</li><li>Gebruik <b>Templates</b> voor een startbestand, of typ commands zoals <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> en <code>end</code>.</li><li>Lees de blauwe commandotip tijdens het typen. Die legt het command uit en toont soms een moderne vervanging.</li><li>Gebruik <b>Valideren</b> om de syntax te controleren en <b>Test</b> om de converter met een voorbeeldwaarde uit te voeren.</li><li>Gebruik <b>Opslaan</b> wanneer de converter klopt.</li></ol><h2>Toolbar</h2><ul><li><b>Nieuw / Open / Opslaan</b>: NOD-bestanden maken, laden en opslaan.</li><li><b>Ongedaan maken / Opnieuw uitvoeren</b>: tekstbewerkingen terugdraaien of opnieuw uitvoeren zonder syntaxkleuring mee te nemen.</li><li><b>Templates</b>: starten vanuit een kant-en-klaar converterpatroon.</li><li><b>Zoek</b>: zoeken en vervangen in het huidige NOD-bestand.</li><li><b>Valideren</b>: het bestand parsen en syntaxproblemen melden.</li><li><b>Test</b>: de converter uitvoeren met de testinvoer.</li><li><b>Solver</b>: solverstappen openen voor equation-, diff- en integral-bestanden.</li><li><b>Herstel</b>: de huidige tab terugzetten naar de laatst geopende of opgeslagen versie.</li></ul><h2>Commandotips</h2><p>Wanneer de cursor op een bekend command staat, toont de editor een kleine helpballon. Gebruik <b>Vervangen</b> wanneer de tip een moderne commandovorm aanbiedt, of <b>Meer help</b> voor de volledige NOD-commandoreferentie.</p><h2>Herstel en repareren</h2><ul><li><b>Herstel</b> betekent: terug naar de oorspronkelijke/geopende/opgeslagen tekst van deze tab.</li><li><b>Extra &gt; Regels repareren</b> betekent: NOD-tekst repareren, bijvoorbeeld wanneer oude metadataregels aan elkaar zijn geplakt.</li></ul>
 editor.status.position=Regel {0}, Kolom {1}
 editor.status.lines=Regels {0}
@@ -316,6 +342,12 @@ trace.title=Berekeningstrace
 trace.none=Geen trace beschikbaar.
 
 editor.nod_help.suggestions=Suggesties
+help.nod_screenshot.converter_name=Celsius naar Fahrenheit
+help.nod_screenshot.decimal_factor=1,8
+help.nod_screenshot.meaning_label=Betekenis:
+help.nod_screenshot.name_meaning=interne converternaam.
+help.nod_screenshot.example_label=Voorbeeld:
+help.nod_screenshot.example_name=Name Postcode naar adres demo
 editor.nod_help.insert=Invoegen
 editor.nod_help.replace=Vervangen
 editor.nod_help.more=Meer help
@@ -333,6 +365,19 @@ editor.nod_help.page.examples=Voorbeelden
 editor.nod_help.page.troubleshooting=Veelgemaakte fouten
 editor.nod_help.full.intro=<h2>Wat is NOD?</h2><p><b>NOD</b> is het tekstformaat waarmee Syscalculator een converter beschrijft. Een NOD-bestand vertelt hoe de converter heet, welke invoer en uitvoer zichtbaar zijn, welke symbolen bij waarden horen en welke regels de waarde omzetten.</p><h2>Het basisidee</h2><p>Een NOD-bestand leest als een klein stappenplan. Eerst komt de naam, daarna de labels, daarna eventueel symbolen en uitlegtekst, vervolgens de regels die rekenen of tekst omzetten. De laatste regel is meestal <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</p><h2>Waarom gewone tekst?</h2><p>Omdat de kennis dan zichtbaar blijft. Een Celsius/Fahrenheit-regel, een eurokoers of een oude telefoonnummeromzetting zit niet verstopt in programmacode, maar staat als leesbare regels in het bestand.</p><h2>Mini voorbeeld</h2><pre>Name Celsius naar Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;end</pre><p>Lees dit van boven naar beneden: de converter krijgt een naam, toont twee labels, kiest een getalnotatie en voert twee rekenstappen uit met <code>ans</code> als huidige waarde.</p>
 editor.nod_help.full.guide=<p>Dit hoofdstuk gaat over werken in het editorvenster. Je schrijft de NOD-tekst in het midden, gebruikt de knoppen bovenin voor openen, opslaan, testen en valideren, en leest de commandotips wanneer je op een bekende regel staat.</p><h2>Het venster</h2>{NodEditorScreenshot}<p class="shot-caption">Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>Name</code>.</p><h2>Een converter maken</h2><ol><li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.</li><li>Voeg optioneel <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot en met <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> toe voor symbolen links of rechts van waarden.</li><li>Schrijf de omzetting met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> of <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.</li><li>Gebruik <b>Validate</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.</li><li>Sla het bestand op zodra de converter klopt.</li></ol><h2>Commandotips</h2><p>De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Replace</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>More help</b> opent de volledige commandopagina.</p><h2>Undo, redo en herstel</h2><p><b>Undo</b> en <b>Redo</b> gaan over recente tekstbewerkingen. <b>Restore</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Tools &gt; Repair lines</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.</p>
+editor.nod_help.guide.intro=Dit hoofdstuk gaat over werken in het editorvenster. Je schrijft de NOD-tekst in het midden, gebruikt de knoppen bovenin voor openen, opslaan, testen en valideren, en leest de commandotips wanneer je op een bekende regel staat.
+editor.nod_help.guide.window_title=Het venster
+editor.nod_help.guide.screenshot_caption=Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>Name</code>.
+editor.nod_help.guide.create_title=Een converter maken
+editor.nod_help.guide.create.name=Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.
+editor.nod_help.guide.create.symbols=Voeg optioneel <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot en met <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> toe voor symbolen links of rechts van waarden.
+editor.nod_help.guide.create.rules=Schrijf de omzetting met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> of <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.
+editor.nod_help.guide.create.validate=Gebruik <b>Validate</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.
+editor.nod_help.guide.create.save=Sla het bestand op zodra de converter klopt.
+editor.nod_help.guide.tips_title=Commandotips
+editor.nod_help.guide.tips=De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Replace</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>More help</b> opent de volledige commandopagina.
+editor.nod_help.guide.undo_title=Undo, redo en herstel
+editor.nod_help.guide.undo=<b>Undo</b> en <b>Redo</b> gaan over recente tekstbewerkingen. <b>Restore</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Tools &gt; Repair lines</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.
 editor.nod_help.full.classic_book=<h2>Waarom oud en nieuw naast elkaar bestaan</h2><p>Syscalculator 2.0 is geen breuk met de oude NOD-bestanden. De bedoeling is juist dat oude converters herkenbaar blijven, terwijl de editor meer hulp geeft tijdens het schrijven, testen en onderhouden.</p><h2>Wat klassiek NOD sterk maakte</h2><p>Klassiek NOD was klein en direct. Een regel met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> rekende verder met <code>ans</code>. Een regel met <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> vertaalde een vaste waarde. Een regel met <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> veranderde het begin van tekst, bijvoorbeeld bij oude telefoonnummeromzettingen.</p><h2>Wat NOD 2.0 toevoegt</h2><p>NOD 2.0 bewaart die eenvoudige basis, maar zet er een moderne editor omheen: syntaxkleuring, commandotips, rechterklik-help, templates, validatie, testuitvoer, preview en herstel. De taal blijft leesbaar, maar de omgeving helpt sneller fouten vinden.</p><h2>Overzicht</h2><table><tr><th>Syscalculator 1.73 / NOD 1.x</th><th>Syscalculator 2.0 / NOD editor</th></tr><tr><td>Kleine tekstbestanden met klassieke commands zoals <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code> en <code>end</code>.</td><td>Dezelfde basis blijft werken, zodat oude NOD-bestanden herkenbaar en bruikbaar blijven.</td></tr><tr><td>Je moest vaak onthouden waar symbolen verschijnen en daarna in de oude calculator testen.</td><td>De editor toont een live preview/simulator waarin je meteen ziet waar <code>Symb1</code> t/m <code>Symb4</code> staan.</td></tr><tr><td><code>chg</code> was vooral klassieke prefixvervanging, handig voor oude telefoonnummer-omzettingen.</td><td><code>chg</code> blijft compatibel, maar NOD 2.0 kan ook patronen met <code>x</code>-capture gebruiken.</td></tr><tr><td>Help zat vooral in voorbeelden en ervaring.</td><td>De editor geeft suggesties, rechterklik-help, commandopagina's en voorbeelden per soort NOD-bestand.</td></tr></table><h2>Vuistregel</h2><p>Gebruik oude commands gerust wanneer je een bestaand bestand onderhoudt. Gebruik de modernere schrijfwijze wanneer de editor die voorstelt en het bestand daardoor duidelijker wordt. Compatibiliteit is belangrijk, maar leesbaarheid is het doel.</p>
 editor.nod_help.full.structure=<h2>Basisstructuur</h2><pre>Name Celsius naar Fahrenheit&#13;&#10;URLN Celsius naar Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;end</pre>
 editor.nod_help.full.workflow=<h2>Werkwijze</h2><ol><li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>; dan weet de converter hoe hij heet en welke labels zichtbaar zijn.</li><li>Kies optioneel symbolen met <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> t/m <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a>. Gebruik per waarde links of rechts, niet beide.</li><li>Voeg conversieregels toe: <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> voor rekenen, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> voor exacte tekstvertaling, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> voor prefixwijziging.</li><li>Gebruik <b>Valideren</b> of F5 om syntax te controleren en <b>Test</b> of F6 om de uitkomst te zien.</li><li>Zet <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> aan het einde.</li></ol>
@@ -381,6 +426,9 @@ editor.nod_help.full.classic=<h2>NOD editor introductie</h2><p>De NOD editor is 
 editor.nod_help.page.classic=Van klassiek NOD naar NOD 2.0
 formula_card.title=Formulekaart
 formula_card.count=Formulekaarten
+formula_card.formula_film=Formulefilm
+formula_card.formula_film_title=Formulefilm 2.1 experiment
+formula_card.formula_film_subtitle=Onderzoek voor bewegende formulekaarten en onderwijsfilms
 formula_card.details_header=Details, export en voorbeeld-NOD
 formula_card.copy_mathml=Kopieer MathML
 formula_card.copy_latex=Kopieer LaTeX
@@ -447,3 +495,4 @@ clipboard.debug.formula=Formule
 clipboard.debug.mathml=MathML
 clipboard.debug.mathml_available=MathML beschikbaar in gekopieerd/gemaild rapport.
 clipboard.debug.formula_input=invoer
+help.copy.copied=Gekopieerd

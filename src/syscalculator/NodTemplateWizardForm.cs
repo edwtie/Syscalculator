@@ -21,7 +21,7 @@ internal sealed class NodTemplateWizardForm : Form
         Height = 560;
         MinimizeBox = false;
         MaximizeBox = false;
-        ShowIcon = false;
+        AppWindowIcon.ApplyTo(this);
         StartPosition = FormStartPosition.CenterParent;
 
         BuildLayout();

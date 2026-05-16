@@ -20,6 +20,7 @@ public sealed class FindReplaceForm : Form
         _language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
 
         Text = T("find.title", "Find / replace");
+        AppWindowIcon.ApplyTo(this);
         Width = 520;
         Height = 190;
         FormBorderStyle = FormBorderStyle.FixedDialog;

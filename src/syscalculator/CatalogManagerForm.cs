@@ -17,6 +17,7 @@ public sealed class CatalogManagerForm : Form
         _language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
 
         Text = T("catalog.title", "Converter catalog");
+        AppWindowIcon.ApplyTo(this);
         Width = 760;
         Height = 460;
         StartPosition = FormStartPosition.CenterParent;

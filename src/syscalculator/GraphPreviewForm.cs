@@ -56,6 +56,7 @@ public sealed class GraphPreviewForm : Form
         _language = language;
 
         Text = T("editor.graph.title", "Graph Preview");
+        AppWindowIcon.ApplyTo(this);
         Width = 920;
         Height = 560;
         MinimumSize = new Size(700, 420);

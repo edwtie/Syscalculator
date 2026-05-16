@@ -68,6 +68,7 @@ public sealed class WizardExpressForm : Form
         _stateTimer.Tick += (_, _) => RefreshWizardState();
 
         Text = T("wizard.title", "WizardExpress");
+        AppWindowIcon.ApplyTo(this);
         Width = 215;
         Height = 285;
         StartPosition = FormStartPosition.CenterParent;
@@ -892,6 +893,7 @@ public sealed class WizardExpressForm : Form
             _text = text;
             _copyOutput = copyOutput;
             Text = T("wizard.advanced.title", "WizardExpress Data");
+            AppWindowIcon.ApplyTo(this);
             Width = 680;
             Height = 430;
             MinimumSize = new Size(560, 340);

@@ -149,6 +149,7 @@ internal sealed class SolverStepsForm : Form
         _language = language;
 
         Text = T("editor.solver_steps.title", "Solver stappen");
+        AppWindowIcon.ApplyTo(this);
         Width = 820;
         Height = 610;
         MinimumSize = new Size(620, 470);

@@ -18,6 +18,7 @@ Syscalculator 2.0 beta 1 (preview) = C#/.NET opvolger met NOD 1.0 compatibility 
 
 Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels voor de oude VB6-lijn.
 Zie `docs/RELEASE_PLAN.md` voor de releaseplanning van 1.74, 2.0 Daily, Beta en Production.
+Zie `docs/ARCHITECTURE_INDEX.md` voor de actuele softwarearchitectuur, Help-architectuur en NOD systeem-architectuur in Markdown met SVG-tekeningen.
 
 ## Projecten
 

@@ -136,6 +136,7 @@ catalog.choose_nod=选择 NOD...
 catalog.save=保存
 
 editor.title=NOD 编辑器 Plus
+editor.mode.advanced=高级模式
 editor.tab.new=新建
 editor.menu.file=文件
 editor.menu.file.new_tab=新建标签
@@ -199,11 +200,13 @@ editor.menu.view.dock_simulator=停靠模拟器
 editor.toolbar.new=新建
 editor.toolbar.open=打开
 editor.toolbar.save=保存
+editor.toolbar.template_wizard=模板
 editor.toolbar.undo=撤销
 editor.toolbar.redo=重做
 editor.toolbar.find=查找
 editor.toolbar.validate=验证
 editor.toolbar.test=测试
+editor.toolbar.solver_steps=求解
 editor.toolbar.repair=修复
 editor.toolbar.restore_original=恢复
 editor.preview.title=实时预览
@@ -233,6 +236,7 @@ editor.status.test_done=测试完成。
 editor.status.lines_repaired=行已修复。
 editor.status.original_restored=原始文本已恢复。
 editor.status.saved_short=已保存
+help.main.page.nodeditor.screenshot_alt=NOD 编辑器截图，包含工具栏、代码编辑器和命令提示.
 editor.status.position=行 {0}, 列 {1}
 editor.status.lines=行数 {0}
 editor.dialog.open_title=打开 NOD
@@ -262,6 +266,12 @@ wizard.excel_clipboard_restored.message=Excel 已覆盖剪贴板。WizardExpress
 wizard.status.error=已完成，但有错误
 
 editor.nod_help.suggestions=建议
+help.nod_screenshot.converter_name=摄氏转华氏
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=含义:
+help.nod_screenshot.name_meaning=内部转换器名称.
+help.nod_screenshot.example_label=示例:
+help.nod_screenshot.example_name=Name 邮编到地址演示
 editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius 到 Fahrenheit</div><div><b>含义:</b> 转换器内部名称。</div><div><b>示例:</b> <code>Name 邮编到地址示例</code>.</div>
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN 用户标题</div><div><b>含义:</b> 用户可见的标题或说明。</div><div><b>示例:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>含义:</b> 输入值的标签。</div><div><b>示例:</b> <code>input1 旧电话号码</code>.</div>
@@ -374,6 +384,7 @@ clipboard.debug.mail_failed=无法打开电子邮件程序: {0}
 clipboard.debug.copy_button=复制报告
 clipboard.debug.report_copied=报告已复制到剪贴板。
 clipboard.debug.copy_failed=无法将报告复制到剪贴板。
+help.copy.copied=Copied
 clipboard.debug.conversion=转换
 clipboard.debug.conversion_rows=已转换行
 clipboard.debug.conversion_cells=单元格

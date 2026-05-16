@@ -27,7 +27,7 @@ internal sealed class LanguageSelectionForm : Form
         MinimumSize = new Size(420, 440);
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.Sizable;
-        ShowIcon = false;
+        AppWindowIcon.ApplyTo(this);
         ShowInTaskbar = false;
         BackColor = Color.FromArgb(246, 248, 252);
         Font = new Font("Segoe UI", 9F, FontStyle.Regular);

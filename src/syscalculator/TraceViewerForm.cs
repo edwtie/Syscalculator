@@ -12,6 +12,7 @@ public sealed class TraceViewerForm : Form
     {
         var language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
         Text = language.Text("trace.title", "Calculation Trace");
+        AppWindowIcon.ApplyTo(this);
         Width = 760;
         Height = 420;
         StartPosition = FormStartPosition.CenterParent;

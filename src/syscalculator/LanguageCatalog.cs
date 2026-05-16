@@ -111,6 +111,18 @@ internal sealed class LanguageCatalog
             : fallback;
     }
 
+    public bool TryText(string key, out string value)
+    {
+        if (_texts.TryGetValue(key, out var text) && !string.IsNullOrWhiteSpace(text))
+        {
+            value = text;
+            return true;
+        }
+
+        value = "";
+        return false;
+    }
+
     // Zoek/commentaar: Voegt data of UI-regels toe voor AddLanguageFiles.
     private static void AddLanguageFiles(Dictionary<string, string> files, string directory)
     {

@@ -136,6 +136,7 @@ catalog.choose_nod=Scegli NOD...
 catalog.save=Salva
 
 editor.title=Editor NOD Plus
+editor.mode.advanced=Modalita avanzata
 editor.tab.new=nuovo
 editor.menu.file=File
 editor.menu.file.new_tab=Nuova scheda
@@ -199,11 +200,13 @@ editor.menu.view.dock_simulator=Aggancia simulatore
 editor.toolbar.new=Nuovo
 editor.toolbar.open=Apri
 editor.toolbar.save=Salva
+editor.toolbar.template_wizard=Modelli
 editor.toolbar.undo=Annulla
 editor.toolbar.redo=Ripeti
 editor.toolbar.find=Trova
 editor.toolbar.validate=Valida
 editor.toolbar.test=Test
+editor.toolbar.solver_steps=Solver
 editor.toolbar.repair=Ripara
 editor.toolbar.restore_original=Ripristina
 editor.preview.title=Anteprima live
@@ -233,6 +236,7 @@ editor.status.test_done=Test completato.
 editor.status.lines_repaired=Righe riparate.
 editor.status.original_restored=Testo originale ripristinato.
 editor.status.saved_short=Salvato
+help.main.page.nodeditor.screenshot_alt=Schermata dell'Editor NOD con barra strumenti, editor codice e suggerimento comando.
 editor.status.position=Riga {0}, Colonna {1}
 editor.status.lines=Righe {0}
 editor.dialog.open_title=Apri NOD
@@ -262,6 +266,12 @@ wizard.excel_clipboard_restored.message=Excel ha sovrascritto gli appunti. Wizar
 wizard.status.error=Completato con errori
 
 editor.nod_help.suggestions=Suggerimenti
+help.nod_screenshot.converter_name=Celsius a Fahrenheit
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=Significato:
+help.nod_screenshot.name_meaning=nome interno del convertitore.
+help.nod_screenshot.example_label=Esempio:
+help.nod_screenshot.example_name=Name Postcode a indirizzo demo
 editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius a Fahrenheit</div><div><b>Significato:</b> nome interno del convertitore.</div><div><b>Esempio:</b> <code>Name Postcode a Address demo</code>.</div>
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Titolo utente</div><div><b>Significato:</b> titolo o descrizione visibile per l utente.</div><div><b>Esempio:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Significato:</b> etichetta del valore di input.</div><div><b>Esempio:</b> <code>input1 Old phone number</code>.</div>
@@ -373,6 +383,7 @@ clipboard.debug.mail_failed=Impossibile aprire il programma e-mail: {0}
 clipboard.debug.copy_button=Copia rapporto
 clipboard.debug.report_copied=Rapporto copiato negli appunti.
 clipboard.debug.copy_failed=Impossibile copiare il rapporto negli appunti.
+help.copy.copied=Copiato
 clipboard.debug.conversion=Conversione
 clipboard.debug.conversion_rows=Righe convertite
 clipboard.debug.conversion_cells=Celle

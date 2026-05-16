@@ -136,6 +136,7 @@ catalog.choose_nod=Escolher NOD...
 catalog.save=Salvar
 
 editor.title=Editor NOD Plus
+editor.mode.advanced=Modo avancado
 editor.tab.new=novo
 editor.menu.file=Arquivo
 editor.menu.file.new_tab=Nova aba
@@ -199,11 +200,13 @@ editor.menu.view.dock_simulator=Encaixar simulador
 editor.toolbar.new=Novo
 editor.toolbar.open=Abrir
 editor.toolbar.save=Salvar
+editor.toolbar.template_wizard=Modelos
 editor.toolbar.undo=Desfazer
 editor.toolbar.redo=Refazer
 editor.toolbar.find=Localizar
 editor.toolbar.validate=Validar
 editor.toolbar.test=Teste
+editor.toolbar.solver_steps=Solver
 editor.toolbar.repair=Reparar
 editor.toolbar.restore_original=Restaurar
 editor.preview.title=Visualizacao ao vivo
@@ -233,6 +236,7 @@ editor.status.test_done=Teste concluido.
 editor.status.lines_repaired=Linhas reparadas.
 editor.status.original_restored=Texto original restaurado.
 editor.status.saved_short=Salvo
+help.main.page.nodeditor.screenshot_alt=Captura de tela do Editor NOD com barra de ferramentas, editor de codigo e dica de comando.
 editor.status.position=Linha {0}, Coluna {1}
 editor.status.lines=Linhas {0}
 editor.dialog.open_title=Abrir NOD
@@ -262,6 +266,12 @@ wizard.excel_clipboard_restored.message=Excel sobrescreveu a area de transferenc
 wizard.status.error=Concluido com erros
 
 editor.nod_help.suggestions=Sugestões
+help.nod_screenshot.converter_name=Celsius para Fahrenheit
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=Significado:
+help.nod_screenshot.name_meaning=nome interno do conversor.
+help.nod_screenshot.example_label=Exemplo:
+help.nod_screenshot.example_name=Name Codigo postal para endereco demo
 editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius para Fahrenheit</div><div><b>Significado:</b> nome interno del convertitore.</div><div><b>Exemplo:</b> <code>Name Postcode para Address demo</code>.</div>
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Título do usuário</div><div><b>Significado:</b> titolo o descrizione visibile per l utente.</div><div><b>Exemplo:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Significado:</b> etichetta del valore di input.</div><div><b>Exemplo:</b> <code>input1 Old phone number</code>.</div>
@@ -373,6 +383,7 @@ clipboard.debug.mail_failed=Nao foi possivel abrir o programa de e-mail: {0}
 clipboard.debug.copy_button=Copiar relatorio
 clipboard.debug.report_copied=Relatorio copiado para a area de transferencia.
 clipboard.debug.copy_failed=Nao foi possivel copiar o relatorio para a area de transferencia.
+help.copy.copied=Copiado
 clipboard.debug.conversion=Conversao
 clipboard.debug.conversion_rows=Linhas convertidas
 clipboard.debug.conversion_cells=Celulas

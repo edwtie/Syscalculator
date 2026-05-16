@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1500" viewBox="0 0 2400 1500" role="img" aria-labelledby="title desc">
+  <title id="title">NOD systeem-architectuur</title>
+  <desc id="desc">Overzicht van invoer, parser, documentmodel, engine routes en resultaten van het NOD systeem.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill:#f8fafc; }
+      .ink { fill:#020617; font-family:"Segoe UI", Arial, sans-serif; }
+      .muted { fill:#334155; font-family:"Segoe UI", Arial, sans-serif; }
+      .title { font-size:48px; font-weight:800; }
+      .subtitle { font-size:21px; }
+      .section-title { font-size:32px; font-weight:800; }
+      .section-sub { font-size:16px; }
+      .card-title { font-size:18px; font-weight:800; }
+      .card-text { font-size:14px; }
+      .small { font-size:13px; }
+      .source { fill:#eff6ff; stroke:#3b82f6; stroke-width:2.4; }
+      .parser { fill:#ecfdf5; stroke:#22c55e; stroke-width:2.4; }
+      .engine { fill:#f5f3ff; stroke:#7c3aed; stroke-width:2.4; }
+      .result { fill:#fffbeb; stroke:#f59e0b; stroke-width:2.4; }
+      .runtime { fill:#fff; stroke:#cbd5e1; stroke-width:1.5; }
+      .card { fill:#fff; stroke:#cbd5e1; stroke-width:1.3; }
+      .blue { fill:#2563eb; }
+      .green { fill:#16a34a; }
+      .violet { fill:#7c3aed; }
+      .amber { fill:#d97706; }
+      .cyan { fill:#0891b2; }
+      .rose { fill:#e11d48; }
+      .line { stroke:#475569; stroke-width:3.5; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="2400" height="1500"/>
+  <text class="ink title" x="70" y="90">NOD systeem-architectuur</text>
+  <text class="muted subtitle" x="74" y="126">Van .nod-bestand naar parser, documentmodel, engine routes, trace, preview en resultaat.</text>
+
+  <rect x="1660" y="42" width="570" height="104" rx="18" class="runtime" stroke-width="2"/>
+  <text class="muted small" x="1690" y="72">Build output</text>
+  <text class="ink card-title" x="1690" y="101">NodSystem Core</text>
+  <text class="muted card-text" x="1690" y="126">Gebruikt door app, demo en tests.</text>
+
+  <rect x="70" y="180" width="430" height="850" rx="22" class="source"/>
+  <text class="ink section-title" x="105" y="238">Invoer en UI</text>
+  <text class="muted section-sub" x="105" y="265">Schermen, bestanden en testomgeving</text>
+
+  <rect x="105" y="315" width="350" height="106" rx="13" class="card"/>
+  <rect x="105" y="315" width="10" height="106" rx="10" class="blue"/>
+  <text class="ink card-title" x="132" y="350">NOD Editor</text>
+  <text class="muted card-text" x="132" y="377">Bewerken, valideren, preview,</text>
+  <text class="muted card-text" x="132" y="398">trace en graph weergave.</text>
+
+  <rect x="105" y="455" width="350" height="106" rx="13" class="card"/>
+  <rect x="105" y="455" width="10" height="106" rx="10" class="blue"/>
+  <text class="ink card-title" x="132" y="490">Converter catalogus</text>
+  <text class="muted card-text" x="132" y="517">Leest .nod bestanden, groepen</text>
+  <text class="muted card-text" x="132" y="538">en UI metadata.</text>
+
+  <rect x="105" y="595" width="350" height="106" rx="13" class="card"/>
+  <rect x="105" y="595" width="10" height="106" rx="10" class="blue"/>
+  <text class="ink card-title" x="132" y="630">App workflows</text>
+  <text class="muted card-text" x="132" y="657">Hoofdcalculator, WizardExpress</text>
+  <text class="muted card-text" x="132" y="678">en clipboard conversies.</text>
+
+  <rect x="105" y="735" width="350" height="106" rx="13" class="card"/>
+  <rect x="105" y="735" width="10" height="106" rx="10" class="cyan"/>
+  <text class="ink card-title" x="132" y="770">Resources</text>
+  <text class="muted card-text" x="132" y="797">Converters, voorbeelden, help</text>
+  <text class="muted card-text" x="132" y="818">en taalbestanden.</text>
+
+  <rect x="105" y="875" width="350" height="106" rx="13" class="card"/>
+  <rect x="105" y="875" width="10" height="106" rx="10" class="rose"/>
+  <text class="ink card-title" x="132" y="910">Demo en tests</text>
+  <text class="muted card-text" x="132" y="937">Console demo en regressietests</text>
+  <text class="muted card-text" x="132" y="958">voor parser en engine.</text>
+
+  <rect x="570" y="180" width="430" height="850" rx="22" class="parser"/>
+  <text class="ink section-title" x="605" y="238">Parser en model</text>
+  <text class="muted section-sub" x="605" y="265">Van tekst naar gestructureerde data</text>
+
+  <rect x="605" y="315" width="350" height="106" rx="13" class="card"/>
+  <rect x="605" y="315" width="10" height="106" rx="10" class="green"/>
+  <text class="ink card-title" x="632" y="350">NodTextNormalizer</text>
+  <text class="muted card-text" x="632" y="377">Maakt bronregels consistent</text>
+  <text class="muted card-text" x="632" y="398">voor parser en editor.</text>
+
+  <rect x="605" y="455" width="350" height="106" rx="13" class="card"/>
+  <rect x="605" y="455" width="10" height="106" rx="10" class="green"/>
+  <text class="ink card-title" x="632" y="490">NodParser</text>
+  <text class="muted card-text" x="632" y="517">Leest name, input, output,</text>
+  <text class="muted card-text" x="632" y="538">math, chg, trans en mode.</text>
+
+  <rect x="605" y="595" width="350" height="106" rx="13" class="card"/>
+  <rect x="605" y="595" width="10" height="106" rx="10" class="green"/>
+  <text class="ink card-title" x="632" y="630">NodDocument</text>
+  <text class="muted card-text" x="632" y="657">Centraal documentmodel met</text>
+  <text class="muted card-text" x="632" y="678">inputs, outputs en regels.</text>
+
+  <rect x="605" y="735" width="350" height="106" rx="13" class="card"/>
+  <rect x="605" y="735" width="10" height="106" rx="10" class="green"/>
+  <text class="ink card-title" x="632" y="770">Speciale modellen</text>
+  <text class="muted card-text" x="632" y="797">DataDefinition, Equation,</text>
+  <text class="muted card-text" x="632" y="818">CalculusStep en trace data.</text>
+
+  <rect x="605" y="875" width="350" height="106" rx="13" class="card"/>
+  <rect x="605" y="875" width="10" height="106" rx="10" class="green"/>
+  <text class="ink card-title" x="632" y="910">Compatibiliteit</text>
+  <text class="muted card-text" x="632" y="937">Legacy input1/input2 en</text>
+  <text class="muted card-text" x="632" y="958">NOD 1.0 math blijven werken.</text>
+
+  <rect x="1070" y="180" width="740" height="850" rx="22" class="engine"/>
+  <text class="ink section-title" x="1105" y="238">Uitvoering</text>
+  <text class="muted section-sub" x="1105" y="265">NodEngine kiest de route op basis van het document</text>
+
+  <rect x="1110" y="315" width="660" height="98" rx="13" class="card"/>
+  <rect x="1110" y="315" width="10" height="98" rx="10" class="violet"/>
+  <text class="ink card-title" x="1137" y="350">NodEngine</text>
+  <text class="muted card-text" x="1137" y="377">Forward, reverse, trace, equation solve</text>
+  <text class="muted card-text" x="1137" y="398">en data transformatie.</text>
+
+  <rect x="1110" y="445" width="310" height="126" rx="13" class="card"/>
+  <rect x="1110" y="445" width="10" height="126" rx="10" class="violet"/>
+  <text class="ink card-title" x="1137" y="480">Math route</text>
+  <text class="muted card-text" x="1137" y="507">MathStep10, expressies,</text>
+  <text class="muted card-text" x="1137" y="528">NodExpressionEvaluator</text>
+  <text class="muted card-text" x="1137" y="549">en NodReverse.</text>
+
+  <rect x="1460" y="445" width="310" height="126" rx="13" class="card"/>
+  <rect x="1460" y="445" width="10" height="126" rx="10" class="violet"/>
+  <text class="ink card-title" x="1487" y="480">Tekst route</text>
+  <text class="muted card-text" x="1487" y="507">chg en trans voeren</text>
+  <text class="muted card-text" x="1487" y="528">prefix- en waardeomzetting</text>
+  <text class="muted card-text" x="1487" y="549">uit.</text>
+
+  <rect x="1110" y="605" width="310" height="126" rx="13" class="card"/>
+  <rect x="1110" y="605" width="10" height="126" rx="10" class="violet"/>
+  <text class="ink card-title" x="1137" y="640">Data route</text>
+  <text class="muted card-text" x="1137" y="667">DataTransformEngine,</text>
+  <text class="muted card-text" x="1137" y="688">phoneformat, lookup,</text>
+  <text class="muted card-text" x="1137" y="709">SQL preview.</text>
+
+  <rect x="1460" y="605" width="310" height="126" rx="13" class="card"/>
+  <rect x="1460" y="605" width="10" height="126" rx="10" class="violet"/>
+  <text class="ink card-title" x="1487" y="640">Vergelijking route</text>
+  <text class="muted card-text" x="1487" y="667">EquationEngine gebruikt</text>
+  <text class="muted card-text" x="1487" y="688">given, equation, solve</text>
+  <text class="muted card-text" x="1487" y="709">en constraints.</text>
+
+  <rect x="1110" y="765" width="310" height="126" rx="13" class="card"/>
+  <rect x="1110" y="765" width="10" height="126" rx="10" class="violet"/>
+  <text class="ink card-title" x="1137" y="800">Calculus route</text>
+  <text class="muted card-text" x="1137" y="827">CalculusEngine voert</text>
+  <text class="muted card-text" x="1137" y="848">diff, integral en limit</text>
+  <text class="muted card-text" x="1137" y="869">uit.</text>
+
+  <rect x="1460" y="765" width="310" height="126" rx="13" class="card"/>
+  <rect x="1460" y="765" width="10" height="126" rx="10" class="violet"/>
+  <text class="ink card-title" x="1487" y="800">Trace en uitleg</text>
+  <text class="muted card-text" x="1487" y="827">CalculationTrace,</text>
+  <text class="muted card-text" x="1487" y="848">SolverStepBuilder en</text>
+  <text class="muted card-text" x="1487" y="869">ReportBuilder.</text>
+
+  <rect x="1880" y="180" width="450" height="850" rx="22" class="result"/>
+  <text class="ink section-title" x="1915" y="238">Resultaten</text>
+  <text class="muted section-sub" x="1915" y="265">Terug naar UI, bestanden of tests</text>
+
+  <rect x="1915" y="315" width="365" height="92" rx="13" class="card"/>
+  <rect x="1915" y="315" width="10" height="92" rx="10" class="amber"/>
+  <text class="ink card-title" x="1942" y="350">NodResult</text>
+  <text class="muted card-text" x="1942" y="377">Tekstresultaat en optionele</text>
+  <text class="muted card-text" x="1942" y="398">numerieke waarde.</text>
+
+  <rect x="1915" y="437" width="365" height="92" rx="13" class="card"/>
+  <rect x="1915" y="437" width="10" height="92" rx="10" class="amber"/>
+  <text class="ink card-title" x="1942" y="472">FieldTransformResult</text>
+  <text class="muted card-text" x="1942" y="499">Origineel, genormaliseerd</text>
+  <text class="muted card-text" x="1942" y="520">en omgezet veld.</text>
+
+  <rect x="1915" y="559" width="365" height="92" rx="13" class="card"/>
+  <rect x="1915" y="559" width="10" height="92" rx="10" class="amber"/>
+  <text class="ink card-title" x="1942" y="594">EquationResult</text>
+  <text class="muted card-text" x="1942" y="621">Opgeloste variabele, waarde</text>
+  <text class="muted card-text" x="1942" y="642">en uitlegtekst.</text>
+
+  <rect x="1915" y="681" width="365" height="92" rx="13" class="card"/>
+  <rect x="1915" y="681" width="10" height="92" rx="10" class="amber"/>
+  <text class="ink card-title" x="1942" y="716">SolverStepReport</text>
+  <text class="muted card-text" x="1942" y="743">Stappen, MathML, rekenkaart</text>
+  <text class="muted card-text" x="1942" y="764">en graph informatie.</text>
+
+  <rect x="1915" y="803" width="365" height="92" rx="13" class="card"/>
+  <rect x="1915" y="803" width="10" height="92" rx="10" class="amber"/>
+  <text class="ink card-title" x="1942" y="838">Preview en SQL</text>
+  <text class="muted card-text" x="1942" y="865">Data plan, preview report</text>
+  <text class="muted card-text" x="1942" y="886">en update SQL.</text>
+
+  <rect x="1915" y="925" width="365" height="72" rx="13" class="card"/>
+  <rect x="1915" y="925" width="10" height="72" rx="10" class="amber"/>
+  <text class="ink card-title" x="1942" y="955">UI weergave</text>
+  <text class="muted card-text" x="1942" y="982">Resultaat, graph, trace, clipboard.</text>
+
+  <path class="line" d="M500 368 H570"/>
+  <path class="line" d="M500 508 H570"/>
+  <path class="line" d="M500 648 H570"/>
+  <path class="line" d="M500 788 H570"/>
+  <path class="line" d="M500 928 H570"/>
+
+  <path class="line" d="M1000 368 H1070"/>
+  <path class="line" d="M1000 508 H1070"/>
+  <path class="line" d="M1000 648 H1070"/>
+  <path class="line" d="M1000 788 H1070"/>
+  <path class="line" d="M1000 928 H1070"/>
+
+  <path class="line" d="M1810 364 H1880"/>
+  <path class="line" d="M1810 508 H1880"/>
+  <path class="line" d="M1810 668 H1880"/>
+  <path class="line" d="M1810 828 H1880"/>
+
+  <rect x="190" y="1110" width="2020" height="220" rx="22" class="runtime" stroke-width="2"/>
+  <text class="ink section-title" x="240" y="1172">Runtime hoofdlijn</text>
+  <text class="muted subtitle" x="240" y="1215">Een .nod-bestand wordt genormaliseerd, geparst en vastgelegd als NodDocument.</text>
+  <text class="muted subtitle" x="240" y="1250">Daarna kiest NodEngine de juiste route: math, tekst, data, vergelijking of calculus.</text>
+  <text class="muted subtitle" x="240" y="1285">De uitkomst gaat terug als resultaat, trace, stappenrapport, SQL preview of graph informatie.</text>
+
+  <path class="line" d="M1200 1030 V1110"/>
+  <path class="line" d="M1580 1030 V1110"/>
+</svg>

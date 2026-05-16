@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Tiedragon.Help;
 using Tiedragon.NodSystem.Core;
 
 namespace Syscalculator.UI.WinForms;
@@ -51,6 +52,7 @@ internal sealed class FormulaCardForm : Form
     private readonly Button _nextButton;
     private readonly IReadOnlyList<FormulaCard> _cards;
     private readonly LanguageCatalog _language;
+    private readonly LanguageCatalog _englishLanguage;
     private readonly bool _enableFormulaFilmExperiment;
     private bool _browserFailed;
     private string? _pendingHtml;
@@ -59,10 +61,12 @@ internal sealed class FormulaCardForm : Form
     public FormulaCardForm(LanguageCatalog language, bool enableFormulaFilmExperiment = false)
     {
         _language = language;
+        _englishLanguage = LanguageCatalog.Load(AppContext.BaseDirectory, "eng.lng");
         _enableFormulaFilmExperiment = enableFormulaFilmExperiment;
         _cards = FormulaCardCatalog.GetDefaultCards();
 
-        Text = T("formula_card.title", "Formulekaart");
+        Text = T("formula_card.title", "Formula cards");
+        AppWindowIcon.ApplyTo(this);
         Width = 1180;
         Height = 580;
         MinimizeBox = false;
@@ -84,7 +88,7 @@ internal sealed class FormulaCardForm : Form
         _countLabel = new Label
         {
             Dock = DockStyle.Fill,
-            Text = $"{T("formula_card.count", "Formulekaarten")} ({_cards.Count})",
+            Text = $"{T("formula_card.count", "Formula cards")} ({_cards.Count})",
             Font = new Font("Segoe UI", 9, FontStyle.Bold),
             ForeColor = Color.FromArgb(30, 45, 65),
             TextAlign = ContentAlignment.MiddleLeft,
@@ -333,7 +337,7 @@ internal sealed class FormulaCardForm : Form
         if (_enableFormulaFilmExperiment)
         {
             var experimentNode = new TreeNode(T("formula_card.topic_experiment", "2.1 experiment"));
-            experimentNode.Nodes.Add(new TreeNode(T("formula_card.formula_film", "Formulefilm")) { Tag = "formula-film" });
+            experimentNode.Nodes.Add(new TreeNode(T("formula_card.formula_film", "Formula film")) { Tag = "formula-film" });
             experimentNode.Expand();
             _cardsTree.Nodes.Add(experimentNode);
         }
@@ -439,7 +443,7 @@ internal sealed class FormulaCardForm : Form
         e.Handled = true;
     }
 
-    private string T(string key, string fallback) => _language.Text(key, fallback);
+    private string T(string key, string fallback) => HelpApi.Text(ResolveHelpLanguageText, key, fallback);
 
     private void ShowSelectedCard()
     {
@@ -458,290 +462,18 @@ internal sealed class FormulaCardForm : Form
 
     private string BuildFormulaFilmHtml()
     {
-        return $$"""
-        <!doctype html>
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <style>
-        :root { color-scheme: light; font-family: "Segoe UI", Arial, sans-serif; background: #f5f7fa; color: #1e2d41; }
-        body { margin: 0; padding: 20px; background: #f5f7fa; }
-        .page { max-width: 760px; margin: 0 auto; }
-        h1 { margin: 0 0 8px; font-size: 30px; font-weight: 650; color: #10233f; }
-        h2 { margin: 22px 0 10px; font-size: 18px; color: #0f3f8f; }
-        h3 { margin: 0 0 10px; color: #0f3f8f; }
-        p { line-height: 1.55; color: #43546a; }
-        code { background: #eef4ff; border: 1px solid #d7e3f7; border-radius: 5px; padding: 1px 5px; color: #0f3f8f; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #d9e2ec; border-radius: 8px; overflow: hidden; background: #fff; }
-        th, td { padding: 8px 10px; border-bottom: 1px solid #e5edf5; text-align: left; vertical-align: top; font-size: 13px; }
-        tr:last-child td { border-bottom: 0; }
-        th { background: #eaf2ff; color: #0f3f8f; font-weight: 700; }
-        .subtitle { color: #5d6c7e; margin-bottom: 18px; font-size: 14px; }
-        .notice { background:#fff8e6; border:1px solid #f4d184; border-left:4px solid #d69400; border-radius:8px; padding:10px 12px; margin:10px 0 14px; color:#3f2f12; }
-        .generator-card { border:1px solid #cbdcf2; border-radius:10px; background:#ffffff; padding:14px; margin:14px 0 18px; box-shadow:0 6px 18px rgba(15,23,42,.07); }
-        .generator-toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 12px; }
-        .generator-toolbar button { border:1px solid #b9d2f2; background:#eef6ff; color:#0f3f8f; border-radius:7px; padding:7px 11px; font-weight:700; cursor:pointer; }
-        .generator-toolbar button:hover { background:#dfeeff; }
-        .film-stage { position:relative; height:190px; border:1px solid #d8e5f5; border-radius:9px; background:linear-gradient(180deg,#f8fbff,#eef6ff); overflow:hidden; margin:10px 0 8px; }
-        .actor { position:absolute; left:var(--x); top:var(--y); color:#004aad; font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:30px; font-weight:700; opacity:0; transform:translate(0,0) scale(1); transform-origin:center bottom; transition:none; }
-        .actor.small { font-size:15px; line-height:1; }
-        .actor.red { color:#dc2626; }
-        .actor.gray { color:#9aa9bd; }
-        .actor.ink { color:#111827; }
-        .actor.memory.show { opacity:0; }
-        .actor.memory.visible.show { opacity:1; }
-        .actor.soft { color:#93c5fd; filter:blur(.2px); }
-        .actor.ghost-power { color:#b9d7ff; font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:16px; font-weight:700; filter:blur(.15px); }
-        .actor.note { color:#475569; font-family:"Segoe UI",Arial,sans-serif; font-size:13px; font-weight:650; }
-        .actor.formula-copy { color:#004aad; font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:18px; font-weight:700; }
-        .actor.helper { font-size:15px; color:#5b7aa8; opacity:.78; }
-        .actor.show { opacity:1; transition:opacity .35s ease, transform 1.25s ease, left 1.25s ease, top 1.25s ease, font-size 1.25s ease, color .45s ease; }
-        .actor.fade { opacity:0; transition:opacity .42s ease, transform .42s ease; }
-        .actor.pop { transform:translate(0,-8px) scale(.65); opacity:0; transition:opacity .55s ease, transform .55s ease; }
-        .film-caption { color:#43546a; font-size:13px; min-height:22px; }
-        .film-code { background:#101827; color:#e5eefc; border-radius:8px; padding:10px 12px; margin:10px 0 0; font-family:Consolas,"Cascadia Mono",monospace; white-space:pre-wrap; }
-        </style>
-        </head>
-        <body>
-        <main class="page">
-          <h1>{{Html(T("formula_card.formula_film_title", "Formulefilm 2.1 experiment"))}}</h1>
-          <div class="subtitle">{{Html(T("formula_card.formula_film_subtitle", "Onderzoek voor bewegende formulekaarten en onderwijsfilms"))}}</div>
-          <div class="notice"><b>Status:</b> dit is geen gewone NOD 2.0 beta-functie. Het hoort bij Syscalculator 2.1 onderzoek: een formule-filmgenerator waarin getallen, machten, haakjes en symbolen als losse acteurs bewegen.</div>
-          <p>De huidige Solver blijft nuttig voor eenvoudige stap-uitleg, maar kettingregel, productregel, quotientregel en integralen vragen een nieuwe technische animatie-API. Daarom staat dit onderwerp bij de formulekaart als demo en onderzoekspunt.</p>
-          <div class="generator-card">
-            <h3>Interactieve formulefilm-preview</h3>
-            <p>Dit is nog geen echte AI-service. Het laat wel de technische richting zien: AI of regels leveren straks een scenescript, en de formulekaart speelt dat script als acteurs af.</p>
-            <div class="generator-toolbar">
-              <button type="button" onclick="playPower(2)">Genereer x²</button>
-              <button type="button" onclick="playPower(3)">Genereer x³</button>
-              <button type="button" onclick="playChainPreview()">Kettingregel preview</button>
-            </div>
-            <div id="filmStage" class="film-stage" aria-label="Formulefilm preview"></div>
-            <div id="filmCaption" class="film-caption">Klik op een voorbeeld om de formulefilm lokaal te genereren.</div>
-            <div id="filmCode" class="film-code">FormulaFilm.Generate("x^2")</div>
-          </div>
-          <h2>Onderzoeksvragen</h2>
-          <table>
-            <tr><th>Onderdeel</th><th>Waarom moeilijk?</th><th>2.1-richting</th></tr>
-            <tr><td>Machtsregel</td><td>Exponent, coefficient en variabele moeten apart blijven bewegen.</td><td>Formule opsplitsen in acteurs.</td></tr>
-            <tr><td>Somregel</td><td>Meerdere termen moeten tegelijk maar onafhankelijk werken.</td><td>Groepen per term.</td></tr>
-            <tr><td>Kettingregel</td><td>Er is een buitenfunctie en binnenfunctie.</td><td>Geneste acteurs/groepen.</td></tr>
-            <tr><td>Integralen</td><td>Primitiveren is terugrekenen en vaak gekoppeld aan differentiatie.</td><td>Animatie met heen- en terugrichting.</td></tr>
-            <tr><td>Export</td><td>Live berekenen is zwaar en niet altijd nodig.</td><td>NOD + filmkaart/HTML/SVG/MP4.</td></tr>
-          </table>
-        </main>
-        <script>
-        const stage = document.getElementById('filmStage');
-        const caption = document.getElementById('filmCaption');
-        const code = document.getElementById('filmCode');
-        let runId = 0;
-
-        function clearStage() {
-          runId++;
-          stage.innerHTML = '';
-          return runId;
-        }
-
-        function actor(text, x, y, cls = '') {
-          const el = document.createElement('span');
-          el.className = 'actor ' + cls;
-          el.textContent = text;
-          el.style.setProperty('--x', x + 'px');
-          el.style.setProperty('--y', y + 'px');
-          stage.appendChild(el);
-          requestAnimationFrame(() => el.classList.add('show'));
-          return el;
-        }
-
-        function move(el, x, y, scale = 1) {
-          el.style.left = x + 'px';
-          el.style.top = y + 'px';
-          el.style.transform = 'scale(' + scale + ')';
-        }
-
-        function text(el, value) {
-          el.textContent = value;
-        }
-
-        function setCaption(value) {
-          caption.textContent = value;
-        }
-
-        function wait(ms, id) {
-          return new Promise(resolve => setTimeout(() => resolve(id === runId), ms));
-        }
-
-        function showPowerStart(n) {
-          clearStage();
-          code.textContent = 'FormulaFilm.Generate("diff x^' + n + '")\\nklik op Genereer om de stappen rustig af te spelen';
-          setCaption('Beginbeeld: eerst goed kijken naar de functie f(x) = x^' + n + '.');
-          actor('f', 24, 58);
-          actor('(', 44, 58);
-          actor('x', 57, 58);
-          actor(')', 72, 58);
-          actor('=', 96, 58);
-          actor('x', 134, 58);
-          actor(String(n), 151, 47, 'small red');
-        }
-
-        async function playPower(n) {
-          const id = clearStage();
-          const next = n - 1;
-          code.textContent = 'FormulaFilm.Generate("diff x^' + n + '")\\nactors: f, x, exponent ' + n + ', coefficient ' + n + ', exponent ' + next;
-          setCaption('Beginbeeld: eerst goed kijken naar de functie f(x) = x^' + n + '.');
-
-          const f = actor('f', 24, 58);
-          const open = actor('(', 44, 58);
-          const arg = actor('x', 57, 58);
-          const close = actor(')', 72, 58);
-          const eq = actor('=', 96, 58);
-          const x = actor('x', 134, 58);
-          const oldExp = actor(String(n), 151, 47, 'small gray memory');
-          const exp = actor(String(n), 151, 47, 'small red');
-          if (!await wait(1900, id)) return;
-
-          setCaption('De macht ' + n + ' beweegt naar voren en wordt coefficient.');
-          const prime = actor("'", 36, 47, 'red');
-          if (!await wait(420, id)) return;
-          prime.classList.remove('red');
-          oldExp.classList.add('visible');
-          exp.classList.remove('small');
-          move(exp, 126, 58, 1);
-          move(x, 158, 58, 1);
-          move(oldExp, 175, 47, 1);
-          if (!await wait(1500, id)) return;
-
-          setCaption('De oude macht wordt kleiner: ' + n + ' - 1 = ' + next + '.');
-          oldExp.classList.remove('gray');
-          oldExp.classList.add('red');
-          text(oldExp, n + ' - 1');
-          if (!await wait(900, id)) return;
-          text(oldExp, String(next));
-          if (!await wait(850, id)) return;
-
-          if (next === 1) {
-            setCaption('x¹ is gewoon x. De 1 verdwijnt, maar x blijft meedoen.');
-            oldExp.classList.add('pop');
-            move(exp, 126, 58, 1);
-            move(x, 158, 58, 1);
-            if (!await wait(850, id)) return;
-            setCaption("Eindbeeld: f'(x) = " + n + 'x');
-          } else {
-            setCaption('De macht blijft zichtbaar: dit wordt ' + n + 'x^' + next + '.');
-            move(oldExp, 170, 47, 1);
-            move(x, 154, 58, 1);
-            if (!await wait(850, id)) return;
-            setCaption("Eindbeeld: f'(x) = " + n + 'x^' + next);
-          }
-        }
-
-        async function playChainPreview() {
-          const id = clearStage();
-          code.textContent = 'FormulaFilm.Generate("diff (x^2 - 1)^3")\\nactors: outer exponent, inner group, constant, inner derivative';
-          setCaption('Kettingregel is 2.1 onderzoek: buitenfunctie en binnenfunctie worden aparte groepen.');
-          actor('f', 20, 58);
-          actor('(x)', 50, 58);
-          actor('=', 100, 58);
-          const openBlock = actor('(', 136, 58);
-          const blockX = actor('x', 154, 58);
-          const blockInnerExp = actor('2', 169, 47, 'small');
-          const blockMinus = actor('- 1', 184, 58);
-          const closeBlock = actor(')', 224, 58);
-          const outerOldExp = actor('3', 242, 47, 'small gray memory');
-          const exp = actor('3', 242, 47, 'small red');
-          if (!await wait(1900, id)) return;
-          const prime = actor("'", 32, 47, 'red');
-          setCaption("We zoeken de afgeleide: f(x) wordt f'(x). Daarna gaat de buitenmacht 3 naar voren.");
-          if (!await wait(650, id)) return;
-          prime.classList.remove('red');
-          setCaption('Buitenmacht 3 gaat eerst bovenlangs naar voren; zo blijft hij de buitenmacht.');
-          outerOldExp.classList.add('visible');
-          exp.classList.remove('small');
-          move(exp, 198, 30, .78);
-          if (!await wait(760, id)) return;
-          setCaption('Nu wordt de buitenmacht de coefficient voor het hele binnenblok.');
-          move(exp, 130, 60, .82);
-          move(openBlock, 154, 58, 1);
-          move(blockX, 172, 58, 1);
-          move(blockInnerExp, 187, 47, 1);
-          move(blockMinus, 202, 58, 1);
-          move(closeBlock, 242, 58, 1);
-          move(outerOldExp, 260, 47, 1);
-          if (!await wait(1400, id)) return;
-          exp.classList.remove('red');
-          setCaption('De buitenmacht rekent terug: 3 - 1 wordt 2.');
-          outerOldExp.classList.remove('gray');
-          outerOldExp.classList.add('red');
-          text(outerOldExp, '3 - 1');
-          if (!await wait(850, id)) return;
-          text(outerOldExp, '2');
-          if (!await wait(700, id)) return;
-          outerOldExp.classList.remove('red');
-          const innerX = actor('x', 172, 58, 'ink');
-          const innerOldExp = actor('2', 187, 47, 'small gray memory');
-          const innerMovingExp = actor('2', 187, 47, 'small ink');
-          const innerConstant = actor('- 1', 202, 58, 'ink');
-          setCaption('Nu nemen we de binnenfunctie apart: x² - 1 komt uit het hoofdblok.');
-          if (!await wait(250, id)) return;
-          move(innerX, 210, 128, .72);
-          move(innerOldExp, 222, 121, .86);
-          move(innerMovingExp, 222, 121, .86);
-          move(innerConstant, 246, 128, .72);
-          if (!await wait(1050, id)) return;
-          setCaption('Eerst valt de constante -1 weg.');
-          innerConstant.classList.remove('ink');
-          innerConstant.classList.add('red');
-          if (!await wait(420, id)) return;
-          innerConstant.classList.add('pop');
-          if (!await wait(750, id)) return;
-          innerConstant.remove();
-          setCaption('Nu blijft x² over: dit is dezelfde basis als de knop Genereer x².');
-          if (!await wait(750, id)) return;
-          setCaption('Daarna beweegt die macht 2 naar voren als coefficient.');
-          innerOldExp.classList.add('visible');
-          innerMovingExp.classList.remove('ink');
-          innerMovingExp.classList.add('red');
-          innerMovingExp.classList.remove('small');
-          move(innerMovingExp, 202, 128, .72);
-          move(innerX, 220, 128, .72);
-          move(innerOldExp, 232, 121, .86);
-          if (!await wait(1100, id)) return;
-          innerMovingExp.classList.remove('red');
-          setCaption('De oude macht rekent terug: 2 - 1 wordt 1.');
-          innerOldExp.classList.remove('gray');
-          innerOldExp.classList.add('red');
-          text(innerOldExp, '2 - 1');
-          if (!await wait(800, id)) return;
-          text(innerOldExp, '1');
-          setCaption('2 - 1 wordt 1.');
-          if (!await wait(360, id)) return;
-          setCaption('x¹ schrijven we niet, dus de kleine macht verdwijnt.');
-          innerOldExp.classList.add('pop');
-          if (!await wait(520, id)) return;
-          innerOldExp.remove();
-          setCaption('Nu blijft x² over; met de machtsregel wordt dat 2x.');
-          if (!await wait(1100, id)) return;
-          const dot = actor('·', 278, 58);
-          innerX.classList.remove('ink');
-          innerX.classList.add('red');
-          innerMovingExp.classList.add('red');
-          move(innerMovingExp, 314, 58, 1);
-          move(innerX, 333, 58, 1);
-          if (!await wait(520, id)) return;
-          innerMovingExp.classList.remove('red');
-          innerX.classList.remove('red');
-          move(outerOldExp, 254, 47, 1);
-          move(dot, 276, 58, 1);
-          setCaption("Preview-eindbeeld: f'(x) = 3(x² - 1)² · 2x. De constante -1 is weggevallen.");
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-          window.setTimeout(() => showPowerStart(2), 350);
+        var css = HelpHtml.Css("formula-film.css", FormulaFilmFallbackCss());
+        var body = HelpHtml.RenderTemplate("formula-film.html", new Dictionary<string, string?>
+        {
+            ["title"] = Html(T("formula_card.formula_film_title", "Formula film 2.1 experiment")),
+            ["subtitle"] = Html(T("formula_card.formula_film_subtitle", "Research for moving formula cards and teaching films"))
         });
-        </script>
-        </body>
-        </html>
-        """;
+        return HelpHtml.WrapBodyPage(body, css, bodyTail: HelpHtml.FormulaFilmScript());
+    }
+
+    private static string FormulaFilmFallbackCss()
+    {
+        return "body { margin:0; padding:20px; font-family:Segoe UI, Arial, sans-serif; background:#f5f7fa; color:#1e2d41; } .page { max-width:760px; margin:0 auto; } .film-stage { position:relative; height:190px; border:1px solid #d8e5f5; border-radius:9px; background:#eef6ff; overflow:hidden; } .actor { position:absolute; left:var(--x); top:var(--y); color:#004aad; font-family:Cambria Math, serif; font-size:30px; font-weight:700; opacity:0; } .actor.show { opacity:1; transition:opacity .35s ease, transform 1.25s ease, left 1.25s ease, top 1.25s ease; }";
     }
 
     private void Browser_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -856,7 +588,7 @@ internal sealed class FormulaCardForm : Form
 
     private void SetHtml(string html)
     {
-        _pendingHtml = html;
+        _pendingHtml = ApplyHelpLanguagePlaceholders(html);
         ShowPendingHtmlIfReady();
     }
 
@@ -1003,71 +735,23 @@ internal sealed class FormulaCardForm : Form
         if (_browser.CoreWebView2 is null)
             return;
 
-        await _browser.CoreWebView2.ExecuteScriptAsync("""
-(() => {
-  if (window.syscalFormulaSearchInstalled) return;
-  window.syscalFormulaSearchInstalled = true;
-  window.syscalFormulaSearchMarks = [];
-  window.syscalFormulaSearchIndex = -1;
-  const style = document.createElement('style');
-  style.textContent = 'mark.syscal-search{background:#fde68a;color:#111827;border-radius:3px;padding:0 2px}mark.syscal-search-current{background:#f59e0b;color:#111827}';
-  document.head.appendChild(style);
-  function clearMarks() {
-    for (const mark of Array.from(document.querySelectorAll('mark.syscal-search'))) {
-      const text = document.createTextNode(mark.textContent || '');
-      mark.replaceWith(text);
-      text.parentNode && text.parentNode.normalize();
+        await _browser.CoreWebView2.ExecuteScriptAsync(ApplyHelpLanguagePlaceholders(HelpHtml.FormulaSearchScript()));
     }
-    window.syscalFormulaSearchMarks = [];
-    window.syscalFormulaSearchIndex = -1;
-  }
-  function walk(node, query) {
-    if (!node || !query) return;
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.nodeValue || '';
-      const index = text.toLocaleLowerCase().indexOf(query);
-      if (index < 0) return;
-      const after = node.splitText(index);
-      const tail = after.splitText(query.length);
-      const mark = document.createElement('mark');
-      mark.className = 'syscal-search';
-      mark.textContent = after.nodeValue;
-      after.replaceWith(mark);
-      window.syscalFormulaSearchMarks.push(mark);
-      walk(tail, query);
-      return;
+
+    // [some.lng.key] in bewerkbare formulekaart-HTML/JS komt uit de actieve taal, met eng.lng als default.
+    private string ApplyHelpLanguagePlaceholders(string template)
+    {
+        return HelpApi.ApplyLanguagePlaceholders(ResolveHelpLanguageText, template);
     }
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    const tag = node.tagName;
-    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'MARK') return;
-    for (const child of Array.from(node.childNodes)) walk(child, query);
-  }
-  function select(index) {
-    const marks = window.syscalFormulaSearchMarks;
-    for (const mark of marks) mark.classList.remove('syscal-search-current');
-    if (!marks.length) return -1;
-    const bounded = ((index % marks.length) + marks.length) % marks.length;
-    const current = marks[bounded];
-    current.classList.add('syscal-search-current');
-    current.scrollIntoView({ block: 'center', inline: 'nearest' });
-    window.syscalFormulaSearchIndex = bounded;
-    return bounded;
-  }
-  window.syscalFormulaSearch = (query, preferredIndex) => {
-    clearMarks();
-    const q = (query || '').trim().toLocaleLowerCase();
-    if (!q) return -1;
-    walk(document.body, q);
-    return select(preferredIndex >= 0 ? preferredIndex : 0);
-  };
-  window.syscalFormulaMoveSearch = (query, offset) => {
-    const q = (query || '').trim();
-    if (!q) return -1;
-    if (!window.syscalFormulaSearchMarks.length) window.syscalFormulaSearch(q, 0);
-    return select(window.syscalFormulaSearchIndex + offset);
-  };
-})();
-""");
+
+    private string? ResolveHelpLanguageText(string key)
+    {
+        if (_language.TryText(key, out var value))
+            return value;
+
+        return _englishLanguage.TryText(key, out var englishValue)
+            ? englishValue
+            : null;
     }
 
     private static string JavaScriptString(string value)
@@ -1089,12 +773,7 @@ internal sealed class FormulaCardForm : Form
         var nodMath = BuildNodMathHtml(card);
         var overview = BuildOverviewHtml(card, _cards);
 
-        return $$"""
-        <!doctype html>
-        <html>
-        <head>
-        <meta charset="utf-8">
-        <style>
+        var css = """
         * {
           box-sizing: border-box;
         }
@@ -1592,64 +1271,30 @@ internal sealed class FormulaCardForm : Form
           background: #eef5ff;
           border-color: #83aeda;
         }
-        </style>
-        </head>
-        <body>
-        <main class="page">
-          <h1>{{Html(card.Title)}}</h1>
-          <div class="subtitle">{{Html(T("formula_card.subtitle", "Formulekaart voor leren, PWS en export"))}}</div>
-          <div class="tags">{{tags}}</div>
-
-          {{overview}}
-
-          <section class="section">
-            <h2>{{Html(T("formula_card.section_formula", "Formule"))}}</h2>
-            <div class="formula">
-              <div class="mathml-card">{{card.MathMl}}</div>
-            </div>
-            <div class="actions">
-              <button onclick="chrome.webview.postMessage('copy:text')">{{Html(T("formula_card.copy_text", "Kopieer tekst"))}}</button>
-              <button onclick="chrome.webview.postMessage('copy:latex')">{{Html(T("formula_card.copy_latex", "Kopieer LaTeX"))}}</button>
-              <button onclick="chrome.webview.postMessage('copy:mathml')">{{Html(T("formula_card.copy_mathml", "Kopieer MathML"))}}</button>
-            </div>
-          </section>
-
-          {{nodMath}}
-
-          {{visual}}
-
-          <section class="section">
-            <h2>{{Html(T("formula_card.section_explanation", "Uitleg"))}}</h2>
-            <p>{{Html(card.Description)}}</p>
-          </section>
-
-          <section class="section">
-            <h2>LaTeX</h2>
-            <pre>{{Html(card.Latex)}}</pre>
-            <div class="actions">
-              <button onclick="chrome.webview.postMessage('copy:latex')">{{Html(T("formula_card.copy_latex", "Kopieer LaTeX"))}}</button>
-            </div>
-          </section>
-
-          <section class="section">
-            <h2>MathML</h2>
-            <pre>{{Html(card.MathMl)}}</pre>
-            <div class="actions">
-              <button onclick="chrome.webview.postMessage('copy:mathml')">{{Html(T("formula_card.copy_mathml", "Kopieer MathML"))}}</button>
-            </div>
-          </section>
-
-          <section class="section">
-            <h2>{{Html(T("formula_card.section_example_nod", "Voorbeeld-NOD"))}}</h2>
-            <pre>{{Html(card.ExampleNod)}}</pre>
-            <div class="actions">
-              <button onclick="chrome.webview.postMessage('copy:nod')">{{Html(T("formula_card.copy_nod", "Kopieer NOD"))}}</button>
-            </div>
-          </section>
-        </main>
-        </body>
-        </html>
         """;
+        var body = HelpHtml.RenderTemplate("formula-card.html", new Dictionary<string, string?>
+        {
+            ["title"] = Html(card.Title),
+            ["subtitle"] = Html(T("formula_card.subtitle", "Formula cards for learning, PWS and export")),
+            ["tags"] = tags,
+            ["overview"] = overview,
+            ["section_formula"] = Html(T("formula_card.section_formula", "Formule")),
+            ["mathml_card"] = card.MathMl,
+            ["copy_text"] = Html(T("formula_card.copy_text", "Copy text")),
+            ["copy_latex"] = Html(T("formula_card.copy_latex", "Copy LaTeX")),
+            ["copy_mathml"] = Html(T("formula_card.copy_mathml", "Copy MathML")),
+            ["nod_math"] = nodMath,
+            ["visual"] = visual,
+            ["section_explanation"] = Html(T("formula_card.section_explanation", "Uitleg")),
+            ["description"] = Html(card.Description),
+            ["latex"] = Html(card.Latex),
+            ["mathml_pre"] = Html(card.MathMl),
+            ["section_example_nod"] = Html(T("formula_card.section_example_nod", "Example NOD")),
+            ["example_nod"] = Html(card.ExampleNod),
+            ["copy_nod"] = Html(T("formula_card.copy_nod", "Copy NOD"))
+        });
+
+        return HelpHtml.WrapBodyPage(body, css, bodyTail: HelpHtml.FormulaCardCopyButtonsScript());
     }
 
     private string BuildOverviewHtml(FormulaCard current, IReadOnlyList<FormulaCard> cards)

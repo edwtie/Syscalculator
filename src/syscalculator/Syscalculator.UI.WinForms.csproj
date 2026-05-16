@@ -31,7 +31,7 @@
     <Content Include="Resources\WizardExpressHelp.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\NodEditorHelp.png">
+    <Content Include="Resources\NodEditorHelp.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\*Help.*.png">
@@ -57,6 +57,7 @@
     <ProjectReference Include="../Tiedragon.Graph2D/Tiedragon.Graph2D.csproj" />
     <ProjectReference Include="../Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj" />
     <ProjectReference Include="../Tiedragon.ToolEditor/Tiedragon.ToolEditor.csproj" />
+    <ProjectReference Include="../Tiedragon.Help/Tiedragon.Help.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +77,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\nod-help.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

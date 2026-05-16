@@ -36,8 +36,7 @@ internal sealed class AboutForm : Form
         MaximizeBox = false;
         SizeGripStyle = SizeGripStyle.Hide;
         StartPosition = FormStartPosition.CenterParent;
-        ShowIcon = true;
-        Icon = LoadAppIcon();
+        AppWindowIcon.ApplyTo(this);
         _aboutImage = LoadAboutImage();
 
         RebuildContent();
@@ -487,13 +486,6 @@ internal sealed class AboutForm : Form
         catch
         {
         }
-    }
-
-    // Zoek/commentaar: Laadt gegevens of instellingen voor LoadAppIcon.
-    private static Icon? LoadAppIcon()
-    {
-        var path = Path.Combine(AppContext.BaseDirectory, "Resources", "Syscalculator.ico");
-        return File.Exists(path) ? new Icon(path) : null;
     }
 
     // Zoek/commentaar: Laadt gegevens of instellingen voor LoadAboutImage.

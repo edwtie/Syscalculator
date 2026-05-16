@@ -1,0 +1,11 @@
+<h2>trans examples</h2><p><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> translates a complete value. It is meant for words, fixed codes, statuses, postcodes, or short lists.</p><div class="notice"><b>Structure:</b> <code>trans "old value","new value"</code>. The complete input must match the left value.</div><details open><summary>Translate exact text</summary><table><tr><th>Goal</th><th>Rule</th><th>Result</th></tr><tr><td>Translate word</td><td><code>trans "hallo","hello"</code></td><td><code>hallo</code> becomes <code>hello</code></td></tr><tr><td>Translate status</td><td><code>trans "open","in progress"</code></td><td><code>open</code> becomes <code>in progress</code></td></tr><tr><td>Address lookup</td><td><code>trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"</code></td><td>postcode + house number becomes address</td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: Dutch to English</h3><pre>Name Dutch English demo
+input1 Dutch
+input2 English
+trans "hallo","hello"
+trans "dank je","thank you"
+trans "goedemorgen","good morning"
+end</pre></div><div class="example-card"><h3>Example: postcode demo</h3><pre>Name Postcode to address demo
+input1 Postcode house number
+input2 Address
+trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"
+end</pre></div></div></details><details><summary>When trans, when chg?</summary><table><tr><th>Use</th><th>When</th><th>Example</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>the entire input is known exactly</td><td><code>hallo</code> to <code>hello</code></td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>only the beginning or pattern changes</td><td><code>01751-xxxxx</code> to <code>070-51xxxxx</code></td></tr></table></details><details><summary>Common trans mistakes</summary><ul><li>Reversing direction: left is input, right is output.</li><li>Expecting a partial match. Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> for that.</li><li>Using a comma in a value without quotes.</li><li>Creating duplicate translations for the same input.</li></ul></details>

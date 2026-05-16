@@ -15,6 +15,7 @@ public sealed class IntroDialogForm : Form
     public IntroDialogForm(string title, IEnumerable<string> lines)
     {
         Text = string.IsNullOrWhiteSpace(title) ? "Introductie" : title;
+        AppWindowIcon.ApplyTo(this);
         Width = 560;
         Height = 330;
         StartPosition = FormStartPosition.CenterParent;

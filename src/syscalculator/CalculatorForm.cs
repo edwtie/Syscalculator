@@ -30,6 +30,7 @@ public sealed class CalculatorForm : Form
         _language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
 
         Text = T("calculator.title", "Calculator");
+        AppWindowIcon.ApplyTo(this);
         Width = 360;
         Height = 430;
         StartPosition = FormStartPosition.CenterParent;

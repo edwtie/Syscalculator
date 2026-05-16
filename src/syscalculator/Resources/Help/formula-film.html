@@ -1,0 +1,27 @@
+<main class="page">
+  <h1>{{title}}</h1>
+  <div class="subtitle">{{subtitle}}</div>
+  <div class="notice"><b>Status:</b> this is not a normal NOD 2.0 beta feature. It belongs to Syscalculator 2.1 research: a formula-film generator where numbers, powers, brackets and symbols move as separate actors.</div>
+  <p>The current solver is still useful for simple step explanations, but the chain rule, product rule, quotient rule and integrals need a new animation API. That is why this topic lives in the formula cards as a demo and research point.</p>
+  <div class="generator-card">
+    <h3>Interactive formula-film preview</h3>
+    <p>This is not a real AI service yet. It shows the technical direction: AI or rules will produce a scene script, and the formula card will play that script with actors.</p>
+    <div class="generator-toolbar">
+      <button type="button" data-film-power="2">Generate x&sup2;</button>
+      <button type="button" data-film-power="3">Generate x&sup3;</button>
+      <button type="button" data-film-chain="true">Chain rule preview</button>
+    </div>
+    <div id="filmStage" class="film-stage" aria-label="Formula film preview"></div>
+    <div id="filmCaption" class="film-caption">Click an example to generate the formula film locally.</div>
+    <div id="filmCode" class="film-code">FormulaFilm.Generate("x^2")</div>
+  </div>
+  <h2>Research questions</h2>
+  <table>
+    <tr><th>Part</th><th>Why difficult?</th><th>2.1 direction</th></tr>
+    <tr><td>Power rule</td><td>Exponent, coefficient and variable must keep moving separately.</td><td>Split the formula into actors.</td></tr>
+    <tr><td>Sum rule</td><td>Multiple terms must work at the same time but independently.</td><td>Groups per term.</td></tr>
+    <tr><td>Chain rule</td><td>There is an outer function and an inner function.</td><td>Nested actors/groups.</td></tr>
+    <tr><td>Integrals</td><td>Antiderivatives move backward and often connect to differentiation.</td><td>Animation with forward and reverse direction.</td></tr>
+    <tr><td>Export</td><td>Live calculation is heavy and not always needed.</td><td>NOD + film card/HTML/SVG/MP4.</td></tr>
+  </table>
+</main>

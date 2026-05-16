@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace Syscalculator.UI.WinForms;
+namespace Tiedragon.Help;
 
 // Zoek/commentaar: Type-overzicht: record NodHelpPage bevat één onderwerp in de NOD help.
 public sealed record NodHelpPage(string Id, string Title, string Html);
 
-internal enum HelpNavigationIcon
+public enum HelpNavigationIcon
 {
     Previous,
     Home,
@@ -143,7 +143,7 @@ public sealed class NodHelpForm : Form
             AllowExternalDrop = false,
             CreationProperties = new CoreWebView2CreationProperties
             {
-                UserDataFolder = WebView2UserDataFolder.GetPath()
+                UserDataFolder = GetWebView2UserDataFolder()
             }
         };
         _browser.NavigationStarting += Browser_NavigationStarting;
@@ -289,6 +289,14 @@ public sealed class NodHelpForm : Form
         button.FlatAppearance.MouseDownBackColor = Color.FromArgb(219, 234, 254);
         new ToolTip().SetToolTip(button, tooltip);
         return button;
+    }
+
+    private static string GetWebView2UserDataFolder()
+    {
+        var root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var path = Path.Combine(root, "Syscalculator", "WebView2");
+        Directory.CreateDirectory(path);
+        return path;
     }
 
     // Zoek/commentaar: Sneltoetsen voor eenvoudige helpnavigatie.
@@ -687,7 +695,7 @@ public sealed class NodHelpForm : Form
     }
 }
 
-internal sealed class HelpNavigationButton : Button
+public sealed class HelpNavigationButton : Button
 {
     private readonly HelpNavigationIcon _icon;
     private bool _hover;

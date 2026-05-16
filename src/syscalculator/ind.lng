@@ -136,6 +136,7 @@ catalog.choose_nod=Pilih NOD...
 catalog.save=Simpan
 
 editor.title=Editor NOD Plus
+editor.mode.advanced=Mode lanjutan
 editor.tab.new=baru
 editor.menu.file=Berkas
 editor.menu.file.new_tab=Tab baru
@@ -199,11 +200,13 @@ editor.menu.view.dock_simulator=Pasang simulator
 editor.toolbar.new=Baru
 editor.toolbar.open=Buka
 editor.toolbar.save=Simpan
+editor.toolbar.template_wizard=Template
 editor.toolbar.undo=Urungkan
 editor.toolbar.redo=Ulangi
 editor.toolbar.find=Cari
 editor.toolbar.validate=Validasi
 editor.toolbar.test=Tes
+editor.toolbar.solver_steps=Solver
 editor.toolbar.repair=Perbaiki
 editor.toolbar.restore_original=Pulihkan
 editor.preview.title=Pratinjau langsung
@@ -233,6 +236,7 @@ editor.status.test_done=Tes selesai.
 editor.status.lines_repaired=Baris diperbaiki.
 editor.status.original_restored=Teks asli dipulihkan.
 editor.status.saved_short=Disimpan
+help.main.page.nodeditor.screenshot_alt=Tangkapan layar Editor NOD dengan toolbar, editor kode, dan tips perintah.
 editor.status.position=Baris {0}, Kolom {1}
 editor.status.lines=Baris {0}
 editor.dialog.open_title=Buka NOD
@@ -262,6 +266,12 @@ wizard.excel_clipboard_restored.message=Excel telah menimpa clipboard. WizardExp
 wizard.status.error=Selesai dengan kesalahan
 
 editor.nod_help.suggestions=Saran
+help.nod_screenshot.converter_name=Celsius ke Fahrenheit
+help.nod_screenshot.decimal_factor=1.8
+help.nod_screenshot.meaning_label=Arti:
+help.nod_screenshot.name_meaning=nama internal konverter.
+help.nod_screenshot.example_label=Contoh:
+help.nod_screenshot.example_name=Name Postcode ke alamat demo
 editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius ke Fahrenheit</div><div><b>Arti:</b> nama internal converter.</div><div><b>Contoh:</b> <code>Name Postcode ke Address demo</code>.</div>
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Judul pengguna</div><div><b>Arti:</b> judul atau deskripsi yang terlihat untuk pengguna.</div><div><b>Contoh:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Arti:</b> label nilai input.</div><div><b>Contoh:</b> <code>input1 Old phone number</code>.</div>
@@ -374,6 +384,7 @@ clipboard.debug.mail_failed=Tidak dapat membuka program e-mail: {0}
 clipboard.debug.copy_button=Salin laporan
 clipboard.debug.report_copied=Laporan disalin ke clipboard.
 clipboard.debug.copy_failed=Tidak dapat menyalin laporan ke clipboard.
+help.copy.copied=Disalin
 clipboard.debug.conversion=Konversi
 clipboard.debug.conversion_rows=Baris dikonversi
 clipboard.debug.conversion_cells=Sel

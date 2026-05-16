@@ -21,6 +21,7 @@ public sealed class FloatingToolForm : Form
         _onMinimize = onMinimize;
 
         Text = title;
+        AppWindowIcon.ApplyTo(this);
         Width = 520;
         Height = 360;
         StartPosition = FormStartPosition.Manual;

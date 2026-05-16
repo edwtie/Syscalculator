@@ -1,0 +1,52 @@
+<main class="page">
+  <h1>{{title}}</h1>
+  <div class="subtitle">{{subtitle}}</div>
+  <div class="tags">{{tags}}</div>
+
+  {{overview}}
+
+  <section class="section">
+    <h2>{{section_formula}}</h2>
+    <div class="formula">
+      <div class="mathml-card">{{mathml_card}}</div>
+    </div>
+    <div class="actions">
+      <button type="button" data-copy="text">{{copy_text}}</button>
+      <button type="button" data-copy="latex">{{copy_latex}}</button>
+      <button type="button" data-copy="mathml">{{copy_mathml}}</button>
+    </div>
+  </section>
+
+  {{nod_math}}
+
+  {{visual}}
+
+  <section class="section">
+    <h2>{{section_explanation}}</h2>
+    <p>{{description}}</p>
+  </section>
+
+  <section class="section">
+    <h2>LaTeX</h2>
+    <pre>{{latex}}</pre>
+    <div class="actions">
+      <button type="button" data-copy="latex">{{copy_latex}}</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>MathML</h2>
+    <pre>{{mathml_pre}}</pre>
+    <div class="actions">
+      <button type="button" data-copy="mathml">{{copy_mathml}}</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>{{section_example_nod}}</h2>
+    <pre>{{example_nod}}</pre>
+    <div class="actions">
+      <button type="button" data-copy="nod">{{copy_nod}}</button>
+    </div>
+  </section>
+</main>
