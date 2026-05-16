@@ -20,6 +20,27 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.16.061 Daily Build
+
+**Date:** 2026-05-16
+
+**Fixes:**
+- Fixed the Help architecture split by moving Help code into the separate `Tiedragon.Help` project.
+- Fixed hardcoded Help content paths by loading editable runtime HTML, CSS, JavaScript and content resources.
+- Fixed NOD Editor help artwork by replacing the bitmap screenshot mock with a sharp SVG mock.
+- Fixed help and architecture diagram readability by removing unnecessary connector labels, shortening visible block names and keeping arrows attached to colored group boundaries.
+- Fixed Help content maintainability by adding writer-friendly examples, warnings, details blocks, tables, screenshots and command-link patterns.
+
+**Additions:**
+- Added English Markdown architecture documentation for the overall software architecture, Help architecture and NOD system architecture.
+- Added SVG architecture diagrams for Syscalculator, Help and NOD system layers.
+- Added runtime Help content groups for main Help, NOD full Help, NOD command Help, popup Help, snippets and Help authoring guidance.
+- Added language-key based Help content support with English fallback behavior.
+- Added SVG-based Help mock support so localized screenshots can be generated from editable vector text instead of maintaining multiple PNG files.
+- Added reusable Help rendering helpers for templates, topic content, text lookup and screenshot embedding.
+- Added `AppWindowIcon` helper so application windows consistently use the Syscalculator icon.
+- Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.16.061.exe`.
+
 #### 2.0.2026.05.12 Daily Build
 
 **Date:** 2026-05-12
