@@ -186,9 +186,15 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Beta Releases
 
-#### 2.0.2026.05.16 Beta Release
+#### 2.0.2026.05.16.091 Beta 1 Refresh
 
 **Date:** 2026-05-16 17:45
+
+**Release type:** Beta 1 refresh
+
+**Upgrade path:**
+- Replaces the old public Syscalculator 1.72 download as the current Syscalculator 2.0 Beta 1 test build.
+- Keeps a single fixed beta download name: `syscal20beta1.exe`.
 
 **Fixes:**
 - Fixed Graph Preview and mini preview range markers so X/Y fit, line markers and zoom state stay consistent
@@ -197,6 +203,18 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 **Additions:**
 - Published the beta installer as `Syscalculator-2.0-beta-2.0.2026.05.16.091.exe`.
+- Updated the fixed beta download link to `https://www.tiedragon.com/files/syscal20beta1.exe`.
+- Updated the NL fixed beta download link to `https://tiedragon.nl/downloads/syscal20beta1.exe`.
+
+**Main Beta 1 features since Syscalculator 1.72:**
+- Modern C# / .NET 10 WinForms rebuild instead of the old VB6 application line.
+- Separate `NodSystem.Core` engine for parsing, calculation, tracing and converter execution.
+- NOD Editor with tabs, syntax highlighting, validation, search/replace and line numbers.
+- Live formula preview, converter simulator and metadata preview for NOD files.
+- Graph Preview for numeric/math converters, including zoom, pan and point table.
+- Editable Help system with runtime HTML/CSS/JavaScript/SVG resources.
+- Multi-language UI updates for Dutch, English, German, French, Italian, Spanish, Portuguese, Indonesian and Chinese.
+- Legacy NOD compatibility for commands such as `chg`, `trans` and `math`.
 
 #### 2.0.2026.05.16.062 Beta 1
 
