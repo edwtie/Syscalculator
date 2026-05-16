@@ -183,6 +183,7 @@ editor.graph.points=Punten
 editor.graph.position_empty=Positie: (-, -)
 editor.graph.position=Positie: {0}
 editor.graph.step=Stap
+editor.graph.lines=Lijnen
 editor.graph.step_positive=Stap moet groter zijn dan 0.
 editor.graph.no_numeric_points=Geen numerieke punten. Overgeslagen: {0}.
 editor.graph.points_status=Punten: {0}. Overgeslagen: {1}. Bereik: {2:0.####} tot {3:0.####}.

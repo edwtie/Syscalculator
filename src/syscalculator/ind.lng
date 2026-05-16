@@ -186,6 +186,7 @@ editor.graph.points=Titik
 editor.graph.position_empty=Posisi: (-, -)
 editor.graph.position=Posisi: {0}
 editor.graph.step=Langkah
+editor.graph.lines=Garis
 editor.graph.step_positive=Langkah harus lebih besar dari 0.
 editor.graph.no_numeric_points=Tidak ada titik numerik. Dilewati: {0}.
 editor.graph.points_status=Titik: {0}. Dilewati: {1}. Rentang: {2:0.####} sampai {3:0.####}.

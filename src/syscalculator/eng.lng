@@ -178,6 +178,7 @@ editor.graph.points=Points
 editor.graph.position_empty=Position: (-, -)
 editor.graph.position=Position: {0}
 editor.graph.step=Step
+editor.graph.lines=Lines
 editor.graph.step_positive=Step must be greater than 0.
 editor.graph.no_numeric_points=No numeric points. Skipped: {0}.
 editor.graph.points_status=Points: {0}. Skipped: {1}. Range: {2:0.####} to {3:0.####}.

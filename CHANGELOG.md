@@ -186,6 +186,18 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Beta Releases
 
+#### 2.0.2026.05.16 Beta Release
+
+**Date:** 2026-05-16 17:45
+
+**Fixes:**
+- Fixed Graph Preview and mini preview range markers so X/Y fit, line markers and zoom state stay consistent
+- Fixed mini preview recalculation drift by separating sampling range from viewport
+- Added localized graph line marker label for all UI languages
+
+**Additions:**
+- None yet.
+
 #### 2.0.2026.05.16.062 Beta 1
 
 **Date:** 2026-05-16

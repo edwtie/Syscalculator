@@ -15,7 +15,10 @@ public sealed class GraphPreviewForm : Form
     private readonly LanguageCatalog? _language;
     private readonly NumericUpDown _xMin;
     private readonly NumericUpDown _xMax;
+    private readonly NumericUpDown _yMin;
+    private readonly NumericUpDown _yMax;
     private readonly NumericUpDown _step;
+    private readonly CheckBox _showRangeLines;
     private readonly TableLayoutPanel _root;
     private readonly Panel _canvas;
     private readonly Panel _pointsPanel;
@@ -24,6 +27,7 @@ public sealed class GraphPreviewForm : Form
     private readonly DataGridView _pointsGrid;
     private readonly Label _status;
     private readonly Button _toggleTableButton;
+    private readonly List<PointF> _fitGraphPoints = new();
     private readonly List<PointF> _graphPoints = new();
     private readonly List<PointF> _stepPoints = new();
     private string _disabledMessage = "";
@@ -34,7 +38,10 @@ public sealed class GraphPreviewForm : Form
     private float _viewMaxX;
     private float _viewMinY;
     private float _viewMaxY;
+    private GraphPlotView _markerView = new(-NormalHalfYRange, NormalHalfYRange, -NormalHalfYRange, NormalHalfYRange);
     private bool _hasView;
+    private bool _updatingXRangeControls;
+    private bool _updatingYRangeControls;
     private bool _panning;
     private bool _draggingPointsPanel;
     private Point _panStart;
@@ -78,48 +85,79 @@ public sealed class GraphPreviewForm : Form
         var controls = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 11,
+            ColumnCount = 14,
             RowCount = 1,
             Padding = new Padding(0, 5, 0, 0)
         };
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44));
-        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50));
-        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 42));
-        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92));
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
-        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
+        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 1));
         controls.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
 
-        controls.Controls.Add(new Label { Text = "X min", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
+        controls.Controls.Add(MakeToolbarLabel("X min"), 0, 0);
         _xMin = MakeNumberBox(-5, -100000, 100000, 1);
-        _xMin.ValueChanged += (_, _) => Generate();
+        _xMin.ValueChanged += (_, _) => ApplyXRangeFromControls();
         controls.Controls.Add(_xMin, 1, 0);
-        controls.Controls.Add(new Label { Text = "X max", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 0);
+        controls.Controls.Add(MakeToolbarLabel("X max"), 2, 0);
         _xMax = MakeNumberBox(5, -100000, 100000, 1);
-        _xMax.ValueChanged += (_, _) => Generate();
+        _xMax.ValueChanged += (_, _) => ApplyXRangeFromControls();
         controls.Controls.Add(_xMax, 3, 0);
-        controls.Controls.Add(new Label { Text = T("editor.graph.step", "Step"), AutoSize = true, Anchor = AnchorStyles.Left }, 4, 0);
+        controls.Controls.Add(MakeToolbarLabel("Y min"), 4, 0);
+        _yMin = MakeNumberBox(-5, -100000000, 100000000, 1);
+        _yMin.ValueChanged += (_, _) => ApplyYRangeFromControls();
+        controls.Controls.Add(_yMin, 5, 0);
+        controls.Controls.Add(MakeToolbarLabel("Y max"), 6, 0);
+        _yMax = MakeNumberBox(5, -100000000, 100000000, 1);
+        _yMax.ValueChanged += (_, _) => ApplyYRangeFromControls();
+        controls.Controls.Add(_yMax, 7, 0);
+        controls.Controls.Add(MakeToolbarLabel(T("editor.graph.step", "Step")), 8, 0);
         _step = MakeNumberBox(1, 0.0001m, 100000, 1);
         _step.ValueChanged += (_, _) => Generate();
-        controls.Controls.Add(_step, 5, 0);
+        controls.Controls.Add(_step, 9, 0);
 
-        var copy = new GraphToolbarIconButton(GraphToolbarIcon.Copy, T("editor.graph.copy_points", "Copy points")) { Dock = DockStyle.Fill, Margin = new Padding(4, 2, 4, 2) };
+        var copy = new GraphToolbarIconButton(GraphToolbarIcon.Copy, T("editor.graph.copy_points", "Copy points"))
+        {
+            Anchor = AnchorStyles.Left | AnchorStyles.Right,
+            Height = 28,
+            Margin = new Padding(4, 0, 4, 0)
+        };
         copy.Click += (_, _) =>
         {
             var text = BuildPointsText();
             if (!string.IsNullOrWhiteSpace(text))
                 Clipboard.SetText(text);
         };
-        controls.Controls.Add(copy, 6, 0);
+        controls.Controls.Add(copy, 10, 0);
 
-        _toggleTableButton = new GraphToolbarIconButton(GraphToolbarIcon.TableHidden, T("editor.graph.hide_table", "Hide table")) { Dock = DockStyle.Fill, Margin = new Padding(4, 2, 4, 2) };
+        _toggleTableButton = new GraphToolbarIconButton(GraphToolbarIcon.TableHidden, T("editor.graph.hide_table", "Hide table"))
+        {
+            Anchor = AnchorStyles.Left | AnchorStyles.Right,
+            Height = 28,
+            Margin = new Padding(4, 0, 4, 0)
+        };
         _toggleTableButton.Click += (_, _) => TogglePointTable();
-        controls.Controls.Add(_toggleTableButton, 7, 0);
+        controls.Controls.Add(_toggleTableButton, 11, 0);
+
+        _showRangeLines = new CheckBox
+        {
+            Text = T("editor.graph.lines", "Lines"),
+            Checked = true,
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(6, 0, 0, 0)
+        };
+        controls.Controls.Add(_showRangeLines, 12, 0);
 
         _root.Controls.Add(controls, 0, 0);
 
@@ -142,6 +180,11 @@ public sealed class GraphPreviewForm : Form
         _canvas.MouseMove += Canvas_MouseMove;
         _canvas.MouseUp += Canvas_MouseUp;
         _canvas.MouseEnter += (_, _) => _canvas.Focus();
+        _showRangeLines.CheckedChanged += (_, _) =>
+        {
+            ApplyRangeLineVisibility();
+            _canvas.Invalidate();
+        };
         graphHost.Controls.Add(_canvas);
 
         var chrome = GraphSurfaceApi.CreateChrome(
@@ -214,6 +257,7 @@ public sealed class GraphPreviewForm : Form
             if (_hasView)
             {
                 MatchViewToCanvasAspect();
+                UpdateViewportRangeControlsIfNeeded();
                 ResampleVisibleView();
             }
             _canvas.Invalidate();
@@ -226,6 +270,17 @@ public sealed class GraphPreviewForm : Form
     }
 
     private string T(string key, string fallback) => _language?.Text(key, fallback) ?? fallback;
+
+    private static Label MakeToolbarLabel(string text)
+    {
+        return new Label
+        {
+            Text = text,
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(0)
+        };
+    }
 
     protected override void OnShown(EventArgs e)
     {
@@ -242,8 +297,9 @@ public sealed class GraphPreviewForm : Form
             Maximum = maximum,
             Increment = increment,
             Value = value,
+            Anchor = AnchorStyles.Left,
             Width = 78,
-            Margin = new Padding(0, 2, 0, 0)
+            Margin = new Padding(0)
         };
     }
 
@@ -351,6 +407,7 @@ public sealed class GraphPreviewForm : Form
 
     private void Generate()
     {
+        _fitGraphPoints.Clear();
         _graphPoints.Clear();
         _stepPoints.Clear();
         _pointsGrid.Rows.Clear();
@@ -372,6 +429,7 @@ public sealed class GraphPreviewForm : Form
             if (!IsGraphCompatible(_currentDocument, out var disabledReason))
             {
                 _disabledMessage = disabledReason;
+                _fitGraphPoints.Clear();
                 _graphPoints.Clear();
                 _stepPoints.Clear();
                 FillPointsGrid([]);
@@ -400,9 +458,11 @@ public sealed class GraphPreviewForm : Form
                     var result = NodEngine.ConvertForward(_currentDocument, input);
                     if (TryGetNumber(result, out var y))
                     {
-                        _graphPoints.Add(new PointF((float)x, (float)y));
-                        _stepPoints.Add(new PointF((float)x, (float)y));
-                        stepRows.Add(new PointF((float)x, (float)y));
+                        var point = new PointF((float)x, (float)y);
+                        _fitGraphPoints.Add(point);
+                        _graphPoints.Add(point);
+                        _stepPoints.Add(point);
+                        stepRows.Add(point);
                     }
                     else
                     {
@@ -434,7 +494,16 @@ public sealed class GraphPreviewForm : Form
 
     private void ResetViewToData(bool invalidate = true)
     {
-        SetNormalView();
+        var view = GraphSurfaceApi.CreateFitViewForCanvas(
+            _fitGraphPoints,
+            (float)_xMin.Value,
+            (float)_xMax.Value,
+            _canvas,
+            NormalHalfYRange);
+        SetView(view);
+        _markerView = view;
+        SetRangeControls(view);
+        UpdateViewportRangeControlsIfNeeded();
         _hasView = true;
         ResampleVisibleView();
         UpdatePointerStatus(null);
@@ -443,20 +512,99 @@ public sealed class GraphPreviewForm : Form
             _canvas.Invalidate();
     }
 
-    private void SetNormalView()
+    private void ApplyXRangeFromControls()
     {
-        var plot = GetPlotRectangle();
-        var aspect = plot.Width > 0 && plot.Height > 0
-            ? Math.Max(0.1f, plot.Width / (float)plot.Height)
-            : 1f;
+        if (_updatingXRangeControls || !_hasView)
+            return;
 
-        var halfY = NormalHalfYRange;
-        var halfX = halfY * aspect;
+        if (_xMin.Value >= _xMax.Value)
+        {
+            _status.Text = "X min moet kleiner zijn dan X max.";
+            return;
+        }
 
-        _viewMinX = -halfX;
-        _viewMaxX = halfX;
-        _viewMinY = -halfY;
-        _viewMaxY = halfY;
+        SetView(GraphSurfaceApi.CreateViewFromXRangeControls(GetView(), _xMin, _xMax, _canvas));
+        if (_showRangeLines.Checked)
+            _markerView = GetView();
+        ResampleVisibleView();
+        UpdatePointerStatus(null);
+        _canvas.Invalidate();
+    }
+
+    private void ApplyYRangeFromControls()
+    {
+        if (_updatingYRangeControls || !_hasView)
+            return;
+
+        if (_yMin.Value >= _yMax.Value)
+        {
+            _status.Text = "Y min moet kleiner zijn dan Y max.";
+            return;
+        }
+
+        SetView(GraphSurfaceApi.CreateViewFromYRangeControls(GetView(), _yMin, _yMax, _canvas));
+        if (_showRangeLines.Checked)
+            _markerView = GetView();
+        ResampleVisibleView();
+        UpdatePointerStatus(null);
+        _canvas.Invalidate();
+    }
+
+    private GraphPlotView GetView()
+    {
+        return new GraphPlotView(_viewMinX, _viewMaxX, _viewMinY, _viewMaxY);
+    }
+
+    private void SetView(GraphPlotView view)
+    {
+        _viewMinX = view.MinX;
+        _viewMaxX = view.MaxX;
+        _viewMinY = view.MinY;
+        _viewMaxY = view.MaxY;
+    }
+
+    private void SetRangeControls(GraphPlotView view)
+    {
+        _updatingXRangeControls = true;
+        _updatingYRangeControls = true;
+        try
+        {
+            GraphSurfaceApi.SetRangeControlValues(new GraphRangeControls(_xMin, _xMax, _yMin, _yMax), view);
+        }
+        finally
+        {
+            _updatingYRangeControls = false;
+            _updatingXRangeControls = false;
+        }
+    }
+
+    private void UpdateViewportRangeControlsIfNeeded()
+    {
+        _updatingXRangeControls = true;
+        _updatingYRangeControls = true;
+        try
+        {
+            GraphSurfaceApi.SyncViewportRangeControls(
+                new GraphRangeControls(_xMin, _xMax, _yMin, _yMax),
+                GetView(),
+                _showRangeLines.Checked);
+        }
+        finally
+        {
+            _updatingYRangeControls = false;
+            _updatingXRangeControls = false;
+        }
+    }
+
+    private void ApplyRangeLineVisibility()
+    {
+        if (_showRangeLines.Checked)
+        {
+            SetRangeControls(_markerView);
+            return;
+        }
+
+        UpdateViewportRangeControlsIfNeeded();
     }
 
     private void ZoomView(float factor)
@@ -492,6 +640,7 @@ public sealed class GraphPreviewForm : Form
         _viewMinY = anchor.Y - newHeight * yRatio;
         _viewMaxY = _viewMinY + newHeight;
         MatchViewToCanvasAspect();
+        UpdateViewportRangeControlsIfNeeded();
         ResampleVisibleView();
         UpdatePointerStatus(screenPoint);
         _canvas.Invalidate();
@@ -533,38 +682,21 @@ public sealed class GraphPreviewForm : Form
         _viewMinY = _panStartMinY + graphDy;
         _viewMaxY = _panStartMaxY + graphDy;
         MatchViewToCanvasAspect();
+        UpdateViewportRangeControlsIfNeeded();
         ResampleVisibleView();
         UpdatePointerStatus(e.Location);
         _canvas.Invalidate();
-    }
-
-    private void MatchViewToCanvasAspect()
-    {
-        var plot = GetPlotRectangle();
-        if (plot.Width <= 0 || plot.Height <= 0)
-            return;
-
-        var targetAspect = plot.Width / (float)plot.Height;
-        var centerX = (_viewMinX + _viewMaxX) / 2f;
-        var centerY = (_viewMinY + _viewMaxY) / 2f;
-        var halfX = Math.Max(0.0001f, (_viewMaxX - _viewMinX) / 2f);
-        var halfY = Math.Max(0.0001f, (_viewMaxY - _viewMinY) / 2f);
-
-        if (halfX / halfY < targetAspect)
-            halfX = halfY * targetAspect;
-        else
-            halfY = halfX / targetAspect;
-
-        _viewMinX = centerX - halfX;
-        _viewMaxX = centerX + halfX;
-        _viewMinY = centerY - halfY;
-        _viewMaxY = centerY + halfY;
     }
 
     private void Canvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _panning = false;
         _canvas.Cursor = Cursors.Default;
+    }
+
+    private void MatchViewToCanvasAspect()
+    {
+        SetView(GraphSurfaceApi.MatchViewToCanvasAspect(GetView(), _canvas));
     }
 
     private void ResampleVisibleView()
@@ -708,12 +840,15 @@ public sealed class GraphPreviewForm : Form
             _graphPoints,
             _stepPoints,
             new GraphPlotView(_viewMinX, _viewMaxX, _viewMinY, _viewMaxY),
-            (float)_xMin.Value,
-            (float)_xMax.Value,
+            _showRangeLines.Checked ? _markerView.MinX : (float)_xMin.Value,
+            _showRangeLines.Checked ? _markerView.MaxX : (float)_xMax.Value,
             (float)_step.Value,
             _disabledMessage,
             "Generate graph",
-            GraphPlotDensity.Normal);
+            GraphPlotDensity.Normal,
+            (float)_yMin.Value,
+            (float)_yMax.Value,
+            _showRangeLines.Checked);
     }
 
     private Rectangle GetPlotRectangle()

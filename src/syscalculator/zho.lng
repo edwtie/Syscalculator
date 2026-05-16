@@ -186,6 +186,7 @@ editor.graph.points=点
 editor.graph.position_empty=位置: (-, -)
 editor.graph.position=位置: {0}
 editor.graph.step=步长
+editor.graph.lines=线条
 editor.graph.step_positive=步长必须大于 0。
 editor.graph.no_numeric_points=没有数值点。已跳过: {0}。
 editor.graph.points_status=点数: {0}。已跳过: {1}。范围: {2:0.####} 到 {3:0.####}。

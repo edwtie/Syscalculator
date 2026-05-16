@@ -239,7 +239,10 @@ public sealed class NodEditorForm : Form
     private HtmlMathPreviewControl _testCalculationView = null!;
     private NumericUpDown _graphXMin = null!;
     private NumericUpDown _graphXMax = null!;
+    private NumericUpDown _graphYMin = null!;
+    private NumericUpDown _graphYMax = null!;
     private NumericUpDown _graphStep = null!;
+    private CheckBox _graphShowRangeLines = null!;
     private Panel _graphCanvas = null!;
     private Panel _graphPointPanel = null!;
     private DataGridView _graphPointTable = null!;
@@ -248,13 +251,19 @@ public sealed class NodEditorForm : Form
     private Label _graphPointerStatusLabel = null!;
     private Label _graphStatus = null!;
     private Button _graphToggleTableButton = null!;
+    private readonly List<PointF> _graphPreviewFitPoints = new();
     private readonly List<PointF> _graphPreviewPoints = new();
     private readonly List<PointF> _graphPreviewStepPoints = new();
     private string _graphPointClipboardText = "";
     private string _graphDisabledMessage = "";
     private NodDocument? _graphPreviewDocument;
+    private double _graphSampleMinX = -GraphNormalHalfYRange;
+    private double _graphSampleMaxX = GraphNormalHalfYRange;
+    private GraphPlotView _graphMarkerView = new(-GraphNormalHalfYRange, GraphNormalHalfYRange, -GraphNormalHalfYRange, GraphNormalHalfYRange);
     private string _graphPointerText = "";
     private bool _draggingGraphPointPanel;
+    private bool _updatingGraphXRangeControls;
+    private bool _updatingGraphYRangeControls;
     private Point _graphPointPanelDragStart;
     private Point _graphPointPanelStartLocation;
     private bool _graphHasView;
@@ -871,14 +880,14 @@ public sealed class NodEditorForm : Form
             Padding = new Padding(8, 8, 8, 6),
             BackColor = Color.FromArgb(250, 250, 250)
         };
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 68));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 96));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var inputGrid = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 8,
-            RowCount = 2
+            ColumnCount = 6,
+            RowCount = 3
         };
         inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50));
         inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
@@ -886,25 +895,50 @@ public sealed class NodEditorForm : Form
         inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
         inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 38));
         inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
-        inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        inputGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
+        inputGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         inputGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         inputGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 29));
 
-        inputGrid.Controls.Add(new Label { Text = "X min", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
+        inputGrid.Controls.Add(MakeGraphToolbarLabel("X min"), 0, 0);
         _graphXMin = MakeGraphNumberBox(-5, -100000, 100000, 1);
-        _graphXMin.ValueChanged += (_, _) => GenerateGraphPreview();
+        _graphXMin.ValueChanged += (_, _) => ApplyGraphPreviewXRangeFromControls();
         inputGrid.Controls.Add(_graphXMin, 1, 0);
 
-        inputGrid.Controls.Add(new Label { Text = "X max", AutoSize = true, Anchor = AnchorStyles.Left }, 2, 0);
+        inputGrid.Controls.Add(MakeGraphToolbarLabel("X max"), 2, 0);
         _graphXMax = MakeGraphNumberBox(5, -100000, 100000, 1);
-        _graphXMax.ValueChanged += (_, _) => GenerateGraphPreview();
+        _graphXMax.ValueChanged += (_, _) => ApplyGraphPreviewXRangeFromControls();
         inputGrid.Controls.Add(_graphXMax, 3, 0);
 
-        inputGrid.Controls.Add(new Label { Text = T("editor.graph.step", "Step"), AutoSize = true, Anchor = AnchorStyles.Left }, 4, 0);
+        inputGrid.Controls.Add(MakeGraphToolbarLabel(T("editor.graph.step", "Step")), 4, 0);
         _graphStep = MakeGraphNumberBox(1, 0.0001m, 100000, 1);
         _graphStep.ValueChanged += (_, _) => GenerateGraphPreview();
         inputGrid.Controls.Add(_graphStep, 5, 0);
+
+        inputGrid.Controls.Add(MakeGraphToolbarLabel("Y min"), 0, 1);
+        _graphYMin = MakeGraphNumberBox(-5, -100000000, 100000000, 1);
+        _graphYMin.ValueChanged += (_, _) => ApplyGraphPreviewYRangeFromControls();
+        inputGrid.Controls.Add(_graphYMin, 1, 1);
+
+        inputGrid.Controls.Add(MakeGraphToolbarLabel("Y max"), 2, 1);
+        _graphYMax = MakeGraphNumberBox(5, -100000000, 100000000, 1);
+        _graphYMax.ValueChanged += (_, _) => ApplyGraphPreviewYRangeFromControls();
+        inputGrid.Controls.Add(_graphYMax, 3, 1);
+
+        _graphShowRangeLines = new CheckBox
+        {
+            Text = T("editor.graph.lines", "Lines"),
+            Checked = true,
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(4, 0, 0, 0)
+        };
+        _graphShowRangeLines.CheckedChanged += (_, _) =>
+        {
+            ApplyGraphRangeLineVisibility();
+            _graphCanvas.Invalidate();
+        };
+        inputGrid.Controls.Add(_graphShowRangeLines, 4, 1);
+        inputGrid.SetColumnSpan(_graphShowRangeLines, 2);
 
         var copyButton = new GraphToolbarIconButton(GraphToolbarIcon.Copy, T("editor.graph.copy_points", "Copy points")) { Anchor = AnchorStyles.Left | AnchorStyles.Right };
         copyButton.Click += (_, _) =>
@@ -912,18 +946,18 @@ public sealed class NodEditorForm : Form
             if (!string.IsNullOrWhiteSpace(_graphPointClipboardText))
                 Clipboard.SetText(_graphPointClipboardText);
         };
-        inputGrid.Controls.Add(copyButton, 0, 1);
+        inputGrid.Controls.Add(copyButton, 0, 2);
         inputGrid.SetColumnSpan(copyButton, 2);
 
         var openLargeButton = new GraphToolbarIconButton(GraphToolbarIcon.Open, T("editor.graph.open_large", "Open large graph")) { Anchor = AnchorStyles.Left | AnchorStyles.Right };
         openLargeButton.Click += (_, _) => ShowGraphPreviewWindow();
-        inputGrid.Controls.Add(openLargeButton, 2, 1);
+        inputGrid.Controls.Add(openLargeButton, 2, 2);
         inputGrid.SetColumnSpan(openLargeButton, 2);
 
         _graphToggleTableButton = new GraphToolbarIconButton(GraphToolbarIcon.TableHidden, T("editor.graph.hide_table", "Hide table")) { Anchor = AnchorStyles.Left | AnchorStyles.Right };
         _graphToggleTableButton.Click += (_, _) => SetGraphPointTableVisible(!_graphPointPanel.Visible);
-        inputGrid.Controls.Add(_graphToggleTableButton, 4, 1);
-        inputGrid.SetColumnSpan(_graphToggleTableButton, 4);
+        inputGrid.Controls.Add(_graphToggleTableButton, 4, 2);
+        inputGrid.SetColumnSpan(_graphToggleTableButton, 2);
 
         panel.Controls.Add(inputGrid, 0, 0);
 
@@ -1007,6 +1041,7 @@ public sealed class NodEditorForm : Form
             if (_graphHasView)
             {
                 MatchGraphPreviewViewToCanvasAspect();
+                UpdateGraphPreviewViewportRangeControlsIfNeeded();
                 ResampleGraphPreviewVisibleView();
             }
             _graphCanvas.Invalidate();
@@ -1258,6 +1293,17 @@ public sealed class NodEditorForm : Form
             _ => "About"
         };
 
+    private static Label MakeGraphToolbarLabel(string text)
+    {
+        return new Label
+        {
+            Text = text,
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(0)
+        };
+    }
+
     private static NumericUpDown MakeGraphNumberBox(decimal value, decimal minimum, decimal maximum, decimal increment)
     {
         return new NumericUpDown
@@ -1268,7 +1314,8 @@ public sealed class NodEditorForm : Form
             Increment = increment,
             Value = value,
             Anchor = AnchorStyles.Left | AnchorStyles.Right,
-            Width = 70
+            Width = 70,
+            Margin = new Padding(0)
         };
     }
 
@@ -1279,14 +1326,15 @@ public sealed class NodEditorForm : Form
         if (editor is null || _graphCanvas is null || _graphPointTable is null)
             return;
 
+        _graphPreviewFitPoints.Clear();
         _graphPreviewPoints.Clear();
         _graphPreviewStepPoints.Clear();
         FillGraphPointTable([]);
 
         try
         {
-            var min = (double)_graphXMin.Value;
-            var max = (double)_graphXMax.Value;
+            var min = _graphSampleMinX;
+            var max = _graphSampleMaxX;
             var step = (double)_graphStep.Value;
 
             if (min > max)
@@ -1308,12 +1356,13 @@ public sealed class NodEditorForm : Form
             {
                 _graphDisabledMessage = disabledReason;
                 _graphPreviewDocument = null;
+                _graphHasView = false;
+                _graphPreviewFitPoints.Clear();
                 _graphPreviewPoints.Clear();
                 _graphPreviewStepPoints.Clear();
                 FillGraphPointTable([]);
                 SetGraphPointTableVisible(false);
                 _graphToggleTableButton.Enabled = false;
-                _graphHasView = false;
                 _graphCanvas.Invalidate();
                 return;
             }
@@ -1335,6 +1384,7 @@ public sealed class NodEditorForm : Form
                     if (TryGetGraphNumber(result, out var y))
                     {
                         var point = new PointF((float)x, (float)y);
+                        _graphPreviewFitPoints.Add(point);
                         _graphPreviewPoints.Add(point);
                         _graphPreviewStepPoints.Add(point);
                     }
@@ -1472,7 +1522,22 @@ public sealed class NodEditorForm : Form
 
     private void ResetGraphPreviewView(bool invalidate = true)
     {
-        SetNormalGraphPreviewView();
+        if (_graphPreviewDocument is null)
+        {
+            _graphHasView = false;
+            return;
+        }
+
+        var view = GraphSurfaceApi.CreateFitViewForCanvas(
+            _graphPreviewFitPoints,
+            (float)_graphSampleMinX,
+            (float)_graphSampleMaxX,
+            _graphCanvas,
+            GraphNormalHalfYRange);
+        SetGraphPreviewView(view);
+        _graphMarkerView = view;
+        SetGraphPreviewRangeControls(view);
+        UpdateGraphPreviewViewportRangeControlsIfNeeded();
         _graphHasView = true;
         ResampleGraphPreviewVisibleView();
         UpdateGraphPointerStatus(null);
@@ -1481,20 +1546,96 @@ public sealed class NodEditorForm : Form
             _graphCanvas.Invalidate();
     }
 
-    private void SetNormalGraphPreviewView()
+    private void ApplyGraphPreviewXRangeFromControls()
     {
-        var plot = GetGraphPlotRectangle();
-        var aspect = plot.Width > 0 && plot.Height > 0
-            ? Math.Max(0.1f, plot.Width / (float)plot.Height)
-            : 1f;
+        if (_updatingGraphXRangeControls)
+            return;
 
-        var halfY = GraphNormalHalfYRange;
-        var halfX = halfY * aspect;
+        if (_graphXMin.Value >= _graphXMax.Value)
+        {
+            _graphStatus.Text = "X min moet kleiner zijn dan X max.";
+            return;
+        }
 
-        _graphViewMinX = -halfX;
-        _graphViewMaxX = halfX;
-        _graphViewMinY = -halfY;
-        _graphViewMaxY = halfY;
+        _graphSampleMinX = (double)_graphXMin.Value;
+        _graphSampleMaxX = (double)_graphXMax.Value;
+        GenerateGraphPreview();
+    }
+
+    private void ApplyGraphPreviewYRangeFromControls()
+    {
+        if (_updatingGraphYRangeControls || !_graphHasView)
+            return;
+
+        if (_graphYMin.Value >= _graphYMax.Value)
+        {
+            _graphStatus.Text = "Y min moet kleiner zijn dan Y max.";
+            return;
+        }
+
+        SetGraphPreviewView(GraphSurfaceApi.CreateViewFromYRangeControls(GetGraphPreviewView(), _graphYMin, _graphYMax, _graphCanvas));
+        if (_graphShowRangeLines.Checked)
+            _graphMarkerView = GetGraphPreviewView();
+        ResampleGraphPreviewVisibleView();
+        UpdateGraphPointerStatus(null);
+        _graphCanvas.Invalidate();
+    }
+
+    private GraphPlotView GetGraphPreviewView()
+    {
+        return new GraphPlotView(_graphViewMinX, _graphViewMaxX, _graphViewMinY, _graphViewMaxY);
+    }
+
+    private void SetGraphPreviewView(GraphPlotView view)
+    {
+        _graphViewMinX = view.MinX;
+        _graphViewMaxX = view.MaxX;
+        _graphViewMinY = view.MinY;
+        _graphViewMaxY = view.MaxY;
+    }
+
+    private void SetGraphPreviewRangeControls(GraphPlotView view)
+    {
+        _updatingGraphXRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        try
+        {
+            GraphSurfaceApi.SetRangeControlValues(new GraphRangeControls(_graphXMin, _graphXMax, _graphYMin, _graphYMax), view);
+        }
+        finally
+        {
+            _updatingGraphYRangeControls = false;
+            _updatingGraphXRangeControls = false;
+        }
+    }
+
+    private void UpdateGraphPreviewViewportRangeControlsIfNeeded()
+    {
+        _updatingGraphXRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        try
+        {
+            GraphSurfaceApi.SyncViewportRangeControls(
+                new GraphRangeControls(_graphXMin, _graphXMax, _graphYMin, _graphYMax),
+                GetGraphPreviewView(),
+                _graphShowRangeLines.Checked);
+        }
+        finally
+        {
+            _updatingGraphYRangeControls = false;
+            _updatingGraphXRangeControls = false;
+        }
+    }
+
+    private void ApplyGraphRangeLineVisibility()
+    {
+        if (_graphShowRangeLines.Checked)
+        {
+            SetGraphPreviewRangeControls(_graphMarkerView);
+            return;
+        }
+
+        UpdateGraphPreviewViewportRangeControlsIfNeeded();
     }
 
     private void ZoomGraphPreview(float factor)
@@ -1530,6 +1671,7 @@ public sealed class NodEditorForm : Form
         _graphViewMinY = anchor.Y - newHeight * yRatio;
         _graphViewMaxY = _graphViewMinY + newHeight;
         MatchGraphPreviewViewToCanvasAspect();
+        UpdateGraphPreviewViewportRangeControlsIfNeeded();
         ResampleGraphPreviewVisibleView();
         _graphCanvas.Invalidate();
     }
@@ -1570,38 +1712,21 @@ public sealed class NodEditorForm : Form
         _graphViewMinY = _graphPanStartMinY + graphDy;
         _graphViewMaxY = _graphPanStartMaxY + graphDy;
         MatchGraphPreviewViewToCanvasAspect();
+        UpdateGraphPreviewViewportRangeControlsIfNeeded();
         ResampleGraphPreviewVisibleView();
         UpdateGraphPointerStatus(e.Location);
         _graphCanvas.Invalidate();
-    }
-
-    private void MatchGraphPreviewViewToCanvasAspect()
-    {
-        var plot = GetGraphPlotRectangle();
-        if (plot.Width <= 0 || plot.Height <= 0)
-            return;
-
-        var targetAspect = plot.Width / (float)plot.Height;
-        var centerX = (_graphViewMinX + _graphViewMaxX) / 2f;
-        var centerY = (_graphViewMinY + _graphViewMaxY) / 2f;
-        var halfX = Math.Max(0.0001f, (_graphViewMaxX - _graphViewMinX) / 2f);
-        var halfY = Math.Max(0.0001f, (_graphViewMaxY - _graphViewMinY) / 2f);
-
-        if (halfX / halfY < targetAspect)
-            halfX = halfY * targetAspect;
-        else
-            halfY = halfX / targetAspect;
-
-        _graphViewMinX = centerX - halfX;
-        _graphViewMaxX = centerX + halfX;
-        _graphViewMinY = centerY - halfY;
-        _graphViewMaxY = centerY + halfY;
     }
 
     private void GraphCanvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _graphPanning = false;
         _graphCanvas.Cursor = Cursors.Default;
+    }
+
+    private void MatchGraphPreviewViewToCanvasAspect()
+    {
+        SetGraphPreviewView(GraphSurfaceApi.MatchViewToCanvasAspect(GetGraphPreviewView(), _graphCanvas));
     }
 
     private void ResampleGraphPreviewVisibleView()
@@ -1676,7 +1801,7 @@ public sealed class NodEditorForm : Form
 
     private void GraphCanvas_Paint(object? sender, PaintEventArgs e)
     {
-        if (!_graphHasView)
+        if (!_graphHasView && _graphPreviewDocument is not null)
             ResetGraphPreviewView(invalidate: false);
 
         GraphSurfaceApi.Draw(
@@ -1685,12 +1810,15 @@ public sealed class NodEditorForm : Form
             _graphPreviewPoints,
             _graphPreviewStepPoints.Count > 0 ? _graphPreviewStepPoints : _graphPreviewPoints,
             new GraphPlotView(_graphViewMinX, _graphViewMaxX, _graphViewMinY, _graphViewMaxY),
-            (float)_graphXMin.Value,
-            (float)_graphXMax.Value,
+            _graphShowRangeLines.Checked ? _graphMarkerView.MinX : (float)_graphXMin.Value,
+            _graphShowRangeLines.Checked ? _graphMarkerView.MaxX : (float)_graphXMax.Value,
             (float)_graphStep.Value,
             _graphDisabledMessage,
             "Generate graph",
-            GraphPlotDensity.Compact);
+            GraphPlotDensity.Compact,
+            (float)_graphYMin.Value,
+            (float)_graphYMax.Value,
+            _graphShowRangeLines.Checked);
     }
 
     // Wordt aangeroepen zodra het venster zichtbaar is; zet paneelgroottes en formuleweergave goed.
@@ -3157,6 +3285,7 @@ public sealed class NodEditorForm : Form
         UpdateSimulatorPreview(new NodUiMetadata(), "22", "-");
         _testOutput.Text = "";
         _testButton.Text = T("editor.toolbar.test", "Test");
+        _graphPreviewFitPoints.Clear();
         _graphPreviewPoints.Clear();
         _graphPreviewStepPoints.Clear();
         _graphPreviewDocument = null;

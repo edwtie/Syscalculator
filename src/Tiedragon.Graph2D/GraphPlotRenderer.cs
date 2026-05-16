@@ -88,6 +88,56 @@ public static class GraphPlotRenderer
     }
 
     /// <summary>
+    /// Creates a padded view that keeps sampled graph data visible.
+    /// </summary>
+    public static GraphPlotView CreateFitView(
+        IReadOnlyList<PointF> points,
+        float requestedMinX,
+        float requestedMaxX,
+        Size canvasSize,
+        float fallbackHalfYRange = 5f)
+    {
+        var finitePoints = points
+            .Where(point => float.IsFinite(point.X) && float.IsFinite(point.Y))
+            .ToArray();
+
+        if (finitePoints.Length == 0)
+        {
+            var fallbackMinX = Math.Min(requestedMinX, requestedMaxX);
+            var fallbackMaxX = Math.Max(requestedMinX, requestedMaxX);
+            if (!float.IsFinite(fallbackMinX) || !float.IsFinite(fallbackMaxX))
+            {
+                fallbackMinX = -fallbackHalfYRange;
+                fallbackMaxX = fallbackHalfYRange;
+            }
+
+            ExpandFlatRange(ref fallbackMinX, ref fallbackMaxX);
+            return new GraphPlotView(fallbackMinX, fallbackMaxX, -fallbackHalfYRange, fallbackHalfYRange);
+        }
+
+        var minX = Math.Min(requestedMinX, finitePoints.Min(point => point.X));
+        var maxX = Math.Max(requestedMaxX, finitePoints.Max(point => point.X));
+        var minY = finitePoints.Min(point => point.Y);
+        var maxY = finitePoints.Max(point => point.Y);
+
+        if (minX > maxX)
+            (minX, maxX) = (maxX, minX);
+
+        ExpandFlatRange(ref minX, ref maxX);
+        ExpandFlatRange(ref minY, ref maxY);
+        IncludeZeroWhenClose(ref minY, ref maxY);
+
+        var xPad = Math.Max(0.25f, (maxX - minX) * 0.04f);
+        var yPad = Math.Max(0.25f, (maxY - minY) * 0.08f);
+        minX -= xPad;
+        maxX += xPad;
+        minY -= yPad;
+        maxY += yPad;
+
+        return new GraphPlotView(minX, maxX, minY, maxY);
+    }
+
+    /// <summary>
     /// Draws a single graph line with optional highlighted sample points.
     /// </summary>
     /// <remarks>
@@ -105,7 +155,10 @@ public static class GraphPlotRenderer
         float requestedStep,
         string disabledMessage,
         string emptyMessage,
-        GraphPlotDensity density)
+        GraphPlotDensity density,
+        float? requestedMinY = null,
+        float? requestedMaxY = null,
+        bool showRangeMarkers = true)
     {
         DrawMulti(
             g,
@@ -118,7 +171,10 @@ public static class GraphPlotRenderer
             requestedStep,
             disabledMessage,
             emptyMessage,
-            density);
+            density,
+            requestedMinY,
+            requestedMaxY,
+            showRangeMarkers);
     }
 
     /// <summary>
@@ -139,7 +195,10 @@ public static class GraphPlotRenderer
         float requestedStep,
         string disabledMessage,
         string emptyMessage,
-        GraphPlotDensity density)
+        GraphPlotDensity density,
+        float? requestedMinY = null,
+        float? requestedMaxY = null,
+        bool showRangeMarkers = true)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -172,7 +231,14 @@ public static class GraphPlotRenderer
             return new PointF(px, py);
         }
 
-        DrawAxes(g, canvas.Font, plot, view, requestedMinX, requestedMaxX, requestedStep, density, Map);
+        var finiteLinePoints = series
+            .SelectMany(line => line.Points)
+            .Where(point => float.IsFinite(point.X) && float.IsFinite(point.Y))
+            .ToArray();
+        float? dataMinY = finiteLinePoints.Length > 0 ? finiteLinePoints.Min(point => point.Y) : null;
+        float? dataMaxY = finiteLinePoints.Length > 0 ? finiteLinePoints.Max(point => point.Y) : null;
+
+        DrawAxes(g, canvas.Font, plot, view, requestedMinX, requestedMaxX, requestedStep, requestedMinY, requestedMaxY, dataMinY, dataMaxY, density, Map, showRangeMarkers);
 
         foreach (var line in series)
         {
@@ -196,8 +262,13 @@ public static class GraphPlotRenderer
         float requestedMinX,
         float requestedMaxX,
         float requestedStep,
+        float? requestedMinY,
+        float? requestedMaxY,
+        float? dataMinY,
+        float? dataMaxY,
         GraphPlotDensity density,
-        Func<PointF, PointF> map)
+        Func<PointF, PointF> map,
+        bool showRangeMarkers)
     {
         g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
@@ -293,6 +364,201 @@ public static class GraphPlotRenderer
             var labelY = Math.Clamp(origin.Y + xLabelOffset, plot.Top + 2, plot.Bottom - size.Height - 2);
             g.DrawString(text, tickFont, labelBrush, labelX, labelY);
         }
+
+        if (showRangeMarkers)
+            DrawRequestedRangeMarkers(g, plot, view, requestedMinX, requestedMaxX, requestedStep, requestedMinY, requestedMaxY, dataMinY, dataMaxY, density, tickFont, map);
+    }
+
+    private static void DrawRequestedRangeMarkers(
+        Graphics g,
+        Rectangle plot,
+        GraphPlotView view,
+        float requestedMinX,
+        float requestedMaxX,
+        float requestedStep,
+        float? requestedMinY,
+        float? requestedMaxY,
+        float? dataMinY,
+        float? dataMaxY,
+        GraphPlotDensity density,
+        Font font,
+        Func<PointF, PointF> map)
+    {
+        using var rangePen = new Pen(Color.FromArgb(46, 110, 210), density == GraphPlotDensity.Compact ? 0.9f : 1.15f)
+        {
+            DashStyle = DashStyle.Dash
+        };
+        using var rangeBrush = new SolidBrush(Color.FromArgb(25, 78, 156));
+        using var labelBack = new SolidBrush(Color.FromArgb(248, 252, 255));
+        using var labelBorder = new Pen(Color.FromArgb(196, 216, 246), 1f);
+
+        if (float.IsFinite(requestedMinX) && float.IsFinite(requestedMaxX))
+        {
+            var minX = Math.Min(requestedMinX, requestedMaxX);
+            var maxX = Math.Max(requestedMinX, requestedMaxX);
+            var labelY = plot.Bottom - g.MeasureString("X", font).Height - (density == GraphPlotDensity.Compact ? 4 : 6);
+            var minLabelRect = RectangleF.Empty;
+            var maxLabelRect = RectangleF.Empty;
+
+            if (minX >= view.MinX && minX <= view.MaxX)
+            {
+                var point = map(new PointF(minX, view.MinY));
+                g.DrawLine(rangePen, point.X, plot.Top, point.X, plot.Bottom);
+                minLabelRect = DrawMarkerLabel(g, $"X min {FormatTick(minX)}", font, rangeBrush, labelBack, labelBorder, point.X, labelY, plot);
+            }
+
+            if (maxX >= view.MinX && maxX <= view.MaxX)
+            {
+                var point = map(new PointF(maxX, view.MinY));
+                g.DrawLine(rangePen, point.X, plot.Top, point.X, plot.Bottom);
+                var maxLabelY = labelY;
+                if (!minLabelRect.IsEmpty)
+                {
+                    var testSize = g.MeasureString($"X max {FormatTick(maxX)}", font);
+                    var testX = Math.Clamp(point.X - testSize.Width / 2 - 3, plot.Left + 2, plot.Right - testSize.Width - 8);
+                    maxLabelRect = new RectangleF(testX, maxLabelY, testSize.Width + 6, testSize.Height + 2);
+                    if (maxLabelRect.IntersectsWith(minLabelRect))
+                        maxLabelY = Math.Max(plot.Top + 4, labelY - maxLabelRect.Height - 3);
+                }
+
+                DrawMarkerLabel(g, $"X max {FormatTick(maxX)}", font, rangeBrush, labelBack, labelBorder, point.X, maxLabelY, plot);
+            }
+        }
+
+        var markerMinY = requestedMinY ?? dataMinY;
+        var markerMaxY = requestedMaxY ?? dataMaxY;
+        if (markerMinY.HasValue && markerMaxY.HasValue &&
+            float.IsFinite(markerMinY.Value) && float.IsFinite(markerMaxY.Value))
+        {
+            DrawDataYRangeMarkers(g, plot, view, markerMinY.Value, markerMaxY.Value, density, font, map);
+        }
+
+        if (float.IsFinite(requestedStep) && requestedStep > 0)
+            DrawCornerLabel(g, $"Step {FormatTick(requestedStep)}", font, rangeBrush, labelBack, labelBorder, plot);
+    }
+
+    private static void DrawDataYRangeMarkers(
+        Graphics g,
+        Rectangle plot,
+        GraphPlotView view,
+        float dataMinY,
+        float dataMaxY,
+        GraphPlotDensity density,
+        Font font,
+        Func<PointF, PointF> map)
+    {
+        var minY = Math.Min(dataMinY, dataMaxY);
+        var maxY = Math.Max(dataMinY, dataMaxY);
+        using var dataPen = new Pen(Color.FromArgb(20, 125, 82), density == GraphPlotDensity.Compact ? 0.9f : 1.15f)
+        {
+            DashStyle = DashStyle.DashDot
+        };
+        using var dataBrush = new SolidBrush(Color.FromArgb(12, 103, 68));
+        using var labelBack = new SolidBrush(Color.FromArgb(248, 255, 251));
+        using var labelBorder = new Pen(Color.FromArgb(187, 226, 204), 1f);
+
+        if (Math.Abs(maxY - minY) < 0.000001f)
+        {
+            if (minY < view.MinY || minY > view.MaxY)
+                return;
+
+            var point = map(new PointF(view.MinX, minY));
+            g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
+            DrawYMarkerLabel(g, $"Y min/max {FormatTick(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
+            return;
+        }
+
+        var maxLabelRect = RectangleF.Empty;
+        if (maxY >= view.MinY && maxY <= view.MaxY)
+        {
+            var point = map(new PointF(view.MinX, maxY));
+            g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
+            maxLabelRect = DrawYMarkerLabel(g, $"Y max {FormatTick(maxY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
+        }
+
+        if (minY >= view.MinY && minY <= view.MaxY)
+        {
+            var point = map(new PointF(view.MinX, minY));
+            g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
+            DrawYMarkerLabel(g, $"Y min {FormatTick(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, maxLabelRect, preferAbove: false);
+        }
+    }
+
+    private static RectangleF DrawMarkerLabel(
+        Graphics g,
+        string text,
+        Font font,
+        Brush textBrush,
+        Brush backBrush,
+        Pen borderPen,
+        float centerX,
+        float y,
+        Rectangle plot)
+    {
+        var size = g.MeasureString(text, font);
+        var rect = new RectangleF(
+            Math.Clamp(centerX - size.Width / 2 - 3, plot.Left + 2, plot.Right - size.Width - 8),
+            y,
+            size.Width + 6,
+            size.Height + 2);
+        g.FillRectangle(backBrush, rect);
+        g.DrawRectangle(borderPen, rect.X, rect.Y, rect.Width, rect.Height);
+        g.DrawString(text, font, textBrush, rect.X + 3, rect.Y + 1);
+        return rect;
+    }
+
+    private static RectangleF DrawYMarkerLabel(
+        Graphics g,
+        string text,
+        Font font,
+        Brush textBrush,
+        Brush backBrush,
+        Pen borderPen,
+        float centerY,
+        Rectangle plot,
+        RectangleF avoidRect,
+        bool preferAbove)
+    {
+        var rect = BuildYMarkerLabelRect(g, text, font, centerY, plot);
+        if (!avoidRect.IsEmpty && rect.IntersectsWith(avoidRect))
+        {
+            var above = Math.Max(plot.Top + 2, avoidRect.Top - rect.Height - 3);
+            var below = Math.Min(plot.Bottom - rect.Height - 2, avoidRect.Bottom + 3);
+            rect.Y = preferAbove ? above : below;
+            if (rect.IntersectsWith(avoidRect))
+                rect.Y = preferAbove ? below : above;
+        }
+
+        g.FillRectangle(backBrush, rect);
+        g.DrawRectangle(borderPen, rect.X, rect.Y, rect.Width, rect.Height);
+        g.DrawString(text, font, textBrush, rect.X + 3, rect.Y + 1);
+        return rect;
+    }
+
+    private static RectangleF BuildYMarkerLabelRect(Graphics g, string text, Font font, float centerY, Rectangle plot)
+    {
+        var size = g.MeasureString(text, font);
+        return new RectangleF(
+            plot.Right - size.Width - 10,
+            Math.Clamp(centerY - size.Height / 2 - 1, plot.Top + 2, plot.Bottom - size.Height - 4),
+            size.Width + 6,
+            size.Height + 2);
+    }
+
+    private static void DrawCornerLabel(
+        Graphics g,
+        string text,
+        Font font,
+        Brush textBrush,
+        Brush backBrush,
+        Pen borderPen,
+        Rectangle plot)
+    {
+        var size = g.MeasureString(text, font);
+        var rect = new RectangleF(plot.Left + 6, plot.Top + 5, size.Width + 8, size.Height + 2);
+        g.FillRectangle(backBrush, rect);
+        g.DrawRectangle(borderPen, rect.X, rect.Y, rect.Width, rect.Height);
+        g.DrawString(text, font, textBrush, rect.X + 4, rect.Y + 1);
     }
 
     private static void DrawMinorGridLines(
@@ -417,6 +683,25 @@ public static class GraphPlotRenderer
         }
 
         return niceFraction * MathF.Pow(10, exponent);
+    }
+
+    private static void ExpandFlatRange(ref float min, ref float max)
+    {
+        if (Math.Abs(max - min) >= 0.0001f)
+            return;
+
+        var pad = Math.Max(1f, Math.Abs(min) * 0.1f);
+        min -= pad;
+        max += pad;
+    }
+
+    private static void IncludeZeroWhenClose(ref float minY, ref float maxY)
+    {
+        var range = Math.Max(1f, maxY - minY);
+        if (minY > 0 && minY <= range * 3f)
+            minY = 0;
+        else if (maxY < 0 && Math.Abs(maxY) <= range * 3f)
+            maxY = 0;
     }
 
     private static string FormatTick(float value)

@@ -186,6 +186,7 @@ editor.graph.points=Punti
 editor.graph.position_empty=Posizione: (-, -)
 editor.graph.position=Posizione: {0}
 editor.graph.step=Passo
+editor.graph.lines=Linee
 editor.graph.step_positive=Il passo deve essere maggiore di 0.
 editor.graph.no_numeric_points=Nessun punto numerico. Saltati: {0}.
 editor.graph.points_status=Punti: {0}. Saltati: {1}. Intervallo: {2:0.####} a {3:0.####}.
