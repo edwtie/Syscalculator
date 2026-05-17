@@ -15,12 +15,16 @@
       "summary": "Daily build with graph preview fixes, Feedback UI polish, hosted feedback delivery, language updates, selectable Daily/Beta update channels, localized updater text and single-instance startup behavior."
     },
     "beta": {
-      "version": "2.0.2026.05.16",
-      "date": "2026-05-16",
-      "title": "Syscalculator 2.0 Beta 1",
-      "downloadUrl": "https://www.tiedragon.com/files/syscal20beta1.exe",
-      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.16-beta",
-      "summary": "First Syscalculator 2.0 Beta 1 test build."
+      "version": "2.0.2026.05.17",
+      "displayVersion": "2026.05.17",
+      "date": "2026-05-17",
+      "title": "Syscalculator 2.0 Beta 2",
+      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.17-beta/Syscalculator-2.0-beta-2.0.2026.05.17.exe",
+      "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-beta-2.0.2026.05.17.zip",
+      "packageId": "beta-2026.05.17-beta2-001",
+      "sha256": "dba143861649f0d8fdb6649c2841c371573975eba01457376a9853bbd7aa675b",
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.17-beta",
+      "summary": "Beta 2 with Daily fixes, Feedback polish, updater improvements and corrected About release channel display."
     },
     "stable": {
       "version": "",

@@ -101,8 +101,24 @@ function Invoke-Build {
     dotnet build $solution
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $Channel
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $updateStatePath = Join-Path $root "src\syscalculator\update-state.cfg"
+    $originalUpdateState = if (Test-Path $updateStatePath) { Get-Content $updateStatePath -Raw } else { $null }
+
+    try {
+        if ($channelInfo -and $channelInfo.packageId) {
+            $markerText = "# Installed update package marker.`r`n# Used by the updater so same-date daily packages can still be detected without showing a build number.`r`npackageId=$($channelInfo.packageId)`r`n"
+            Set-Content -LiteralPath $updateStatePath -Value $markerText -NoNewline -Encoding UTF8
+            Write-Host "Using package marker: $($channelInfo.packageId)"
+        }
+
+        powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    }
+    finally {
+        if ($null -ne $originalUpdateState) {
+            Set-Content -LiteralPath $updateStatePath -Value $originalUpdateState -NoNewline -Encoding UTF8
+        }
+    }
 
     Write-Title "Package hash"
     if (Test-Path $updateZip) {
