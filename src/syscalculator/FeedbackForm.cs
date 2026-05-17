@@ -815,7 +815,7 @@ internal sealed class FeedbackSentForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
-        ClientSize = new Size(330, 210);
+        ClientSize = new Size(370, 250);
         BackColor = TransparentClientColor;
         TransparencyKey = TransparentClientColor;
         AppWindowIcon.ApplyTo(this);
@@ -909,6 +909,9 @@ body {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   position: relative;
+  box-shadow:
+    0 16px 28px rgba(34, 24, 15, 0.16),
+    0 5px 12px rgba(34, 24, 15, 0.10);
 }
 .message {
   position: absolute;
