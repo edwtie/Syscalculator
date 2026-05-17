@@ -252,7 +252,7 @@ public static class GraphSurfaceApi
         decimal decimalValue;
         try
         {
-            decimalValue = (decimal)Math.Round(value, box.DecimalPlaces);
+            decimalValue = decimal.Round((decimal)value, box.DecimalPlaces);
         }
         catch (OverflowException)
         {
