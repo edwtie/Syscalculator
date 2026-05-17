@@ -2,7 +2,7 @@ param(
     [ValidateSet("check", "build", "hash", "help")]
     [string] $Action = "check",
 
-    [ValidateSet("daily", "beta", "production")]
+    [ValidateSet("daily", "beta", "stable", "production")]
     [string] $Channel = "daily"
 )
 
@@ -10,13 +10,11 @@ $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
 $appVersion = "2.0"
-$dateVersion = Get-Date -Format "yyyy.MM.dd"
-$tag = "v$appVersion.$dateVersion-$Channel"
-$installer = Join-Path $root "artifacts\installer\Syscalculator-$appVersion-$Channel-$appVersion.$dateVersion.exe"
-$updateZip = Join-Path $root "artifacts\updates\Syscalculator-$appVersion-$Channel-$appVersion.$dateVersion.zip"
 $manifest = Join-Path $root "web\updates\syscalculator.json"
 $buildInstaller = Join-Path $root "src\syscalculator\Build\BuildInstaller.ps1"
 $solution = Join-Path $root "Syscalculator20_UI_Prototype_OldModelConverterLook_BuildFix.sln"
+
+$manifestChannelName = if ($Channel -eq "production") { "stable" } else { $Channel }
 
 function Write-Title([string] $Text) {
     Write-Host ""
@@ -29,8 +27,21 @@ function Get-ManifestInfo {
     }
 
     $json = Get-Content $manifest -Raw | ConvertFrom-Json
-    return $json.channels.$Channel
+    return $json.channels.PSObject.Properties[$manifestChannelName].Value
 }
+
+$channelInfo = Get-ManifestInfo
+$dateVersion = if ($channelInfo -and $channelInfo.date) {
+    [DateTime]::Parse($channelInfo.date).ToString("yyyy.MM.dd")
+} elseif ($channelInfo -and $channelInfo.displayVersion) {
+    [string] $channelInfo.displayVersion
+} else {
+    Get-Date -Format "yyyy.MM.dd"
+}
+$releaseChannelName = if ($Channel -eq "stable") { "production" } else { $Channel }
+$tag = "v$appVersion.$dateVersion-$releaseChannelName"
+$installer = Join-Path $root "artifacts\installer\Syscalculator-$appVersion-$releaseChannelName-$appVersion.$dateVersion.exe"
+$updateZip = Join-Path $root "artifacts\updates\Syscalculator-$appVersion-$releaseChannelName-$appVersion.$dateVersion.zip"
 
 function Write-ReleaseInfo {
     Write-Title "Syscalculator $Channel release"
@@ -57,13 +68,16 @@ function Write-ReleaseInfo {
         }
     }
 
-    $channelInfo = Get-ManifestInfo
     if ($channelInfo) {
         Write-Host ""
         Write-Host "Manifest channel:"
+        Write-Host "  version:        $($channelInfo.version)"
         Write-Host "  displayVersion: $($channelInfo.displayVersion)"
+        Write-Host "  date:           $($channelInfo.date)"
+        Write-Host "  title:          $($channelInfo.title)"
         Write-Host "  packageId:      $($channelInfo.packageId)"
         Write-Host "  sha256:         $($channelInfo.sha256)"
+        Write-Host "  downloadUrl:    $($channelInfo.downloadUrl)"
         Write-Host "  packageUrl:     $($channelInfo.packageUrl)"
     }
 
@@ -120,6 +134,8 @@ function Write-Help {
     Write-Host "  DAILY_RELEASE.bat build             Run dotnet build and BuildInstaller.ps1 for daily"
     Write-Host "  DAILY_RELEASE.bat hash              Show local installer/update zip hashes"
     Write-Host "  DAILY_RELEASE.bat check beta        Same check for beta channel"
+    Write-Host "  BETA_RELEASE.bat                    Shortcut for beta check"
+    Write-Host "  BETA_RELEASE.bat hash               Shortcut for beta hashes"
     Write-Host ""
     Write-Host "Notes:"
     Write-Host "  This helper does not store FTP credentials."
