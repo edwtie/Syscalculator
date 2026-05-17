@@ -841,13 +841,13 @@ internal sealed class FeedbackSentForm : Form
         {
             Text = okText,
             FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(248, 246, 240),
+            BackColor = Color.FromArgb(252, 250, 245),
             ForeColor = Color.FromArgb(24, 24, 24),
-            Font = new Font(GetUiFontFamily(), 9f, FontStyle.Regular),
-            Bounds = new Rectangle(124, 158, 82, 28),
+            Font = new Font(GetUiFontFamily(), 9.75f, FontStyle.Regular),
+            Bounds = new Rectangle(113, 156, 104, 30),
             DialogResult = DialogResult.OK
         };
-        okButton.FlatAppearance.BorderColor = Color.FromArgb(42, 42, 42);
+        okButton.FlatAppearance.BorderColor = Color.FromArgb(88, 24, 30, 39);
         okButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(238, 235, 228);
         okButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(225, 221, 214);
         card.Controls.Add(okButton);
