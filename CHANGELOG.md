@@ -20,6 +20,16 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.17.014 Daily Build
+
+**Date:** 2026-05-17 13:25
+
+**Fixes:**
+- Fixed the Feedback system information checkbox so it renders and toggles as a normal checkbox.
+
+**Additions:**
+- Published the daily hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.014.exe`.
+
 #### 2.0.2026.05.17.010 Daily Build
 
 **Date:** 2026-05-17 13:23

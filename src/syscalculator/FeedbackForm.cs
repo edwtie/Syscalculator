@@ -299,9 +299,15 @@ textarea::-webkit-scrollbar-thumb {
   align-items: center;
   gap: 6px;
   color: #23364f;
+  cursor: pointer;
 }
 .check-row input {
-  width: auto;
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex: 0 0 auto;
   accent-color: #0067d8;
 }
 .hint {
