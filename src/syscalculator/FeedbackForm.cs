@@ -310,6 +310,7 @@ textarea::-webkit-scrollbar-thumb {
   flex: 0 0 auto;
   display: inline-grid;
   place-content: center;
+  position: relative;
   border: 1.5px solid rgba(17, 24, 39, 0.78);
   border-radius: 3px;
   background: transparent !important;
@@ -326,13 +327,20 @@ textarea::-webkit-scrollbar-thumb {
   background: rgba(17, 24, 39, 0.05) !important;
   background-color: rgba(17, 24, 39, 0.05) !important;
 }
+.check-row input:checked:before,
 .check-row input:checked:after {
   content: "";
-  width: 4px;
-  height: 8px;
-  border: solid #111827;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translate(-1px, -1px);
+  position: absolute;
+  width: 9px;
+  height: 1.8px;
+  border-radius: 999px;
+  background: #111827;
+}
+.check-row input:checked:before {
+  transform: rotate(45deg);
+}
+.check-row input:checked:after {
+  transform: rotate(-45deg);
 }
 .hint {
   grid-column: 2;
