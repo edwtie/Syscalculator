@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.IO.Pipes;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -33,7 +34,17 @@ internal static class Program
         WindowsShellIntegration.SetCurrentAppUserModelId(WindowsShellIntegration.MainAppUserModelId);
         var startInTray = args.Any(IsTraySwitch);
         var startupNodPath = args.FirstOrDefault(arg => !IsToolSwitch(arg) && !IsWizardToolSwitch(arg) && !IsTraySwitch(arg));
-        Application.Run(new MainForm(startupNodPath, startInTray));
+
+        using var singleInstance = SingleInstanceController.Create();
+        if (!singleInstance.IsFirstInstance)
+        {
+            singleInstance.SignalFirstInstance(startupNodPath);
+            return;
+        }
+
+        var mainForm = new MainForm(startupNodPath, startInTray);
+        singleInstance.StartListening(mainForm);
+        Application.Run(mainForm);
     }
 
     private static bool ShouldOpenNodTool(string[] args, out string? editorPath, out bool openTemplateWizard)
@@ -129,4 +140,89 @@ internal static class Program
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool AllocConsole();
+}
+
+internal sealed class SingleInstanceController : IDisposable
+{
+    private const string MutexName = @"Local\Tiedragon.Syscalculator.Main";
+    private const string PipeName = "Tiedragon.Syscalculator.Main";
+
+    private readonly Mutex _mutex;
+    private readonly CancellationTokenSource _cancellation = new();
+
+    private SingleInstanceController(Mutex mutex, bool isFirstInstance)
+    {
+        _mutex = mutex;
+        IsFirstInstance = isFirstInstance;
+    }
+
+    public bool IsFirstInstance { get; }
+
+    public static SingleInstanceController Create()
+    {
+        var mutex = new Mutex(initiallyOwned: true, MutexName, out var createdNew);
+        return new SingleInstanceController(mutex, createdNew);
+    }
+
+    public void StartListening(MainForm mainForm)
+    {
+        _ = Task.Run(async () =>
+        {
+            while (!_cancellation.IsCancellationRequested)
+            {
+                try
+                {
+                    await using var pipe = new NamedPipeServerStream(
+                        PipeName,
+                        PipeDirection.In,
+                        maxNumberOfServerInstances: 1,
+                        PipeTransmissionMode.Byte,
+                        PipeOptions.Asynchronous);
+
+                    await pipe.WaitForConnectionAsync(_cancellation.Token);
+                    using var reader = new StreamReader(pipe);
+                    var nodPath = await reader.ReadLineAsync(_cancellation.Token);
+                    if (!mainForm.IsDisposed)
+                        mainForm.BeginInvoke(() => mainForm.ActivateFromSecondInstance(nodPath));
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+                catch
+                {
+                }
+            }
+        });
+    }
+
+    public void SignalFirstInstance(string? nodPath)
+    {
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            try
+            {
+                using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+                pipe.Connect(250);
+                using var writer = new StreamWriter(pipe) { AutoFlush = true };
+                writer.WriteLine(string.IsNullOrWhiteSpace(nodPath) ? "" : Path.GetFullPath(nodPath));
+                return;
+            }
+            catch
+            {
+                Thread.Sleep(150);
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _cancellation.Cancel();
+        _cancellation.Dispose();
+
+        if (IsFirstInstance)
+            _mutex.ReleaseMutex();
+
+        _mutex.Dispose();
+    }
 }

@@ -64,6 +64,7 @@ status.show_introduction_off=Le introduzioni saranno nascoste.
 status.auto_update_check_on=Controllo automatico aggiornamenti attivo.
 status.auto_update_check_off=Controllo automatico aggiornamenti disattivato.
 status.update_channel_changed=Canale aggiornamenti: {0}.
+status.already_running=Syscalculator e gia in esecuzione.
 status.calculator_to_input1=Calcolatrice -> input 1.
 status.calculator_to_input2=Calcolatrice -> input 2.
 status.calculator_disabled=La calcolatrice e disponibile solo per convertitori numerici.

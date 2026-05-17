@@ -68,6 +68,7 @@ status.show_introduction_off=Einleitungen werden ausgeblendet.
 status.auto_update_check_on=Automatische Updatepruefung ist ein.
 status.auto_update_check_off=Automatische Updatepruefung ist aus.
 status.update_channel_changed=Updatekanal: {0}.
+status.already_running=Syscalculator laeuft bereits.
 status.calculator_to_input1=Rechner -> Eingabe 1.
 status.calculator_to_input2=Rechner -> Eingabe 2.
 status.calculator_disabled=Der Rechner ist nur fuer numerische Konverter verfuegbar.

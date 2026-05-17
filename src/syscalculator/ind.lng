@@ -64,6 +64,7 @@ status.show_introduction_off=Pengantar akan disembunyikan.
 status.auto_update_check_on=Pemeriksaan pembaruan otomatis aktif.
 status.auto_update_check_off=Pemeriksaan pembaruan otomatis nonaktif.
 status.update_channel_changed=Kanal pembaruan: {0}.
+status.already_running=Syscalculator sudah berjalan.
 status.calculator_to_input1=Kalkulator -> input 1.
 status.calculator_to_input2=Kalkulator -> input 2.
 status.calculator_disabled=Kalkulator hanya tersedia untuk konverter numerik.

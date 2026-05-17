@@ -42,6 +42,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed missing About release channel label in German, French, Indonesian, Italian, Portuguese, Spanish and Simplified Chinese.
 - Fixed updater launch arguments so paths are passed directly to the standalone updater without fragile command-line quoting.
 - Fixed standalone updater localization so it reads the installed Syscalculator language configuration and `.lng` texts.
+- Fixed accidental second Syscalculator launches by activating the existing main window instead of opening another instance.
 
 **Additions:**
 - Added a feedback/support information window with bundled artwork

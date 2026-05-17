@@ -1344,11 +1344,26 @@ private void LoadStartupNodIfNeeded()
     if (string.IsNullOrWhiteSpace(_startupNodPath))
         return;
 
-    if (!File.Exists(_startupNodPath))
+    LoadNodFilePath(_startupNodPath);
+}
+
+internal void ActivateFromSecondInstance(string? nodPath)
+{
+    RestoreToForeground();
+
+    if (!string.IsNullOrWhiteSpace(nodPath))
+        LoadNodFilePath(nodPath);
+    else
+        SetStatus(T("status.already_running", "Syscalculator is already running."));
+}
+
+private void LoadNodFilePath(string nodPath)
+{
+    if (!File.Exists(nodPath))
     {
         MessageBox.Show(
             this,
-            string.Format(T("dialog.open_nod.file_not_found", "File not found: {0}"), _startupNodPath),
+            string.Format(T("dialog.open_nod.file_not_found", "File not found: {0}"), nodPath),
             T("dialog.open_nod.failed_title", "NOD load failed"),
             MessageBoxButtons.OK,
             MessageBoxIcon.Error);
@@ -1358,8 +1373,8 @@ private void LoadStartupNodIfNeeded()
 
     var item = new NodCatalogItem
     {
-        DisplayName = Path.GetFileNameWithoutExtension(_startupNodPath),
-        NodPath = _startupNodPath
+        DisplayName = Path.GetFileNameWithoutExtension(nodPath),
+        NodPath = nodPath
     };
 
     LoadConverter(item);
@@ -2237,6 +2252,11 @@ private void LoadStartupNodIfNeeded()
 
     // Zoek/commentaar: Herstelt een venster of toestand voor RestoreFromTray.
     private void RestoreFromTray()
+    {
+        RestoreToForeground();
+    }
+
+    private void RestoreToForeground()
     {
         Show();
         ShowInTaskbar = true;

@@ -59,6 +59,7 @@ status.show_introduction_off=将隐藏介绍。
 status.calculator_to_input1=计算器 -> 输入 1。
 status.calculator_to_input2=计算器 -> 输入 2。
 status.calculator_disabled=计算器仅适用于数值转换器。
+status.already_running=Syscalculator 已在运行。
 status.error=错误: {0}
 status.language_changed=语言已更改。
 

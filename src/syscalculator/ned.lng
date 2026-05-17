@@ -68,6 +68,7 @@ status.show_introduction_off=Introducties worden verborgen.
 status.auto_update_check_on=Automatische updatecontrole staat aan.
 status.auto_update_check_off=Automatische updatecontrole staat uit.
 status.update_channel_changed=Updatekanaal: {0}.
+status.already_running=Syscalculator draait al.
 status.calculator_to_input1=Calculator -> invoer 1.
 status.calculator_to_input2=Calculator -> invoer 2.
 status.calculator_disabled=Calculator is alleen beschikbaar voor numerieke converters.
