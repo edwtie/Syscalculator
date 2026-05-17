@@ -335,11 +335,17 @@ button.secondary {
   color: #111827;
 }
 button:hover { background: rgba(238, 246, 255, 0.94); }
+button.icon-only {
+  min-width: 44px;
+  width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .mail-icon {
   display: inline-block;
   width: 15px;
   height: 11px;
-  margin-right: 5px;
   border: 1.5px solid #0041aa;
   border-radius: 2px;
   position: relative;
@@ -391,7 +397,7 @@ button:hover { background: rgba(238, 246, 255, 0.94); }
       <div class="hint">{{H(string.Format(T("feedback.copy_hint", "Open uw mailprogramma voor {0}."), SupportAddress))}}</div>
     </section>
     <footer class="buttons">
-      <button id="mail"><span class="mail-icon"></span>{{H(T("feedback.open_mail", "Mail"))}}</button>
+      <button class="icon-only" id="mail" title="{{H(T("feedback.open_mail", "Mail"))}}" aria-label="{{H(T("feedback.open_mail", "Mail"))}}"><span class="mail-icon"></span></button>
       <button class="secondary" id="ok">{{H("OK")}}</button>
     </footer>
   </main>

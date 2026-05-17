@@ -20,6 +20,16 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.17.018 Daily Build
+
+**Date:** 2026-05-17 13:27
+
+**Fixes:**
+- Removed the visible Mail text from the Feedback send button so only the envelope icon is shown.
+
+**Additions:**
+- Published the daily hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.018.exe`.
+
 #### 2.0.2026.05.17.014 Daily Build
 
 **Date:** 2026-05-17 13:25
