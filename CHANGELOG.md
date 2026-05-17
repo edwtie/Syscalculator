@@ -208,23 +208,35 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Beta Releases
 
-#### 2.0.2026.05.16.091 Beta 1 Refresh
+#### 2.0.2026.05.16 Beta 1
 
-**Date:** 2026-05-16 17:45
+**Date:** 2026-05-16
 
-**Release type:** Beta 1 refresh
+**Release type:** Beta 1
 
 **Upgrade path:**
 - Replaces the old public Syscalculator 1.72 download as the current Syscalculator 2.0 Beta 1 test build.
 - Keeps a single fixed beta download name: `syscal20beta1.exe`.
 
 **Fixes:**
+- Promoted the tested daily line to the first Syscalculator 2.0 Beta 1 release.
+- Fixed Help maintainability by moving Help code into the separate `Tiedragon.Help` project.
+- Fixed hardcoded Help content by loading editable HTML, CSS, JavaScript, SVG and content resources at runtime.
+- Fixed NOD Editor help artwork by replacing the bitmap screenshot mock with a sharp SVG mock.
+- Fixed architecture and Help diagrams so names are shorter, connector labels are removed and arrows stay attached to colored groups.
+- Fixed writer-facing Help content organization with clear examples for warnings, notices, details blocks, tables, screenshots and command links.
 - Fixed Graph Preview and mini preview range markers so X/Y fit, line markers and zoom state stay consistent
 - Fixed mini preview recalculation drift by separating sampling range from viewport
 - Added localized graph line marker label for all UI languages
 
 **Additions:**
-- Published the beta installer as `Syscalculator-2.0-beta-2.0.2026.05.16.091.exe`.
+- Added Markdown architecture documentation for the overall software architecture, Help architecture and NOD system architecture.
+- Added SVG architecture diagrams for Syscalculator, Help and NOD system layers.
+- Added editable Help content groups for main Help, NOD full Help, NOD command Help, popup Help and snippets.
+- Added language-key based Help content support with English fallback behavior.
+- Added SVG-based Help mock support so localized screenshots can be generated from editable vector text instead of maintaining multiple PNG files.
+- Added reusable Help rendering helpers for templates, topic content, text lookup and screenshot embedding.
+- Published the beta installer as `Syscalculator-2.0-beta-2.0.2026.05.16.exe`.
 - Updated the fixed beta download link to `https://www.tiedragon.com/files/syscal20beta1.exe`.
 - Updated the NL fixed beta download link to `https://tiedragon.nl/downloads/syscal20beta1.exe`.
 
@@ -237,29 +249,6 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Editable Help system with runtime HTML/CSS/JavaScript/SVG resources.
 - Multi-language UI updates for Dutch, English, German, French, Italian, Spanish, Portuguese, Indonesian and Chinese.
 - Legacy NOD compatibility for commands such as `chg`, `trans` and `math`.
-
-#### 2.0.2026.05.16.062 Beta 1
-
-**Date:** 2026-05-16
-
-**Release type:** Beta 1
-
-**Fixes:**
-- Promoted the tested daily line to the first Syscalculator 2.0 Beta 1 release.
-- Fixed Help maintainability by moving Help code into the separate `Tiedragon.Help` project.
-- Fixed hardcoded Help content by loading editable HTML, CSS, JavaScript, SVG and content resources at runtime.
-- Fixed NOD Editor help artwork by replacing the bitmap screenshot mock with a sharp SVG mock.
-- Fixed architecture and Help diagrams so names are shorter, connector labels are removed and arrows stay attached to colored groups.
-- Fixed writer-facing Help content organization with clear examples for warnings, notices, details blocks, tables, screenshots and command links.
-
-**Additions:**
-- Added Markdown architecture documentation for the overall software architecture, Help architecture and NOD system architecture.
-- Added SVG architecture diagrams for Syscalculator, Help and NOD system layers.
-- Added editable Help content groups for main Help, NOD full Help, NOD command Help, popup Help and snippets.
-- Added language-key based Help content support with English fallback behavior.
-- Added SVG-based Help mock support so localized screenshots can be generated from editable vector text instead of maintaining multiple PNG files.
-- Added reusable Help rendering helpers for templates, topic content, text lookup and screenshot embedding.
-- Added the beta installer asset `Syscalculator-2.0-beta-2.0.2026.05.16.062.exe`.
 
 **Known limitations:**
 - This is a tester-ready beta, not a production release.
