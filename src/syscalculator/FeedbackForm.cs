@@ -131,6 +131,7 @@ internal sealed class FeedbackForm : Form
         var deliveryHint = GetFeedbackEndpoint() is null
             ? string.Format(T("feedback.copy_hint", "Open uw mailprogramma voor {0}."), SupportAddress)
             : T("feedback.send_hint", "Feedback wordt veilig naar Tiedragon gestuurd.");
+        var emailInvalid = T("feedback.email_invalid", "Vul een geldig e-mailadres in.");
 
         return $$"""
 <!doctype html>
@@ -216,6 +217,10 @@ input:focus {
   background: transparent !important;
   background-color: transparent !important;
   box-shadow: 0 1px 0 rgba(17, 24, 39, 0.30);
+}
+input.invalid {
+  border-bottom-color: rgba(17, 24, 39, 0.78);
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.42);
 }
 textarea:focus {
   border-color: rgba(17, 24, 39, 0.42);
@@ -384,6 +389,10 @@ textarea::-webkit-scrollbar-thumb {
   align-self: center;
   color: var(--muted);
 }
+.hint.error {
+  color: #111827;
+  font-weight: 600;
+}
 .buttons {
   display: flex;
   justify-content: flex-end;
@@ -472,7 +481,7 @@ button.icon-only:focus-visible {
       <input id="name" autocomplete="name">
 
       <label for="email">{{H(T("feedback.email", "E-mail"))}}</label>
-      <input id="email" type="email" autocomplete="email" required>
+      <input id="email" type="email" autocomplete="email">
 
       <label for="subject">{{H(T("feedback.subject", "Onderwerp"))}}</label>
       <input id="subject" value="{{H(defaultSubject)}}">
@@ -490,8 +499,31 @@ button.icon-only:focus-visible {
   </main>
 <script>
 const supportInfo = {{JsonSerializer.Serialize(_supportInfo)}};
+const deliveryHintText = {{JsonSerializer.Serialize(deliveryHint)}};
+const emailInvalidText = {{JsonSerializer.Serialize(emailInvalid)}};
 let selectedKind = document.getElementById('kindButton').textContent;
 function value(id) { return document.getElementById(id).value; }
+function isValidEmail(text) {
+  const value = text.trim();
+  return value.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+function setEmailError(message) {
+  const email = document.getElementById('email');
+  const hint = document.querySelector('.hint');
+  email.classList.toggle('invalid', Boolean(message));
+  hint.textContent = message || deliveryHintText;
+  hint.classList.toggle('error', Boolean(message));
+}
+function validateEmail() {
+  const email = document.getElementById('email');
+  const ok = isValidEmail(email.value);
+  setEmailError(ok ? '' : emailInvalidText);
+  if (!ok) {
+    email.focus();
+  }
+
+  return ok;
+}
 function payload(action) {
   return {
     action,
@@ -523,14 +555,13 @@ document.addEventListener('click', event => {
   }
 });
 document.getElementById('mail').addEventListener('click', () => {
-  const email = document.getElementById('email');
-  if (!email.reportValidity()) {
-    email.focus();
+  if (!validateEmail()) {
     return;
   }
 
   chrome.webview.postMessage(payload('mail'));
 });
+document.getElementById('email').addEventListener('input', () => setEmailError(''));
 document.getElementById('ok').addEventListener('click', () => chrome.webview.postMessage(payload('close')));
 document.getElementById('message').focus();
 </script>
