@@ -100,17 +100,14 @@ internal static class UpdateChecker
 
     private static bool IsAvailableUpdate(UpdateChannelInfo update)
     {
-        if (HasDifferentPackageId(update))
-            return true;
+        if (!string.IsNullOrWhiteSpace(update.PackageId))
+            return IsDifferentPackage(update);
 
         return IsNewer(update.Version, update.Date);
     }
 
-    private static bool HasDifferentPackageId(UpdateChannelInfo update)
+    private static bool IsDifferentPackage(UpdateChannelInfo update)
     {
-        if (string.IsNullOrWhiteSpace(update.PackageId))
-            return false;
-
         var updateDate = NormalizeDate(update.Date) ?? NormalizeDate(update.Version);
         var currentDate = NormalizeDate(AppVersionInfo.BuildDate);
         if (updateDate is not null && currentDate is not null && string.CompareOrdinal(updateDate, currentDate) > 0)
@@ -119,7 +116,7 @@ internal static class UpdateChecker
         if (updateDate is not null && currentDate is not null && string.CompareOrdinal(updateDate, currentDate) < 0)
             return false;
 
-        return !update.PackageId.Equals(ReadInstalledPackageId(), StringComparison.OrdinalIgnoreCase);
+        return !update.PackageId!.Equals(ReadInstalledPackageId(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ReadInstalledPackageId()
@@ -240,6 +237,9 @@ internal sealed class UpdateChannelInfo
 {
     [JsonPropertyName("version")]
     public string? Version { get; set; }
+
+    [JsonPropertyName("displayVersion")]
+    public string? DisplayVersion { get; set; }
 
     [JsonPropertyName("date")]
     public string? Date { get; set; }

@@ -2011,9 +2011,10 @@ private void LoadNodFilePath(string nodPath)
         var title = string.IsNullOrWhiteSpace(update.Title)
             ? T("update.available_title", "New Syscalculator version available")
             : update.Title.Trim();
-        var version = string.IsNullOrWhiteSpace(update.Version) ? "-" : update.Version.Trim();
+        var versionText = string.IsNullOrWhiteSpace(update.DisplayVersion) ? update.Version : update.DisplayVersion;
+        var version = string.IsNullOrWhiteSpace(versionText) ? "-" : NormalizeUpdateDialogText(versionText.Trim());
         var date = string.IsNullOrWhiteSpace(update.Date) ? "-" : update.Date.Trim();
-        var summary = string.IsNullOrWhiteSpace(update.Summary) ? "" : Environment.NewLine + Environment.NewLine + update.Summary.Trim();
+        var summary = string.IsNullOrWhiteSpace(update.Summary) ? "" : Environment.NewLine + Environment.NewLine + NormalizeUpdateDialogText(update.Summary.Trim());
         var message = string.Format(
             T("update.available", "{0}\n\nVersion: {1}\nDate: {2}{3}\n\nDownload this update?"),
             title,
@@ -2046,6 +2047,13 @@ private void LoadNodFilePath(string nodPath)
         {
             SetStatus(T("update.later", "Update postponed."));
         }
+    }
+
+    private static string NormalizeUpdateDialogText(string text)
+    {
+        return text.Replace("\\r\\n", Environment.NewLine, StringComparison.Ordinal)
+            .Replace("\\n", Environment.NewLine, StringComparison.Ordinal)
+            .Replace("\\r", Environment.NewLine, StringComparison.Ordinal);
     }
 
     private void MarkUpdateCheckedToday()
