@@ -48,6 +48,7 @@
 ### Production Readiness
 
 - Freeze user-facing labels for About, updater, Feedback, Help, and Config.
+- Keep Microsoft Store submission on the production channel only; do not submit Daily or Beta installers.
 - Confirm no help page describes Daily-only behavior unless the user is actually in Daily channel documentation.
 - Check clean install on a fresh Windows profile.
 - Check update from Beta 1 to Beta 2/Beta 3.

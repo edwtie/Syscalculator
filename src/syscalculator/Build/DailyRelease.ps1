@@ -152,6 +152,8 @@ function Write-Help {
     Write-Host "  DAILY_RELEASE.bat check beta        Same check for beta channel"
     Write-Host "  BETA_RELEASE.bat                    Shortcut for beta check"
     Write-Host "  BETA_RELEASE.bat hash               Shortcut for beta hashes"
+    Write-Host "  STORE_RELEASE.bat                   Shortcut for production Store release check"
+    Write-Host "  STORE_RELEASE.bat build             Build production installer for Microsoft Store submission"
     Write-Host ""
     Write-Host "Notes:"
     Write-Host "  This helper does not store FTP credentials."

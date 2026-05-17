@@ -55,7 +55,7 @@ if ($versionText -notmatch 'BuildNumber\s*=\s*"(?<build>[^"]+)"') {
 }
 
 $buildNumber = $Matches['build']
-$installVersion = if (($Channel -eq 'daily' -or $Channel -eq 'beta') -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
+$installVersion = if (($Channel -eq 'daily' -or $Channel -eq 'beta' -or $Channel -eq 'production') -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
     "2.0.$($Matches['date'])"
 }
 else {

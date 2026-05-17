@@ -5,6 +5,8 @@ internal static class AppVersionInfo
     public const string ProductName = "Syscalculator 2.0";
     public const string ReleaseDate = "17-05-2026";
     public const string Website = "https://www.tiedragon.com";
+    public const string PrivacyUrl = "https://www.tiedragon.com/privacy/syscalculator-en.html";
+    public const string PrivacyUrlDutch = "https://www.tiedragon.com/privacy/syscalculator.html";
     public const string Email = "info@tiedragon.com";
 
     public static string ProductVersion => $"2.0 {ReleaseChannel}";

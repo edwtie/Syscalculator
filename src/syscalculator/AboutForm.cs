@@ -163,7 +163,7 @@ internal sealed class AboutForm : Form
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 178));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 94));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 114));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 136));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
       
@@ -219,9 +219,17 @@ internal sealed class AboutForm : Form
     {
         var grid = CreateSection("\U0001F310", T("about.website_title", "Website"));
         AddLinkRow(grid, AppVersionInfo.Website, AppVersionInfo.Website);
+        AddLinkRow(grid, T("about.privacy", "Privacy statement"), GetPrivacyUrl());
         AddIconFullRow(grid, "\u2709", T("about.email_title", "E-mail"), 28, FontStyle.Bold);
         AddLinkRow(grid, AppVersionInfo.Email, "mailto:" + AppVersionInfo.Email);
         return grid;
+    }
+
+    private string GetPrivacyUrl()
+    {
+        return _currentLanguageFile.Equals("ned.lng", StringComparison.OrdinalIgnoreCase)
+            ? AppVersionInfo.PrivacyUrlDutch
+            : AppVersionInfo.PrivacyUrl;
     }
 
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildLanguageSection.
