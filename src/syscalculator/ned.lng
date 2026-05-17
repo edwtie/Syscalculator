@@ -142,6 +142,7 @@ feedback.kind.question=Vraag
 feedback.kind.other=Overig
 feedback.name=Naam
 feedback.email=E-mail
+feedback.email_invalid=Vul een geldig e-mailadres in.
 feedback.subject=Onderwerp
 feedback.message=Bericht
 feedback.include_support_info=Systeeminformatie meesturen

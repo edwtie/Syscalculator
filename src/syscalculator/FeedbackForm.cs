@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -471,7 +472,7 @@ button.icon-only:focus-visible {
       <input id="name" autocomplete="name">
 
       <label for="email">{{H(T("feedback.email", "E-mail"))}}</label>
-      <input id="email" type="email" autocomplete="email">
+      <input id="email" type="email" autocomplete="email" required>
 
       <label for="subject">{{H(T("feedback.subject", "Onderwerp"))}}</label>
       <input id="subject" value="{{H(defaultSubject)}}">
@@ -521,7 +522,15 @@ document.addEventListener('click', event => {
     kindPicker.classList.remove('open');
   }
 });
-document.getElementById('mail').addEventListener('click', () => chrome.webview.postMessage(payload('mail')));
+document.getElementById('mail').addEventListener('click', () => {
+  const email = document.getElementById('email');
+  if (!email.reportValidity()) {
+    email.focus();
+    return;
+  }
+
+  chrome.webview.postMessage(payload('mail'));
+});
 document.getElementById('ok').addEventListener('click', () => chrome.webview.postMessage(payload('close')));
 document.getElementById('message').focus();
 </script>
@@ -532,6 +541,9 @@ document.getElementById('message').focus();
 
     private async Task SendFeedbackAsync(FeedbackPayload payload)
     {
+        if (!ValidateFeedback(payload))
+            return;
+
         var endpoint = GetFeedbackEndpoint();
         if (endpoint is not null && await TryPostFeedbackAsync(endpoint, payload))
         {
@@ -546,6 +558,36 @@ document.getElementById('message').focus();
         }
 
         OpenMail(payload);
+    }
+
+    private bool ValidateFeedback(FeedbackPayload payload)
+    {
+        if (IsValidEmailAddress(payload.Email))
+            return true;
+
+        MessageBox.Show(this,
+            T("feedback.email_invalid", "Vul een geldig e-mailadres in."),
+            T("feedback.title", "Feedback"),
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
+        return false;
+    }
+
+    private static bool IsValidEmailAddress(string? email)
+    {
+        var value = email?.Trim();
+        if (string.IsNullOrWhiteSpace(value) || !value.Contains('@', StringComparison.Ordinal))
+            return false;
+
+        try
+        {
+            var address = new MailAddress(value);
+            return address.Address.Equals(value, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private async Task<bool> TryPostFeedbackAsync(Uri endpoint, FeedbackPayload payload)

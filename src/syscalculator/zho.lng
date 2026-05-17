@@ -148,6 +148,7 @@ feedback.kind.question=问题咨询
 feedback.kind.other=其他
 feedback.name=姓名
 feedback.email=电子邮件
+feedback.email_invalid=请输入有效的电子邮件地址。
 feedback.subject=主题
 feedback.message=消息
 feedback.include_support_info=发送系统信息

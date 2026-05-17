@@ -168,6 +168,7 @@ feedback.kind.question=Pertanyaan
 feedback.kind.other=Lainnya
 feedback.name=Nama
 feedback.email=E-mail
+feedback.email_invalid=Masukkan alamat e-mail yang valid.
 feedback.subject=Subjek
 feedback.message=Pesan
 feedback.include_support_info=Kirim informasi sistem

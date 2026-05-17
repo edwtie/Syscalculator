@@ -9,8 +9,8 @@
       "title": "Syscalculator 2.0 Daily 2026-05-17",
       "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.17-daily/Syscalculator-2.0-daily-2.0.2026.05.17.exe",
       "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-daily-2.0.2026.05.17.zip",
-      "packageId": "daily-2026.05.17-custom-progress-001",
-      "sha256": "da74a6ed575aad6d817e753207d4e03844fd7847b393deda45b36b5f5dd6c95b",
+      "packageId": "daily-2026.05.17-feedback-email-validation-001",
+      "sha256": "d1b1a8316cc55e70d918fc54c72c627e1ff3aac3eb6003311f6c2c896fb5686c",
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.17-daily",
       "summary": "Daily build with graph preview fixes, Feedback UI polish, hosted feedback delivery, language updates, selectable Daily/Beta update channels, localized updater text and single-instance startup behavior."
     },

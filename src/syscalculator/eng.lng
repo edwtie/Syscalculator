@@ -142,6 +142,7 @@ feedback.kind.question=Question
 feedback.kind.other=Other
 feedback.name=Name
 feedback.email=E-mail
+feedback.email_invalid=Enter a valid e-mail address.
 feedback.subject=Subject
 feedback.message=Message
 feedback.include_support_info=Send system information

@@ -168,6 +168,7 @@ feedback.kind.question=Pergunta
 feedback.kind.other=Outro
 feedback.name=Nome
 feedback.email=E-mail
+feedback.email_invalid=Insira um endereco de e-mail valido.
 feedback.subject=Assunto
 feedback.message=Mensagem
 feedback.include_support_info=Enviar informacoes do sistema
