@@ -107,7 +107,7 @@ function Invoke-Build {
     try {
         if ($channelInfo -and $channelInfo.packageId) {
             $markerText = "# Installed update package marker.`r`n# Used by the updater so same-date daily packages can still be detected without showing a build number.`r`npackageId=$($channelInfo.packageId)`r`n"
-            Set-Content -LiteralPath $updateStatePath -Value $markerText -NoNewline -Encoding UTF8
+            [System.IO.File]::WriteAllText($updateStatePath, $markerText, [System.Text.UTF8Encoding]::new($false))
             Write-Host "Using package marker: $($channelInfo.packageId)"
         }
 
@@ -116,7 +116,7 @@ function Invoke-Build {
     }
     finally {
         if ($null -ne $originalUpdateState) {
-            Set-Content -LiteralPath $updateStatePath -Value $originalUpdateState -NoNewline -Encoding UTF8
+            [System.IO.File]::WriteAllText($updateStatePath, $originalUpdateState, [System.Text.UTF8Encoding]::new($false))
         }
     }
 

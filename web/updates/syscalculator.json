@@ -21,10 +21,10 @@
       "title": "Syscalculator 2.0 Beta 2",
       "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.17-beta/Syscalculator-2.0-beta-2.0.2026.05.17.exe",
       "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-beta-2.0.2026.05.17.zip",
-      "packageId": "beta-2026.05.17-beta2-001",
-      "sha256": "dba143861649f0d8fdb6649c2841c371573975eba01457376a9853bbd7aa675b",
+      "packageId": "beta-2026.05.17-beta2-help-001",
+      "sha256": "54a39b441fb2d4f55b53bf12d031549674f0d2bdff8ffba0f27da830c07db1c3",
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.17-beta",
-      "summary": "Beta 2 with Daily fixes, Feedback polish, updater improvements and corrected About release channel display."
+      "summary": "Beta 2 with latest test-build help wording, Feedback polish, updater improvements and corrected About release channel display."
     },
     "stable": {
       "version": "",
