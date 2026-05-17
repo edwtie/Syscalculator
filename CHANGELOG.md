@@ -41,7 +41,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added Feedback menu and dialog translations for English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese.
 - Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.exe`.
 
-#### 2.0.2026.05.16.061 Daily Build
+#### 2.0.2026.05.16 Daily Build
 
 **Date:** 2026-05-16
 
@@ -60,7 +60,8 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added SVG-based Help mock support so localized screenshots can be generated from editable vector text instead of maintaining multiple PNG files.
 - Added reusable Help rendering helpers for templates, topic content, text lookup and screenshot embedding.
 - Added `AppWindowIcon` helper so application windows consistently use the Syscalculator icon.
-- Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.16.061.exe`.
+- Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.16.exe`.
+- Promoted this tested daily line to Beta 1 later the same day.
 
 #### 2.0.2026.05.12 Daily Build
 
