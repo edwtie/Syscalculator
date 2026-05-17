@@ -90,6 +90,91 @@ Test("expression variables and rounding functions", () =>
     AssertDecimal(7m, NodExpressionEvaluator.Evaluate("max(2,7)", 0));
 });
 
+Test("expression vector length and scalar projection", () =>
+{
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4))", 0));
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4,0))", 0));
+    AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("|vec(3,4)|", 0));
+});
+
+Test("expression vector arithmetic keeps z component", () =>
+{
+    AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(1,2,3) + vec(2,2,9))", 0));
+    AssertDecimal(12m, NodExpressionEvaluator.Evaluate("z(vec(1,2,3) + vec(2,2,9))", 0));
+    AssertDecimal(25m, NodExpressionEvaluator.Evaluate("dot(vec(3,4), vec(3,4,12))", 0));
+    AssertDecimal(26m, NodExpressionEvaluator.Evaluate("dot(vec(3,4,1), vec(3,4,1))", 0));
+});
+
+Test("expression vector cross and angle", () =>
+{
+    AssertDecimal(1m, NodExpressionEvaluator.Evaluate("z(cross(vec(1,0,0), vec(0,1,0)))", 0));
+    AssertDecimal(1m, NodExpressionEvaluator.Evaluate("x(cross(vec(0,1,0), vec(0,0,1)))", 0));
+    AssertNear(90m, NodExpressionEvaluator.Evaluate("angled(vec(1,0), vec(0,1))", 0), 0.0001m);
+});
+
+Test("expression vector invalid output is rejected", () =>
+{
+    AssertThrows(
+        "Vector result cannot be returned as decimal. Use length(...), dot(...), or x/y/z(...).",
+        () => NodExpressionEvaluator.Evaluate("vec(3,4)", 0));
+});
+
+Test("expression scientific notation", () =>
+{
+    AssertNear(0.000000000001m, NodExpressionEvaluator.Evaluate("1E-12", 0), 0.0000000000001m);
+    AssertNear(2m * NodExpressionEvaluator.Evaluate("e", 0), NodExpressionEvaluator.Evaluate("2e", 0), 0.0001m);
+});
+
+Test("nod math vec shorthand calculates vector length", () =>
+{
+    var doc = NodParser.Parse("""
+    Name Vector lengte
+    math vec 3 4
+    end
+    """);
+
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(5m, result.NumericValue ?? 0);
+});
+
+Test("nod math vec shorthand supports 3d tuple", () =>
+{
+    var doc = NodParser.Parse("""
+    Name Vector lengte 3D
+    math vec (3,4,12)
+    end
+    """);
+
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(13m, result.NumericValue ?? 0);
+});
+
+Test("expression matrix 2x2 determinant and trace", () =>
+{
+    AssertDecimal(-2m, NodExpressionEvaluator.Evaluate("det(mat2(1,2,3,4))", 0));
+    AssertDecimal(-2m, NodExpressionEvaluator.Evaluate("det2(1,2,3,4)", 0));
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("trace(mat2(1,2,3,4))", 0));
+    AssertDecimal(4m, NodExpressionEvaluator.Evaluate("mget(mat2(1,2,3,4),2,2)", 0));
+});
+
+Test("expression matrix vector and matrix multiplication", () =>
+{
+    AssertDecimal(6m, NodExpressionEvaluator.Evaluate("x(mat2(2,0,0,3) * vec(3,4))", 0));
+    AssertDecimal(12m, NodExpressionEvaluator.Evaluate("y(mat2(2,0,0,3) * vec(3,4))", 0));
+    AssertDecimal(4m, NodExpressionEvaluator.Evaluate("mget(mat2(1,2,3,4) * mat2(2,0,1,2),1,2)", 0));
+});
+
+Test("expression statistics functions", () =>
+{
+    AssertDecimal(40m, NodExpressionEvaluator.Evaluate("sum(2,4,4,4,5,5,7,9)", 0));
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("mean(2,4,4,4,5,5,7,9)", 0));
+    AssertDecimal(4.5m, NodExpressionEvaluator.Evaluate("median(2,4,4,4,5,5,7,9)", 0));
+    AssertDecimal(24m, NodExpressionEvaluator.Evaluate("product(2,3,4)", 0));
+    AssertDecimal(4m, NodExpressionEvaluator.Evaluate("variance(2,4,4,4,5,5,7,9)", 0));
+    AssertDecimal(2m, NodExpressionEvaluator.Evaluate("stdev(2,4,4,4,5,5,7,9)", 0));
+});
+
 Test("probability math factorial", () =>
 {
     AssertDecimal(2m, NodExpressionEvaluator.Evaluate("2!", 0));

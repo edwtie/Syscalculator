@@ -12,6 +12,8 @@ namespace Syscalculator.UI.WinForms;
 /// </summary>
 public sealed class MainForm : Form
 {
+    private const int PowerResumeQuietMs = 1600;
+
     // Zoek/commentaar: Type-overzicht: class ModernToolbarRenderer bevat de hoofdlogica/data voor dit onderdeel.
     private sealed class ModernToolbarRenderer : ToolStripProfessionalRenderer
     {
@@ -51,6 +53,7 @@ public sealed class MainForm : Form
     private readonly List<NodCatalogItem> _catalogItems = new();
     private readonly HashSet<string> _shownIntroConverters = new(StringComparer.OrdinalIgnoreCase);
     private readonly System.Windows.Forms.Timer _liveConvertTimer = new();
+    private DateTime _powerResumeQuietUntilUtc = DateTime.MinValue;
 
     private NotifyIcon _notifyIcon = null!;
     private ContextMenuStrip _trayMenu = null!;
@@ -137,9 +140,10 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         _liveConvertTimer.Tick += (_, _) =>
         {
             _liveConvertTimer.Stop();
-            if (_liveConvertEnabled)
+            if (_liveConvertEnabled && !IsPowerResumeQuietPeriod())
                 ConvertFromActiveSide();
         };
+        SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
 
         BuildMenu();
         BuildLayout();
@@ -350,6 +354,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         };
         userHelpItem.Click += UserHelp_Click;
         about.DropDownItems.Add(userHelpItem);
+        about.DropDownItems.Add(T("menu.about.feedback", "Feedback..."), null, Feedback_Click);
         about.DropDownItems.Add(new ToolStripSeparator());
         about.DropDownItems.Add(T("menu.about.syscalculator", "About Syscalculator"), null, About_Click);
 
@@ -1408,7 +1413,7 @@ private void LoadStartupNodIfNeeded()
     // Zoek/commentaar: Plant een vertraagde actie voor ScheduleLiveConvertFromInput.
     private void ScheduleLiveConvertFromInput()
     {
-        if (_updatingText || !_liveConvertEnabled || !_inputRadio.Checked)
+        if (_updatingText || !_liveConvertEnabled || !_inputRadio.Checked || IsPowerResumeQuietPeriod())
             return;
 
         
@@ -1419,7 +1424,7 @@ private void LoadStartupNodIfNeeded()
     // Zoek/commentaar: Plant een vertraagde actie voor ScheduleLiveConvertFromOutput.
     private void ScheduleLiveConvertFromOutput()
     {
-        if (_updatingText || !_liveConvertEnabled || !_outputRadio.Checked)
+        if (_updatingText || !_liveConvertEnabled || !_outputRadio.Checked || IsPowerResumeQuietPeriod())
             return;
 
         
@@ -1860,6 +1865,34 @@ private void LoadStartupNodIfNeeded()
             Navigation: GetHelpNavigationLabels()));
     }
 
+    private void Feedback_Click(object? sender, EventArgs e)
+    {
+        using var dialog = new FeedbackForm(
+            _language,
+            BuildFeedbackSupportInfo(),
+            _currentItem?.DisplayName ?? _currentMeta?.Name ?? "");
+        dialog.ShowDialog(this);
+    }
+
+    private string BuildFeedbackSupportInfo()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("Syscalculator feedback support info");
+        sb.AppendLine("-----------------------------------");
+        sb.AppendLine($"Product: {AppVersionInfo.ProductName}");
+        sb.AppendLine($"Version: {AppVersionInfo.ProductVersion}");
+        sb.AppendLine($"Channel: {AppVersionInfo.ReleaseChannel}");
+        sb.AppendLine($"Build: {AppVersionInfo.BuildNumber}");
+        sb.AppendLine($"Language: {_language.FileName}");
+        sb.AppendLine($"Converter: {_currentItem?.DisplayName ?? _currentMeta?.Name ?? "-"}");
+        sb.AppendLine($"Input label: {_currentMeta?.Input1 ?? "-"}");
+        sb.AppendLine($"Output label: {_currentMeta?.Input2 ?? "-"}");
+        sb.AppendLine($"OS: {Environment.OSVersion}");
+        sb.AppendLine($".NET: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
+        sb.AppendLine($"Process: {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}");
+        return sb.ToString();
+    }
+
     // Zoek/commentaar: Levert vertaalde labels voor de gedeelde helpnavigatie.
     private HelpNavigationLabels GetHelpNavigationLabels()
     {
@@ -2059,6 +2092,26 @@ private void LoadStartupNodIfNeeded()
             HideToTray(showBalloon: true);
     }
 
+    private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == PowerModes.Suspend)
+        {
+            _liveConvertTimer.Stop();
+            return;
+        }
+
+        if (e.Mode != PowerModes.Resume)
+            return;
+
+        _powerResumeQuietUntilUtc = DateTime.UtcNow.AddMilliseconds(PowerResumeQuietMs);
+        _liveConvertTimer.Stop();
+    }
+
+    private bool IsPowerResumeQuietPeriod()
+    {
+        return DateTime.UtcNow < _powerResumeQuietUntilUtc;
+    }
+
     // Zoek/commentaar: Methode OnFormClosing: centrale logica voor deze stap.
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
@@ -2080,6 +2133,8 @@ private void LoadStartupNodIfNeeded()
     {
         if (disposing)
         {
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
+            _liveConvertTimer.Dispose();
             _notifyIcon?.Dispose();
             _trayMenu?.Dispose();
         }

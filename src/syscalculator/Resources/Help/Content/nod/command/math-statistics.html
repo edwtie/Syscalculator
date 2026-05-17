@@ -1,0 +1,20 @@
+<details><summary>Statistics</summary>
+<p>NOD 2.0 can calculate common dataset summaries. These functions return one number, so they can be used directly as converter output.</p>
+<table>
+  <tr><th>Goal</th><th>Syntax</th><th>Example result</th></tr>
+  <tr><td>Sum</td><td><code>math sum(2,4,4,4,5,5,7,9)</code></td><td><code>40</code></td></tr>
+  <tr><td>Mean</td><td><code>math mean(2,4,4,4,5,5,7,9)</code></td><td><code>5</code></td></tr>
+  <tr><td>Median, M or Me</td><td><code>math median(2,4,4,4,5,5,7,9)</code></td><td><code>4.5</code></td></tr>
+  <tr><td>Population standard deviation</td><td><code>math stdev(2,4,4,4,5,5,7,9)</code></td><td><code>2</code></td></tr>
+  <tr><td>Sample standard deviation</td><td><code>math samplestdev(2,4,4,4,5,5,7,9)</code></td><td><code>2.138...</code></td></tr>
+</table>
+<div class="example-grid">
+  <div class="example-card"><h3>Example: median notation</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>Me</mi><mo>=</mo><mfrac><mrow><mn>4</mn><mo>+</mo><mn>5</mn></mrow><mn>2</mn></mfrac><mo>=</mo><mn>4.5</mn></mrow></math></div><pre>math median(2,4,4,4,5,5,7,9)</pre><p>The NOD function is <code>median(...)</code>. In Dutch school notation the symbol <code>Me</code> is often used for the median.</p></div>
+  <div class="example-card"><h3>Example: dataset mean</h3><pre>Name Dataset mean
+input1 Not used
+input2 Mean
+format ##.00
+math mean(2,4,4,4,5,5,7,9)
+end</pre></div>
+</div>
+</details>

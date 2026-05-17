@@ -131,6 +131,9 @@ details > table { margin-top:12px; }
 .example-card h3 { margin:0 0 8px; color:#0f3f8f; font-size:14px; }
 .example-card .mathml-formula { margin:0 0 10px; padding:10px 14px 11px 12px; min-height:42px; font-size:15px; }
 .example-card .mathml-formula math { font-size:17px; }
+.example-card .math-step > .mathml-formula { margin:6px 0 10px; }
+.example-card .math-step > b + .mathml-formula { margin-left:8px; vertical-align:middle; }
+.example-card .math-step p { margin:5px 0 0; }
 .example-card pre { margin:0; box-shadow:none; }
 .example-card .code-copy-wrap { margin:0; }
 .example-card .code-copy-wrap pre { margin:0; box-shadow:none; }

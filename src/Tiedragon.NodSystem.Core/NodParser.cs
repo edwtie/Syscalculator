@@ -428,7 +428,9 @@ public static class NodParser
             return;
         }
 
-if (TryRewriteLegacyModMath(value, out var modExpression))
+        if (TryRewriteVectorMath(value, out var vectorExpression))
+            AddExpressionMath(doc, vectorExpression);
+        else if (TryRewriteLegacyModMath(value, out var modExpression))
             AddExpressionMath(doc, modExpression);
         else if (TryParseLegacyMath(value, out var legacyStep))
             AddLegacyMath(doc, legacyStep);
@@ -442,7 +444,9 @@ if (TryRewriteLegacyModMath(value, out var modExpression))
     // Zoek/commentaar: Leest tekst in en zet die om naar gestructureerde data voor ParseMath.
     private static void ParseMath(string value, DataFieldDefinition field, int lineNumber)
     {
-        if (TryRewriteLegacyModMath(value, out var modExpression))
+        if (TryRewriteVectorMath(value, out var vectorExpression))
+            AddExpressionMath(field, vectorExpression);
+        else if (TryRewriteLegacyModMath(value, out var modExpression))
             AddExpressionMath(field, modExpression);
         else if (TryParseLegacyMath(value, out var legacyStep))
             AddLegacyMath(field, legacyStep);
@@ -509,6 +513,54 @@ if (TryRewriteLegacyModMath(value, out var modExpression))
 
         step = new MathStep10(op, number);
         return true;
+    }
+
+
+    /// <summary>
+    /// Ondersteunt korte NOD-vectornotatie:
+    /// math vec 3 4
+    /// math vec (3,4,12)
+    /// wordt intern:
+    /// length(vec(3,4))
+    /// length(vec(3,4,12))
+    /// </summary>
+    private static bool TryRewriteVectorMath(string value, out string expression)
+    {
+        expression = "";
+
+        var trimmed = value.Trim();
+        var firstSpace = trimmed.IndexOfAny([' ', '\t']);
+        if (firstSpace < 0)
+            return false;
+
+        var op = trimmed[..firstSpace].Trim();
+        if (!op.Equals("vec", StringComparison.OrdinalIgnoreCase) &&
+            !op.Equals("vector", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var rest = trimmed[(firstSpace + 1)..].Trim();
+        if (rest.Length == 0)
+            throw new FormatException("math vec expects 2 or 3 components.");
+
+        var components = SplitVectorComponents(rest);
+        if (components.Count is not (2 or 3))
+            throw new FormatException("math vec expects 2 or 3 components.");
+
+        expression = $"length(vec({string.Join(",", components)}))";
+        return true;
+    }
+
+    private static IReadOnlyList<string> SplitVectorComponents(string value)
+    {
+        value = value.Trim();
+        if (value.StartsWith('(') && value.EndsWith(')'))
+            value = value[1..^1].Trim();
+
+        var separator = value.Contains(',') ? ',' : ' ';
+        return value
+            .Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(part => part.Length > 0)
+            .ToArray();
     }
 
 

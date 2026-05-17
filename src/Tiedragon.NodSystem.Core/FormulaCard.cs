@@ -59,12 +59,97 @@ public static class FormulaCardCatalog
                 "Waarde na t stappen met beginwaarde N0 en groeifactor g.",
                 @"N(t)=N_0\cdot g^t",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>N</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><msub><mi>N</mi><mn>0</mn></msub><mo>&#x22C5;</mo><msup><mi>g</mi><mi>t</mi></msup></mrow></math>""",
-                new[] { "HAVO A", "HAVO B", "VWO A", "VWO B", "Examenbasis" },
+                new[] { "HAVO A", "HAVO B", "VWO A", "VWO B", "Algebra", "Examenbasis" },
                 "Basisvorm voor groei en verval. In formulekaarten nuttig voor procenten, rente, populatie en halfwaardetijd.",
                 """
                 Name Exponentiele groei notitie
                 input text Beginwaarde groeifactor en tijd
                 output value Uitkomst
+                end
+                """),
+
+            new FormulaCard(
+                "statistics-mean",
+                "Gemiddelde",
+                "mean = sum(x_i) / n",
+                "Gemiddelde: tel alle waarden op en deel door het aantal waarden.",
+                @"\bar{x}=\frac{\sum x_i}{n}",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>x</mi><mo>&#x00AF;</mo></mover><mo>=</mo><mfrac><mrow><mo>&#x2211;</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><mi>n</mi></mfrac></mrow></math>""",
+                new[] { "HAVO A", "VWO A", "Statistiek", "Wiskunde A", "Examenbasis" },
+                "Wiskunde A basis: centrummaat van een dataset. Past bij tabellen, grafieken en onderzoeksdata.",
+                """
+                Name Gemiddelde dataset
+                input text Dataset
+                output mean Gemiddelde
+                math mean(2,4,4,4,5,5,7,9)
+                end
+                """),
+
+            new FormulaCard(
+                "statistics-median",
+                "Mediaan",
+                "Me = middle value after sorting",
+                "Mediaan: sorteer de waarden en neem de middelste waarde of het gemiddelde van de twee middelste waarden.",
+                @"Me=\operatorname{mediaan}(x)",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>Me</mi><mo>=</mo><mi>mediaan</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math>""",
+                new[] { "HAVO A", "VWO A", "Statistiek", "Wiskunde A", "Examenbasis" },
+                "Robuuste centrummaat: minder gevoelig voor uitschieters dan het gemiddelde.",
+                """
+                Name Mediaan dataset
+                input text Dataset
+                output median Mediaan
+                math median(2,4,4,4,5,5,7,9)
+                end
+                """),
+
+            new FormulaCard(
+                "statistics-stdev-population",
+                "Populatie-standaardafwijking",
+                "sigma = sqrt(sum((x_i - mean)^2) / n)",
+                "Spreidingsmaat voor een volledige populatie: gemiddelde kwadratische afwijking onder de wortel.",
+                @"\sigma=\sqrt{\frac{1}{n}\sum (x_i-\bar{x})^2}",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x03C3;</mi><mo>=</mo><msqrt><mfrac><mrow><mo>&#x2211;</mo><msup><mrow><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>-</mo><mover><mi>x</mi><mo>&#x00AF;</mo></mover><mo>)</mo></mrow><mn>2</mn></msup></mrow><mi>n</mi></mfrac></msqrt></mrow></math>""",
+                new[] { "HAVO A", "VWO A", "Statistiek", "Wiskunde A", "Examenbasis" },
+                "Wiskunde A spreiding. Gebruik stdev voor de hele reeks als populatie; gebruik samplestdev bij een steekproef.",
+                """
+                Name Populatie standaardafwijking
+                input text Dataset
+                output sigma Standaardafwijking
+                math stdev(2,4,4,4,5,5,7,9)
+                end
+                """),
+
+            new FormulaCard(
+                "probability-combinations",
+                "Combinaties",
+                "C(n,r) = n! / (r! * (n-r)!)",
+                "Aantal manieren om r elementen uit n te kiezen zonder volgorde.",
+                @"\binom{n}{r}=\frac{n!}{r!(n-r)!}",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfenced><mfrac linethickness="0"><mi>n</mi><mi>r</mi></mfrac></mfenced><mo>=</mo><mfrac><mrow><mi>n</mi><mo>!</mo></mrow><mrow><mi>r</mi><mo>!</mo><mo>(</mo><mi>n</mi><mo>-</mo><mi>r</mi><mo>)</mo><mo>!</mo></mrow></mfrac></mrow></math>""",
+                new[] { "HAVO A", "VWO A", "Kansrekening", "Wiskunde A", "Examenbasis" },
+                "Kansrekening en tellen: kies r uit n zonder volgorde.",
+                """
+                Name Combinaties
+                input n Aantal totaal
+                output combinations Aantal combinaties
+                math comb(ans,2)
+                end
+                """),
+
+            new FormulaCard(
+                "probability-expected-value",
+                "Verwachtingswaarde",
+                "E(X) = sum(x_i * p_i)",
+                "Gemiddelde uitkomst op lange termijn: vermenigvuldig elke waarde met de bijbehorende kans.",
+                @"E(X)=\sum x_i p_i",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>E</mi><mo>(</mo><mi>X</mi><mo>)</mo><mo>=</mo><mo>&#x2211;</mo><msub><mi>x</mi><mi>i</mi></msub><msub><mi>p</mi><mi>i</mi></msub></mrow></math>""",
+                new[] { "HAVO A", "VWO A", "Kansrekening", "Statistiek", "Wiskunde A" },
+                "Verwachtingswaarde bij discrete kansen. Handig voor kansverdelingen en keuzeproblemen.",
+                """
+                Name Verwachtingswaarde
+                input text Waarden en kansen
+                output expected Verwachtingswaarde
+                math expected(0,0.5,10,0.5)
                 end
                 """),
 
@@ -98,6 +183,56 @@ public static class FormulaCardCatalog
                 input x X waarde
                 input text Helling a en startwaarde b
                 output y Y waarde
+                end
+                """),
+
+            new FormulaCard(
+                "distance-between-points",
+                "Afstand tussen twee punten",
+                "d = sqrt((x2-x1)^2 + (y2-y1)^2)",
+                "Afstand tussen P(x1,y1) en Q(x2,y2) in het vlak.",
+                @"d(P,Q)=\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>d</mi><mo>=</mo><msqrt><mrow><msup><mrow><mo>(</mo><msub><mi>x</mi><mn>2</mn></msub><mo>-</mo><msub><mi>x</mi><mn>1</mn></msub><mo>)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo>(</mo><msub><mi>y</mi><mn>2</mn></msub><mo>-</mo><msub><mi>y</mi><mn>1</mn></msub><mo>)</mo></mrow><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
+                new[] { "HAVO B", "VWO B", "Meetkunde met coordinaten", "Analytische meetkunde", "2D" },
+                "Coordinatenmeetkunde: eigenlijk Pythagoras op het verschil tussen twee punten.",
+                """
+                Name Afstand tussen punten
+                input text Punten P en Q
+                output d Afstand
+                math distance(vec(1,2), vec(4,6))
+                end
+                """),
+
+            new FormulaCard(
+                "midpoint",
+                "Midden van twee punten",
+                "M = ((x1+x2)/2, (y1+y2)/2)",
+                "Middenpunt tussen P(x1,y1) en Q(x2,y2).",
+                @"M=\left(\frac{x_1+x_2}{2},\frac{y_1+y_2}{2}\right)",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>M</mi><mo>=</mo><mo>(</mo><mfrac><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>x</mi><mn>2</mn></msub></mrow><mn>2</mn></mfrac><mo>,</mo><mfrac><mrow><msub><mi>y</mi><mn>1</mn></msub><mo>+</mo><msub><mi>y</mi><mn>2</mn></msub></mrow><mn>2</mn></mfrac><mo>)</mo></mrow></math>""",
+                new[] { "HAVO B", "VWO B", "Meetkunde met coordinaten", "Analytische meetkunde", "2D" },
+                "Bepaal het punt precies halverwege twee punten.",
+                """
+                Name Middenpunt
+                input text Punten P en Q
+                output midpoint Middenpunt
+                end
+                """),
+
+            new FormulaCard(
+                "triangle-area",
+                "Oppervlakte driehoek",
+                "A = 0.5 * base * height",
+                "Oppervlakte van een driehoek met basis en hoogte.",
+                @"A=\frac{1}{2}bh",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>A</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>b</mi><mi>h</mi></mrow></math>""",
+                new[] { "HAVO", "VWO", "Meetkunde", "2D", "Examenbasis" },
+                "Basale meetkunde: basis maal hoogte gedeeld door twee.",
+                """
+                Name Oppervlakte driehoek
+                input b Basis
+                output A Oppervlakte
+                math 0.5 * ans * 6
                 end
                 """),
 
@@ -418,12 +553,64 @@ public static class FormulaCardCatalog
                 @"\vec{v}=(x,y),\quad |\vec{v}|=\sqrt{x^2+y^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
                 new[] { "VWO D", "PWS", "Vectoren", "2D graph", "Limited vector" },
-                "Een 2D vector kun je veilig tonen als pijl in een grafiek. Dit is passend voor NOD 2.0 beta; 3D vectors en geometry mode blijven toekomstwerk.",
+                "Een 2D vector kun je veilig tonen als pijl in een grafiek. Volledige 3D-vectorweergave en geometry mode blijven toekomstwerk.",
                 """
                 Name 2D vectorpijl notitie
                 input x X component
                 input y Y component
                 output arrow Grafiekpijl
+                end
+                """),
+
+            new FormulaCard(
+                "vector-length-3d",
+                "3D vectorlengte",
+                "v = (x,y,z), |v| = sqrt(x^2 + y^2 + z^2)",
+                "Lengte van een 3D-vector.",
+                @"\vec{v}=(x,y,z),\quad |\vec{v}|=\sqrt{x^2+y^2+z^2}",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>z</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
+                new[] { "VWO D", "PWS", "Vectoren", "3D", "Limited vector" },
+                "3D vectorlengte werkt numeriek in NOD math. Echte graph3D/rotatie is toekomstwerk.",
+                """
+                Name 3D vectorlengte
+                input text Vectorcomponenten
+                output length Lengte
+                math length(vec(3,4,12))
+                end
+                """),
+
+            new FormulaCard(
+                "vector-dot-angle",
+                "Inproduct en hoek",
+                "a dot b = |a|*|b|*cos(theta)",
+                "Inproduct en hoek tussen twee vectoren.",
+                @"a\cdot b=\|a\|\|b\|\cos\theta",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>a</mi><mo>&#x22C5;</mo><mi>b</mi><mo>=</mo><mo>&#x2016;</mo><mi>a</mi><mo>&#x2016;</mo><mo>&#x2016;</mo><mi>b</mi><mo>&#x2016;</mo><mi>cos</mi><mo>(</mo><mi>&#x03B8;</mi><mo>)</mo></mrow></math>""",
+                new[] { "VWO B", "VWO D", "Vectoren", "Meetkunde", "PWS" },
+                "Meetkundige betekenis van het inproduct: lengte, richting en hoek.",
+                """
+                Name Vector inproduct en hoek
+                input text Twee vectoren
+                output angle Hoek
+                math dot(vec(1,2), vec(3,4))
+                math angled(vec(1,0), vec(0,1))
+                end
+                """),
+
+            new FormulaCard(
+                "vector-cross-z",
+                "Kruisproduct z-component",
+                "z(cross(a,b)) = ax*by - ay*bx",
+                "2D georienteerde oppervlakte via de z-component van het 3D-kruisproduct.",
+                @"(a\times b)_z=a_xb_y-a_yb_x",
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msub><mrow><mo>(</mo><mi>a</mi><mo>&#x00D7;</mo><mi>b</mi><mo>)</mo></mrow><mi>z</mi></msub><mo>=</mo><msub><mi>a</mi><mi>x</mi></msub><msub><mi>b</mi><mi>y</mi></msub><mo>-</mo><msub><mi>a</mi><mi>y</mi></msub><msub><mi>b</mi><mi>x</mi></msub></mrow></math>""",
+                new[] { "VWO D", "Vectoren", "Meetkunde", "PWS", "Limited vector" },
+                "Handig voor orientatie en oppervlakte. NOD geeft een vector terug, dus gebruik x/y/z voor een component.",
+                """
+                Name Kruisproduct z component
+                input text Twee vectoren
+                output z Z component
+                math z(cross(vec(1,0,0), vec(0,1,0)))
                 end
                 """),
 
@@ -451,7 +638,7 @@ public static class FormulaCardCatalog
                 @"\det\begin{pmatrix}a&b\\c&d\end{pmatrix}=ad-bc",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>det</mi><mo>(</mo><mfenced><mtable><mtr><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mi>d</mi></mtd></mtr></mtable></mfenced><mo>)</mo><mo>=</mo><mi>a</mi><mi>d</mi><mo>-</mo><mi>b</mi><mi>c</mi></mrow></math>""",
                 new[] { "VWO D", "PWS", "Lineaire algebra", "Limited matrix" },
-                "Limited matrix-onderwerp voor 2x2 matrices. 3x3 matrices en echte 3D graph/geometry horen niet bij NOD 2.0 beta.",
+                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices en echte 3D graph/geometry blijven toekomstwerk.",
                 """
                 Name 2x2 matrix determinant notitie
                 input text Matrixwaarden a,b,c,d

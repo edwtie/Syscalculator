@@ -80,11 +80,11 @@ Type: files; Name: "{app}\Converters\snijpunt_lijnen_solver_demo.nod"
 Type: filesandordirs; Name: "{app}\Converters\Output"
 
 [Icons]
-Name: "{group}\Syscalculator"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\NOD Editor"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-tool"
-Name: "{group}\NOD Template Wizard"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-wizardtool"
+Name: "{group}\Syscalculator"; Filename: "{app}\{#MyAppExeName}"; AppUserModelID: "Tiedragon.Syscalculator"
+Name: "{group}\NOD Editor"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-tool"; AppUserModelID: "Tiedragon.Syscalculator.NodEditor"
+Name: "{group}\NOD Template Wizard"; Filename: "{app}\{#MyAppExeName}"; Parameters: "-wizardtool"; AppUserModelID: "Tiedragon.Syscalculator.NodTemplateWizard"
 Name: "{group}\{cm:UninstallProgram,Syscalculator}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Syscalculator"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\Syscalculator"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; AppUserModelID: "Tiedragon.Syscalculator"
 
 [Registry]
 Root: HKCU; Subkey: "Software\Classes\.nod"; ValueType: string; ValueName: ""; ValueData: "Syscalculator.Nod"; Flags: uninsdeletevalue

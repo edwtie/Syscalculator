@@ -3,6 +3,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -289,13 +292,12 @@ internal sealed class AboutForm : Form
         var bar = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 3,
+            ColumnCount = 2,
             RowCount = 1,
             Padding = new Padding(14, 10, 14, 8),
         };
-        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
-        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34));
-        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
+        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 470));
 
         var systemButton = new Button
         {
@@ -329,9 +331,17 @@ internal sealed class AboutForm : Form
             DialogResult = DialogResult.OK,
         };
 
-        bar.Controls.Add(systemButton, 0, 0);
-        bar.Controls.Add(licenseButton, 1, 0);
-        bar.Controls.Add(okButton, 2, 0);
+        var buttonRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
+        };
+        buttonRow.Controls.Add(okButton);
+        buttonRow.Controls.Add(licenseButton);
+        buttonRow.Controls.Add(systemButton);
+
+        bar.Controls.Add(buttonRow, 1, 0);
 
         AcceptButton = okButton;
         return bar;
@@ -467,13 +477,497 @@ internal sealed class AboutForm : Form
     // Zoek/commentaar: Toont een venster, melding of detailweergave voor ShowSystemInformation.
     private void ShowSystemInformation()
     {
-        var message =
-            "OS: " + Environment.OSVersion + Environment.NewLine +
-            ".NET: " + Environment.Version + Environment.NewLine +
-            "Machine: " + Environment.MachineName + Environment.NewLine +
-            "64-bit process: " + Environment.Is64BitProcess;
+        using var dialog = new Form
+        {
+            Text = T("about.system_info", "System information..."),
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false,
+            ClientSize = new Size(820, 540),
+            ShowInTaskbar = false,
+            BackColor = Color.FromArgb(246, 248, 252)
+        };
+        AppWindowIcon.ApplyTo(dialog);
 
-        MessageBox.Show(this, message, T("about.system_info", "System information..."), MessageBoxButtons.OK, MessageBoxIcon.Information);
+        var infoText = BuildSystemInformationText();
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 2,
+            Padding = new Padding(22, 18, 22, 14)
+        };
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 138));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
+
+        var iconPanel = new SystemInfoComputerIconPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 112,
+            Margin = new Padding(0, 10, 16, 0)
+        };
+        root.Controls.Add(iconPanel, 0, 0);
+
+        var content = new RoundedTableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            RowCount = 2,
+            ColumnCount = 1,
+            Padding = new Padding(14),
+            BackColor = Color.White,
+            BorderColor = Color.FromArgb(190, 208, 233),
+            SecondaryBorderColor = Color.FromArgb(230, 238, 249),
+            CornerRadius = 9
+        };
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 62));
+        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var titleBlock = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            RowCount = 2,
+            ColumnCount = 1,
+            Margin = new Padding(0, 0, 0, 4)
+        };
+        titleBlock.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        titleBlock.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        titleBlock.Controls.Add(new Label
+        {
+            Text = T("about.system_info", "System information..."),
+            Dock = DockStyle.Fill,
+            Font = new Font("Segoe UI", 13.5f, FontStyle.Bold),
+            ForeColor = Color.FromArgb(0, 65, 170),
+            TextAlign = ContentAlignment.MiddleLeft
+        }, 0, 0);
+        titleBlock.Controls.Add(new Label
+        {
+            Text = T("about.system_info_subtitle", "Information for support and feedback."),
+            Dock = DockStyle.Fill,
+            Font = new Font("Segoe UI", 9.2f),
+            ForeColor = Color.FromArgb(76, 89, 108),
+            TextAlign = ContentAlignment.MiddleLeft
+        }, 0, 1);
+        content.Controls.Add(titleBlock, 0, 0);
+
+        var process = Process.GetCurrentProcess();
+        var tabs = new TabControl
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = new Point(12, 4)
+        };
+
+        tabs.TabPages.Add(CreateSystemInfoTabPage("Windows", new[]
+        {
+            ("Windows", GetWindowsProductName()),
+            ("Versie", GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion")),
+            ("Editie", GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID")),
+            ("Build", GetWindowsBuildText()),
+            ("OS", RuntimeInformation.OSDescription),
+            ("Architectuur", RuntimeInformation.OSArchitecture.ToString()),
+            ("Machine", Environment.MachineName)
+        }));
+
+        tabs.TabPages.Add(CreateSystemInfoTabPage("Hardware", new[]
+        {
+            ("Merk", GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "SystemManufacturer")),
+            ("Model", GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "SystemProductName")),
+            ("Moederbord", JoinNonEmpty(" ", GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer"), GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct"))),
+            ("BIOS", GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "BIOSVersion")),
+            ("CPU", GetRegistryValue(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString")),
+            ("Processoren", Environment.ProcessorCount.ToString(CultureInfo.InvariantCulture)),
+            ("Videokaarten", GetVideoAdapterText()),
+            ("Geheugen", $"{GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024} MB"),
+            ("Scherm", GetScreenText())
+        }));
+
+        tabs.TabPages.Add(CreateSystemInfoTabPage("Runtime", new[]
+        {
+            ("Product", AppVersionInfo.ProductName),
+            ("Versie", AppVersionInfo.ProductVersion),
+            ("Channel", AppVersionInfo.ReleaseChannel),
+            ("Build", AppVersionInfo.BuildNumber),
+            (".NET", RuntimeInformation.FrameworkDescription),
+            ("Proces", RuntimeInformation.ProcessArchitecture.ToString()),
+            ("Geheugen", $"{process.WorkingSet64 / 1024 / 1024} MB")
+        }));
+
+        tabs.TabPages.Add(CreateSystemInfoTabPage("Paden", new[]
+        {
+            ("Applicatie", Application.ExecutablePath),
+            ("Basismap", AppContext.BaseDirectory),
+            ("Werkmap", Environment.CurrentDirectory)
+        }));
+
+        content.Controls.Add(tabs, 0, 1);
+
+        root.Controls.Add(content, 1, 0);
+
+        var bottom = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
+            Padding = new Padding(0, 12, 0, 0)
+        };
+
+        var okButton = new Button
+        {
+            Text = "OK",
+            Width = 104,
+            Height = 30,
+            DialogResult = DialogResult.OK
+        };
+
+        var copyButton = new Button
+        {
+            Text = T("about.copy_system_info", "Copy"),
+            Image = CreateCopyButtonImage(),
+            ImageAlign = ContentAlignment.MiddleLeft,
+            TextAlign = ContentAlignment.MiddleCenter,
+            TextImageRelation = TextImageRelation.ImageBeforeText,
+            Width = 104,
+            Height = 30
+        };
+        copyButton.Click += (_, _) => Clipboard.SetText(infoText);
+
+        bottom.Controls.Add(okButton);
+        bottom.Controls.Add(copyButton);
+        root.SetColumnSpan(bottom, 2);
+        root.Controls.Add(bottom, 0, 1);
+
+        dialog.Controls.Add(root);
+        dialog.AcceptButton = okButton;
+        dialog.Shown += (_, _) => okButton.Focus();
+        dialog.ShowDialog(this);
+    }
+
+    private static TabPage CreateSystemInfoTabPage(string title, IReadOnlyList<(string Label, string Value)> rows)
+    {
+        var page = new TabPage(title)
+        {
+            BackColor = Color.White,
+            Padding = new Padding(12)
+        };
+
+        var grid = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            ColumnCount = 2,
+            RowCount = rows.Count,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 122));
+        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+        for (var i = 0; i < rows.Count; i++)
+        {
+            grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            grid.Controls.Add(new Label
+            {
+                Text = rows[i].Label,
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(62, 77, 99),
+                TextAlign = ContentAlignment.MiddleLeft
+            }, 0, i);
+            grid.Controls.Add(new Label
+            {
+                Text = NormalizeSystemInfoValue(rows[i].Value),
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(20, 35, 55),
+                TextAlign = ContentAlignment.MiddleLeft
+            }, 1, i);
+        }
+
+        page.Controls.Add(grid);
+        return page;
+    }
+
+    private static Bitmap CreateCopyButtonImage()
+    {
+        var bitmap = new Bitmap(18, 18);
+        using var graphics = Graphics.FromImage(bitmap);
+        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        graphics.Clear(Color.Transparent);
+
+        using var fillBack = new SolidBrush(Color.FromArgb(238, 246, 255));
+        using var fillFront = new SolidBrush(Color.FromArgb(250, 253, 255));
+        using var outline = new Pen(Color.FromArgb(0, 65, 170), 1.4f)
+        {
+            LineJoin = LineJoin.Round
+        };
+
+        var back = new Rectangle(6, 5, 8, 10);
+        var front = new Rectangle(3, 2, 8, 10);
+        using (var backPath = RoundedPanel.CreateRoundedRectangle(back, 2))
+        {
+            graphics.FillPath(fillBack, backPath);
+            graphics.DrawPath(outline, backPath);
+        }
+
+        using (var frontPath = RoundedPanel.CreateRoundedRectangle(front, 2))
+        {
+            graphics.FillPath(fillFront, frontPath);
+            graphics.DrawPath(outline, frontPath);
+        }
+
+        return bitmap;
+    }
+
+    private static string BuildSystemInformationText()
+    {
+        var process = Process.GetCurrentProcess();
+        var sb = new StringBuilder();
+        sb.AppendLine("Syscalculator");
+        sb.AppendLine("-------------");
+        sb.AppendLine($"Product: {AppVersionInfo.ProductName}");
+        sb.AppendLine($"Version: {AppVersionInfo.ProductVersion}");
+        sb.AppendLine($"Channel: {AppVersionInfo.ReleaseChannel}");
+        sb.AppendLine($"Build: {AppVersionInfo.BuildNumber}");
+        sb.AppendLine($"Release date: {AppVersionInfo.ReleaseDate:yyyy-MM-dd}");
+        sb.AppendLine();
+        sb.AppendLine("System");
+        sb.AppendLine("------");
+        sb.AppendLine($"Windows: {GetWindowsProductName()}");
+        sb.AppendLine($"Version: {GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "DisplayVersion")}");
+        sb.AppendLine($"Edition: {GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "EditionID")}");
+        sb.AppendLine($"Build: {GetWindowsBuildText()}");
+        sb.AppendLine($"OS: {RuntimeInformation.OSDescription}");
+        sb.AppendLine($"OS version: {Environment.OSVersion}");
+        sb.AppendLine($"Architecture: {RuntimeInformation.OSArchitecture}");
+        sb.AppendLine($"Machine: {Environment.MachineName}");
+        sb.AppendLine($"User: {Environment.UserName}");
+        sb.AppendLine();
+        sb.AppendLine("Hardware");
+        sb.AppendLine("--------");
+        sb.AppendLine($"Manufacturer: {GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "SystemManufacturer")}");
+        sb.AppendLine($"Model: {GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "SystemProductName")}");
+        sb.AppendLine($"Motherboard: {JoinNonEmpty(" ", GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer"), GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct"))}");
+        sb.AppendLine($"BIOS: {GetRegistryValue(@"HARDWARE\DESCRIPTION\System\BIOS", "BIOSVersion")}");
+        sb.AppendLine($"CPU: {GetRegistryValue(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString")}");
+        sb.AppendLine($"Processor count: {Environment.ProcessorCount}");
+        sb.AppendLine($"GPUs: {GetVideoAdapterText()}");
+        sb.AppendLine($"Available managed memory: {GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024} MB");
+        sb.AppendLine($"Screens: {GetScreenText()}");
+        sb.AppendLine($"Screen count: {Screen.AllScreens.Length}");
+        sb.AppendLine();
+        sb.AppendLine("Runtime");
+        sb.AppendLine("-------");
+        sb.AppendLine($".NET: {RuntimeInformation.FrameworkDescription}");
+        sb.AppendLine($"Process architecture: {RuntimeInformation.ProcessArchitecture}");
+        sb.AppendLine($"64-bit OS: {Environment.Is64BitOperatingSystem}");
+        sb.AppendLine($"64-bit process: {Environment.Is64BitProcess}");
+        sb.AppendLine($"Processor count: {Environment.ProcessorCount}");
+        sb.AppendLine($"Working set: {process.WorkingSet64 / 1024 / 1024} MB");
+        sb.AppendLine();
+        sb.AppendLine("Paths");
+        sb.AppendLine("-----");
+        sb.AppendLine($"Application: {Application.ExecutablePath}");
+        sb.AppendLine($"Base directory: {AppContext.BaseDirectory}");
+        sb.AppendLine($"Current directory: {Environment.CurrentDirectory}");
+        return sb.ToString();
+    }
+
+    private static string GetWindowsProductName()
+    {
+        var productName = GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName");
+        if (int.TryParse(GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuildNumber"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var build) &&
+            build >= 22000 &&
+            productName.Contains("Windows 10", StringComparison.OrdinalIgnoreCase))
+        {
+            productName = productName.Replace("Windows 10", "Windows 11", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return productName;
+    }
+
+    private static string GetWindowsBuildText()
+    {
+        var build = GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentBuildNumber");
+        var ubr = GetRegistryValue(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR");
+        return string.IsNullOrWhiteSpace(ubr) || ubr == "-"
+            ? build
+            : $"{build}.{ubr}";
+    }
+
+    private static string GetScreenText()
+    {
+        if (Screen.AllScreens.Length == 0)
+        {
+            return "-";
+        }
+
+        return string.Join(", ", Screen.AllScreens.Select(screen =>
+            $"{screen.Bounds.Width} x {screen.Bounds.Height}{(screen.Primary ? " primary" : string.Empty)}"));
+    }
+
+    private static string GetVideoAdapterText()
+    {
+        var adapters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            var device = new DisplayDevice();
+            device.cb = Marshal.SizeOf<DisplayDevice>();
+            for (uint i = 0; EnumDisplayDevices(null, i, ref device, 0); i++)
+            {
+                AddVideoAdapter(adapters, device.DeviceString, "-");
+                device = new DisplayDevice();
+                device.cb = Marshal.SizeOf<DisplayDevice>();
+            }
+        }
+        catch
+        {
+            // Display device enumeration is best-effort; registry fallback below can still find adapters.
+        }
+
+        try
+        {
+            using var videoKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Video");
+            foreach (var adapterKeyName in videoKey?.GetSubKeyNames() ?? Array.Empty<string>())
+            {
+                using var adapterKey = videoKey?.OpenSubKey(adapterKeyName);
+                foreach (var deviceKeyName in adapterKey?.GetSubKeyNames() ?? Array.Empty<string>())
+                {
+                    using var deviceKey = adapterKey?.OpenSubKey(deviceKeyName);
+                    var name = RegistryValueToString(deviceKey?.GetValue("HardwareInformation.AdapterString"));
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        name = RegistryValueToString(deviceKey?.GetValue("DriverDesc"));
+                    }
+
+                    AddVideoAdapter(adapters, name, RegistryMemoryToText(deviceKey?.GetValue("HardwareInformation.MemorySize")));
+                }
+            }
+        }
+        catch
+        {
+            // Hardware registry access is best-effort; copy text still works without it.
+        }
+
+        AddDisplayClassAdapters(adapters);
+
+        return adapters.Count == 0
+            ? "-"
+            : string.Join(", ", adapters.Select(adapter => adapter.Value == "-" ? adapter.Key : $"{adapter.Key} ({adapter.Value})"));
+    }
+
+    private static void AddDisplayClassAdapters(Dictionary<string, string> adapters)
+    {
+        try
+        {
+            using var classKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");
+            foreach (var deviceKeyName in classKey?.GetSubKeyNames() ?? Array.Empty<string>())
+            {
+                using var deviceKey = classKey?.OpenSubKey(deviceKeyName);
+                var name = RegistryValueToString(deviceKey?.GetValue("HardwareInformation.AdapterString"));
+                if (name == "-")
+                {
+                    name = RegistryValueToString(deviceKey?.GetValue("DriverDesc"));
+                }
+
+                AddVideoAdapter(adapters, name, RegistryMemoryToText(deviceKey?.GetValue("HardwareInformation.MemorySize")));
+            }
+        }
+        catch
+        {
+            // Driver class details differ per vendor; other GPU sources remain available.
+        }
+    }
+
+    private static void AddVideoAdapter(Dictionary<string, string> adapters, string name, string memory)
+    {
+        name = CleanDeviceDescription(name);
+        name = NormalizeSystemInfoValue(name);
+        if (name == "-" ||
+            name.Equals("Microsoft Basic Display Driver", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Remote Display", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Mirror Driver", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        memory = NormalizeSystemInfoValue(memory);
+        if (!adapters.TryGetValue(name, out var existingMemory) || existingMemory == "-")
+        {
+            adapters[name] = memory;
+        }
+    }
+
+    private static string RegistryMemoryToText(object? value)
+    {
+        var bytes = value switch
+        {
+            int number => number,
+            uint number => number,
+            long number => number,
+            ulong number => number <= long.MaxValue ? (long)number : 0,
+            byte[] raw when raw.Length >= 4 => BitConverter.ToUInt32(raw, 0),
+            _ => 0L
+        };
+
+        return bytes <= 0 ? "-" : FormatBytes(bytes);
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        const long mb = 1024L * 1024L;
+        const long gb = 1024L * mb;
+        return bytes >= gb && bytes % gb == 0
+            ? $"{bytes / gb} GB"
+            : $"{Math.Max(1, bytes / mb)} MB";
+    }
+
+    private static string CleanDeviceDescription(string value)
+    {
+        value = NormalizeSystemInfoValue(value);
+        var lastSemicolon = value.LastIndexOf(';');
+        return lastSemicolon >= 0 && lastSemicolon + 1 < value.Length
+            ? value[(lastSemicolon + 1)..].Trim()
+            : value;
+    }
+
+    private static string GetRegistryValue(string keyName, string valueName)
+    {
+        try
+        {
+            return RegistryValueToString(Registry.GetValue($@"HKEY_LOCAL_MACHINE\{keyName}", valueName, null));
+        }
+        catch
+        {
+            return "-";
+        }
+    }
+
+    private static string RegistryValueToString(object? value)
+    {
+        return value switch
+        {
+            null => "-",
+            string text when string.IsNullOrWhiteSpace(text) => "-",
+            string text => text.Trim(),
+            string[] items => JoinNonEmpty(", ", items),
+            byte[] bytes => Encoding.Unicode.GetString(bytes).TrimEnd('\0', ' '),
+            _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "-"
+        };
+    }
+
+    private static string NormalizeSystemInfoValue(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
+    }
+
+    private static string JoinNonEmpty(string separator, params string[] values)
+    {
+        var joined = string.Join(separator, values.Where(value => !string.IsNullOrWhiteSpace(value) && value != "-").Select(value => value.Trim()));
+        return string.IsNullOrWhiteSpace(joined) ? "-" : joined;
     }
 
     // Zoek/commentaar: Opent een venster, bestand of link voor OpenLink.
@@ -541,6 +1035,29 @@ internal sealed class AboutForm : Form
         };
 
         return CultureInfo.GetCultureInfo(cultureName);
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern bool EnumDisplayDevices(string? lpDevice, uint iDevNum, ref DisplayDevice lpDisplayDevice, uint dwFlags);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct DisplayDevice
+    {
+        public int cb;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string DeviceName;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string DeviceString;
+
+        public int StateFlags;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string DeviceID;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string DeviceKey;
     }
 
 }
@@ -619,6 +1136,176 @@ internal class RoundedPanel : Panel
         path.CloseFigure();
 
         return path;
+    }
+}
+
+internal sealed class SystemInfoComputerIconPanel : Panel
+{
+    private readonly Image? _miniPcImage;
+
+    public SystemInfoComputerIconPanel()
+    {
+        DoubleBuffered = true;
+        SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
+        _miniPcImage = LoadMiniPcImage();
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+        if (_miniPcImage is not null)
+        {
+            PaintMiniPcImage(e.Graphics);
+            return;
+        }
+
+        var bounds = ClientRectangle;
+        var centerX = bounds.Left + bounds.Width / 2f - 7f;
+        var top = bounds.Top + 8f;
+
+        using var ambientShadow = new SolidBrush(Color.FromArgb(24, 42, 73, 112));
+        using var screenBack = new LinearGradientBrush(
+            new RectangleF(centerX - 37, top + 2, 68, 43),
+            Color.FromArgb(250, 253, 255),
+            Color.FromArgb(214, 232, 250),
+            LinearGradientMode.Vertical);
+        using var glass = new LinearGradientBrush(
+            new RectangleF(centerX - 30, top + 8, 56, 15),
+            Color.FromArgb(120, 255, 255, 255),
+            Color.FromArgb(25, 255, 255, 255),
+            LinearGradientMode.Vertical);
+        using var screenBorder = new Pen(Color.FromArgb(56, 92, 132), 1.6f);
+        using var standBrush = new SolidBrush(Color.FromArgb(86, 110, 139));
+        using var standLight = new SolidBrush(Color.FromArgb(122, 150, 181));
+        using var miniPcBack = new LinearGradientBrush(
+            new RectangleF(centerX - 7, top + 63, 66, 25),
+            Color.FromArgb(250, 253, 255),
+            Color.FromArgb(192, 211, 232),
+            LinearGradientMode.Vertical);
+        using var miniPcSide = new LinearGradientBrush(
+            new RectangleF(centerX + 39, top + 64, 19, 23),
+            Color.FromArgb(210, 226, 244),
+            Color.FromArgb(142, 166, 194),
+            LinearGradientMode.Horizontal);
+        using var miniPcBorder = new Pen(Color.FromArgb(70, 98, 132), 1.35f);
+        using var accentBrush = new SolidBrush(Color.FromArgb(0, 102, 204));
+        using var portBrush = new SolidBrush(Color.FromArgb(72, 95, 122));
+        using var portLine = new Pen(Color.FromArgb(108, 132, 162), 1f);
+
+        var screen = new RectangleF(centerX - 39, top, 70, 45);
+        using (var shadowPath = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(new RectangleF(screen.X + 3, screen.Y + 4, screen.Width, screen.Height)), 8))
+        {
+            e.Graphics.FillPath(ambientShadow, shadowPath);
+        }
+
+        using (var screenPath = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(screen), 8))
+        {
+            e.Graphics.FillPath(screenBack, screenPath);
+            e.Graphics.DrawPath(screenBorder, screenPath);
+        }
+
+        using (var glassPath = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(new RectangleF(screen.X + 7, screen.Y + 7, screen.Width - 14, 15)), 5))
+        {
+            e.Graphics.FillPath(glass, glassPath);
+        }
+
+        e.Graphics.FillRectangle(standBrush, centerX - 6, top + 46, 12, 14);
+        e.Graphics.FillRectangle(standLight, centerX - 5, top + 46, 3, 14);
+        using (var basePath = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(new RectangleF(centerX - 25, top + 58, 50, 8)), 3))
+        {
+            e.Graphics.FillPath(standBrush, basePath);
+        }
+
+        var miniPc = new RectangleF(centerX - 8, top + 65, 67, 24);
+        using (var miniPcShadow = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(new RectangleF(miniPc.X + 2, miniPc.Y + 3, miniPc.Width, miniPc.Height)), 5))
+        {
+            e.Graphics.FillPath(ambientShadow, miniPcShadow);
+        }
+
+        using (var miniPcPath = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(miniPc), 5))
+        {
+            e.Graphics.FillPath(miniPcBack, miniPcPath);
+            e.Graphics.DrawPath(miniPcBorder, miniPcPath);
+        }
+
+        using (var sidePath = RoundedPanel.CreateRoundedRectangle(Rectangle.Round(new RectangleF(miniPc.Right - 20, miniPc.Y + 1, 19, miniPc.Height - 2)), 4))
+        {
+            e.Graphics.FillPath(miniPcSide, sidePath);
+        }
+
+        e.Graphics.FillEllipse(accentBrush, miniPc.X + 9, miniPc.Y + 9, 5, 5);
+        e.Graphics.FillRectangle(portBrush, miniPc.X + 22, miniPc.Y + 8, 7, 7);
+        e.Graphics.DrawRectangle(portLine, Rectangle.Round(new RectangleF(miniPc.X + 33, miniPc.Y + 8, 8, 7)));
+        e.Graphics.DrawLine(portLine, miniPc.Right - 15, miniPc.Y + 9, miniPc.Right - 6, miniPc.Y + 9);
+        e.Graphics.DrawLine(portLine, miniPc.Right - 15, miniPc.Y + 15, miniPc.Right - 6, miniPc.Y + 15);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _miniPcImage?.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    private void PaintMiniPcImage(Graphics graphics)
+    {
+        var available = Rectangle.Inflate(ClientRectangle, -2, -6);
+        if (available.Width <= 0 || available.Height <= 0 || _miniPcImage is null)
+        {
+            return;
+        }
+
+        var imageRatio = _miniPcImage.Width / (float)_miniPcImage.Height;
+        var targetRatio = available.Width / (float)available.Height;
+        int width;
+        int height;
+        if (imageRatio > targetRatio)
+        {
+            width = available.Width;
+            height = Math.Max(1, (int)(width / imageRatio));
+        }
+        else
+        {
+            height = available.Height;
+            width = Math.Max(1, (int)(height * imageRatio));
+        }
+
+        var target = new Rectangle(
+            available.Left + (available.Width - width) / 2,
+            available.Top + (available.Height - height) / 2,
+            width,
+            height);
+
+        using var path = RoundedPanel.CreateRoundedRectangle(target, 8);
+        var oldClip = graphics.Clip;
+        graphics.SetClip(path);
+        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+        graphics.DrawImage(_miniPcImage, target);
+        graphics.Clip = oldClip;
+    }
+
+    private static Image? LoadMiniPcImage()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "Resources", "SystemInfoMiniPc.png");
+        if (!File.Exists(path))
+        {
+            path = Path.Combine(AppContext.BaseDirectory, "SystemInfoMiniPc.png");
+        }
+
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        using var stream = File.OpenRead(path);
+        using var image = Image.FromStream(stream);
+        return new Bitmap(image);
     }
 }
 

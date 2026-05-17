@@ -22,10 +22,15 @@ internal static class Program
 
         if (ShouldOpenNodTool(args, out var editorPath, out var openTemplateWizard))
         {
+            WindowsShellIntegration.SetCurrentAppUserModelId(
+                openTemplateWizard
+                    ? WindowsShellIntegration.NodTemplateWizardAppUserModelId
+                    : WindowsShellIntegration.NodEditorAppUserModelId);
             Application.Run(new NodEditorForm(editorPath, openTemplateWizard));
             return;
         }
 
+        WindowsShellIntegration.SetCurrentAppUserModelId(WindowsShellIntegration.MainAppUserModelId);
         var startInTray = args.Any(IsTraySwitch);
         var startupNodPath = args.FirstOrDefault(arg => !IsToolSwitch(arg) && !IsWizardToolSwitch(arg) && !IsTraySwitch(arg));
         Application.Run(new MainForm(startupNodPath, startInTray));

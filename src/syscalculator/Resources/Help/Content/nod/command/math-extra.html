@@ -25,6 +25,22 @@ input2 Log2
 format #.00
 math log(ans,2)
 end</pre></div></div></details>
+<details><summary>Vectors, 2x2 matrices and statistics</summary><p>NOD 2.0 math also supports small educational structures. A whole vector or matrix cannot be the final converter result, so convert it to a number with <code>length</code>, <code>dot</code>, <code>angle</code>/<code>angled</code>, <code>det</code>, <code>trace</code>, <code>mget</code>, <code>x</code>, <code>y</code> or <code>z</code>.</p><table><tr><th>Goal</th><th>Syntax</th><th>Example result</th></tr><tr><td>2D vector length</td><td><code>math length(vec(3,4))</code><br><code>math vec 3 4</code></td><td><code>5</code></td></tr><tr><td>3D vector length</td><td><code>math length(vec(3,4,12))</code><br><code>math vec (3,4,12)</code></td><td><code>13</code></td></tr><tr><td>Dot product</td><td><code>math dot(vec(1,2), vec(3,4))</code></td><td><code>11</code></td></tr><tr><td>Angle in degrees</td><td><code>math angled(vec(1,0), vec(0,1))</code></td><td><code>90</code></td></tr><tr><td>Cross product component</td><td><code>math z(cross(vec(1,0,0), vec(0,1,0)))</code></td><td><code>1</code></td></tr><tr><td>2x2 determinant</td><td><code>math det(mat2(1,2,3,4))</code><br><code>math det2(1,2,3,4)</code></td><td><code>-2</code></td></tr><tr><td>2x2 trace / cell</td><td><code>math trace(mat2(1,2,3,4))</code><br><code>math mget(mat2(1,2,3,4),2,2)</code></td><td><code>5</code> / <code>4</code></td></tr><tr><td>Matrix times vector</td><td><code>math x(mat2(2,0,0,3) * vec(3,4))</code></td><td><code>6</code></td></tr><tr><td>Statistics</td><td><code>math mean(2,4,4,4,5,5,7,9)</code><br><code>math median(2,4,4,4,5,5,7,9)</code><br><code>math stdev(2,4,4,4,5,5,7,9)</code><br><code>math samplestdev(2,4,4,4,5,5,7,9)</code></td><td><code>5</code>, <code>4.5</code>, <code>2</code>, <code>2.138...</code></td></tr></table><div class="example-grid"><div class="example-card"><h3>Example: vector magnitude</h3><pre>Name Vector length
+input1 Not used
+input2 Length
+format #.00
+math length(vec(3,4,12))
+end</pre><p>Use <code>math vec (3,4,12)</code> as a shorter form when the result should be the vector length.</p></div><div class="example-card"><h3>Example: 2x2 matrix determinant</h3><pre>Name Matrix determinant
+input1 Not used
+input2 det
+format #.00
+math det(mat2(1,2,3,4))
+end</pre><p><code>mat2(a,b,c,d)</code> means the 2x2 matrix with first row <code>a,b</code> and second row <code>c,d</code>.</p></div><div class="example-card"><h3>Example: statistics</h3><pre>Name Dataset mean
+input1 Not used
+input2 Mean
+format #.00
+math mean(2,4,4,4,5,5,7,9)
+end</pre><p>Available helpers include <code>sum</code>, <code>mean</code>/<code>avg</code>, <code>median</code>, <code>product</code>, <code>variance</code>, <code>stdev</code>, <code>samplevariance</code> and <code>samplestdev</code>.</p></div></div><div class="notice"><b>Scope:</b> this is a practical NOD 2.0 beta math layer. Full 3D geometry, 3x3 matrices and graph3D are still future work.</div></details>
 <details><summary>Complex expressions</summary><p>Use parentheses when order matters. Always write multiplication explicitly with <code>*</code>.</p><pre>math sqrt(ans^2 + 25)
 math ((ans + 10) * 2) / 3
 math ans * (1 + 0.04)^5</pre><div class="example-grid"><div class="example-card"><h3>Example: parentheses</h3><div class="mathml-formula"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mfrac><mrow><mo>(</mo><mo>(</mo><mi>x</mi><mo>+</mo><mn>10</mn><mo>)</mo><mo>&#x00D7;</mo><mn>2</mn><mo>)</mo></mrow><mn>3</mn></mfrac></math></div><pre>Name Parentheses example

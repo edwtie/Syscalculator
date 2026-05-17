@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System.Drawing.Drawing2D;
 using System.Globalization;
+using Microsoft.Win32;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -40,6 +41,12 @@ public sealed class NodEditorForm : Form
     private const int NodHelpPopupMinHeight = 72;
     private const int NodHelpPopupMaxHeight = 360;
     private const int RecentFilesLimit = 5;
+    private const int PreviewUpdateDelayMs = 180;
+    private const int GraphUpdateDelayMs = 360;
+    private const int SyntaxHighlightDelayMs = 120;
+    private const int PowerResumeQuietMs = 1600;
+    private const int GraphPreviewMaxLineSamplePoints = 500;
+    private const int GraphPreviewMaxVisibleStepPoints = 350;
     private static readonly Color NodHelpBubbleBackColor = Color.FromArgb(247, 251, 255);
     private static string RecentFilesConfigDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -199,11 +206,21 @@ public sealed class NodEditorForm : Form
     private bool _highlighting;
     private bool _applyingTextHistory;
     private bool _suppressNodHelpUpdates;
+    private readonly System.Windows.Forms.Timer _syntaxHighlightTimer = new() { Interval = SyntaxHighlightDelayMs };
+    private readonly System.Windows.Forms.Timer _previewUpdateTimer = new() { Interval = PreviewUpdateDelayMs };
+    private readonly System.Windows.Forms.Timer _graphUpdateTimer = new() { Interval = GraphUpdateDelayMs };
+    private readonly System.Windows.Forms.Timer _powerResumeTimer = new() { Interval = PowerResumeQuietMs };
+    private EditorTab? _pendingHighlightTab;
+    private bool _pendingPreviewGraphUpdate;
+    private bool _powerResumePreviewPending;
+    private bool _powerResumeGraphPending;
+    private DateTime _powerResumeQuietUntilUtc = DateTime.MinValue;
     private Panel _nodHelpPopup = null!;
     private WebView2 _nodHelpBrowser = null!;
     private RichTextBox? _nodHelpTargetEditor;
     private string? _lastNodHelpKeyword;
     private string? _pendingNodHelpHtml;
+    private string? _lastRenderedNodHelpHtml;
     private int _pendingNodHelpWidth = NodHelpPopupMaxWidth;
     private bool _nodHelpBrowserFailed;
 
@@ -237,6 +254,7 @@ public sealed class NodEditorForm : Form
     private TabPage _graphPreviewPage = null!;
     private HtmlMathPreviewControl _testFormulaView = null!;
     private HtmlMathPreviewControl _testCalculationView = null!;
+    private TabControl _testTabs = null!;
     private NumericUpDown _graphXMin = null!;
     private NumericUpDown _graphXMax = null!;
     private NumericUpDown _graphYMin = null!;
@@ -264,19 +282,20 @@ public sealed class NodEditorForm : Form
     private bool _draggingGraphPointPanel;
     private bool _updatingGraphXRangeControls;
     private bool _updatingGraphYRangeControls;
+    private bool _applyingGraphSyncState;
     private Point _graphPointPanelDragStart;
     private Point _graphPointPanelStartLocation;
     private bool _graphHasView;
     private bool _graphPanning;
     private Point _graphPanStart;
-    private float _graphViewMinX;
-    private float _graphViewMaxX;
-    private float _graphViewMinY;
-    private float _graphViewMaxY;
-    private float _graphPanStartMinX;
-    private float _graphPanStartMaxX;
-    private float _graphPanStartMinY;
-    private float _graphPanStartMaxY;
+    private double _graphViewMinX;
+    private double _graphViewMaxX;
+    private double _graphViewMinY;
+    private double _graphViewMaxY;
+    private double _graphPanStartMinX;
+    private double _graphPanStartMaxX;
+    private double _graphPanStartMinY;
+    private double _graphPanStartMaxY;
     private string _pendingFormulaMathMarkup = "";
     private string _pendingCalculationMathMarkup = "";
     private Label _previewDialogName = null!;
@@ -351,6 +370,32 @@ public sealed class NodEditorForm : Form
         Height = 780;
         MinimumSize = new Size(860, 580);
         StartPosition = FormStartPosition.CenterParent;
+        _syntaxHighlightTimer.Tick += (_, _) =>
+        {
+            _syntaxHighlightTimer.Stop();
+            var tab = _pendingHighlightTab;
+            _pendingHighlightTab = null;
+            if (tab is not null && !tab.Page.IsDisposed)
+                HighlightSyntax(tab);
+        };
+        _previewUpdateTimer.Tick += (_, _) =>
+        {
+            _previewUpdateTimer.Stop();
+            var updateGraph = _pendingPreviewGraphUpdate;
+            _pendingPreviewGraphUpdate = false;
+            UpdatePreviewFromCurrentText(updateGraph);
+        };
+        _graphUpdateTimer.Tick += (_, _) =>
+        {
+            _graphUpdateTimer.Stop();
+            GenerateGraphPreview();
+        };
+        _powerResumeTimer.Tick += (_, _) =>
+        {
+            _powerResumeTimer.Stop();
+            FlushPowerResumeWork();
+        };
+        SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
 
         BuildRootLayout();
         BuildTopStripPanel();
@@ -398,7 +443,25 @@ public sealed class NodEditorForm : Form
         }
 
         CloseDetachedEditorWindows();
+        _syntaxHighlightTimer.Stop();
+        _previewUpdateTimer.Stop();
+        _graphUpdateTimer.Stop();
+        _powerResumeTimer.Stop();
         base.OnFormClosing(e);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
+            _syntaxHighlightTimer.Dispose();
+            _previewUpdateTimer.Dispose();
+            _graphUpdateTimer.Dispose();
+            _powerResumeTimer.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -410,6 +473,63 @@ public sealed class NodEditorForm : Form
         }
 
         return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+    {
+        if (IsDisposed)
+            return;
+
+        if (e.Mode == PowerModes.Suspend)
+        {
+            _syntaxHighlightTimer.Stop();
+            _previewUpdateTimer.Stop();
+            _graphUpdateTimer.Stop();
+            _powerResumeTimer.Stop();
+            HideNodHelpPopup();
+            return;
+        }
+
+        if (e.Mode != PowerModes.Resume)
+            return;
+
+        _powerResumeQuietUntilUtc = DateTime.UtcNow.AddMilliseconds(PowerResumeQuietMs);
+        _pendingHighlightTab = null;
+        _pendingPreviewGraphUpdate = false;
+        _powerResumePreviewPending = CurrentEditor is not null;
+        _powerResumeGraphPending = ShouldGenerateGraphPreview();
+        _syntaxHighlightTimer.Stop();
+        _previewUpdateTimer.Stop();
+        _graphUpdateTimer.Stop();
+        _powerResumeTimer.Stop();
+        _powerResumeTimer.Start();
+    }
+
+    private bool IsPowerResumeQuietPeriod()
+    {
+        return DateTime.UtcNow < _powerResumeQuietUntilUtc;
+    }
+
+    private void FlushPowerResumeWork()
+    {
+        if (IsDisposed)
+            return;
+
+        if (IsPowerResumeQuietPeriod())
+        {
+            _powerResumeTimer.Start();
+            return;
+        }
+
+        var updatePreview = _powerResumePreviewPending;
+        var updateGraph = _powerResumeGraphPending;
+        _powerResumePreviewPending = false;
+        _powerResumeGraphPending = false;
+
+        if (updatePreview)
+            UpdatePreviewFromCurrentText(updateGraph);
+        else if (updateGraph)
+            ScheduleGraphPreviewUpdate();
     }
 
     private bool HasUnsavedTabs()
@@ -793,7 +913,7 @@ public sealed class NodEditorForm : Form
         _testInputLabel = new Label { Text = T("editor.test.input", "Test input"), AutoSize = true, Anchor = AnchorStyles.Left };
         testPanel.Controls.Add(_testInputLabel, 0, 0);
         _testInput = new TextBox { Anchor = AnchorStyles.Left | AnchorStyles.Right };
-        _testInput.TextChanged += (_, _) => UpdatePreviewFromCurrentText();
+        _testInput.TextChanged += (_, _) => SchedulePreviewUpdate(updateGraph: false);
         testPanel.Controls.Add(_testInput, 1, 0);
 
         _testButton = new Button { Text = T("editor.toolbar.test", "Test"), Anchor = AnchorStyles.Left | AnchorStyles.Right };
@@ -820,7 +940,7 @@ public sealed class NodEditorForm : Form
         var calculationCard = CreateMathPreviewCard(out _testCalculationView);
         testPanel.Controls.Add(calculationCard, 1, 3);
         testPanel.SetColumnSpan(calculationCard, 2);
-        var testTabs = new TabControl
+        _testTabs = new TabControl
         {
             Dock = DockStyle.Fill
         };
@@ -829,15 +949,15 @@ public sealed class NodEditorForm : Form
         _converterTestPage.Controls.Add(testPanel);
         _graphPreviewPage = new TabPage(T("editor.graph.title", "Graph Preview"));
         _graphPreviewPage.Controls.Add(BuildGraphPreviewPanel());
-        testTabs.SelectedIndexChanged += (_, _) =>
+        _testTabs.SelectedIndexChanged += (_, _) =>
         {
-            if (testTabs.SelectedTab == _graphPreviewPage)
+            if (_testTabs.SelectedTab == _graphPreviewPage)
                 GenerateGraphPreview();
         };
 
-        testTabs.TabPages.Add(_converterTestPage);
-        testTabs.TabPages.Add(_graphPreviewPage);
-        _testGroup.Controls.Add(testTabs);
+        _testTabs.TabPages.Add(_converterTestPage);
+        _testTabs.TabPages.Add(_graphPreviewPage);
+        _testGroup.Controls.Add(_testTabs);
 
         _previewSplit = new SplitContainer
         {
@@ -911,7 +1031,11 @@ public sealed class NodEditorForm : Form
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel(T("editor.graph.step", "Step")), 4, 0);
         _graphStep = MakeGraphNumberBox(1, 0.0001m, 100000, 1);
-        _graphStep.ValueChanged += (_, _) => GenerateGraphPreview();
+        _graphStep.ValueChanged += (_, _) =>
+        {
+            if (!_applyingGraphSyncState)
+                GenerateGraphPreview();
+        };
         inputGrid.Controls.Add(_graphStep, 5, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("Y min"), 0, 1);
@@ -935,6 +1059,7 @@ public sealed class NodEditorForm : Form
         _graphShowRangeLines.CheckedChanged += (_, _) =>
         {
             ApplyGraphRangeLineVisibility();
+            NotifyGraphPreviewSyncStateChanged();
             _graphCanvas.Invalidate();
         };
         inputGrid.Controls.Add(_graphShowRangeLines, 4, 1);
@@ -979,7 +1104,17 @@ public sealed class NodEditorForm : Form
         _graphCanvas.MouseDown += GraphCanvas_MouseDown;
         _graphCanvas.MouseMove += GraphCanvas_MouseMove;
         _graphCanvas.MouseUp += GraphCanvas_MouseUp;
-        _graphCanvas.MouseEnter += (_, _) => _graphCanvas.Focus();
+        _graphCanvas.MouseEnter += (_, _) =>
+        {
+            _graphCanvas.Focus();
+            if (_graphHasView)
+                _graphCanvas.Cursor = Cursors.SizeAll;
+        };
+        _graphCanvas.MouseLeave += (_, _) =>
+        {
+            if (!_graphPanning)
+                _graphCanvas.Cursor = Cursors.Default;
+        };
         graphHost.Controls.Add(_graphCanvas);
 
         var chrome = GraphSurfaceApi.CreateChrome(
@@ -1054,8 +1189,21 @@ public sealed class NodEditorForm : Form
         panel.Controls.Add(graphHost, 0, 1);
 
         _graphStatus = new Label { Text = "", Visible = false };
+        InitializeGraphPreviewBaseView();
 
         return panel;
+    }
+
+    private void InitializeGraphPreviewBaseView()
+    {
+        var view = GraphSurfaceApi.MatchViewToCanvasAspect(
+            new GraphPlotView((double)_graphXMin.Value, (double)_graphXMax.Value, (double)_graphYMin.Value, (double)_graphYMax.Value),
+            _graphCanvas);
+        SetGraphPreviewView(view);
+        _graphMarkerView = view;
+        SetGraphPreviewRangeControls(view);
+        _graphHasView = true;
+        _graphDisabledMessage = "";
     }
 
     private void SetGraphPointTableVisible(bool visible)
@@ -1183,8 +1331,21 @@ public sealed class NodEditorForm : Form
             Location = PointToScreen(new Point(Math.Max(60, Width - 760), 110)),
             TopMost = TopMost
         };
-        _graphPreviewForm.FormClosed += (_, _) => _graphPreviewForm = null;
+        _graphPreviewForm.SyncStateChanged += GraphPreviewForm_SyncStateChanged;
+        _graphPreviewForm.FormClosed += (_, _) =>
+        {
+            if (_graphPreviewForm is not null)
+                _graphPreviewForm.SyncStateChanged -= GraphPreviewForm_SyncStateChanged;
+            _graphPreviewForm = null;
+        };
         _graphPreviewForm.Show(this);
+        if (_graphHasView)
+            _graphPreviewForm.ApplySyncState(CreateGraphPreviewSyncState());
+    }
+
+    private void GraphPreviewForm_SyncStateChanged(object? sender, GraphPreviewSyncState state)
+    {
+        ApplyGraphPreviewSyncState(state);
     }
 
     private void ShowAbout()
@@ -1322,6 +1483,17 @@ public sealed class NodEditorForm : Form
     // Genereert grafiekpunten door huidige NOD als y=f(x) uit te voeren.
     private void GenerateGraphPreview()
     {
+        if (IsPowerResumeQuietPeriod())
+        {
+            _powerResumeGraphPending = ShouldGenerateGraphPreview();
+            _powerResumeTimer.Stop();
+            _powerResumeTimer.Start();
+            return;
+        }
+
+        if (!ShouldGenerateGraphPreview())
+            return;
+
         var editor = CurrentEditor;
         if (editor is null || _graphCanvas is null || _graphPointTable is null)
             return;
@@ -1370,13 +1542,17 @@ public sealed class NodEditorForm : Form
             _graphDisabledMessage = "";
             _graphToggleTableButton.Enabled = true;
             var skipped = 0;
-            var total = 0;
-            const int maxSamples = 2000;
+            var visibleMin = Math.Min(min, max);
+            var visibleMax = Math.Max(min, max);
+            var lineSamples = Math.Clamp(_graphCanvas.ClientSize.Width / 6, 80, GraphPreviewMaxLineSamplePoints);
+            var lineStep = (visibleMax - visibleMin) / Math.Max(1, lineSamples);
+            if (!double.IsFinite(lineStep) || lineStep <= 0)
+                lineStep = Math.Max(1.0, step);
 
-            for (var x = min; x <= max + (step / 1000.0) && total < maxSamples; x += step)
+            for (var i = 0; i <= lineSamples; i++)
             {
-                total++;
-                var input = x.ToString("0.############", CultureInfo.InvariantCulture);
+                var x = visibleMin + lineStep * i;
+                var input = FormatGraphPreviewInput(x);
 
                 try
                 {
@@ -1386,7 +1562,6 @@ public sealed class NodEditorForm : Form
                         var point = new PointF((float)x, (float)y);
                         _graphPreviewFitPoints.Add(point);
                         _graphPreviewPoints.Add(point);
-                        _graphPreviewStepPoints.Add(point);
                     }
                     else
                     {
@@ -1399,8 +1574,28 @@ public sealed class NodEditorForm : Form
                 }
             }
 
-            if (total >= maxSamples)
-                skipped++;
+            var displayStep = ChooseGraphDisplayedStep(step, visibleMin, visibleMax, GraphPreviewMaxVisibleStepPoints);
+            var firstStep = Math.Ceiling(visibleMin / displayStep) * displayStep;
+            for (var i = 0; i < GraphPreviewMaxVisibleStepPoints; i++)
+            {
+                var x = firstStep + displayStep * i;
+                if (!double.IsFinite(x) || x > visibleMax + displayStep / 1000.0)
+                    break;
+
+                var input = FormatGraphPreviewInput(x);
+                try
+                {
+                    var result = NodEngine.ConvertForward(_graphPreviewDocument, input);
+                    if (TryGetGraphNumber(result, out var y))
+                        _graphPreviewStepPoints.Add(new PointF((float)x, (float)y));
+                    else
+                        skipped++;
+                }
+                catch
+                {
+                    skipped++;
+                }
+            }
 
             FillGraphPointTable(_graphPreviewStepPoints);
             _graphStatus.Text = _graphPreviewPoints.Count == 0
@@ -1541,6 +1736,7 @@ public sealed class NodEditorForm : Form
         _graphHasView = true;
         ResampleGraphPreviewVisibleView();
         UpdateGraphPointerStatus(null);
+        NotifyGraphPreviewSyncStateChanged();
 
         if (invalidate)
             _graphCanvas.Invalidate();
@@ -1578,6 +1774,7 @@ public sealed class NodEditorForm : Form
             _graphMarkerView = GetGraphPreviewView();
         ResampleGraphPreviewVisibleView();
         UpdateGraphPointerStatus(null);
+        NotifyGraphPreviewSyncStateChanged();
         _graphCanvas.Invalidate();
     }
 
@@ -1592,6 +1789,64 @@ public sealed class NodEditorForm : Form
         _graphViewMaxX = view.MaxX;
         _graphViewMinY = view.MinY;
         _graphViewMaxY = view.MaxY;
+    }
+
+    private GraphPreviewSyncState CreateGraphPreviewSyncState()
+    {
+        return new GraphPreviewSyncState(GetGraphPreviewView(), _graphMarkerView, _graphStep.Value, _graphShowRangeLines.Checked);
+    }
+
+    private void NotifyGraphPreviewSyncStateChanged()
+    {
+        if (_applyingGraphSyncState || !_graphHasView || _graphPreviewForm is not { IsDisposed: false })
+            return;
+
+        _graphPreviewForm.ApplySyncState(CreateGraphPreviewSyncState());
+    }
+
+    private void ApplyGraphPreviewSyncState(GraphPreviewSyncState state)
+    {
+        if (_applyingGraphSyncState)
+            return;
+
+        _applyingGraphSyncState = true;
+        try
+        {
+            SetGraphStepValue(state.Step);
+            _graphShowRangeLines.Checked = state.ShowRangeLines;
+            _graphMarkerView = state.MarkerView;
+            SetGraphPreviewView(CreateGraphAspectViewFromSync(state.View));
+            if (_graphShowRangeLines.Checked)
+                SetGraphPreviewRangeControls(_graphMarkerView);
+            else
+                UpdateGraphPreviewViewportRangeControlsIfNeeded();
+            _graphHasView = true;
+            if (_graphPreviewDocument is not null)
+                ResampleGraphPreviewVisibleView();
+            UpdateGraphPointerStatus(null);
+            _graphCanvas.Invalidate();
+        }
+        finally
+        {
+            _applyingGraphSyncState = false;
+        }
+    }
+
+    private GraphPlotView CreateGraphAspectViewFromSync(GraphPlotView sourceView)
+    {
+        var centerX = (sourceView.MinX + sourceView.MaxX) / 2d;
+        var centerY = (sourceView.MinY + sourceView.MaxY) / 2d;
+        var halfY = Math.Max(GraphSurfaceApi.MinimumViewSpan / 2d, (sourceView.MaxY - sourceView.MinY) / 2d);
+        return GraphSurfaceApi.MatchViewToCanvasAspect(
+            new GraphPlotView(centerX - halfY, centerX + halfY, centerY - halfY, centerY + halfY),
+            _graphCanvas);
+    }
+
+    private void SetGraphStepValue(decimal value)
+    {
+        var clamped = Math.Clamp(value, _graphStep.Minimum, _graphStep.Maximum);
+        if (_graphStep.Value != clamped)
+            _graphStep.Value = clamped;
     }
 
     private void SetGraphPreviewRangeControls(GraphPlotView view)
@@ -1640,7 +1895,7 @@ public sealed class NodEditorForm : Form
 
     private void ZoomGraphPreview(float factor)
     {
-        if (!_graphHasView)
+        if (!EnsureGraphPreviewGeneratedForInteraction())
             return;
 
         ZoomGraphPreviewAt(factor, new PointF(_graphCanvas.ClientSize.Width / 2f, _graphCanvas.ClientSize.Height / 2f));
@@ -1648,8 +1903,46 @@ public sealed class NodEditorForm : Form
 
     private void GraphCanvas_MouseWheel(object? sender, MouseEventArgs e)
     {
-        if (_graphHasView)
+        if (EnsureGraphPreviewGeneratedForInteraction())
             ZoomGraphPreviewAt(e.Delta > 0 ? 0.85f : 1.18f, e.Location);
+    }
+
+    private bool EnsureGraphPreviewGeneratedForInteraction()
+    {
+        if (_graphHasView && _graphPreviewDocument is not null)
+            return true;
+
+        if (_graphHasView)
+        {
+            var editor = CurrentEditor;
+            if (editor is null)
+                return false;
+
+            try
+            {
+                _graphPreviewDocument = NodParser.Parse(editor.Text);
+                if (!IsGraphPreviewCompatible(_graphPreviewDocument, out var disabledReason))
+                {
+                    _graphDisabledMessage = disabledReason;
+                    _graphPreviewDocument = null;
+                    _graphHasView = false;
+                    _graphCanvas.Invalidate();
+                    return false;
+                }
+
+                ResampleGraphPreviewVisibleView();
+                _graphCanvas.Invalidate();
+                return true;
+            }
+            catch
+            {
+                _graphPreviewDocument = null;
+                return false;
+            }
+        }
+
+        GenerateGraphPreview();
+        return _graphHasView && _graphPreviewDocument is not null;
     }
 
     private void ZoomGraphPreviewAt(float factor, PointF screenPoint)
@@ -1661,7 +1954,7 @@ public sealed class NodEditorForm : Form
         var anchor = ScreenToGraphPoint(screenPoint, plot);
         var newWidth = (_graphViewMaxX - _graphViewMinX) * factor;
         var newHeight = (_graphViewMaxY - _graphViewMinY) * factor;
-        if (newWidth < 0.0001f || newHeight < 0.0001f)
+        if (newWidth < GraphSurfaceApi.MinimumViewSpan || newHeight < GraphSurfaceApi.MinimumViewSpan)
             return;
 
         var xRatio = (anchor.X - _graphViewMinX) / (_graphViewMaxX - _graphViewMinX);
@@ -1673,12 +1966,13 @@ public sealed class NodEditorForm : Form
         MatchGraphPreviewViewToCanvasAspect();
         UpdateGraphPreviewViewportRangeControlsIfNeeded();
         ResampleGraphPreviewVisibleView();
+        NotifyGraphPreviewSyncStateChanged();
         _graphCanvas.Invalidate();
     }
 
     private void GraphCanvas_MouseDown(object? sender, MouseEventArgs e)
     {
-        if (!_graphHasView || e.Button != MouseButtons.Left)
+        if (e.Button != MouseButtons.Left || !EnsureGraphPreviewGeneratedForInteraction())
             return;
 
         _graphPanning = true;
@@ -1687,13 +1981,15 @@ public sealed class NodEditorForm : Form
         _graphPanStartMaxX = _graphViewMaxX;
         _graphPanStartMinY = _graphViewMinY;
         _graphPanStartMaxY = _graphViewMaxY;
-        _graphCanvas.Cursor = Cursors.Hand;
+        _graphCanvas.Cursor = Cursors.SizeAll;
     }
 
     private void GraphCanvas_MouseMove(object? sender, MouseEventArgs e)
     {
         if (!_graphPanning)
         {
+            if (_graphHasView)
+                _graphCanvas.Cursor = Cursors.SizeAll;
             UpdateGraphPointerStatus(e.Location);
             return;
         }
@@ -1704,8 +2000,8 @@ public sealed class NodEditorForm : Form
 
         var dx = e.X - _graphPanStart.X;
         var dy = e.Y - _graphPanStart.Y;
-        var graphDx = dx / (float)plot.Width * (_graphPanStartMaxX - _graphPanStartMinX);
-        var graphDy = dy / (float)plot.Height * (_graphPanStartMaxY - _graphPanStartMinY);
+        var graphDx = dx / (double)plot.Width * (_graphPanStartMaxX - _graphPanStartMinX);
+        var graphDy = dy / (double)plot.Height * (_graphPanStartMaxY - _graphPanStartMinY);
 
         _graphViewMinX = _graphPanStartMinX - graphDx;
         _graphViewMaxX = _graphPanStartMaxX - graphDx;
@@ -1715,13 +2011,14 @@ public sealed class NodEditorForm : Form
         UpdateGraphPreviewViewportRangeControlsIfNeeded();
         ResampleGraphPreviewVisibleView();
         UpdateGraphPointerStatus(e.Location);
+        NotifyGraphPreviewSyncStateChanged();
         _graphCanvas.Invalidate();
     }
 
     private void GraphCanvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _graphPanning = false;
-        _graphCanvas.Cursor = Cursors.Default;
+        _graphCanvas.Cursor = _graphCanvas.ClientRectangle.Contains(e.Location) && _graphHasView ? Cursors.SizeAll : Cursors.Default;
     }
 
     private void MatchGraphPreviewViewToCanvasAspect()
@@ -1740,7 +2037,7 @@ public sealed class NodEditorForm : Form
         if (width <= 0)
             return;
 
-        var desiredSamples = Math.Clamp(_graphCanvas.ClientSize.Width / 6, 80, 500);
+        var desiredSamples = Math.Clamp(_graphCanvas.ClientSize.Width / 6, 80, GraphPreviewMaxLineSamplePoints);
         var step = width / desiredSamples;
         var linePoints = new List<PointF>();
         var stepPoints = new List<PointF>();
@@ -1748,13 +2045,13 @@ public sealed class NodEditorForm : Form
         for (var i = 0; i <= desiredSamples; i++)
         {
             var x = visibleMin + step * i;
-            var input = x.ToString("0.############", CultureInfo.InvariantCulture);
+            var input = FormatGraphPreviewInput(x);
 
             try
             {
                 var result = NodEngine.ConvertForward(_graphPreviewDocument, input);
                 if (TryGetGraphNumber(result, out var y))
-                    linePoints.Add(new PointF(x, (float)y));
+                    linePoints.Add(new PointF((float)x, (float)y));
             }
             catch
             {
@@ -1765,15 +2062,22 @@ public sealed class NodEditorForm : Form
         var requestedStep = (float)_graphStep.Value;
         if (requestedStep > 0)
         {
-            var firstStep = MathF.Ceiling(visibleMin / requestedStep) * requestedStep;
-            for (var x = firstStep; x <= visibleMax + requestedStep / 1000f; x += requestedStep)
+            var stepMin = visibleMin;
+            var stepMax = visibleMax;
+            var displayStep = ChooseGraphDisplayedStep(requestedStep, stepMin, stepMax, GraphPreviewMaxVisibleStepPoints);
+            var firstStep = Math.Ceiling(stepMin / displayStep) * displayStep;
+            for (var i = 0; i < GraphPreviewMaxVisibleStepPoints; i++)
             {
-                var input = x.ToString("0.############", CultureInfo.InvariantCulture);
+                var x = firstStep + displayStep * i;
+                if (!double.IsFinite(x) || x > stepMax + displayStep / 1000.0)
+                    break;
+
+                var input = FormatGraphPreviewInput(x);
                 try
                 {
                     var result = NodEngine.ConvertForward(_graphPreviewDocument, input);
                     if (TryGetGraphNumber(result, out var y))
-                        stepPoints.Add(new PointF(x, (float)y));
+                        stepPoints.Add(new PointF((float)x, (float)y));
                 }
                 catch
                 {
@@ -1787,6 +2091,27 @@ public sealed class NodEditorForm : Form
         _graphPreviewStepPoints.Clear();
         _graphPreviewStepPoints.AddRange(stepPoints);
         FillGraphPointTable(stepPoints);
+    }
+
+    private static double ChooseGraphDisplayedStep(double requestedStep, double min, double max, int maxPoints)
+    {
+        if (!double.IsFinite(requestedStep) || requestedStep <= 0 || !double.IsFinite(min) || !double.IsFinite(max) || max <= min)
+            return Math.Max(1.0, requestedStep);
+
+        var estimatedPoints = (max - min) / requestedStep;
+        if (!double.IsFinite(estimatedPoints) || estimatedPoints <= maxPoints)
+            return requestedStep;
+
+        var multiplier = Math.Ceiling(estimatedPoints / maxPoints);
+        return requestedStep * Math.Max(1.0, multiplier);
+    }
+
+    private static string FormatGraphPreviewInput(double value)
+    {
+        var abs = Math.Abs(value);
+        return abs is > 0 and < 1e-12 || abs >= 1e12
+            ? value.ToString("0.############E+0", CultureInfo.InvariantCulture)
+            : value.ToString("0.############", CultureInfo.InvariantCulture);
     }
 
     private Rectangle GetGraphPlotRectangle()
@@ -2173,9 +2498,70 @@ public sealed class NodEditorForm : Form
             _metadataPreviewGroup.Height = hasIntro ? _previewSplit.Panel1.ClientSize.Height : 168;
     }
 
-    // Leest de huidige editorinhoud en werkt live preview en simulator bij.
-    private void UpdatePreviewFromCurrentText()
+    private void SchedulePreviewUpdate(bool updateGraph)
     {
+        _pendingPreviewGraphUpdate |= updateGraph;
+
+        if (IsPowerResumeQuietPeriod())
+        {
+            _powerResumePreviewPending = true;
+            _powerResumeGraphPending |= updateGraph && ShouldGenerateGraphPreview();
+            _previewUpdateTimer.Stop();
+            _powerResumeTimer.Stop();
+            _powerResumeTimer.Start();
+            return;
+        }
+
+        _previewUpdateTimer.Stop();
+        _previewUpdateTimer.Start();
+    }
+
+    private void ScheduleGraphPreviewUpdate()
+    {
+        if (IsPowerResumeQuietPeriod())
+        {
+            _graphUpdateTimer.Stop();
+            _powerResumeGraphPending |= ShouldGenerateGraphPreview();
+            _powerResumeTimer.Stop();
+            _powerResumeTimer.Start();
+            return;
+        }
+
+        if (!ShouldGenerateGraphPreview())
+        {
+            _graphUpdateTimer.Stop();
+            return;
+        }
+
+        _graphUpdateTimer.Stop();
+        _graphUpdateTimer.Start();
+    }
+
+    private bool ShouldGenerateGraphPreview()
+    {
+        var floatingGraphVisible = _graphPreviewForm is { IsDisposed: false, Visible: true };
+        var miniGraphVisible = _testTabs is not null
+            && !_testTabs.IsDisposed
+            && _testTabs.SelectedTab == _graphPreviewPage
+            && _graphPreviewPage is { IsDisposed: false }
+            && _testGroup is { Visible: true };
+
+        return floatingGraphVisible || miniGraphVisible;
+    }
+
+    // Leest de huidige editorinhoud en werkt live preview en simulator bij.
+    private void UpdatePreviewFromCurrentText(bool updateGraph = true)
+    {
+        if (IsPowerResumeQuietPeriod())
+        {
+            _powerResumePreviewPending = true;
+            _powerResumeGraphPending |= updateGraph && ShouldGenerateGraphPreview();
+            _previewUpdateTimer.Stop();
+            _powerResumeTimer.Stop();
+            _powerResumeTimer.Start();
+            return;
+        }
+
         if (_previewDialogName is null)
             return;
 
@@ -2258,7 +2644,8 @@ public sealed class NodEditorForm : Form
             _testButton.Text = T("editor.toolbar.test", "Test");
         }
 
-        GenerateGraphPreview();
+        if (updateGraph)
+            ScheduleGraphPreviewUpdate();
     }
 
 
@@ -2726,9 +3113,9 @@ public sealed class NodEditorForm : Form
             TrackEditorTextChange(tab);
             SetTabDirty(tab, !IsCleanEditorText(tab));
             UpdateLineNumbers(tab);
-            HighlightSyntax(tab);
+            ScheduleSyntaxHighlight(tab);
             UpdateUiState();
-            UpdatePreviewFromCurrentText();
+            SchedulePreviewUpdate(updateGraph: true);
             UpdateNodKeywordTip(editor);
         };
 
@@ -2900,6 +3287,7 @@ public sealed class NodEditorForm : Form
         var recentFiles = new List<string> { fullPath };
         recentFiles.AddRange(LoadRecentFiles().Where(item => !string.Equals(item, fullPath, StringComparison.OrdinalIgnoreCase)));
         SaveRecentFiles(recentFiles);
+        WindowsShellIntegration.AddRecentDocument(fullPath);
         PopulateRecentFilesMenu();
     }
 
@@ -4603,6 +4991,9 @@ public sealed class NodEditorForm : Form
     // Zet popup-HTML klaar of toont die direct zodra WebView2 beschikbaar is.
     private void SetNodHelpHtml(string html)
     {
+        if (html == _lastRenderedNodHelpHtml && _nodHelpPopup.Visible)
+            return;
+
         _pendingNodHelpHtml = html;
         ShowPendingNodHelpHtmlIfReady();
     }
@@ -4619,6 +5010,7 @@ public sealed class NodEditorForm : Form
         {
             _nodHelpPopup.Width = _pendingNodHelpWidth;
             _nodHelpPopup.Height = NodHelpPopupMinHeight;
+            _lastRenderedNodHelpHtml = html;
             _nodHelpBrowser.NavigateToString(html);
         }
         catch (COMException)
@@ -4913,7 +5305,7 @@ public sealed class NodEditorForm : Form
 
         var key = keyword.ToLowerInvariant();
         if (key == "math")
-            return AddVersionBadgesToSummaries(html, [BothVersionsBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge()]);
+            return AddVersionBadgesToSummaries(html, [BothVersionsBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge(), ModernVersionBadge()]);
 
         if (key == "chg")
             return AddVersionBadgesToSummaries(html, [BothVersionsBadge(), ModernVersionBadge()]);
@@ -5056,14 +5448,29 @@ public sealed class NodEditorForm : Form
 
         mathHelp = RemoveMathFlowPills(mathHelp);
 
+        var advancedHelp = HelpContent("editor.nod_help.math.advanced", "nod/command/math-advanced.html");
+        if (mathHelp.Contains("math length(vec(3,4))", StringComparison.OrdinalIgnoreCase) ||
+            mathHelp.Contains("math vec 3 4", StringComparison.OrdinalIgnoreCase))
+            advancedHelp = "";
+        var statisticsHelp = HelpContent("editor.nod_help.math.statistics", "nod/command/math-statistics.html");
         var probabilityHelp = HelpContent("editor.nod_help.math.probability", "nod/command/math-probability.html");
+        if (mathHelp.Contains("math mean(2,4", StringComparison.OrdinalIgnoreCase) ||
+            mathHelp.Contains("<summary>Statistiek</summary>", StringComparison.OrdinalIgnoreCase) ||
+            mathHelp.Contains("<summary>Statistics</summary>", StringComparison.OrdinalIgnoreCase))
+            statisticsHelp = "";
+        var extraMathSections = advancedHelp + statisticsHelp + probabilityHelp;
 
         var insertionMarker = "<details><summary>Terugrekenen</summary>";
         var markerIndex = mathHelp.IndexOf(insertionMarker, StringComparison.OrdinalIgnoreCase);
+        if (markerIndex < 0)
+            markerIndex = mathHelp.IndexOf("<h2>Veelgemaakte math-fouten", StringComparison.OrdinalIgnoreCase);
+        if (markerIndex < 0)
+            markerIndex = mathHelp.IndexOf("<h2>Common math mistakes", StringComparison.OrdinalIgnoreCase);
+
         if (markerIndex >= 0)
-            mathHelp = mathHelp[..markerIndex] + probabilityHelp + mathHelp[markerIndex..];
+            mathHelp = mathHelp[..markerIndex] + extraMathSections + mathHelp[markerIndex..];
         else
-            mathHelp = probabilityHelp + mathHelp;
+            mathHelp += extraMathSections;
 
         return PlaceMathVisuals(mathHelp);
     }
@@ -5225,6 +5632,9 @@ public sealed class NodEditorForm : Form
     {
         _lastNodHelpKeyword = keyword;
         var body = T($"editor.nod_help.{keyword.ToLowerInvariant()}", GetDefaultNodHelpHtml(keyword));
+        if (keyword.Equals("math", StringComparison.OrdinalIgnoreCase) &&
+            !body.Contains("math length(vec(3,4))", StringComparison.OrdinalIgnoreCase))
+            body += HelpContent("editor.nod_help.math.popup_advanced", "nod/popup/math-advanced.html");
         var insertText = IsLegacyInputKeyword(keyword)
             ? T("editor.nod_help.replace", "Vervangen")
             : T("editor.nod_help.insert", "Invoegen");
@@ -5472,6 +5882,13 @@ public sealed class NodEditorForm : Form
         var tab = CurrentTab;
         if (tab is not null)
             HighlightSyntax(tab);
+    }
+
+    private void ScheduleSyntaxHighlight(EditorTab tab)
+    {
+        _pendingHighlightTab = tab;
+        _syntaxHighlightTimer.Stop();
+        _syntaxHighlightTimer.Start();
     }
 
     // Kleurt comments, commands, functies en getallen in de editor.

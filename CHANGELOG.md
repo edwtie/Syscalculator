@@ -20,6 +20,21 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.17.005 Daily Build
+
+**Date:** 2026-05-17 13:18
+
+**Fixes:**
+- Fixed graph preview rendering and synchronization for richer 2D surfaces
+- Fixed NOD math parsing/evaluation for advanced functions and statistics workflows
+- Fixed Windows shell identity for main app, NOD Editor and NOD Template Wizard shortcuts
+
+**Additions:**
+- Added a feedback/support information window with bundled artwork
+- Added expanded formula card content and solver step polish
+- Added advanced and statistics NOD help pages plus Dutch help text updates
+- Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.005.exe`.
+
 #### 2.0.2026.05.16.061 Daily Build
 
 **Date:** 2026-05-16

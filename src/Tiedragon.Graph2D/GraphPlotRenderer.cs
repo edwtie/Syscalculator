@@ -24,7 +24,7 @@ public enum GraphPlotDensity
 /// <param name="MaxX">Right graph-coordinate boundary.</param>
 /// <param name="MinY">Bottom graph-coordinate boundary.</param>
 /// <param name="MaxY">Top graph-coordinate boundary.</param>
-public readonly record struct GraphPlotView(float MinX, float MaxX, float MinY, float MaxY);
+public readonly record struct GraphPlotView(double MinX, double MaxX, double MinY, double MaxY);
 
 /// <summary>
 /// A polyline series drawn in graph coordinates.
@@ -43,6 +43,12 @@ public readonly record struct GraphLineSeries(IReadOnlyList<PointF> Points, Colo
 /// </remarks>
 public static class GraphPlotRenderer
 {
+    private const int MaxGridLinesPerAxis = 500;
+    private const int MaxTicksPerAxis = 240;
+    private const double PicoMeter = 1e-12;
+    private const double LightYearMeters = 9_460_730_472_580_800d;
+    private const double PlanckLengthMeters = 1.616255e-35;
+
     /// <summary>
     /// Returns the drawable graph rectangle inside a canvas control.
     /// </summary>
@@ -58,7 +64,7 @@ public static class GraphPlotRenderer
     {
         var x = view.MinX + ((screenPoint.X - plot.Left) / plot.Width) * (view.MaxX - view.MinX);
         var y = view.MaxY - ((screenPoint.Y - plot.Top) / plot.Height) * (view.MaxY - view.MinY);
-        return new PointF(x, y);
+        return new PointF((float)x, (float)y);
     }
 
     /// <summary>
@@ -92,8 +98,8 @@ public static class GraphPlotRenderer
     /// </summary>
     public static GraphPlotView CreateFitView(
         IReadOnlyList<PointF> points,
-        float requestedMinX,
-        float requestedMaxX,
+        double requestedMinX,
+        double requestedMaxX,
         Size canvasSize,
         float fallbackHalfYRange = 5f)
     {
@@ -105,7 +111,7 @@ public static class GraphPlotRenderer
         {
             var fallbackMinX = Math.Min(requestedMinX, requestedMaxX);
             var fallbackMaxX = Math.Max(requestedMinX, requestedMaxX);
-            if (!float.IsFinite(fallbackMinX) || !float.IsFinite(fallbackMaxX))
+            if (!double.IsFinite(fallbackMinX) || !double.IsFinite(fallbackMaxX))
             {
                 fallbackMinX = -fallbackHalfYRange;
                 fallbackMaxX = fallbackHalfYRange;
@@ -117,8 +123,8 @@ public static class GraphPlotRenderer
 
         var minX = Math.Min(requestedMinX, finitePoints.Min(point => point.X));
         var maxX = Math.Max(requestedMaxX, finitePoints.Max(point => point.X));
-        var minY = finitePoints.Min(point => point.Y);
-        var maxY = finitePoints.Max(point => point.Y);
+        var minY = (double)finitePoints.Min(point => point.Y);
+        var maxY = (double)finitePoints.Max(point => point.Y);
 
         if (minX > maxX)
             (minX, maxX) = (maxX, minX);
@@ -150,9 +156,9 @@ public static class GraphPlotRenderer
         IReadOnlyList<PointF> linePoints,
         IReadOnlyList<PointF> highlightPoints,
         GraphPlotView view,
-        float requestedMinX,
-        float requestedMaxX,
-        float requestedStep,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
         string disabledMessage,
         string emptyMessage,
         GraphPlotDensity density,
@@ -190,9 +196,9 @@ public static class GraphPlotRenderer
         IReadOnlyList<GraphLineSeries> series,
         IReadOnlyList<PointF> highlightPoints,
         GraphPlotView view,
-        float requestedMinX,
-        float requestedMaxX,
-        float requestedStep,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
         string disabledMessage,
         string emptyMessage,
         GraphPlotDensity density,
@@ -204,6 +210,9 @@ public static class GraphPlotRenderer
 
         var rect = canvas.ClientRectangle;
         if (rect.Width <= 20 || rect.Height <= 20)
+            return;
+
+        if (!IsValidView(view))
             return;
 
         var plot = GetPlotRectangle(canvas);
@@ -228,30 +237,95 @@ public static class GraphPlotRenderer
         {
             var px = plot.Left + ((point.X - view.MinX) / (view.MaxX - view.MinX)) * plot.Width;
             var py = plot.Bottom - ((point.Y - view.MinY) / (view.MaxY - view.MinY)) * plot.Height;
-            return new PointF(px, py);
+            return new PointF((float)px, (float)py);
         }
 
         var finiteLinePoints = series
             .SelectMany(line => line.Points)
             .Where(point => float.IsFinite(point.X) && float.IsFinite(point.Y))
             .ToArray();
-        float? dataMinY = finiteLinePoints.Length > 0 ? finiteLinePoints.Min(point => point.Y) : null;
-        float? dataMaxY = finiteLinePoints.Length > 0 ? finiteLinePoints.Max(point => point.Y) : null;
+        double? dataMinY = finiteLinePoints.Length > 0 ? finiteLinePoints.Min(point => point.Y) : null;
+        double? dataMaxY = finiteLinePoints.Length > 0 ? finiteLinePoints.Max(point => point.Y) : null;
 
         DrawAxes(g, canvas.Font, plot, view, requestedMinX, requestedMaxX, requestedStep, requestedMinY, requestedMaxY, dataMinY, dataMaxY, density, Map, showRangeMarkers);
 
         foreach (var line in series)
         {
-            var mappedLine = line.Points.Select(Map).ToArray();
             using var linePen = new Pen(line.Color, line.Width);
-            if (mappedLine.Length > 1)
-                g.DrawLines(linePen, mappedLine);
+            DrawSafePolyline(g, linePen, line.Points, Map, plot);
         }
 
         using var pointBrush = new SolidBrush(Color.FromArgb(220, 38, 38));
         var radius = density == GraphPlotDensity.Compact ? 2.7f : 3.0f;
+        var minHighlightDistance = density == GraphPlotDensity.Compact ? 7f : 9f;
+        var lastHighlight = new PointF(float.NaN, float.NaN);
         foreach (var point in highlightPoints.Select(Map))
+        {
+            if (!IsDrawablePoint(point, plot))
+                continue;
+
+            if (float.IsFinite(lastHighlight.X) &&
+                Math.Abs(point.X - lastHighlight.X) < minHighlightDistance &&
+                Math.Abs(point.Y - lastHighlight.Y) < minHighlightDistance)
+            {
+                continue;
+            }
+
             g.FillEllipse(pointBrush, point.X - radius, point.Y - radius, radius * 2, radius * 2);
+            lastHighlight = point;
+        }
+    }
+
+    private static bool IsValidView(GraphPlotView view)
+    {
+        return double.IsFinite(view.MinX) &&
+               double.IsFinite(view.MaxX) &&
+               double.IsFinite(view.MinY) &&
+               double.IsFinite(view.MaxY) &&
+               view.MaxX > view.MinX &&
+               view.MaxY > view.MinY;
+    }
+
+    private static void DrawSafePolyline(Graphics g, Pen pen, IReadOnlyList<PointF> points, Func<PointF, PointF> map, Rectangle plot)
+    {
+        var segment = new List<PointF>(points.Count);
+        foreach (var source in points)
+        {
+            var point = map(source);
+            if (!IsDrawablePoint(point, plot))
+            {
+                FlushSegment();
+                continue;
+            }
+
+            segment.Add(point);
+        }
+
+        FlushSegment();
+
+        void FlushSegment()
+        {
+            if (segment.Count > 1)
+                g.DrawLines(pen, segment.ToArray());
+            segment.Clear();
+        }
+    }
+
+    private static bool IsDrawablePoint(PointF point, Rectangle plot)
+    {
+        if (!float.IsFinite(point.X) || !float.IsFinite(point.Y))
+            return false;
+
+        var margin = Math.Max(plot.Width, plot.Height) * 4f;
+        return point.X >= plot.Left - margin &&
+               point.X <= plot.Right + margin &&
+               point.Y >= plot.Top - margin &&
+               point.Y <= plot.Bottom + margin;
+    }
+
+    private static PointF Point(double x, double y)
+    {
+        return new PointF((float)x, (float)y);
     }
 
     private static void DrawAxes(
@@ -259,13 +333,13 @@ public static class GraphPlotRenderer
         Font labelFont,
         Rectangle plot,
         GraphPlotView view,
-        float requestedMinX,
-        float requestedMaxX,
-        float requestedStep,
-        float? requestedMinY,
-        float? requestedMaxY,
-        float? dataMinY,
-        float? dataMaxY,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
+        double? requestedMinY,
+        double? requestedMaxY,
+        double? dataMinY,
+        double? dataMaxY,
         GraphPlotDensity density,
         Func<PointF, PointF> map,
         bool showRangeMarkers)
@@ -273,86 +347,112 @@ public static class GraphPlotRenderer
         g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
         using var axisPen = new Pen(Color.FromArgb(38, 38, 38), 1f);
-        using var majorGridPen = new Pen(Color.FromArgb(185, 190, 198), 1f);
-        using var minorGridPen = new Pen(Color.FromArgb(226, 229, 234), density == GraphPlotDensity.Compact ? 0.7f : 1f);
-        using var unitGridPen = new Pen(
-            density == GraphPlotDensity.Compact ? Color.FromArgb(176, 182, 190) : Color.FromArgb(163, 169, 178),
-            density == GraphPlotDensity.Compact ? 1f : 1.35f);
+        using var majorGridPen = new Pen(
+            density == GraphPlotDensity.Compact ? Color.FromArgb(185, 194, 206) : Color.FromArgb(176, 186, 199),
+            density == GraphPlotDensity.Compact ? 0.9f : 1.05f);
+        using var minorGridPen = new Pen(
+            density == GraphPlotDensity.Compact ? Color.FromArgb(234, 240, 248) : Color.FromArgb(229, 236, 246),
+            density == GraphPlotDensity.Compact ? 0.45f : 0.55f);
         using var labelBrush = new SolidBrush(Color.FromArgb(31, 31, 31));
+        using var axisLabelBack = new SolidBrush(Color.FromArgb(248, 252, 255));
         using var tickFont = new Font("Segoe UI", density == GraphPlotDensity.Compact ? 7.5f : 8f);
 
-        var majorStep = ChooseMajorStep(plot, view);
-        var xTicks = BuildTicksByStep(view.MinX, view.MaxX, majorStep);
-        var yTicks = BuildTicksByStep(view.MinY, view.MaxY, majorStep);
+        var xCoarseStep = ChooseCoarseStep(plot, view, density, vertical: true);
+        var yCoarseStep = ChooseCoarseStep(plot, view, density, vertical: false);
+        var xFineStep = xCoarseStep / 10d;
+        var yFineStep = yCoarseStep / 10d;
+        var xLabelStep = ChooseLabelStep(plot, view, xCoarseStep, density, vertical: true);
+        var yLabelStep = ChooseLabelStep(plot, view, yCoarseStep, density, vertical: false);
+        var xTicks = BuildTicksByStep(view.MinX, view.MaxX, xCoarseStep);
+        var yTicks = BuildTicksByStep(view.MinY, view.MaxY, yCoarseStep);
+        var xLabelTicks = BuildTicksByStep(view.MinX, view.MaxX, xLabelStep);
+        var yLabelTicks = BuildTicksByStep(view.MinY, view.MaxY, yLabelStep);
 
-        DrawMinorGridLines(g, plot, view, xTicks, vertical: true, minorGridPen, majorStep, density, map);
-        DrawMinorGridLines(g, plot, view, yTicks, vertical: false, minorGridPen, majorStep, density, map);
+        DrawSmallScaleCue(g, plot, xCoarseStep, yCoarseStep, density);
 
+        var minFineGridPixels = ChooseMinFineGridPixels(xCoarseStep, yCoarseStep, density);
+        if (xFineStep >= PlanckLengthMeters && PixelsPerStep(plot, view, xFineStep, vertical: true) >= minFineGridPixels)
+            DrawGridLines(g, plot, view, xFineStep, vertical: true, minorGridPen, map, skipStep: xCoarseStep);
+        if (yFineStep >= PlanckLengthMeters && PixelsPerStep(plot, view, yFineStep, vertical: false) >= minFineGridPixels)
+            DrawGridLines(g, plot, view, yFineStep, vertical: false, minorGridPen, map, skipStep: yCoarseStep);
+
+        var lastXLabelRight = float.NegativeInfinity;
         foreach (var xValue in xTicks)
         {
             if (xValue < view.MinX || xValue > view.MaxX)
                 continue;
 
-            var xPoint = map(new PointF(xValue, view.MinY));
+            var xPoint = map(Point(xValue, view.MinY));
             g.DrawLine(majorGridPen, xPoint.X, plot.Top, xPoint.X, plot.Bottom);
         }
 
         foreach (var yValue in yTicks)
         {
-            var yPoint = map(new PointF(view.MinX, yValue));
+            var yPoint = map(Point(view.MinX, yValue));
             g.DrawLine(majorGridPen, plot.Left, yPoint.Y, plot.Right, yPoint.Y);
         }
-
-        if (majorStep < 1f)
-            DrawUnitGridLines(g, plot, view, unitGridPen, density, map);
 
         var xAxisVisible = view.MinY <= 0 && view.MaxY >= 0;
         var yAxisVisible = view.MinX <= 0 && view.MaxX >= 0;
 
         if (xAxisVisible)
         {
-            var y0 = map(new PointF(view.MinX, 0)).Y;
+            var y0 = map(Point(view.MinX, 0)).Y;
             g.DrawLine(axisPen, plot.Left, y0, plot.Right, y0);
         }
 
         if (yAxisVisible)
         {
-            var x0 = map(new PointF(0, view.MinY)).X;
+            var x0 = map(Point(0, view.MinY)).X;
             g.DrawLine(axisPen, x0, plot.Top, x0, plot.Bottom);
         }
 
-        var xAxisY = xAxisVisible ? map(new PointF(view.MinX, 0)).Y : plot.Bottom;
-        var yAxisX = yAxisVisible ? map(new PointF(0, view.MinY)).X : plot.Left;
-        var xLabelOffset = density == GraphPlotDensity.Compact ? 4 : 5;
-        var yLabelOffset = density == GraphPlotDensity.Compact ? 5 : 6;
+        var xAxisY = xAxisVisible ? map(Point(view.MinX, 0)).Y : plot.Bottom;
+        var yAxisX = yAxisVisible ? map(Point(0, view.MinY)).X : plot.Left;
+        var xLabelOffset = density == GraphPlotDensity.Compact ? 8 : 5;
+        var yLabelOffset = density == GraphPlotDensity.Compact ? 8 : 6;
 
-        foreach (var xValue in xTicks)
+        foreach (var xValue in xLabelTicks)
         {
             if (xValue < view.MinX || xValue > view.MaxX)
                 continue;
 
-            if (Math.Abs(xValue) < 0.000001f && yAxisVisible && xAxisVisible)
+            if (IsZeroTick(xValue, xLabelStep) && yAxisVisible && xAxisVisible)
                 continue;
 
-            var xPoint = map(new PointF(xValue, view.MinY));
-            var text = FormatTick(xValue);
+            var xPoint = map(Point(xValue, view.MinY));
+            var text = FormatTick(xValue, xLabelStep);
             var size = g.MeasureString(text, tickFont);
             var labelX = Math.Clamp(xPoint.X - size.Width / 2, plot.Left + 2, plot.Right - size.Width - 2);
             var labelY = Math.Clamp(xAxisY + xLabelOffset, plot.Top + 2, plot.Bottom - size.Height - 2);
-            g.DrawString(text, tickFont, labelBrush, labelX, labelY);
+            if (labelX <= lastXLabelRight + 4)
+                continue;
+            DrawAxisLabel(g, text, tickFont, labelBrush, axisLabelBack, labelX, labelY, size);
+            lastXLabelRight = labelX + size.Width;
         }
 
-        foreach (var yValue in yTicks)
+        var yLabels = new List<(string Text, float X, float Y, SizeF Size)>();
+        foreach (var yValue in yLabelTicks)
         {
-            if (Math.Abs(yValue) < 0.000001f && yAxisVisible && xAxisVisible)
+            if (IsZeroTick(yValue, yLabelStep) && yAxisVisible && xAxisVisible)
                 continue;
 
-            var yPoint = map(new PointF(view.MinX, yValue));
-            var text = FormatTick(yValue);
+            var yPoint = map(Point(view.MinX, yValue));
+            var text = FormatTick(yValue, yLabelStep);
             var size = g.MeasureString(text, tickFont);
             var labelX = Math.Clamp(yAxisX - size.Width - yLabelOffset, plot.Left + 2, plot.Right - size.Width - 2);
             var labelY = Math.Clamp(yPoint.Y - size.Height / 2, plot.Top + 2, plot.Bottom - size.Height - 2);
-            g.DrawString(text, tickFont, labelBrush, labelX, labelY);
+            yLabels.Add((text, labelX, labelY, size));
+        }
+
+        var lastYLabelBottom = float.NegativeInfinity;
+        foreach (var label in yLabels.OrderBy(label => label.Y))
+        {
+            if (label.Y <= lastYLabelBottom + 1)
+                continue;
+
+            DrawAxisLabel(g, label.Text, tickFont, labelBrush, axisLabelBack, label.X, label.Y, label.Size);
+            lastYLabelBottom = label.Y + label.Size.Height;
         }
 
         if (xAxisVisible && yAxisVisible)
@@ -362,7 +462,7 @@ public static class GraphPlotRenderer
             var size = g.MeasureString(text, tickFont);
             var labelX = Math.Clamp(origin.X - size.Width - yLabelOffset, plot.Left + 2, plot.Right - size.Width - 2);
             var labelY = Math.Clamp(origin.Y + xLabelOffset, plot.Top + 2, plot.Bottom - size.Height - 2);
-            g.DrawString(text, tickFont, labelBrush, labelX, labelY);
+            DrawAxisLabel(g, text, tickFont, labelBrush, axisLabelBack, labelX, labelY, size);
         }
 
         if (showRangeMarkers)
@@ -373,13 +473,13 @@ public static class GraphPlotRenderer
         Graphics g,
         Rectangle plot,
         GraphPlotView view,
-        float requestedMinX,
-        float requestedMaxX,
-        float requestedStep,
-        float? requestedMinY,
-        float? requestedMaxY,
-        float? dataMinY,
-        float? dataMaxY,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
+        double? requestedMinY,
+        double? requestedMaxY,
+        double? dataMinY,
+        double? dataMaxY,
         GraphPlotDensity density,
         Font font,
         Func<PointF, PointF> map)
@@ -392,7 +492,7 @@ public static class GraphPlotRenderer
         using var labelBack = new SolidBrush(Color.FromArgb(248, 252, 255));
         using var labelBorder = new Pen(Color.FromArgb(196, 216, 246), 1f);
 
-        if (float.IsFinite(requestedMinX) && float.IsFinite(requestedMaxX))
+        if (double.IsFinite(requestedMinX) && double.IsFinite(requestedMaxX))
         {
             var minX = Math.Min(requestedMinX, requestedMaxX);
             var maxX = Math.Max(requestedMinX, requestedMaxX);
@@ -402,14 +502,14 @@ public static class GraphPlotRenderer
 
             if (minX >= view.MinX && minX <= view.MaxX)
             {
-                var point = map(new PointF(minX, view.MinY));
+                var point = map(Point(minX, view.MinY));
                 g.DrawLine(rangePen, point.X, plot.Top, point.X, plot.Bottom);
                 minLabelRect = DrawMarkerLabel(g, $"X min {FormatTick(minX)}", font, rangeBrush, labelBack, labelBorder, point.X, labelY, plot);
             }
 
             if (maxX >= view.MinX && maxX <= view.MaxX)
             {
-                var point = map(new PointF(maxX, view.MinY));
+                var point = map(Point(maxX, view.MinY));
                 g.DrawLine(rangePen, point.X, plot.Top, point.X, plot.Bottom);
                 var maxLabelY = labelY;
                 if (!minLabelRect.IsEmpty)
@@ -428,12 +528,12 @@ public static class GraphPlotRenderer
         var markerMinY = requestedMinY ?? dataMinY;
         var markerMaxY = requestedMaxY ?? dataMaxY;
         if (markerMinY.HasValue && markerMaxY.HasValue &&
-            float.IsFinite(markerMinY.Value) && float.IsFinite(markerMaxY.Value))
+            double.IsFinite(markerMinY.Value) && double.IsFinite(markerMaxY.Value))
         {
             DrawDataYRangeMarkers(g, plot, view, markerMinY.Value, markerMaxY.Value, density, font, map);
         }
 
-        if (float.IsFinite(requestedStep) && requestedStep > 0)
+        if (double.IsFinite(requestedStep) && requestedStep > 0)
             DrawCornerLabel(g, $"Step {FormatTick(requestedStep)}", font, rangeBrush, labelBack, labelBorder, plot);
     }
 
@@ -441,8 +541,8 @@ public static class GraphPlotRenderer
         Graphics g,
         Rectangle plot,
         GraphPlotView view,
-        float dataMinY,
-        float dataMaxY,
+        double dataMinY,
+        double dataMaxY,
         GraphPlotDensity density,
         Font font,
         Func<PointF, PointF> map)
@@ -462,7 +562,7 @@ public static class GraphPlotRenderer
             if (minY < view.MinY || minY > view.MaxY)
                 return;
 
-            var point = map(new PointF(view.MinX, minY));
+            var point = map(Point(view.MinX, minY));
             g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
             DrawYMarkerLabel(g, $"Y min/max {FormatTick(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
             return;
@@ -471,14 +571,14 @@ public static class GraphPlotRenderer
         var maxLabelRect = RectangleF.Empty;
         if (maxY >= view.MinY && maxY <= view.MaxY)
         {
-            var point = map(new PointF(view.MinX, maxY));
+            var point = map(Point(view.MinX, maxY));
             g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
             maxLabelRect = DrawYMarkerLabel(g, $"Y max {FormatTick(maxY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
         }
 
         if (minY >= view.MinY && minY <= view.MaxY)
         {
-            var point = map(new PointF(view.MinX, minY));
+            var point = map(Point(view.MinX, minY));
             g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
             DrawYMarkerLabel(g, $"Y min {FormatTick(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, maxLabelRect, preferAbove: false);
         }
@@ -561,54 +661,111 @@ public static class GraphPlotRenderer
         g.DrawString(text, font, textBrush, rect.X + 4, rect.Y + 1);
     }
 
-    private static void DrawMinorGridLines(
+    private static void DrawGridLines(
         Graphics g,
         Rectangle plot,
         GraphPlotView view,
-        IReadOnlyList<float> majorTicks,
+        double step,
         bool vertical,
         Pen pen,
-        float majorStep,
-        GraphPlotDensity density,
-        Func<PointF, PointF> map)
+        Func<PointF, PointF> map,
+        double? skipStep = null)
     {
-        if (majorTicks.Count < 2)
-            return;
-
-        var step = Math.Abs(majorTicks[1] - majorTicks[0]);
+        step = Math.Abs(step);
         if (step <= 0)
             return;
 
-        var minorDivisions = density == GraphPlotDensity.Compact
-            ? 2f
-            : majorStep > 1f ? majorStep : 5f;
-        var minorStep = step / minorDivisions;
         var min = vertical ? view.MinX : view.MinY;
         var max = vertical ? view.MaxX : view.MaxY;
-        var first = MathF.Floor(min / minorStep) * minorStep;
+        if (!double.IsFinite(min) || !double.IsFinite(max) || max <= min)
+            return;
 
-        for (var value = first; value <= max + minorStep * 0.5f; value += minorStep)
+        var first = Math.Floor(min / step) * step;
+        if (!double.IsFinite(first))
+            return;
+
+        for (var i = 0; i < MaxGridLinesPerAxis; i++)
         {
-            if (value < min || value > max || IsOnMajorTick(value, majorTicks, minorStep))
+            var value = first + step * i;
+            if (!double.IsFinite(value) || value > max + step * 0.5d)
+                break;
+
+            if (value < min || value > max || IsOnStep(value, skipStep, step))
                 continue;
 
             if (vertical)
             {
-                var point = map(new PointF(value, view.MinY));
+                var point = map(Point(value, view.MinY));
                 g.DrawLine(pen, point.X, plot.Top, point.X, plot.Bottom);
             }
             else
             {
-                var point = map(new PointF(view.MinX, value));
+                var point = map(Point(view.MinX, value));
                 g.DrawLine(pen, plot.Left, point.Y, plot.Right, point.Y);
             }
         }
     }
 
-    private static bool IsOnMajorTick(float value, IReadOnlyList<float> majorTicks, float minorStep)
+    private static bool IsOnStep(double value, double? step, double fallbackTolerance)
     {
-        var tolerance = Math.Max(0.00001f, minorStep / 10f);
-        return majorTicks.Any(tick => Math.Abs(value - tick) <= tolerance);
+        if (step is not { } positiveStep || positiveStep <= 0)
+            return false;
+
+        var nearest = Math.Round(value / positiveStep) * positiveStep;
+        var tolerance = Math.Max(1e-12, fallbackTolerance / 10d);
+        return Math.Abs(value - nearest) <= tolerance;
+    }
+
+    private static bool IsZeroTick(double value, double step)
+    {
+        return Math.Abs(value) <= Math.Max(1e-300, Math.Abs(step) / 1000d);
+    }
+
+    private static void DrawSmallScaleCue(Graphics g, Rectangle plot, double xCoarseStep, double yCoarseStep, GraphPlotDensity density)
+    {
+        var scale = Math.Max(Math.Abs(xCoarseStep), Math.Abs(yCoarseStep));
+        if (scale > PicoMeter)
+            return;
+
+        var planckScale = scale <= PlanckLengthMeters * 10f;
+        using var brush = new SolidBrush(planckScale
+            ? Color.FromArgb(density == GraphPlotDensity.Compact ? 34 : 42, 235, 240, 255)
+            : Color.FromArgb(density == GraphPlotDensity.Compact ? 18 : 24, 238, 250, 255));
+        g.FillRectangle(brush, plot);
+
+        var text = planckScale ? "Planck-minimum 1 lP" : "Subatomaire schaal";
+        using var textBrush = new SolidBrush(Color.FromArgb(45, 67, 95));
+        using var backBrush = new SolidBrush(Color.FromArgb(238, 247, 255));
+        using var borderPen = new Pen(Color.FromArgb(184, 207, 232), 1f);
+        using var font = new Font("Segoe UI", density == GraphPlotDensity.Compact ? 7f : 8f, FontStyle.Regular);
+        DrawCornerLabel(g, text, font, textBrush, backBrush, borderPen, plot);
+    }
+
+    private static void DrawAxisLabel(
+        Graphics g,
+        string text,
+        Font font,
+        Brush textBrush,
+        Brush backBrush,
+        float x,
+        float y,
+        SizeF size)
+    {
+        var rect = new RectangleF(x - 1, y, size.Width + 2, size.Height);
+        g.FillRectangle(backBrush, rect);
+        g.DrawString(text, font, textBrush, x, y);
+    }
+
+    private static double PixelsPerStep(Rectangle plot, GraphPlotView view, double step, bool vertical)
+    {
+        var range = vertical
+            ? Math.Max(1e-300, view.MaxX - view.MinX)
+            : Math.Max(1e-300, view.MaxY - view.MinY);
+        if (!double.IsFinite(range) || !double.IsFinite(step))
+            return 0;
+
+        var pixels = vertical ? plot.Width : plot.Height;
+        return Math.Abs(step) * pixels / range;
     }
 
     private static void DrawUnitGridLines(
@@ -619,59 +776,111 @@ public static class GraphPlotRenderer
         GraphPlotDensity density,
         Func<PointF, PointF> map)
     {
-        var xPixelsPerUnit = plot.Width / Math.Max(0.000001f, view.MaxX - view.MinX);
-        var yPixelsPerUnit = plot.Height / Math.Max(0.000001f, view.MaxY - view.MinY);
+        var xPixelsPerUnit = plot.Width / Math.Max(1e-300, view.MaxX - view.MinX);
+        var yPixelsPerUnit = plot.Height / Math.Max(1e-300, view.MaxY - view.MinY);
         var minPixelsPerUnit = density == GraphPlotDensity.Compact ? 18f : 10f;
         if (Math.Min(xPixelsPerUnit, yPixelsPerUnit) < minPixelsPerUnit)
             return;
 
-        for (var x = MathF.Ceiling(view.MinX); x <= view.MaxX; x += 1f)
+        for (var x = Math.Ceiling(view.MinX); x <= view.MaxX; x += 1d)
         {
-            var point = map(new PointF(x, view.MinY));
+            var point = map(Point(x, view.MinY));
             g.DrawLine(pen, point.X, plot.Top, point.X, plot.Bottom);
         }
 
-        for (var y = MathF.Ceiling(view.MinY); y <= view.MaxY; y += 1f)
+        for (var y = Math.Ceiling(view.MinY); y <= view.MaxY; y += 1d)
         {
-            var point = map(new PointF(view.MinX, y));
+            var point = map(Point(view.MinX, y));
             g.DrawLine(pen, plot.Left, point.Y, plot.Right, point.Y);
         }
     }
 
-    private static float ChooseMajorStep(Rectangle plot, GraphPlotView view)
+    private static double ChooseCoarseStep(Rectangle plot, GraphPlotView view, GraphPlotDensity density, bool vertical)
     {
-        var xPixelsPerUnit = plot.Width / Math.Max(0.000001f, view.MaxX - view.MinX);
-        var yPixelsPerUnit = plot.Height / Math.Max(0.000001f, view.MaxY - view.MinY);
-        var pixelsPerUnit = Math.Min(xPixelsPerUnit, yPixelsPerUnit);
+        var range = vertical
+            ? view.MaxX - view.MinX
+            : view.MaxY - view.MinY;
+        var pixels = vertical ? plot.Width : plot.Height;
+        if (!double.IsFinite(range) || range <= 0 || pixels <= 0)
+            return 1d;
 
-        var targetUnits = 46f / Math.Max(1f, pixelsPerUnit);
-        return NiceNumber(targetUnits, round: true);
+        var minFinePixels = density == GraphPlotDensity.Compact ? 7d : 8d;
+        var targetFineUnits = range * minFinePixels / pixels;
+        if (!double.IsFinite(targetFineUnits) || targetFineUnits <= 0)
+            targetFineUnits = range / 80d;
+
+        var step = NiceNumber(targetFineUnits, round: false) * 10d;
+        if (!double.IsFinite(step) || step <= 0)
+            return 1d;
+
+        return step;
     }
 
-    private static IReadOnlyList<float> BuildTicksByStep(float min, float max, float step)
+    private static float ChooseMinFineGridPixels(double xCoarseStep, double yCoarseStep, GraphPlotDensity density)
     {
-        if (step <= 0 || max <= min)
+        var scale = Math.Max(Math.Abs(xCoarseStep), Math.Abs(yCoarseStep));
+        if (scale >= 1_000_000_000f)
+            return density == GraphPlotDensity.Compact ? 18f : 24f;
+        if (scale >= 1_000_000f)
+            return density == GraphPlotDensity.Compact ? 14f : 18f;
+        if (scale >= 1_000f)
+            return density == GraphPlotDensity.Compact ? 9f : 11f;
+        if (scale < 0.001d)
+            return density == GraphPlotDensity.Compact ? 3f : 4f;
+
+        return density == GraphPlotDensity.Compact ? 5f : 7f;
+    }
+
+    private static double ChooseLabelStep(Rectangle plot, GraphPlotView view, double majorStep, GraphPlotDensity density, bool vertical)
+    {
+        var range = vertical
+            ? view.MaxX - view.MinX
+            : view.MaxY - view.MinY;
+        var pixels = vertical ? plot.Width : plot.Height;
+        if (!double.IsFinite(range) || range <= 0 || pixels <= 0)
+            return majorStep;
+
+        var halfStep = majorStep / 2d;
+        var minLabelPixels = vertical
+            ? density == GraphPlotDensity.Compact ? 58f : 38f
+            : density == GraphPlotDensity.Compact ? 24f : 22f;
+
+        return halfStep * pixels / range >= minLabelPixels
+            ? halfStep
+            : majorStep;
+    }
+
+    private static IReadOnlyList<double> BuildTicksByStep(double min, double max, double step)
+    {
+        if (!double.IsFinite(min) || !double.IsFinite(max) || !double.IsFinite(step) || step <= 0 || max <= min)
             return [min];
 
-        var ticks = new List<float>();
-        var first = MathF.Ceiling(min / step) * step;
-        for (var value = first; value <= max + step * 0.5f; value += step)
+        var ticks = new List<double>();
+        var first = Math.Ceiling(min / step) * step;
+        if (!double.IsFinite(first))
+            return ticks;
+
+        for (var i = 0; i < MaxTicksPerAxis; i++)
         {
-            if (value >= min - step * 0.25f && value <= max + step * 0.25f)
-                ticks.Add(Math.Abs(value) < step / 1000f ? 0 : value);
+            var value = first + step * i;
+            if (!double.IsFinite(value) || value > max + step * 0.5d)
+                break;
+
+            if (value >= min - step * 0.25d && value <= max + step * 0.25d)
+                ticks.Add(Math.Abs(value) < step / 1000d ? 0 : value);
         }
 
         return ticks;
     }
 
-    private static float NiceNumber(float value, bool round)
+    private static double NiceNumber(double value, bool round)
     {
         if (value <= 0)
             return 1;
 
-        var exponent = MathF.Floor(MathF.Log10(value));
-        var fraction = value / MathF.Pow(10, exponent);
-        float niceFraction;
+        var exponent = Math.Floor(Math.Log10(value));
+        var fraction = value / Math.Pow(10, exponent);
+        double niceFraction;
 
         if (round)
         {
@@ -682,10 +891,18 @@ public static class GraphPlotRenderer
             niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
         }
 
-        return niceFraction * MathF.Pow(10, exponent);
+        return niceFraction * Math.Pow(10, exponent);
     }
 
-    private static void ExpandFlatRange(ref float min, ref float max)
+    private static double PowerOfTenStep(double value)
+    {
+        if (value <= 0)
+            return 1;
+
+        return Math.Pow(10, Math.Ceiling(Math.Log10(value)));
+    }
+
+    private static void ExpandFlatRange(ref double min, ref double max)
     {
         if (Math.Abs(max - min) >= 0.0001f)
             return;
@@ -695,7 +912,7 @@ public static class GraphPlotRenderer
         max += pad;
     }
 
-    private static void IncludeZeroWhenClose(ref float minY, ref float maxY)
+    private static void IncludeZeroWhenClose(ref double minY, ref double maxY)
     {
         var range = Math.Max(1f, maxY - minY);
         if (minY > 0 && minY <= range * 3f)
@@ -704,10 +921,261 @@ public static class GraphPlotRenderer
             maxY = 0;
     }
 
-    private static string FormatTick(float value)
+    private static string FormatTick(double value)
     {
-        return Math.Abs(value) < 0.000001f
-            ? "0"
-            : value.ToString("0.##", CultureInfo.CurrentCulture);
+        return FormatTick(value, 0d);
+    }
+
+    private static string FormatTick(double value, double step)
+    {
+        var abs = Math.Abs(value);
+        if (abs < 1e-38f)
+            return "0";
+
+        var absStep = Math.Abs(step);
+        if (TryFormatPlanckTick(value, step, absStep > 0f ? absStep : abs, out var planckTick))
+            return planckTick;
+
+        if (TryFormatSmallSiTick(value, step, Math.Max(abs, absStep), out var smallTick))
+            return smallTick;
+
+        if (TryFormatLightYearTick(value, step, Math.Max(abs, absStep), out var lightYearTick))
+            return lightYearTick;
+
+        if (TryFormatLargeSiTick(value, step, Math.Max(abs, absStep), out var largeTick))
+            return largeTick;
+
+        return value.ToString(FormatForStep(step, abs), CultureInfo.CurrentCulture);
+    }
+
+    private static bool TryFormatPlanckTick(double value, double step, double scaleValue, out string text)
+    {
+        if (scaleValue >= 1e-30f)
+        {
+            text = string.Empty;
+            return false;
+        }
+
+        if (Math.Abs(value) < PlanckLengthMeters)
+        {
+            text = "0";
+            return true;
+        }
+
+        text = FormatCompactTick(value / PlanckLengthMeters, step / PlanckLengthMeters, " lP");
+        return true;
+    }
+
+    private static bool TryFormatLightYearTick(double value, double step, double scaleValue, out string text)
+    {
+        if (scaleValue < LightYearMeters)
+        {
+            text = string.Empty;
+            return false;
+        }
+
+        var lyValue = value / LightYearMeters;
+        var lyStep = step / LightYearMeters;
+        var lyScale = scaleValue / LightYearMeters;
+
+        if (lyScale >= 1e30f)
+        {
+            text = FormatScientificTick(lyValue) + " lj";
+            return true;
+        }
+        if (lyScale >= 1e27f)
+        {
+            text = FormatCompactTick(lyValue / 1e27f, lyStep / 1e27f, "R lj");
+            return true;
+        }
+        if (lyScale >= 1e24f)
+        {
+            text = FormatCompactTick(lyValue / 1e24f, lyStep / 1e24f, "Y lj");
+            return true;
+        }
+        if (lyScale >= 1e21f)
+        {
+            text = FormatCompactTick(lyValue / 1e21f, lyStep / 1e21f, "Z lj");
+            return true;
+        }
+        if (lyScale >= 1e18f)
+        {
+            text = FormatCompactTick(lyValue / 1e18f, lyStep / 1e18f, "E lj");
+            return true;
+        }
+        if (lyScale >= 1e15f)
+        {
+            text = FormatCompactTick(lyValue / 1e15f, lyStep / 1e15f, "P lj");
+            return true;
+        }
+        if (lyScale >= 1e12f)
+        {
+            text = FormatCompactTick(lyValue / 1e12f, lyStep / 1e12f, "T lj");
+            return true;
+        }
+        if (lyScale >= 1e9f)
+        {
+            text = FormatCompactTick(lyValue / 1e9f, lyStep / 1e9f, "G lj");
+            return true;
+        }
+        if (lyScale >= 1e6f)
+        {
+            text = FormatCompactTick(lyValue / 1e6f, lyStep / 1e6f, "M lj");
+            return true;
+        }
+        if (lyScale >= 1e3f)
+        {
+            text = FormatCompactTick(lyValue / 1e3f, lyStep / 1e3f, "K lj");
+            return true;
+        }
+
+        text = FormatCompactTick(lyValue, lyStep, " lj");
+        return true;
+    }
+
+    private static bool TryFormatLargeSiTick(double value, double step, double scaleValue, out string text)
+    {
+        if (scaleValue >= 1e33f)
+        {
+            text = FormatScientificTick(value);
+            return true;
+        }
+        if (scaleValue >= 1e30f)
+        {
+            text = FormatCompactTick(value / 1e30f, step / 1e30f, "Q");
+            return true;
+        }
+        if (scaleValue >= 1e27f)
+        {
+            text = FormatCompactTick(value / 1e27f, step / 1e27f, "R");
+            return true;
+        }
+        if (scaleValue >= 1e24f)
+        {
+            text = FormatCompactTick(value / 1e24f, step / 1e24f, "Y");
+            return true;
+        }
+        if (scaleValue >= 1e21f)
+        {
+            text = FormatCompactTick(value / 1e21f, step / 1e21f, "Z");
+            return true;
+        }
+        if (scaleValue >= 1e18f)
+        {
+            text = FormatCompactTick(value / 1e18f, step / 1e18f, "E");
+            return true;
+        }
+        if (scaleValue >= 1e15f)
+        {
+            text = FormatCompactTick(value / 1e15f, step / 1e15f, "P");
+            return true;
+        }
+        if (scaleValue >= 1e12f)
+        {
+            text = FormatCompactTick(value / 1e12f, step / 1e12f, "T");
+            return true;
+        }
+        if (scaleValue >= 1e9f)
+        {
+            text = FormatCompactTick(value / 1e9f, step / 1e9f, "G");
+            return true;
+        }
+        if (scaleValue >= 1e6f)
+        {
+            text = FormatCompactTick(value / 1e6f, step / 1e6f, "M");
+            return true;
+        }
+        if (scaleValue >= 1e3f)
+        {
+            text = FormatCompactTick(value / 1e3f, step / 1e3f, "K");
+            return true;
+        }
+
+        text = string.Empty;
+        return false;
+    }
+
+    private static bool TryFormatSmallSiTick(double value, double step, double scaleValue, out string text)
+    {
+        if (scaleValue < 1e-30f)
+        {
+            text = FormatScientificTick(value);
+            return true;
+        }
+        if (scaleValue < 1e-27f)
+        {
+            text = FormatCompactTick(value * 1e30f, step * 1e30f, "q");
+            return true;
+        }
+        if (scaleValue < 1e-24f)
+        {
+            text = FormatCompactTick(value * 1e27f, step * 1e27f, "r");
+            return true;
+        }
+        if (scaleValue < 1e-21f)
+        {
+            text = FormatCompactTick(value * 1e24f, step * 1e24f, "y");
+            return true;
+        }
+        if (scaleValue < 1e-18f)
+        {
+            text = FormatCompactTick(value * 1e21f, step * 1e21f, "z");
+            return true;
+        }
+        if (scaleValue < 1e-15f)
+        {
+            text = FormatCompactTick(value * 1e18f, step * 1e18f, "a");
+            return true;
+        }
+        if (scaleValue < 1e-12f)
+        {
+            text = FormatCompactTick(value * 1e15f, step * 1e15f, "f");
+            return true;
+        }
+        if (scaleValue < 1e-9f)
+        {
+            text = FormatCompactTick(value * 1e12f, step * 1e12f, "p");
+            return true;
+        }
+        if (scaleValue < 1e-6f)
+        {
+            text = FormatCompactTick(value * 1e9f, step * 1e9f, "n");
+            return true;
+        }
+        if (scaleValue < 1e-3f)
+        {
+            text = FormatCompactTick(value * 1e6f, step * 1e6f, "u");
+            return true;
+        }
+        if (scaleValue < 1f)
+        {
+            text = FormatCompactTick(value * 1e3f, step * 1e3f, "m");
+            return true;
+        }
+
+        text = string.Empty;
+        return false;
+    }
+
+    private static string FormatCompactTick(double scaledValue, double scaledStep, string suffix)
+    {
+        var format = FormatForStep(scaledStep, Math.Abs(scaledValue));
+        return scaledValue.ToString(format, CultureInfo.CurrentCulture) + suffix;
+    }
+
+    private static string FormatScientificTick(double value)
+    {
+        return value.ToString("0.###E+0", CultureInfo.CurrentCulture);
+    }
+
+    private static string FormatForStep(double step, double absValue)
+    {
+        if (step > 0 && step < 1d)
+        {
+            var decimals = Math.Clamp((int)Math.Ceiling(-Math.Log10(step)) + 1, 1, 4);
+            return "0." + new string('#', decimals);
+        }
+
+        return absValue >= 100d ? "0" : "0.##";
     }
 }

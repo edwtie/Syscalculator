@@ -30,6 +30,8 @@ public readonly record struct GraphRangeControls(
 /// </remarks>
 public static class GraphSurfaceApi
 {
+    public const double MinimumViewSpan = 1e-34;
+
     /// <summary>
     /// Creates the standard graph UI chrome: navigation controls and point-table overlay.
     /// </summary>
@@ -78,9 +80,9 @@ public static class GraphSurfaceApi
         IReadOnlyList<PointF> linePoints,
         IReadOnlyList<PointF> highlightPoints,
         GraphPlotView view,
-        float requestedMinX,
-        float requestedMaxX,
-        float requestedStep,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
         string disabledMessage,
         string emptyMessage,
         GraphPlotDensity density,
@@ -118,8 +120,8 @@ public static class GraphSurfaceApi
     /// </summary>
     public static GraphPlotView CreateFitView(
         IReadOnlyList<PointF> points,
-        float requestedMinX,
-        float requestedMaxX,
+        double requestedMinX,
+        double requestedMaxX,
         Size canvasSize,
         float fallbackHalfYRange = 5f)
     {
@@ -151,11 +153,11 @@ public static class GraphSurfaceApi
         if (plot.Width <= 0 || plot.Height <= 0)
             return view;
 
-        var targetAspect = plot.Width / (float)plot.Height;
-        var centerX = (view.MinX + view.MaxX) / 2f;
-        var centerY = (view.MinY + view.MaxY) / 2f;
-        var halfX = Math.Max(0.0001f, (view.MaxX - view.MinX) / 2f);
-        var halfY = Math.Max(0.0001f, (view.MaxY - view.MinY) / 2f);
+        var targetAspect = plot.Width / (double)plot.Height;
+        var centerX = (view.MinX + view.MaxX) / 2d;
+        var centerY = (view.MinY + view.MaxY) / 2d;
+        var halfX = Math.Max(MinimumHalfSpan(centerX), (view.MaxX - view.MinX) / 2d);
+        var halfY = Math.Max(MinimumHalfSpan(centerY), (view.MaxY - view.MinY) / 2d);
 
         if (halfX / halfY < targetAspect)
             halfX = halfY * targetAspect;
@@ -176,8 +178,8 @@ public static class GraphSurfaceApi
     {
         return MatchViewToCanvasAspect(currentView with
         {
-            MinX = (float)xMin.Value,
-            MaxX = (float)xMax.Value
+            MinX = (double)xMin.Value,
+            MaxX = (double)xMax.Value
         }, canvas);
     }
 
@@ -188,8 +190,8 @@ public static class GraphSurfaceApi
     {
         return MatchViewToCanvasAspect(currentView with
         {
-            MinY = (float)yMin.Value,
-            MaxY = (float)yMax.Value
+            MinY = (double)yMin.Value,
+            MaxY = (double)yMax.Value
         }, canvas);
     }
 
@@ -239,17 +241,32 @@ public static class GraphSurfaceApi
         return GraphPlotRenderer.ScreenToGraph(screenPoint, plot, view);
     }
 
-    private static void SetNumberBoxValue(NumericUpDown box, float value)
+    private static void SetNumberBoxValue(NumericUpDown box, double value)
     {
-        if (!float.IsFinite(value))
+        if (!double.IsFinite(value))
             return;
 
-        var decimalValue = (decimal)Math.Round(value, box.DecimalPlaces);
+        decimal decimalValue;
+        try
+        {
+            decimalValue = (decimal)Math.Round(value, box.DecimalPlaces);
+        }
+        catch (OverflowException)
+        {
+            decimalValue = value < 0 ? box.Minimum : box.Maximum;
+        }
+
         if (decimalValue < box.Minimum)
             decimalValue = box.Minimum;
         else if (decimalValue > box.Maximum)
             decimalValue = box.Maximum;
 
         box.Value = decimalValue;
+    }
+
+    private static double MinimumHalfSpan(double center)
+    {
+        var relativeSpan = Math.Abs(center) * 1e-14;
+        return Math.Max(MinimumViewSpan / 2d, relativeSpan);
     }
 }

@@ -16,6 +16,8 @@ internal sealed class FormulaCardForm : Form
         "Meetkunde met coordinaten",
         "Analytische meetkunde",
         "Algebra",
+        "Statistiek",
+        "Kansrekening",
         "Calculus",
         "Vectoren",
         "Lineaire algebra",
@@ -771,6 +773,7 @@ internal sealed class FormulaCardForm : Form
             .Select(tag => $"<span class=\"tag\">{Html(tag)}</span>"));
         var visual = BuildVisualHtml(card);
         var nodMath = BuildNodMathHtml(card);
+        var studySteps = BuildStudyStepsHtml(card);
         var overview = BuildOverviewHtml(card, _cards);
 
         var css = """
@@ -819,6 +822,7 @@ internal sealed class FormulaCardForm : Form
         }
         .overview-table {
           width: 100%;
+          table-layout: fixed;
           border-collapse: separate;
           border-spacing: 0;
           border: 1px solid #d9e2ec;
@@ -833,6 +837,24 @@ internal sealed class FormulaCardForm : Form
           text-align: left;
           vertical-align: top;
           font-size: 13px;
+          min-width: 0;
+          overflow-wrap: anywhere;
+        }
+        .overview-table th:nth-child(1),
+        .overview-table td:nth-child(1) {
+          width: 22%;
+        }
+        .overview-table th:nth-child(2),
+        .overview-table td:nth-child(2) {
+          width: 36%;
+        }
+        .overview-table th:nth-child(3),
+        .overview-table td:nth-child(3) {
+          width: 30%;
+        }
+        .overview-table th:nth-child(4),
+        .overview-table td:nth-child(4) {
+          width: 12%;
         }
         .overview-table tr:last-child td {
           border-bottom: 0;
@@ -858,8 +880,11 @@ internal sealed class FormulaCardForm : Form
         }
         .overview-formula math {
           font-family: Cambria Math, "STIX Two Math", "Times New Roman", serif;
-          font-size: 20px;
-          line-height: 1.5;
+          display: block;
+          max-width: 100%;
+          overflow: hidden;
+          font-size: 18px;
+          line-height: 1.35;
         }
         .formula-caption {
           margin-top: 4px;
@@ -1170,6 +1195,33 @@ internal sealed class FormulaCardForm : Form
           font-size: 15px;
           color: #31455f;
         }
+        .study-grid {
+          display: grid;
+          gap: 10px;
+        }
+        .study-step {
+          border: 1px solid #dbe6f3;
+          background: #f8fbff;
+          border-radius: 8px;
+          padding: 11px 12px;
+        }
+        .study-label {
+          display: block;
+          color: #0f3f8f;
+          font-weight: 800;
+          margin-bottom: 7px;
+        }
+        .study-step .mathml-card {
+          margin: 0;
+          min-height: 0;
+        }
+        .study-step p {
+          margin: 0;
+        }
+        .study-step p + p,
+        .study-step .mathml-card + .mathml-card {
+          margin-top: 8px;
+        }
         .formula {
           font-family: Cambria Math, "Times New Roman", serif;
           font-size: 18px;
@@ -1283,6 +1335,7 @@ internal sealed class FormulaCardForm : Form
             ["copy_text"] = Html(T("formula_card.copy_text", "Copy text")),
             ["copy_latex"] = Html(T("formula_card.copy_latex", "Copy LaTeX")),
             ["copy_mathml"] = Html(T("formula_card.copy_mathml", "Copy MathML")),
+            ["study_steps"] = studySteps,
             ["nod_math"] = nodMath,
             ["visual"] = visual,
             ["section_explanation"] = Html(T("formula_card.section_explanation", "Uitleg")),
@@ -1319,6 +1372,192 @@ internal sealed class FormulaCardForm : Form
             "Onderwerp");
     }
 
+    private static string BuildStudyStepsHtml(FormulaCard card)
+    {
+        var step = GetFormulaStudyStep(card);
+        var (nodRule, _) = GetStudyNodRule(card);
+
+        return $$"""
+          <section class="section">
+            <h2>Uitgewerkte formulekaart</h2>
+            <div class="study-grid">
+              <div class="study-step">
+                <span class="study-label">Formule</span>
+                <div class="mathml-card">{{card.MathMl}}</div>
+              </div>
+              <div class="study-step">
+                <span class="study-label">Gegevens</span>
+                {{step.DataHtml}}
+              </div>
+              <div class="study-step">
+                <span class="study-label">Oplossing</span>
+                {{step.SolutionHtml}}
+              </div>
+              <div class="study-step">
+                <span class="study-label">NOD</span>
+                <pre>{{Html(nodRule)}}</pre>
+              </div>
+              <div class="study-step">
+                <span class="study-label">Resultaat</span>
+                {{step.ResultHtml}}
+              </div>
+            </div>
+          </section>
+        """;
+    }
+
+    private sealed record FormulaStudyStep(string DataHtml, string SolutionHtml, string ResultHtml);
+
+    private static FormulaStudyStep GetFormulaStudyStep(FormulaCard card)
+    {
+        return card.Id switch
+        {
+            "pythagoras" => new(
+                "<p>Zijde <code>a = 3</code> en zijde <code>b = 4</code>.</p>",
+                MathBlock("<mrow><mi>c</mi><mo>=</mo><msqrt><mrow><msup><mn>3</mn><mn>2</mn></msup><mo>+</mo><msup><mn>4</mn><mn>2</mn></msup></mrow></msqrt><mo>=</mo><msqrt><mn>25</mn></msqrt><mo>=</mo><mn>5</mn></mrow>"),
+                "<p><code>c = 5</code>.</p>"),
+            "quadratic-formula" => new(
+                "<p>Vergelijking <code>x^2 - 3x + 2 = 0</code>, dus <code>a = 1</code>, <code>b = -3</code>, <code>c = 2</code>.</p>",
+                MathBlock("<mrow><mi>D</mi><mo>=</mo><msup><mrow><mo>-</mo><mn>3</mn></mrow><mn>2</mn></msup><mo>-</mo><mn>4</mn><mo>&#x00D7;</mo><mn>1</mn><mo>&#x00D7;</mo><mn>2</mn><mo>=</mo><mn>1</mn></mrow>") +
+                MathBlock("<mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mn>3</mn><mo>&#x00B1;</mo><msqrt><mn>1</mn></msqrt></mrow><mn>2</mn></mfrac></mrow>"),
+                "<p><code>x = 1</code> of <code>x = 2</code>.</p>"),
+            "exponential-growth" => new(
+                "<p>Beginwaarde <code>N0 = 100</code>, groeifactor <code>g = 1,04</code>, tijd <code>t = 5</code>.</p>",
+                MathBlock("<mrow><mi>N</mi><mo>(</mo><mn>5</mn><mo>)</mo><mo>=</mo><mn>100</mn><mo>&#x00D7;</mo><msup><mn>1.04</mn><mn>5</mn></msup><mo>&#x2248;</mo><mn>121.67</mn></mrow>"),
+                "<p>Na 5 stappen is de waarde ongeveer <code>121,67</code>.</p>"),
+            "statistics-mean" => new(
+                "<p>Dataset <code>2, 4, 4, 4, 5, 5, 7, 9</code>. Er zijn <code>8</code> waarden.</p>",
+                MathBlock("<mrow><mover><mi>x</mi><mo>&#x00AF;</mo></mover><mo>=</mo><mfrac><mrow><mn>2</mn><mo>+</mo><mn>4</mn><mo>+</mo><mn>4</mn><mo>+</mo><mn>4</mn><mo>+</mo><mn>5</mn><mo>+</mo><mn>5</mn><mo>+</mo><mn>7</mn><mo>+</mo><mn>9</mn></mrow><mn>8</mn></mfrac><mo>=</mo><mfrac><mn>40</mn><mn>8</mn></mfrac><mo>=</mo><mn>5</mn></mrow>"),
+                "<p>Het gemiddelde is <code>5</code>.</p>"),
+            "statistics-median" => new(
+                "<p>Gesorteerde dataset <code>2, 4, 4, 4, 5, 5, 7, 9</code>. Er zijn <code>8</code> waarden.</p>",
+                MathBlock("<mrow><mi>Me</mi><mo>=</mo><mfrac><mrow><mn>4</mn><mo>+</mo><mn>5</mn></mrow><mn>2</mn></mfrac><mo>=</mo><mn>4.5</mn></mrow>"),
+                "<p>Bij een even aantal waarden neem je het gemiddelde van de twee middelste waarden.</p>"),
+            "statistics-stdev-population" => new(
+                "<p>Dataset <code>2, 4, 4, 4, 5, 5, 7, 9</code>, gemiddelde <code>5</code>.</p>",
+                MathBlock("<mrow><mi>&#x03C3;</mi><mo>=</mo><msqrt><mfrac><mn>32</mn><mn>8</mn></mfrac><mo>=</mo><msqrt><mn>4</mn></msqrt><mo>=</mo><mn>2</mn></mrow>"),
+                "<p>De populatie-standaardafwijking is <code>2</code>. Voor een steekproef gebruik je delen door <code>n - 1</code>.</p>"),
+            "probability-combinations" => new(
+                "<p>Kies <code>r = 2</code> uit <code>n = 5</code>, volgorde telt niet mee.</p>",
+                MathBlock("<mrow><mfenced><mfrac linethickness=\"0\"><mn>5</mn><mn>2</mn></mfrac></mfenced><mo>=</mo><mfrac><mrow><mn>5</mn><mo>!</mo></mrow><mrow><mn>2</mn><mo>!</mo><mn>3</mn><mo>!</mo></mrow></mfrac><mo>=</mo><mfrac><mn>120</mn><mn>12</mn></mfrac><mo>=</mo><mn>10</mn></mrow>"),
+                "<p>Er zijn <code>10</code> combinaties.</p>"),
+            "probability-expected-value" => new(
+                "<p>Uitkomsten <code>0</code> en <code>10</code>, elk met kans <code>0,5</code>.</p>",
+                MathBlock("<mrow><mi>E</mi><mo>(</mo><mi>X</mi><mo>)</mo><mo>=</mo><mn>0</mn><mo>&#x00D7;</mo><mn>0.5</mn><mo>+</mo><mn>10</mn><mo>&#x00D7;</mo><mn>0.5</mn><mo>=</mo><mn>5</mn></mrow>"),
+                "<p>De verwachte waarde is <code>5</code>.</p>"),
+            "trig-right-triangle" => new(
+                "<p>Hoek <code>theta = 30 graden</code>. Voor sinus gebruik je overstaande zijde gedeeld door schuine zijde.</p>",
+                MathBlock("<mrow><mi>sin</mi><mo>(</mo><mn>30</mn><mo>&#x00B0;</mo><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>=</mo><mn>0.5</mn></mrow>"),
+                "<p><code>sin(30 graden) = 0,5</code>.</p>"),
+            "linear-function" => new(
+                "<p>Helling <code>a = 2</code>, startwaarde <code>b = 3</code>, invoer <code>x = 5</code>.</p>",
+                MathBlock("<mrow><mi>y</mi><mo>=</mo><mn>2</mn><mo>&#x00D7;</mo><mn>5</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>13</mn></mrow>"),
+                "<p><code>y = 13</code>.</p>"),
+            "distance-between-points" => new(
+                "<p>Punt <code>P(1,2)</code> en punt <code>Q(4,6)</code>.</p>",
+                MathBlock("<mrow><mi>d</mi><mo>=</mo><msqrt><mrow><msup><mrow><mo>(</mo><mn>4</mn><mo>-</mo><mn>1</mn><mo>)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo>(</mo><mn>6</mn><mo>-</mo><mn>2</mn><mo>)</mo></mrow><mn>2</mn></msup></mrow></msqrt><mo>=</mo><msqrt><mn>25</mn></msqrt><mo>=</mo><mn>5</mn></mrow>"),
+                "<p>De afstand is <code>5</code>.</p>"),
+            "midpoint" => new(
+                "<p>Punt <code>P(1,2)</code> en punt <code>Q(5,8)</code>.</p>",
+                MathBlock("<mrow><mi>M</mi><mo>=</mo><mo>(</mo><mfrac><mrow><mn>1</mn><mo>+</mo><mn>5</mn></mrow><mn>2</mn></mfrac><mo>,</mo><mfrac><mrow><mn>2</mn><mo>+</mo><mn>8</mn></mrow><mn>2</mn></mfrac><mo>)</mo><mo>=</mo><mo>(</mo><mn>3</mn><mo>,</mo><mn>5</mn><mo>)</mo></mrow>"),
+                "<p>Het middenpunt is <code>(3,5)</code>.</p>"),
+            "triangle-area" => new(
+                "<p>Basis <code>b = 8</code> en hoogte <code>h = 6</code>.</p>",
+                MathBlock("<mrow><mi>A</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>&#x00D7;</mo><mn>8</mn><mo>&#x00D7;</mo><mn>6</mn><mo>=</mo><mn>24</mn></mrow>"),
+                "<p>De oppervlakte is <code>24</code>.</p>"),
+            "sine-rule" => new(
+                "<p>Bijvoorbeeld <code>a = 10</code>, <code>A = 30 graden</code>, <code>B = 45 graden</code>.</p>",
+                MathBlock("<mrow><mi>b</mi><mo>=</mo><mfrac><mrow><mn>10</mn><mo>&#x00D7;</mo><mi>sin</mi><mo>(</mo><mn>45</mn><mo>&#x00B0;</mo><mo>)</mo></mrow><mrow><mi>sin</mi><mo>(</mo><mn>30</mn><mo>&#x00B0;</mo><mo>)</mo></mrow></mfrac><mo>&#x2248;</mo><mn>14.14</mn></mrow>"),
+                "<p>De berekende zijde is ongeveer <code>14,14</code>.</p>"),
+            "cosine-rule" => new(
+                "<p>Zijden <code>a = 3</code>, <code>b = 4</code>, ingesloten hoek <code>C = 90 graden</code>.</p>",
+                MathBlock("<mrow><msup><mi>c</mi><mn>2</mn></msup><mo>=</mo><msup><mn>3</mn><mn>2</mn></msup><mo>+</mo><msup><mn>4</mn><mn>2</mn></msup><mo>-</mo><mn>2</mn><mo>&#x00D7;</mo><mn>3</mn><mo>&#x00D7;</mo><mn>4</mn><mo>&#x00D7;</mo><mi>cos</mi><mo>(</mo><mn>90</mn><mo>&#x00B0;</mo><mo>)</mo><mo>=</mo><mn>25</mn></mrow>") +
+                MathBlock("<mrow><mi>c</mi><mo>=</mo><msqrt><mn>25</mn></msqrt><mo>=</mo><mn>5</mn></mrow>"),
+                "<p><code>c = 5</code>.</p>"),
+            "circle-equation" => new(
+                "<p>Middelpunt <code>(0,0)</code>, straal <code>5</code>, punt <code>(3,4)</code>.</p>",
+                MathBlock("<mrow><msup><mn>3</mn><mn>2</mn></msup><mo>+</mo><msup><mn>4</mn><mn>2</mn></msup><mo>=</mo><mn>25</mn><mo>=</mo><msup><mn>5</mn><mn>2</mn></msup></mrow>"),
+                "<p>Het punt ligt op de cirkel.</p>"),
+            "vector-2d-arrow" => new(
+                "<p>Vector <code>v = (3, 4)</code>.</p>",
+                MathBlock("<mrow><mo stretchy=\"false\">&#x2016;</mo><mi mathvariant=\"bold-italic\">v</mi><mo stretchy=\"false\">&#x2016;</mo><mo>=</mo><msqrt><mrow><msup><mn>3</mn><mn>2</mn></msup><mo>+</mo><msup><mn>4</mn><mn>2</mn></msup></mrow></msqrt><mo>=</mo><mn>5</mn></mrow>"),
+                "<p>De vectorlengte is <code>5</code>. In NOD kan dat kort met <code>math vec 3 4</code> of volledig met <code>math length(vec(3,4))</code>.</p>"),
+            "vector-length-3d" => new(
+                "<p>Vector <code>v = (3, 4, 12)</code>.</p>",
+                MathBlock("<mrow><mo stretchy=\"false\">&#x2016;</mo><mi mathvariant=\"bold-italic\">v</mi><mo stretchy=\"false\">&#x2016;</mo><mo>=</mo><msqrt><mrow><msup><mn>3</mn><mn>2</mn></msup><mo>+</mo><msup><mn>4</mn><mn>2</mn></msup><mo>+</mo><msup><mn>12</mn><mn>2</mn></msup></mrow></msqrt><mo>=</mo><msqrt><mn>169</mn></msqrt><mo>=</mo><mn>13</mn></mrow>"),
+                "<p>De 3D-vectorlengte is <code>13</code>.</p>"),
+            "vector-dot-angle" => new(
+                "<p>Vectoren <code>a = (1,0)</code> en <code>b = (0,1)</code>.</p>",
+                MathBlock("<mrow><mi>a</mi><mo>&#x22C5;</mo><mi>b</mi><mo>=</mo><mn>1</mn><mo>&#x00D7;</mo><mn>0</mn><mo>+</mo><mn>0</mn><mo>&#x00D7;</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow>") +
+                MathBlock("<mrow><mi>&#x03B8;</mi><mo>=</mo><mi>arccos</mi><mo>(</mo><mn>0</mn><mo>)</mo><mo>=</mo><mn>90</mn><mo>&#x00B0;</mo></mrow>"),
+                "<p>Het inproduct is <code>0</code> en de hoek is <code>90 graden</code>.</p>"),
+            "vector-cross-z" => new(
+                "<p>Vectoren <code>a = (1,0,0)</code> en <code>b = (0,1,0)</code>.</p>",
+                MathBlock("<mrow><msub><mrow><mo>(</mo><mi>a</mi><mo>&#x00D7;</mo><mi>b</mi><mo>)</mo></mrow><mi>z</mi></msub><mo>=</mo><mn>1</mn><mo>&#x00D7;</mo><mn>1</mn><mo>-</mo><mn>0</mn><mo>&#x00D7;</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow>"),
+                "<p>De z-component van het kruisproduct is <code>1</code>.</p>"),
+            "matrix-2x2-determinant" => new(
+                "<p>Matrix met rij 1: <code>1, 2</code> en rij 2: <code>3, 4</code>.</p>",
+                MathBlock("<mrow><mi>det</mi><mo>=</mo><mn>1</mn><mo>&#x00D7;</mo><mn>4</mn><mo>-</mo><mn>2</mn><mo>&#x00D7;</mo><mn>3</mn><mo>=</mo><mn>4</mn><mo>-</mo><mn>6</mn><mo>=</mo><mo>-</mo><mn>2</mn></mrow>"),
+                "<p><code>det = -2</code>. Extra: <code>mget(..., 2, 1)</code> geeft <code>3</code>; <code>x(mat2(...) * vec(5,6))</code> geeft <code>17</code>.</p>"),
+            _ => new(
+                "<p>Kies eerst bekende waarden voor de symbolen in de formule.</p>",
+                "<p>Vul de gekozen waarden in de formule in en werk van binnen naar buiten uit. Gebruik haakjes bij machten, wortels en breuken.</p>",
+                "<p>Het resultaat hangt af van de gekozen waarden.</p>")
+        };
+    }
+
+    private static string MathBlock(string mathBody)
+    {
+        return $$"""<div class="mathml-card"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">{{mathBody}}</math></div>""";
+    }
+
+    private static (string Rule, string Note) GetStudyNodRule(FormulaCard card)
+    {
+        return card.Id switch
+        {
+            "pythagoras" => ("math sqrt(ans(x)^2 + ans(y)^2)", "2D/multi-input notatie voor NOD 2.1. In oude NOD blijft ans de huidige waarde."),
+            "quadratic-formula" => ("math (-ans(b) + sqrt(ans(b)^2 - 4*ans(a)*ans(c))) / (2*ans(a))", "Geeft de plus-oplossing. Voor de min-oplossing gebruik je -sqrt(...)."),
+            "exponential-growth" => ("math ans(N0) * ans(g)^ans(t)", "Named inputs zijn bedoeld voor NOD 2.1, zodat meer waarden duidelijk blijven."),
+            "statistics-mean" => ("math mean(2,4,4,4,5,5,7,9)", "Gemiddelde van een dataset. Dit is Wiskunde A: centrummaat."),
+            "statistics-median" => ("math median(2,4,4,4,5,5,7,9)", "Mediaan na sorteren. Bij een even aantal waarden neemt NOD het gemiddelde van de twee middelste waarden."),
+            "statistics-stdev-population" => ("math stdev(2,4,4,4,5,5,7,9)\r\nmath samplestdev(2,4,4,4,5,5,7,9)", "stdev gebruikt delen door n. samplestdev gebruikt delen door n-1 voor een steekproef."),
+            "probability-combinations" => ("math comb(ans,2)\r\nmath ncr(ans,2)", "Combinaties: volgorde telt niet mee. ncr is dezelfde schrijfwijze."),
+            "probability-expected-value" => ("math expected(0,0.5,10,0.5)", "Verwachtingswaarde leest paren: waarde, kans, waarde, kans."),
+            "trig-right-triangle" => ("math sind(ans(theta))", "Voor graden gebruik je sind/cosd/tand. Voor radialen gebruik je sin/cos/tan."),
+            "linear-function" => ("math ans(a) * ans(x) + ans(b)", "Lineaire formule met named inputs voor helling a, waarde x en startwaarde b."),
+            "distance-between-points" => ("math distance(vec(1,2), vec(4,6))", "Afstand tussen punten kun je zien als lengte van het verschil tussen twee vectoren."),
+            "midpoint" => ("math (1 + 5) / 2\r\nmath (2 + 8) / 2", "NOD geeft hier de x- en y-coordinaat als twee losse getallen; een vectorresultaat is geen eindwaarde."),
+            "triangle-area" => ("math 0.5 * ans * 6", "Bij input basis 8 en vaste hoogte 6 geeft dit oppervlakte 24."),
+            "sine-rule" => ("math ans(a) * sind(ans(B)) / sind(ans(A))", "Voorbeeld: bereken zijde b uit a, A en B door de sinusregel om te vormen."),
+            "cosine-rule" => ("math sqrt(ans(a)^2 + ans(b)^2 - 2*ans(a)*ans(b)*cosd(ans(C)))", "Voorbeeld met graden: berekent zijde c met de cosinusregel."),
+            "trig-identities" => ("math sind(ans)^2 + cosd(ans)^2", "Controleert numeriek de identiteit sin^2(x)+cos^2(x)=1 bij hoek ans in graden."),
+            "exact-trig-values" => ("math sind(30)", "Voor exacte waarden toont de formulekaart de tabel; NOD-math kan een waarde numeriek testen."),
+            "circle-equation" => ("math (ans(x) - ans(a))^2 + (ans(y) - ans(b))^2", "Vergelijk met r^2 om te controleren of een punt op de cirkel ligt."),
+            "special-right-triangles" => ("math sqrt(3)", "Tabelkaart voor verhoudingen; NOD-math kan de wortelwaarden numeriek tonen."),
+            "kinetic-energy" => ("math 0.5 * ans(m) * ans(v)^2", "Natuurkunde-kaart met named inputs voor massa en snelheid."),
+            "derivative-power" => ("math diff ans^2", "Dit werkt als numerieke afgeleide bij de huidige inputwaarde."),
+            "derivative-sum-rule" => ("math diff (ans^2 + ans)", "Voorbeeld van somregel. NOD berekent numeriek; de formulekaart toont de symbolische regel."),
+            "derivative-constant-factor" => ("math diff 3*ans^2", "Voorbeeld van constante factorregel. Het getal voor de functie blijft in de symbolische regel staan."),
+            "derivative-product-rule" => ("math diff (ans^2 * sin(ans))", "Voorbeeld van productregel. De formulekaart legt de symbolische regel uit; de rekenregel is numeriek."),
+            "derivative-quotient-rule" => ("math diff (ans^2 / (ans + 1))", "Voorbeeld van quotientregel. Test altijd numeriek met F6."),
+            "derivative-chain-rule" => ("math diff sin(ans^2)", "Voorbeeld van kettingregel: buitenfunctie en binnenfunctie."),
+            "derivative-trig-basic" => ("math diff sin(ans)", "NOD rekent numeriek; de kaart toont dat sin(x) als afgeleide cos(x) heeft."),
+            "derivative-exp-log" => ("math diff e^ans", "Voor exponentiele groei. Voor ln(x) kun je math diff ln(ans) testen."),
+            "integral-power-rule" => ("math integral 0,1 ans^2", "De formulekaart toont de symbolische primitieve; de rekenregel gebruikt een numerieke integraal."),
+            "integral-sum-rule" => ("math integral 0,1 (ans^2 + ans)", "Numerieke integraal van een som. Symbolisch splits je de delen apart."),
+            "integral-constant-factor" => ("math integral 0,1 3*ans^2", "Het vaste getal blijft buiten de primitieve-regel staan."),
+            "integral-definite-area" => ("math integral 0,1 ans^2", "Bepaalde integraal als numerieke oppervlakte tussen twee grenzen."),
+            "vector-2d-arrow" => ("math vec 3 4\r\nmath length(vec(3,4))\r\nmath dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
+            "vector-length-3d" => ("math length(vec(3,4,12))\r\nmath vec (3,4,12)", "Beide schrijven de lengte van de 3D-vector uit als getal."),
+            "vector-dot-angle" => ("math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "dot geeft het inproduct. angled geeft de hoek in graden."),
+            "vector-cross-z" => ("math z(cross(vec(1,0,0), vec(0,1,0)))", "cross geeft een vector; met z(...) kies je de z-component als eindgetal."),
+            "point-line-distance" => ("math |ans(a)*ans(xp) + ans(b)*ans(yp) - ans(c)| / sqrt(ans(a)^2 + ans(b)^2)", "2D analytische meetkunde met named inputs."),
+            "matrix-2x2-determinant" => ("math det(mat2(1,2,3,4))\r\nmath det2(1,2,3,4)\r\nmath mget(mat2(1,2,3,4), 2, 1)\r\nmath x(mat2(1,2,3,4) * vec(5,6))", "det en det2 geven de determinant. mget leest een cel. Matrix maal vector kan met x(...) of y(...) naar een component worden omgezet."),
+            "circle-integral" => ("math line-integral(F, path)", "Conceptregel voor later. Kringintegraal blijft hier een uitlegkaart, geen runtime-engine."),
+            _ => ExtractFirstMathLine(card.ExampleNod)
+        };
+    }
+
     private static string? GetPrimaryTopic(FormulaCard card)
     {
         return TopicTags.FirstOrDefault(card.LevelTags.Contains);
@@ -1329,10 +1568,14 @@ internal sealed class FormulaCardForm : Form
         return card.Id switch
         {
             _ when IsCalculusCard(card) => "Differentiatie en integralen",
+            "statistics-mean" or "statistics-median" or "statistics-stdev-population" => "Statistiek",
+            "probability-combinations" or "probability-expected-value" => "Kansrekening",
             "pythagoras" => "Meetkunde",
-            "vector-2d-arrow" => "Vectoren",
+            "triangle-area" => "Meetkunde",
+            "distance-between-points" or "midpoint" => "Meetkunde met coordinaten",
+            "vector-2d-arrow" or "vector-length-3d" or "vector-dot-angle" or "vector-cross-z" => "Vectoren",
             "matrix-2x2-determinant" => "Lineaire algebra",
-            _ => GetTopicTitle(GetPrimaryTopic(card) ?? "Overig")
+            _ => GetTopicTitle(GetPrimaryTopic(card) ?? "Algemeen")
         };
     }
 
@@ -1346,8 +1589,10 @@ internal sealed class FormulaCardForm : Form
             "Meetkunde" => 3,
             "Meetkunde met coordinaten" => 4,
             "Vectoren" => 5,
-            "Lineaire algebra" => 6,
-            "PWS" => 7,
+            "Statistiek" => 6,
+            "Kansrekening" => 7,
+            "Lineaire algebra" => 8,
+            "PWS" => 9,
             _ => 20
         };
     }
@@ -1622,6 +1867,9 @@ internal sealed class FormulaCardForm : Form
             "circle-integral" => FormulaWithCaption(
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mo>&oint;</mo><mi>F</mi><mo>&#x22C5;</mo><mi>d</mi><mi>r</mi></mrow></math>""",
                 "Integraal rond een gesloten pad"),
+            "statistics-median" => FormulaWithCaption(
+                """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>Me</mi><mo>=</mo><mtext>middelste waarde</mtext></mrow></math>""",
+                "Na sorteren; bij even aantal het gemiddelde van twee middelste waarden"),
             _ => $"""<div>{card.MathMl}</div>"""
         };
     }
@@ -1664,9 +1912,18 @@ internal sealed class FormulaCardForm : Form
             "circle-integral" => "Integralen: lijn- en kringintegralen",
             "trig-right-triangle" or "sine-rule" or "cosine-rule" or "special-right-triangles" => "Goniometrie: driehoeken",
             "trig-identities" or "exact-trig-values" => "Goniometrie: identiteiten en exacte waarden",
-            "linear-function" or "circle-equation" or "point-line-distance" => "Meetkunde: coordinaten",
+            "pythagoras" or "triangle-area" => "Meetkunde: basisfiguren",
+            "linear-function" or "circle-equation" or "point-line-distance" or "distance-between-points" or "midpoint" => "Meetkunde: coordinaten",
+            "vector-2d-arrow" or "vector-length-3d" => "Vectoren: lengte en richting",
+            "vector-dot-angle" => "Vectoren: inproduct en hoek",
+            "vector-cross-z" => "Vectoren: kruisproduct",
+            "matrix-2x2-determinant" => "Lineaire algebra: 2x2 matrices",
+            "statistics-mean" or "statistics-median" => "Statistiek: centrummaat",
+            "statistics-stdev-population" => "Statistiek: spreiding",
+            "probability-combinations" => "Kansrekening: tellen",
+            "probability-expected-value" => "Kansrekening: verwachting",
             "quadratic-formula" or "exponential-growth" => "Algebra: vergelijkingen en functies",
-            _ => "Overig"
+            _ => $"{GetMenuTopic(card)}: algemeen"
         };
     }
 
@@ -1683,7 +1940,17 @@ internal sealed class FormulaCardForm : Form
             "Algebra: vergelijkingen en functies" => 0,
             "Goniometrie: driehoeken" => 0,
             "Goniometrie: identiteiten en exacte waarden" => 1,
+            "Meetkunde: basisfiguren" => 0,
             "Meetkunde: coordinaten" => 0,
+            "Vectoren: lengte en richting" => 0,
+            "Vectoren: inproduct en hoek" => 1,
+            "Vectoren: kruisproduct" => 2,
+            "Lineaire algebra: 2x2 matrices" => 0,
+            "Statistiek: centrummaat" => 0,
+            "Statistiek: spreiding" => 1,
+            "Kansrekening: tellen" => 0,
+            "Kansrekening: verwachting" => 1,
+            var value when value.EndsWith(": algemeen", StringComparison.OrdinalIgnoreCase) => 10,
             _ => 20
         };
     }
@@ -1728,12 +1995,36 @@ internal sealed class FormulaCardForm : Form
             "exponential-growth" => (
                 "math ans(N0) * ans(g)^ans(t)",
                 "Named inputs zijn bedoeld voor NOD 2.1, zodat meer waarden duidelijk blijven."),
+            "statistics-mean" => (
+                "math mean(2,4,4,4,5,5,7,9)",
+                "Gemiddelde van een dataset. Dit is Wiskunde A: centrummaat."),
+            "statistics-median" => (
+                "math median(2,4,4,4,5,5,7,9)",
+                "Mediaan na sorteren. Bij een even aantal waarden neemt NOD het gemiddelde van de twee middelste waarden."),
+            "statistics-stdev-population" => (
+                "math stdev(2,4,4,4,5,5,7,9)\r\nmath samplestdev(2,4,4,4,5,5,7,9)",
+                "stdev gebruikt delen door n. samplestdev gebruikt delen door n-1 voor een steekproef."),
+            "probability-combinations" => (
+                "math comb(ans,2)\r\nmath ncr(ans,2)",
+                "Combinaties: volgorde telt niet mee. ncr is dezelfde schrijfwijze."),
+            "probability-expected-value" => (
+                "math expected(0,0.5,10,0.5)",
+                "Verwachtingswaarde leest paren: waarde, kans, waarde, kans."),
             "trig-right-triangle" => (
                 "math sind(ans(theta))",
                 "Voor graden gebruik je sind/cosd/tand. Voor radialen gebruik je sin/cos/tan."),
             "linear-function" => (
                 "math ans(a) * ans(x) + ans(b)",
                 "Lineaire formule met named inputs voor helling a, waarde x en startwaarde b."),
+            "distance-between-points" => (
+                "math distance(vec(1,2), vec(4,6))",
+                "Afstand tussen punten kun je zien als lengte van het verschil tussen twee vectoren."),
+            "midpoint" => (
+                "math (1 + 5) / 2\r\nmath (2 + 8) / 2",
+                "NOD geeft hier de x- en y-coordinaat als twee losse getallen; een vectorresultaat is geen eindwaarde."),
+            "triangle-area" => (
+                "math 0.5 * ans * 6",
+                "Bij input basis 8 en vaste hoogte 6 geeft dit oppervlakte 24."),
             "sine-rule" => (
                 "math ans(a) * sind(ans(B)) / sind(ans(A))",
                 "Voorbeeld: bereken zijde b uit a, A en B door de sinusregel om te vormen."),
@@ -1766,7 +2057,7 @@ internal sealed class FormulaCardForm : Form
                 "Voorbeeld van constante factorregel. Het getal voor de functie blijft in de symbolische regel staan."),
             "derivative-product-rule" => (
                 "math diff (ans^2 * sin(ans))",
-                "Voorbeeld van productregel. NOD 2.0 rekent numeriek; de kaart legt de symbolische regel uit."),
+                "Voorbeeld van productregel. De formulekaart legt de symbolische regel uit; de rekenregel is numeriek."),
             "derivative-quotient-rule" => (
                 "math diff (ans^2 / (ans + 1))",
                 "Voorbeeld van quotientregel. Test altijd numeriek met F6."),
@@ -1781,7 +2072,7 @@ internal sealed class FormulaCardForm : Form
                 "Voor exponentiele groei. Voor ln(x) kun je math diff ln(ans) testen."),
             "integral-power-rule" => (
                 "math integral 0,1 ans^2",
-                "NOD 2.0 ondersteunt numerieke integraal; symbolische primitieve blijft formulekaart/CAS-light."),
+                "De formulekaart toont de symbolische primitieve; de rekenregel gebruikt een numerieke integraal."),
             "integral-sum-rule" => (
                 "math integral 0,1 (ans^2 + ans)",
                 "Numerieke integraal van een som. Symbolisch splits je de delen apart."),
@@ -1792,17 +2083,26 @@ internal sealed class FormulaCardForm : Form
                 "math integral 0,1 ans^2",
                 "Bepaalde integraal als numerieke oppervlakte tussen twee grenzen."),
             "vector-2d-arrow" => (
-                "math sqrt(ans(x)^2 + ans(y)^2)",
-                "2D vectorlengte. Dit hoort bij de multi-input stap van NOD 2.1."),
+                "math vec 3 4\r\nmath length(vec(3,4))\r\nmath dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))",
+                "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
+            "vector-length-3d" => (
+                "math length(vec(3,4,12))\r\nmath vec (3,4,12)",
+                "Beide schrijven de lengte van de 3D-vector uit als getal."),
+            "vector-dot-angle" => (
+                "math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))",
+                "dot geeft het inproduct. angled geeft de hoek in graden."),
+            "vector-cross-z" => (
+                "math z(cross(vec(1,0,0), vec(0,1,0)))",
+                "cross geeft een vector; met z(...) kies je de z-component als eindgetal."),
             "point-line-distance" => (
                 "math |ans(a)*ans(xp) + ans(b)*ans(yp) - ans(c)| / sqrt(ans(a)^2 + ans(b)^2)",
                 "2D analytische meetkunde met named inputs."),
             "matrix-2x2-determinant" => (
-                "math ans(a)*ans(d) - ans(b)*ans(c)",
-                "Limited matrix 2x2 als formulekaart. Geen 3x3/matrix-engine in NOD 2.0."),
+                "math det(mat2(1,2,3,4))\r\nmath det2(1,2,3,4)\r\nmath mget(mat2(1,2,3,4), 2, 1)\r\nmath x(mat2(1,2,3,4) * vec(5,6))",
+                "det en det2 geven de determinant. mget leest een cel. Matrix maal vector kan met x(...) of y(...) naar een component worden omgezet."),
             "circle-integral" => (
                 "math line-integral(F, path)",
-                "Conceptregel voor later. Kringintegraal blijft in NOD 2.0 een uitlegkaart, geen runtime-engine."),
+                "Conceptregel voor later. Kringintegraal blijft hier een uitlegkaart, geen runtime-engine."),
             _ => ExtractFirstMathLine(card.ExampleNod)
         };
 

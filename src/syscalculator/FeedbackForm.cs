@@ -1,0 +1,520 @@
+#nullable enable
+using System.Diagnostics;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+
+namespace Syscalculator.UI.WinForms;
+
+internal sealed class FeedbackForm : Form
+{
+    private const string SupportAddress = "info@tiedragon.com";
+
+    private readonly LanguageCatalog _language;
+    private readonly string _supportInfo;
+    private readonly string _converterName;
+    private readonly WebView2 _browser;
+
+    public FeedbackForm(LanguageCatalog language, string supportInfo, string converterName)
+    {
+        _language = language;
+        _supportInfo = supportInfo;
+        _converterName = converterName;
+
+        Text = T("feedback.title", "Feedback");
+        StartPosition = FormStartPosition.CenterParent;
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        ShowInTaskbar = false;
+        ClientSize = new Size(760, 660);
+        BackColor = Color.FromArgb(246, 248, 252);
+        AppWindowIcon.ApplyTo(this);
+
+        _browser = new WebView2
+        {
+            Dock = DockStyle.Fill,
+            CreationProperties = new CoreWebView2CreationProperties
+            {
+                UserDataFolder = WebView2UserDataFolder.GetPath()
+            }
+        };
+        _browser.CoreWebView2InitializationCompleted += Browser_CoreWebView2InitializationCompleted;
+        Controls.Add(_browser);
+
+        Shown += async (_, _) => await InitializeBrowserAsync();
+    }
+
+    private async Task InitializeBrowserAsync()
+    {
+        try
+        {
+            await _browser.EnsureCoreWebView2Async();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or COMException)
+        {
+            ShowFallback(ex.Message);
+        }
+    }
+
+    private void Browser_CoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
+    {
+        if (!e.IsSuccess || _browser.CoreWebView2 is null)
+        {
+            ShowFallback(e.InitializationException?.Message ?? T("feedback.webview_error", "WebView2 kon niet starten."));
+            return;
+        }
+
+        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+        _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+        _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+        _browser.CoreWebView2.Settings.IsStatusBarEnabled = false;
+        _browser.CoreWebView2.WebMessageReceived += Browser_WebMessageReceived;
+        _browser.NavigateToString(BuildHtml());
+    }
+
+    private void Browser_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+    {
+        FeedbackPayload? payload;
+        try
+        {
+            payload = JsonSerializer.Deserialize<FeedbackPayload>(e.WebMessageAsJson);
+        }
+        catch
+        {
+            return;
+        }
+
+        if (payload is null)
+        {
+            return;
+        }
+
+        if (payload.Action.Equals("close", StringComparison.OrdinalIgnoreCase))
+        {
+            DialogResult = DialogResult.OK;
+            Close();
+            return;
+        }
+
+        if (payload.Action.Equals("mail", StringComparison.OrdinalIgnoreCase))
+        {
+            OpenMail(payload);
+        }
+    }
+
+    private string BuildHtml()
+    {
+        var title = T("feedback.heading", "Feedback sturen");
+        var subtitle = T("feedback.subtitle", "Schrijf wat er gebeurt, wat u verwachtte, of welk idee u hebt.");
+        var defaultSubject = string.IsNullOrWhiteSpace(_converterName)
+            ? T("feedback.default_subject", "Feedback over Syscalculator")
+            : string.Format(T("feedback.default_subject_converter", "Feedback over {0}"), _converterName);
+        var messagePlaceholder = T("feedback.message_placeholder", "Wat gebeurde er?\r\n\r\nWat had u verwacht?\r\n\r\nStappen om het te herhalen:");
+        var background = LoadFeedbackBackgroundDataUri();
+
+        return $$"""
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --blue: #0041aa;
+  --ink: #10213a;
+  --muted: #465970;
+  --paper: rgba(255, 255, 255, 0.03);
+  --paper-strong: rgba(255, 255, 255, 0.18);
+  --line: rgba(55, 66, 82, 0.26);
+}
+* { box-sizing: border-box; }
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font: 13px "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+}
+body {
+  background-image: url('{{background}}');
+  background-size: cover;
+  background-position: center;
+}
+.sheet {
+  position: absolute;
+  left: 205px;
+  top: 92px;
+  width: 410px;
+  height: 552px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+h1 {
+  margin: 0;
+  color: var(--blue);
+  font-size: 20px;
+  line-height: 1.15;
+}
+.subtitle {
+  margin-top: 3px;
+  color: var(--muted);
+}
+.form {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  grid-template-rows: 36px 36px 36px 36px 1fr 34px 34px;
+  column-gap: 8px;
+  row-gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+label {
+  align-self: center;
+  font-weight: 700;
+  color: #23364f;
+}
+input, textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  border: 1px solid transparent;
+  border-bottom-color: var(--line);
+  background: var(--paper) !important;
+  background-color: var(--paper) !important;
+  color: #0f172a;
+  border-radius: 3px;
+  padding: 4px 6px;
+  outline: none;
+  font: inherit;
+  box-shadow: none;
+}
+input:focus, textarea:focus {
+  border-color: rgba(0, 86, 190, 0.38);
+  background: var(--paper-strong) !important;
+  background-color: var(--paper-strong) !important;
+  box-shadow: 0 0 0 2px rgba(0, 86, 190, 0.10);
+}
+input:hover, textarea:hover {
+  background: rgba(255,255,255,0.18) !important;
+  background-color: rgba(255,255,255,0.18) !important;
+  box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.12);
+}
+.kind-picker {
+  position: relative;
+  width: 100%;
+}
+.kind-button {
+  width: 100%;
+  height: 28px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--line);
+  border-radius: 3px;
+  background: var(--paper);
+  color: #0f172a;
+  padding: 4px 28px 4px 6px;
+  text-align: left;
+  font: inherit;
+}
+.kind-button:hover,
+.kind-picker.open .kind-button {
+  background: rgba(255,255,255,0.18);
+  box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.12);
+}
+.kind-button:focus {
+  outline: none;
+  border-color: rgba(0, 86, 190, 0.38);
+  box-shadow: 0 0 0 2px rgba(0, 86, 190, 0.10);
+}
+.kind-button:after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid rgba(35,54,79,0.78);
+}
+.kind-list {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  top: 30px;
+  left: 0;
+  right: 0;
+  padding: 4px;
+  margin: 0;
+  list-style: none;
+  border-radius: 6px;
+  background: rgba(250, 247, 244, 0.78);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 24px rgba(44, 36, 28, 0.18);
+}
+.kind-picker.open .kind-list {
+  display: block;
+}
+.kind-list li {
+  padding: 5px 7px;
+  border-radius: 4px;
+  cursor: default;
+}
+.kind-list li:hover,
+.kind-list li.active {
+  background: rgba(0, 86, 190, 0.16);
+}
+textarea {
+  resize: none;
+  min-height: 0;
+  line-height: 1.45;
+  background: rgba(255,255,255,0.04) !important;
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(55, 66, 82, 0.18);
+}
+textarea:focus {
+  background: rgba(255,255,255,0.16) !important;
+  background-color: rgba(255,255,255,0.16) !important;
+}
+textarea::-webkit-scrollbar {
+  width: 10px;
+}
+textarea::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.12);
+}
+textarea::-webkit-scrollbar-thumb {
+  background: rgba(70,89,112,0.32);
+  border-radius: 8px;
+}
+.check-row {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #23364f;
+}
+.check-row input {
+  width: auto;
+  accent-color: #0067d8;
+}
+.hint {
+  grid-column: 2;
+  align-self: center;
+  color: var(--muted);
+}
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 2px;
+}
+button {
+  min-width: 104px;
+  height: 30px;
+  border: 1px solid rgba(0, 83, 180, 0.55);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.78);
+  color: #001f4d;
+  font: inherit;
+}
+button.secondary {
+  border-color: rgba(140, 150, 162, 0.45);
+  color: #111827;
+}
+button:hover { background: rgba(238, 246, 255, 0.94); }
+.mail-icon {
+  display: inline-block;
+  width: 15px;
+  height: 11px;
+  margin-right: 5px;
+  border: 1.5px solid #0041aa;
+  border-radius: 2px;
+  position: relative;
+  top: 1px;
+}
+.mail-icon:before,
+.mail-icon:after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  width: 9px;
+  border-top: 1.5px solid #0041aa;
+}
+.mail-icon:before { left: 0; transform: rotate(35deg); transform-origin: left top; }
+.mail-icon:after { right: 0; transform: rotate(-35deg); transform-origin: right top; }
+</style>
+</head>
+<body>
+  <main class="sheet">
+    <header>
+      <h1>{{H(title)}}</h1>
+      <div class="subtitle">{{H(subtitle)}}</div>
+    </header>
+    <section class="form">
+      <label for="kind">{{H(T("feedback.kind", "Soort"))}}</label>
+      <div class="kind-picker" id="kindPicker">
+        <button class="kind-button" id="kindButton" type="button">{{H(T("feedback.kind.problem", "Probleem"))}}</button>
+        <ul class="kind-list" id="kindList">
+          <li class="active" data-value="{{H(T("feedback.kind.problem", "Probleem"))}}">{{H(T("feedback.kind.problem", "Probleem"))}}</li>
+          <li data-value="{{H(T("feedback.kind.idea", "Idee"))}}">{{H(T("feedback.kind.idea", "Idee"))}}</li>
+          <li data-value="{{H(T("feedback.kind.question", "Vraag"))}}">{{H(T("feedback.kind.question", "Vraag"))}}</li>
+          <li data-value="{{H(T("feedback.kind.other", "Overig"))}}">{{H(T("feedback.kind.other", "Overig"))}}</li>
+        </ul>
+      </div>
+
+      <label for="name">{{H(T("feedback.name", "Naam"))}}</label>
+      <input id="name" autocomplete="name">
+
+      <label for="email">{{H(T("feedback.email", "E-mail"))}}</label>
+      <input id="email" type="email" autocomplete="email">
+
+      <label for="subject">{{H(T("feedback.subject", "Onderwerp"))}}</label>
+      <input id="subject" value="{{H(defaultSubject)}}">
+
+      <label for="message">{{H(T("feedback.message", "Bericht"))}}</label>
+      <textarea id="message">{{H(messagePlaceholder)}}</textarea>
+
+      <label class="check-row"><input id="includeSupport" type="checkbox" checked> {{H(T("feedback.include_support_info", "Supportinformatie meesturen"))}}</label>
+      <div class="hint">{{H(string.Format(T("feedback.copy_hint", "Open uw mailprogramma voor {0}."), SupportAddress))}}</div>
+    </section>
+    <footer class="buttons">
+      <button id="mail"><span class="mail-icon"></span>{{H(T("feedback.open_mail", "Mail"))}}</button>
+      <button class="secondary" id="ok">{{H("OK")}}</button>
+    </footer>
+  </main>
+<script>
+const supportInfo = {{JsonSerializer.Serialize(_supportInfo)}};
+let selectedKind = document.getElementById('kindButton').textContent;
+function value(id) { return document.getElementById(id).value; }
+function payload(action) {
+  return {
+    action,
+    kind: selectedKind,
+    name: value('name'),
+    email: value('email'),
+    subject: value('subject'),
+    message: value('message'),
+    includeSupportInfo: document.getElementById('includeSupport').checked,
+    supportInfo
+  };
+}
+const kindPicker = document.getElementById('kindPicker');
+const kindButton = document.getElementById('kindButton');
+const kindList = document.getElementById('kindList');
+kindButton.addEventListener('click', () => kindPicker.classList.toggle('open'));
+kindList.querySelectorAll('li').forEach(item => {
+  item.addEventListener('click', () => {
+    kindList.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+    item.classList.add('active');
+    selectedKind = item.dataset.value;
+    kindButton.textContent = selectedKind;
+    kindPicker.classList.remove('open');
+  });
+});
+document.addEventListener('click', event => {
+  if (!kindPicker.contains(event.target)) {
+    kindPicker.classList.remove('open');
+  }
+});
+document.getElementById('mail').addEventListener('click', () => chrome.webview.postMessage(payload('mail')));
+document.getElementById('ok').addEventListener('click', () => chrome.webview.postMessage(payload('close')));
+document.getElementById('message').focus();
+</script>
+</body>
+</html>
+""";
+    }
+
+    private void OpenMail(FeedbackPayload payload)
+    {
+        var subject = string.IsNullOrWhiteSpace(payload.Subject)
+            ? T("feedback.default_subject", "Feedback over Syscalculator")
+            : payload.Subject.Trim();
+        var body = BuildFeedbackText(payload);
+        var uri = "mailto:" + SupportAddress +
+                  "?subject=" + Uri.EscapeDataString(subject) +
+                  "&body=" + Uri.EscapeDataString(body);
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
+        }
+        catch
+        {
+            Clipboard.SetText(body);
+            MessageBox.Show(this,
+                T("feedback.mail_failed", "Mail openen lukte niet. Het feedbackbericht is naar het klembord gekopieerd."),
+                T("feedback.title", "Feedback"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+    }
+
+    private static string BuildFeedbackText(FeedbackPayload payload)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Soort: {EmptyAsDash(payload.Kind)}");
+        sb.AppendLine($"Naam: {EmptyAsDash(payload.Name)}");
+        sb.AppendLine($"E-mail: {EmptyAsDash(payload.Email)}");
+        sb.AppendLine($"Onderwerp: {EmptyAsDash(payload.Subject)}");
+        sb.AppendLine();
+        sb.AppendLine((payload.Message ?? string.Empty).Trim());
+
+        if (payload.IncludeSupportInfo)
+        {
+            sb.AppendLine();
+            sb.AppendLine((payload.SupportInfo ?? string.Empty).TrimEnd());
+        }
+
+        return sb.ToString();
+    }
+
+    private void ShowFallback(string message)
+    {
+        Controls.Clear();
+        Controls.Add(new Label
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(18),
+            Text = T("feedback.webview_error", "WebView2 kon niet starten.") + Environment.NewLine + message,
+            TextAlign = ContentAlignment.MiddleCenter
+        });
+    }
+
+    private static string LoadFeedbackBackgroundDataUri()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "Resources", "FeedbackBackground.png");
+        if (!File.Exists(path))
+        {
+            path = Path.Combine(AppContext.BaseDirectory, "FeedbackBackground.png");
+        }
+
+        if (!File.Exists(path))
+        {
+            return "";
+        }
+
+        return "data:image/png;base64," + Convert.ToBase64String(File.ReadAllBytes(path));
+    }
+
+    private static string EmptyAsDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
+
+    private static string H(string value) => WebUtility.HtmlEncode(value);
+
+    private string T(string key, string fallback) => _language.Text(key, fallback);
+
+    private sealed class FeedbackPayload
+    {
+        public string Action { get; set; } = "";
+        public string Kind { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Subject { get; set; } = "";
+        public string Message { get; set; } = "";
+        public bool IncludeSupportInfo { get; set; }
+        public string SupportInfo { get; set; } = "";
+    }
+}

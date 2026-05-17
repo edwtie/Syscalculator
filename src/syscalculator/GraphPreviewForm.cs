@@ -10,6 +10,8 @@ namespace Syscalculator.UI.WinForms;
 public sealed class GraphPreviewForm : Form
 {
     private const float NormalHalfYRange = 5f;
+    private const int MaxVisibleStepPoints = 700;
+    private const int MaxLineSamplePoints = 500;
 
     private readonly Func<string> _getNodText;
     private readonly LanguageCatalog? _language;
@@ -34,23 +36,24 @@ public sealed class GraphPreviewForm : Form
     private string _pointerText = "";
     private NodDocument? _currentDocument;
     private int _lastSkipped;
-    private float _viewMinX;
-    private float _viewMaxX;
-    private float _viewMinY;
-    private float _viewMaxY;
+    private double _viewMinX;
+    private double _viewMaxX;
+    private double _viewMinY;
+    private double _viewMaxY;
     private GraphPlotView _markerView = new(-NormalHalfYRange, NormalHalfYRange, -NormalHalfYRange, NormalHalfYRange);
     private bool _hasView;
     private bool _updatingXRangeControls;
     private bool _updatingYRangeControls;
+    private bool _applyingSyncState;
     private bool _panning;
     private bool _draggingPointsPanel;
     private Point _panStart;
     private Point _pointsPanelDragStart;
     private Point _pointsPanelStartLocation;
-    private float _panStartMinX;
-    private float _panStartMaxX;
-    private float _panStartMinY;
-    private float _panStartMaxY;
+    private double _panStartMinX;
+    private double _panStartMaxX;
+    private double _panStartMinY;
+    private double _panStartMaxY;
 
     public GraphPreviewForm(Func<string> getNodText)
         : this(getNodText, null)
@@ -123,7 +126,11 @@ public sealed class GraphPreviewForm : Form
         controls.Controls.Add(_yMax, 7, 0);
         controls.Controls.Add(MakeToolbarLabel(T("editor.graph.step", "Step")), 8, 0);
         _step = MakeNumberBox(1, 0.0001m, 100000, 1);
-        _step.ValueChanged += (_, _) => Generate();
+        _step.ValueChanged += (_, _) =>
+        {
+            if (!_applyingSyncState)
+                Generate();
+        };
         controls.Controls.Add(_step, 9, 0);
 
         var copy = new GraphToolbarIconButton(GraphToolbarIcon.Copy, T("editor.graph.copy_points", "Copy points"))
@@ -179,10 +186,21 @@ public sealed class GraphPreviewForm : Form
         _canvas.MouseDown += Canvas_MouseDown;
         _canvas.MouseMove += Canvas_MouseMove;
         _canvas.MouseUp += Canvas_MouseUp;
-        _canvas.MouseEnter += (_, _) => _canvas.Focus();
+        _canvas.MouseEnter += (_, _) =>
+        {
+            _canvas.Focus();
+            if (_hasView)
+                _canvas.Cursor = Cursors.SizeAll;
+        };
+        _canvas.MouseLeave += (_, _) =>
+        {
+            if (!_panning)
+                _canvas.Cursor = Cursors.Default;
+        };
         _showRangeLines.CheckedChanged += (_, _) =>
         {
             ApplyRangeLineVisibility();
+            NotifySyncStateChanged();
             _canvas.Invalidate();
         };
         graphHost.Controls.Add(_canvas);
@@ -267,6 +285,72 @@ public sealed class GraphPreviewForm : Form
         _root.Controls.Add(graphHost, 0, 1);
 
         Controls.Add(_root);
+        InitializeBaseView();
+    }
+
+    internal event EventHandler<GraphPreviewSyncState>? SyncStateChanged;
+
+    internal void ApplySyncState(GraphPreviewSyncState state)
+    {
+        if (_applyingSyncState)
+            return;
+
+        _applyingSyncState = true;
+        try
+        {
+            SetStepValue(state.Step);
+            _showRangeLines.Checked = state.ShowRangeLines;
+            _markerView = state.MarkerView;
+            SetView(CreateAspectViewFromSync(state.View));
+            if (_showRangeLines.Checked)
+                SetRangeControls(_markerView);
+            else
+                UpdateViewportRangeControlsIfNeeded();
+            _hasView = true;
+            UpdatePointerStatus(null);
+            _canvas.Invalidate();
+        }
+        finally
+        {
+            _applyingSyncState = false;
+        }
+    }
+
+    private void NotifySyncStateChanged()
+    {
+        if (_applyingSyncState || !_hasView)
+            return;
+
+        SyncStateChanged?.Invoke(this, new GraphPreviewSyncState(GetView(), _markerView, _step.Value, _showRangeLines.Checked));
+    }
+
+    private GraphPlotView CreateAspectViewFromSync(GraphPlotView sourceView)
+    {
+        var centerX = (sourceView.MinX + sourceView.MaxX) / 2d;
+        var centerY = (sourceView.MinY + sourceView.MaxY) / 2d;
+        var halfY = Math.Max(GraphSurfaceApi.MinimumViewSpan / 2d, (sourceView.MaxY - sourceView.MinY) / 2d);
+        return GraphSurfaceApi.MatchViewToCanvasAspect(
+            new GraphPlotView(centerX - halfY, centerX + halfY, centerY - halfY, centerY + halfY),
+            _canvas);
+    }
+
+    private void SetStepValue(decimal value)
+    {
+        var clamped = Math.Clamp(value, _step.Minimum, _step.Maximum);
+        if (_step.Value != clamped)
+            _step.Value = clamped;
+    }
+
+    private void InitializeBaseView()
+    {
+        var view = GraphSurfaceApi.MatchViewToCanvasAspect(
+            new GraphPlotView((double)_xMin.Value, (double)_xMax.Value, (double)_yMin.Value, (double)_yMax.Value),
+            _canvas);
+        SetView(view);
+        _markerView = view;
+        SetRangeControls(view);
+        _hasView = true;
+        _status.Text = T("editor.graph.position_empty", "Position: (-, -)");
     }
 
     private string T(string key, string fallback) => _language?.Text(key, fallback) ?? fallback;
@@ -445,13 +529,17 @@ public sealed class GraphPreviewForm : Form
             _toggleTableButton.Enabled = true;
             var stepRows = new List<PointF>();
             var skipped = 0;
-            var total = 0;
-            const int maxSamples = 5000;
+            var visibleMin = Math.Min(min, max);
+            var visibleMax = Math.Max(min, max);
+            var lineSamples = Math.Clamp(_canvas.ClientSize.Width / 6, 80, MaxLineSamplePoints);
+            var lineStep = (visibleMax - visibleMin) / Math.Max(1, lineSamples);
+            if (!double.IsFinite(lineStep) || lineStep <= 0)
+                lineStep = Math.Max(1.0, step);
 
-            for (var x = min; x <= max + (step / 1000.0) && total < maxSamples; x += step)
+            for (var i = 0; i <= lineSamples; i++)
             {
-                total++;
-                var input = x.ToString("0.############", CultureInfo.InvariantCulture);
+                var x = visibleMin + lineStep * i;
+                var input = FormatGraphInput(x);
 
                 try
                 {
@@ -461,6 +549,33 @@ public sealed class GraphPreviewForm : Form
                         var point = new PointF((float)x, (float)y);
                         _fitGraphPoints.Add(point);
                         _graphPoints.Add(point);
+                    }
+                    else
+                    {
+                        skipped++;
+                    }
+                }
+                catch
+                {
+                    skipped++;
+                }
+            }
+
+            var displayStep = ChooseDisplayedStep(step, visibleMin, visibleMax, MaxVisibleStepPoints);
+            var firstStep = Math.Ceiling(visibleMin / displayStep) * displayStep;
+            for (var i = 0; i < MaxVisibleStepPoints; i++)
+            {
+                var x = firstStep + displayStep * i;
+                if (!double.IsFinite(x) || x > visibleMax + displayStep / 1000.0)
+                    break;
+
+                var input = FormatGraphInput(x);
+                try
+                {
+                    var result = NodEngine.ConvertForward(_currentDocument, input);
+                    if (TryGetNumber(result, out var y))
+                    {
+                        var point = new PointF((float)x, (float)y);
                         _stepPoints.Add(point);
                         stepRows.Add(point);
                     }
@@ -507,6 +622,7 @@ public sealed class GraphPreviewForm : Form
         _hasView = true;
         ResampleVisibleView();
         UpdatePointerStatus(null);
+        NotifySyncStateChanged();
 
         if (invalidate)
             _canvas.Invalidate();
@@ -528,6 +644,7 @@ public sealed class GraphPreviewForm : Form
             _markerView = GetView();
         ResampleVisibleView();
         UpdatePointerStatus(null);
+        NotifySyncStateChanged();
         _canvas.Invalidate();
     }
 
@@ -547,6 +664,7 @@ public sealed class GraphPreviewForm : Form
             _markerView = GetView();
         ResampleVisibleView();
         UpdatePointerStatus(null);
+        NotifySyncStateChanged();
         _canvas.Invalidate();
     }
 
@@ -609,7 +727,7 @@ public sealed class GraphPreviewForm : Form
 
     private void ZoomView(float factor)
     {
-        if (!_hasView)
+        if (!EnsureGraphGeneratedForInteraction())
             return;
 
         ZoomViewAt(factor, new PointF(_canvas.ClientSize.Width / 2f, _canvas.ClientSize.Height / 2f));
@@ -617,8 +735,42 @@ public sealed class GraphPreviewForm : Form
 
     private void Canvas_MouseWheel(object? sender, MouseEventArgs e)
     {
-        if (_hasView)
+        if (EnsureGraphGeneratedForInteraction())
             ZoomViewAt(e.Delta > 0 ? 0.85f : 1.18f, e.Location);
+    }
+
+    private bool EnsureGraphGeneratedForInteraction()
+    {
+        if (_hasView && _currentDocument is not null)
+            return true;
+
+        if (_hasView)
+        {
+            try
+            {
+                _currentDocument = NodParser.Parse(_getNodText());
+                if (!IsGraphCompatible(_currentDocument, out var disabledReason))
+                {
+                    _disabledMessage = disabledReason;
+                    _currentDocument = null;
+                    _hasView = false;
+                    _canvas.Invalidate();
+                    return false;
+                }
+
+                ResampleVisibleView();
+                _canvas.Invalidate();
+                return true;
+            }
+            catch
+            {
+                _currentDocument = null;
+                return false;
+            }
+        }
+
+        Generate();
+        return _hasView && _currentDocument is not null;
     }
 
     private void ZoomViewAt(float factor, PointF screenPoint)
@@ -630,7 +782,7 @@ public sealed class GraphPreviewForm : Form
         var anchor = ScreenToGraph(screenPoint, plot);
         var newWidth = (_viewMaxX - _viewMinX) * factor;
         var newHeight = (_viewMaxY - _viewMinY) * factor;
-        if (newWidth < 0.0001f || newHeight < 0.0001f)
+        if (newWidth < GraphSurfaceApi.MinimumViewSpan || newHeight < GraphSurfaceApi.MinimumViewSpan)
             return;
 
         var xRatio = (anchor.X - _viewMinX) / (_viewMaxX - _viewMinX);
@@ -643,12 +795,13 @@ public sealed class GraphPreviewForm : Form
         UpdateViewportRangeControlsIfNeeded();
         ResampleVisibleView();
         UpdatePointerStatus(screenPoint);
+        NotifySyncStateChanged();
         _canvas.Invalidate();
     }
 
     private void Canvas_MouseDown(object? sender, MouseEventArgs e)
     {
-        if (!_hasView || e.Button != MouseButtons.Left)
+        if (e.Button != MouseButtons.Left || !EnsureGraphGeneratedForInteraction())
             return;
 
         _panning = true;
@@ -657,13 +810,15 @@ public sealed class GraphPreviewForm : Form
         _panStartMaxX = _viewMaxX;
         _panStartMinY = _viewMinY;
         _panStartMaxY = _viewMaxY;
-        _canvas.Cursor = Cursors.Hand;
+        _canvas.Cursor = Cursors.SizeAll;
     }
 
     private void Canvas_MouseMove(object? sender, MouseEventArgs e)
     {
         if (!_panning)
         {
+            if (_hasView)
+                _canvas.Cursor = Cursors.SizeAll;
             UpdatePointerStatus(e.Location);
             return;
         }
@@ -674,8 +829,8 @@ public sealed class GraphPreviewForm : Form
 
         var dx = e.X - _panStart.X;
         var dy = e.Y - _panStart.Y;
-        var graphDx = dx / (float)plot.Width * (_panStartMaxX - _panStartMinX);
-        var graphDy = dy / (float)plot.Height * (_panStartMaxY - _panStartMinY);
+        var graphDx = dx / (double)plot.Width * (_panStartMaxX - _panStartMinX);
+        var graphDy = dy / (double)plot.Height * (_panStartMaxY - _panStartMinY);
 
         _viewMinX = _panStartMinX - graphDx;
         _viewMaxX = _panStartMaxX - graphDx;
@@ -685,13 +840,14 @@ public sealed class GraphPreviewForm : Form
         UpdateViewportRangeControlsIfNeeded();
         ResampleVisibleView();
         UpdatePointerStatus(e.Location);
+        NotifySyncStateChanged();
         _canvas.Invalidate();
     }
 
     private void Canvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _panning = false;
-        _canvas.Cursor = Cursors.Default;
+        _canvas.Cursor = _canvas.ClientRectangle.Contains(e.Location) && _hasView ? Cursors.SizeAll : Cursors.Default;
     }
 
     private void MatchViewToCanvasAspect()
@@ -719,13 +875,13 @@ public sealed class GraphPreviewForm : Form
         for (var i = 0; i <= desiredSamples; i++)
         {
             var x = visibleMin + step * i;
-            var input = x.ToString("0.############", CultureInfo.InvariantCulture);
+            var input = FormatGraphInput(x);
 
             try
             {
                 var result = NodEngine.ConvertForward(_currentDocument, input);
                 if (TryGetNumber(result, out var y))
-                    points.Add(new PointF(x, (float)y));
+                    points.Add(new PointF((float)x, (float)y));
                 else
                     skipped++;
             }
@@ -738,15 +894,22 @@ public sealed class GraphPreviewForm : Form
         var requestedStep = (float)_step.Value;
         if (requestedStep > 0)
         {
-            var firstStep = MathF.Ceiling(visibleMin / requestedStep) * requestedStep;
-            for (var x = firstStep; x <= visibleMax + requestedStep / 1000f; x += requestedStep)
+            var stepMin = visibleMin;
+            var stepMax = visibleMax;
+            var displayStep = ChooseDisplayedStep(requestedStep, stepMin, stepMax, MaxVisibleStepPoints);
+            var firstStep = Math.Ceiling(stepMin / displayStep) * displayStep;
+            for (var i = 0; i < MaxVisibleStepPoints; i++)
             {
-                var input = x.ToString("0.############", CultureInfo.InvariantCulture);
+                var x = firstStep + displayStep * i;
+                if (!double.IsFinite(x) || x > stepMax + displayStep / 1000.0)
+                    break;
+
+                var input = FormatGraphInput(x);
                 try
                 {
                     var result = NodEngine.ConvertForward(_currentDocument, input);
                     if (TryGetNumber(result, out var y))
-                        stepPoints.Add(new PointF(x, (float)y));
+                        stepPoints.Add(new PointF((float)x, (float)y));
                     else
                         skipped++;
                 }
@@ -764,6 +927,27 @@ public sealed class GraphPreviewForm : Form
         _lastSkipped = skipped;
 
         FillPointsGrid(stepPoints);
+    }
+
+    private static double ChooseDisplayedStep(double requestedStep, double min, double max, int maxPoints)
+    {
+        if (!double.IsFinite(requestedStep) || requestedStep <= 0 || !double.IsFinite(min) || !double.IsFinite(max) || max <= min)
+            return Math.Max(1.0, requestedStep);
+
+        var estimatedPoints = (max - min) / requestedStep;
+        if (!double.IsFinite(estimatedPoints) || estimatedPoints <= maxPoints)
+            return requestedStep;
+
+        var multiplier = Math.Ceiling(estimatedPoints / maxPoints);
+        return requestedStep * Math.Max(1.0, multiplier);
+    }
+
+    private static string FormatGraphInput(double value)
+    {
+        var abs = Math.Abs(value);
+        return abs is > 0 and < 1e-12 || abs >= 1e12
+            ? value.ToString("0.############E+0", CultureInfo.InvariantCulture)
+            : value.ToString("0.############", CultureInfo.InvariantCulture);
     }
 
     private void FillPointsGrid(IEnumerable<PointF> points)

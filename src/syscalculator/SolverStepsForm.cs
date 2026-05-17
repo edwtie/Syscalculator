@@ -780,7 +780,7 @@ internal sealed class SolverStepsForm : Form
         {
             var x = plot.Left + ((point.X - _graphView.MinX) / (_graphView.MaxX - _graphView.MinX)) * plot.Width;
             var y = plot.Bottom - ((point.Y - _graphView.MinY) / (_graphView.MaxY - _graphView.MinY)) * plot.Height;
-            return new PointF(x, y);
+            return new PointF((float)x, (float)y);
         }
 
         const float glowRadius = 11f;
@@ -998,7 +998,7 @@ internal sealed class SolverStepsForm : Form
         var anchor = GraphPlotRenderer.ScreenToGraph(screenPoint, plot, _graphView);
         var newWidth = (_graphView.MaxX - _graphView.MinX) * factor;
         var newHeight = (_graphView.MaxY - _graphView.MinY) * factor;
-        if (newWidth < 0.0001f || newHeight < 0.0001f)
+        if (newWidth < GraphSurfaceApi.MinimumViewSpan || newHeight < GraphSurfaceApi.MinimumViewSpan)
             return;
 
         var xRatio = (anchor.X - _graphView.MinX) / (_graphView.MaxX - _graphView.MinX);
