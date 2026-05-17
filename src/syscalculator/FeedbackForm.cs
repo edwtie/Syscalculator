@@ -272,12 +272,11 @@ textarea:hover {
   margin: 0;
   list-style: none;
   border-radius: 6px;
-  border: 1px solid rgba(17, 24, 39, 0.14);
-  border-top: 0;
-  background: transparent;
-  background-color: transparent;
-  backdrop-filter: none;
-  box-shadow: none;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: rgba(246, 244, 241, 0.52);
+  background-color: rgba(246, 244, 241, 0.52);
+  backdrop-filter: blur(7px) saturate(0.9);
+  box-shadow: 0 8px 18px rgba(44, 36, 28, 0.10);
 }
 .kind-picker.open .kind-list {
   display: block;
@@ -289,8 +288,8 @@ textarea:hover {
 }
 .kind-list li:hover,
 .kind-list li.active {
-  background: transparent;
-  background-color: transparent;
+  background: rgba(17, 24, 39, 0.07);
+  background-color: rgba(17, 24, 39, 0.07);
   font-weight: 600;
 }
 textarea {
