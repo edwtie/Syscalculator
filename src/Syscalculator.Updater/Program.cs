@@ -172,6 +172,12 @@ internal sealed class UpdaterForm : Form
                 _statusLabel.Text = string.Format(T("updater.downloading_percent", "Downloading update... {0}%"), percent);
             }
         }
+
+        if (totalBytes is > 0)
+        {
+            _progressBar.Value = 100;
+            _statusLabel.Text = string.Format(T("updater.downloading_percent", "Downloading update... {0}%"), 100);
+        }
     }
 
     private void VerifyPackage(string packagePath)
