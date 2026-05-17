@@ -154,7 +154,9 @@ html, body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  font: 13px "Segoe UI", Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--ink);
 }
 body {
@@ -175,12 +177,16 @@ body {
 h1 {
   margin: 0;
   color: var(--accent);
+  font-family: "Segoe UI", Arial, sans-serif;
   font-size: 20px;
+  font-weight: 700;
   line-height: 1.15;
 }
 .subtitle {
   margin-top: 3px;
   color: var(--muted);
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 400;
 }
 .form {
   display: grid;
@@ -193,7 +199,8 @@ h1 {
 }
 label {
   align-self: center;
-  font-weight: 700;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 600;
   color: #23364f;
 }
 input, textarea {
@@ -208,7 +215,9 @@ input, textarea {
   border-radius: 3px;
   padding: 4px 6px;
   outline: none;
-  font: inherit;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
   box-shadow: none;
 }
 input:focus {
@@ -254,7 +263,9 @@ textarea:hover {
   color: #0f172a;
   padding: 4px 28px 4px 6px;
   text-align: left;
-  font: inherit;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
 }
 .kind-button:hover,
 .kind-picker.open .kind-button {
@@ -388,6 +399,8 @@ textarea::-webkit-scrollbar-thumb {
   grid-column: 2;
   align-self: center;
   color: var(--muted);
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 400;
 }
 .hint.error {
   color: #111827;
@@ -407,7 +420,9 @@ button {
   background: transparent;
   background-color: transparent;
   color: #111827;
-  font: inherit;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
   outline: none;
 }
 button.secondary {
@@ -812,7 +827,7 @@ internal sealed class FeedbackSentForm : Form
             AutoSize = false,
             BackColor = Color.Transparent,
             ForeColor = Color.FromArgb(32, 34, 32),
-            Font = CreateHandwritingFont(18f, FontStyle.Regular),
+            Font = CreateHandwritingFont(19f, FontStyle.Regular),
             Text = message,
             TextAlign = ContentAlignment.MiddleCenter,
             Bounds = new Rectangle(144, 150, 272, 72)
