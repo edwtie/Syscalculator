@@ -180,7 +180,7 @@ internal sealed class AboutForm : Form
         AddPair(grid, T("about.product_name", "Product name:"), AppVersionInfo.ProductName);
         AddPair(grid, T("about.version", "Version:"), AppVersionInfo.ProductVersion);
         AddPair(grid, T("about.release_channel", "Release channel:"), AppVersionInfo.ReleaseChannel);
-        AddPair(grid, T("about.build", "Build number:"), AppVersionInfo.BuildNumber);
+        AddPair(grid, T("about.build", "Build date:"), AppVersionInfo.BuildNumber);
         AddPair(grid, T("about.release_date", "Release date:"), FormatReleaseDate(AppVersionInfo.ReleaseDate));
         return grid;
     }
@@ -589,7 +589,7 @@ internal sealed class AboutForm : Form
             ("Product", AppVersionInfo.ProductName),
             ("Versie", AppVersionInfo.ProductVersion),
             ("Channel", AppVersionInfo.ReleaseChannel),
-            ("Build", AppVersionInfo.BuildNumber),
+            ("Build date", AppVersionInfo.BuildNumber),
             (".NET", RuntimeInformation.FrameworkDescription),
             ("Proces", RuntimeInformation.ProcessArchitecture.ToString()),
             ("Geheugen", $"{process.WorkingSet64 / 1024 / 1024} MB")
@@ -731,7 +731,7 @@ internal sealed class AboutForm : Form
         sb.AppendLine($"Product: {AppVersionInfo.ProductName}");
         sb.AppendLine($"Version: {AppVersionInfo.ProductVersion}");
         sb.AppendLine($"Channel: {AppVersionInfo.ReleaseChannel}");
-        sb.AppendLine($"Build: {AppVersionInfo.BuildNumber}");
+        sb.AppendLine($"Build date: {AppVersionInfo.BuildNumber}");
         sb.AppendLine($"Release date: {AppVersionInfo.ReleaseDate:yyyy-MM-dd}");
         sb.AppendLine();
         sb.AppendLine("System");

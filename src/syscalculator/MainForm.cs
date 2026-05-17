@@ -1882,7 +1882,7 @@ private void LoadStartupNodIfNeeded()
         sb.AppendLine($"Product: {AppVersionInfo.ProductName}");
         sb.AppendLine($"Version: {AppVersionInfo.ProductVersion}");
         sb.AppendLine($"Channel: {AppVersionInfo.ReleaseChannel}");
-        sb.AppendLine($"Build: {AppVersionInfo.BuildNumber}");
+        sb.AppendLine($"Build date: {AppVersionInfo.BuildNumber}");
         sb.AppendLine($"Language: {_language.FileName}");
         sb.AppendLine($"Converter: {_currentItem?.DisplayName ?? _currentMeta?.Name ?? "-"}");
         sb.AppendLine($"Input label: {_currentMeta?.Input1 ?? "-"}");

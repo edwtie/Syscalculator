@@ -46,7 +46,15 @@ if ($versionText -notmatch 'BuildNumber\s*=\s*"(?<build>[^"]+)"') {
     throw "Could not read build number from $generatedVersionFile."
 }
 
-$env:SYSCALC_INSTALL_VERSION = "2.0.$($Matches['build'])"
+$buildNumber = $Matches['build']
+$installVersion = if ($Channel -eq 'daily' -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
+    "2.0.$($Matches['date'])"
+}
+else {
+    "2.0.$buildNumber"
+}
+
+$env:SYSCALC_INSTALL_VERSION = $installVersion
 $env:SYSCALC_INSTALL_CHANNEL = $Channel
 
 & $isccPath $installerScript

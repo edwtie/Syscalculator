@@ -20,62 +20,26 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
-#### 2.0.2026.05.17.022 Daily Build
+#### 2.0.2026.05.17 Daily Build
 
-**Date:** 2026-05-17 13:31
-
-**Fixes:**
-- Fixed missing localized Feedback dialog labels across bundled language files
-- Fixed missing About release channel label in German, French, Indonesian, Italian, Portuguese, Spanish and Simplified Chinese
-
-**Additions:**
-- Added Feedback menu and dialog translations for English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese
-- Published the daily language hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.022.exe`.
-
-#### 2.0.2026.05.17.018 Daily Build
-
-**Date:** 2026-05-17 13:27
-
-**Fixes:**
-- Removed the visible Mail text from the Feedback send button so only the envelope icon is shown.
-
-**Additions:**
-- Published the daily hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.018.exe`.
-
-#### 2.0.2026.05.17.014 Daily Build
-
-**Date:** 2026-05-17 13:25
-
-**Fixes:**
-- Fixed the Feedback system information checkbox so it renders and toggles as a normal checkbox.
-
-**Additions:**
-- Published the daily hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.014.exe`.
-
-#### 2.0.2026.05.17.010 Daily Build
-
-**Date:** 2026-05-17 13:23
-
-**Fixes:**
-- Fixed the Feedback Mail and OK buttons by reading WebView2 feedback messages with case-insensitive JSON property names.
-
-**Additions:**
-- Published the daily hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.010.exe`.
-
-#### 2.0.2026.05.17.005 Daily Build
-
-**Date:** 2026-05-17 13:18
+**Date:** 2026-05-17
 
 **Fixes:**
 - Fixed graph preview rendering and synchronization for richer 2D surfaces
 - Fixed NOD math parsing/evaluation for advanced functions and statistics workflows
 - Fixed Windows shell identity for main app, NOD Editor and NOD Template Wizard shortcuts
+- Fixed the Feedback Mail and OK buttons by reading WebView2 feedback messages with case-insensitive JSON property names.
+- Fixed the Feedback system information checkbox so it renders and toggles as a normal checkbox.
+- Removed the visible Mail text from the Feedback send button so only the envelope icon is shown.
+- Fixed missing localized Feedback dialog labels across bundled language files.
+- Fixed missing About release channel label in German, French, Indonesian, Italian, Portuguese, Spanish and Simplified Chinese.
 
 **Additions:**
 - Added a feedback/support information window with bundled artwork
 - Added expanded formula card content and solver step polish
 - Added advanced and statistics NOD help pages plus Dutch help text updates
-- Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.005.exe`.
+- Added Feedback menu and dialog translations for English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese.
+- Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.exe`.
 
 #### 2.0.2026.05.16.061 Daily Build
 
