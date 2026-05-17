@@ -175,6 +175,7 @@ feedback.include_support_info=Enviar informacion del sistema
 feedback.copy_hint=Abre tu programa de e-mail para {0}.
 feedback.send_hint=El feedback se envia de forma segura a Tiedragon.
 feedback.sent=Feedback enviado. Gracias.
+feedback.sent_thanks=Gracias por su mensaje.
 feedback.open_mail=Mail
 feedback.mail_failed=No se pudo abrir el e-mail. El mensaje de feedback se copio al portapapeles.
 feedback.webview_error=WebView2 no pudo iniciar.

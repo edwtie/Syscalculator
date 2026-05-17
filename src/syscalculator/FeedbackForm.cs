@@ -578,11 +578,11 @@ document.getElementById('message').focus();
         var endpoint = GetFeedbackEndpoint();
         if (endpoint is not null && await TryPostFeedbackAsync(endpoint, payload))
         {
-            MessageBox.Show(this,
-                T("feedback.sent", "Feedback is verstuurd. Dank u."),
+            using var sentDialog = new FeedbackSentForm(
                 T("feedback.title", "Feedback"),
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+                T("feedback.sent_thanks", "Bedankt voor uw melding."),
+                T("common.ok", "OK"));
+            sentDialog.ShowDialog(this);
             DialogResult = DialogResult.OK;
             Close();
             return;
@@ -779,5 +779,105 @@ document.getElementById('message').focus();
         public string Message { get; set; } = "";
         public bool IncludeSupportInfo { get; set; }
         public string SupportInfo { get; set; } = "";
+    }
+}
+
+internal sealed class FeedbackSentForm : Form
+{
+    private readonly Image? _backgroundImage;
+
+    public FeedbackSentForm(string title, string message, string okText)
+    {
+        Text = title;
+        StartPosition = FormStartPosition.CenterParent;
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        ShowInTaskbar = false;
+        ClientSize = new Size(560, 374);
+        BackColor = Color.FromArgb(68, 70, 69);
+        AppWindowIcon.ApplyTo(this);
+
+        _backgroundImage = LoadSentBackgroundImage();
+        var canvas = new PictureBox
+        {
+            Dock = DockStyle.Fill,
+            Image = _backgroundImage,
+            SizeMode = PictureBoxSizeMode.StretchImage
+        };
+        Controls.Add(canvas);
+
+        var messageLabel = new Label
+        {
+            AutoSize = false,
+            BackColor = Color.Transparent,
+            ForeColor = Color.FromArgb(32, 34, 32),
+            Font = CreateHandwritingFont(18f, FontStyle.Regular),
+            Text = message,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Bounds = new Rectangle(144, 150, 272, 72)
+        };
+        canvas.Controls.Add(messageLabel);
+
+        var okButton = new Button
+        {
+            Text = okText,
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Color.FromArgb(248, 246, 240),
+            ForeColor = Color.FromArgb(24, 24, 24),
+            Font = new Font(GetUiFontFamily(), 9f, FontStyle.Regular),
+            Bounds = new Rectangle(408, 286, 82, 28),
+            DialogResult = DialogResult.OK
+        };
+        okButton.FlatAppearance.BorderColor = Color.FromArgb(42, 42, 42);
+        okButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(238, 235, 228);
+        okButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(225, 221, 214);
+        canvas.Controls.Add(okButton);
+
+        AcceptButton = okButton;
+        CancelButton = okButton;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _backgroundImage?.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    private static Image? LoadSentBackgroundImage()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "Resources", "FeedbackSentBackground.png");
+        if (!File.Exists(path))
+        {
+            path = Path.Combine(AppContext.BaseDirectory, "FeedbackSentBackground.png");
+        }
+
+        return File.Exists(path) ? Image.FromFile(path) : null;
+    }
+
+    private static Font CreateHandwritingFont(float size, FontStyle style)
+    {
+        foreach (var familyName in new[] { "Segoe Print", "Segoe Script", "Comic Sans MS" })
+        {
+            try
+            {
+                return new Font(familyName, size, style);
+            }
+            catch
+            {
+                // Try the next handwriting-style font available on this Windows install.
+            }
+        }
+
+        return new Font(GetUiFontFamily(), size, style);
+    }
+
+    private static FontFamily GetUiFontFamily()
+    {
+        return SystemFonts.MessageBoxFont?.FontFamily ?? FontFamily.GenericSansSerif;
     }
 }

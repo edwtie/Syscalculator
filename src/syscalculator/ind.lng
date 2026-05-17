@@ -175,6 +175,7 @@ feedback.include_support_info=Kirim informasi sistem
 feedback.copy_hint=Buka program e-mail Anda untuk {0}.
 feedback.send_hint=Feedback dikirim dengan aman ke Tiedragon.
 feedback.sent=Feedback telah dikirim. Terima kasih.
+feedback.sent_thanks=Terima kasih atas laporan Anda.
 feedback.open_mail=Mail
 feedback.mail_failed=Mail tidak dapat dibuka. Pesan feedback disalin ke clipboard.
 feedback.webview_error=WebView2 tidak dapat dimulai.

@@ -175,6 +175,7 @@ feedback.include_support_info=Systeminformationen mitsenden
 feedback.copy_hint=Oeffnen Sie Ihr Mailprogramm fuer {0}.
 feedback.send_hint=Feedback wird sicher an Tiedragon gesendet.
 feedback.sent=Feedback wurde gesendet. Danke.
+feedback.sent_thanks=Vielen Dank fuer Ihre Meldung.
 feedback.open_mail=Mail
 feedback.mail_failed=Mail konnte nicht geoeffnet werden. Die Feedback-Nachricht wurde in die Zwischenablage kopiert.
 feedback.webview_error=WebView2 konnte nicht starten.

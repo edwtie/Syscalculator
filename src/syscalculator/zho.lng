@@ -155,6 +155,7 @@ feedback.include_support_info=发送系统信息
 feedback.copy_hint=为 {0} 打开邮件程序。
 feedback.send_hint=反馈将安全发送到 Tiedragon。
 feedback.sent=反馈已发送。谢谢。
+feedback.sent_thanks=感谢您的反馈。
 feedback.open_mail=邮件
 feedback.mail_failed=无法打开邮件。反馈消息已复制到剪贴板。
 feedback.webview_error=WebView2 无法启动。

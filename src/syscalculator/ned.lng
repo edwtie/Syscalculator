@@ -149,6 +149,7 @@ feedback.include_support_info=Systeeminformatie meesturen
 feedback.copy_hint=Open uw mailprogramma voor {0}.
 feedback.send_hint=Feedback wordt veilig naar Tiedragon gestuurd.
 feedback.sent=Feedback is verstuurd. Dank u.
+feedback.sent_thanks=Bedankt voor uw melding.
 feedback.open_mail=Mail
 feedback.mail_failed=Mail openen lukte niet. Het feedbackbericht is naar het klembord gekopieerd.
 feedback.webview_error=WebView2 kon niet starten.
