@@ -247,11 +247,12 @@ public static class GraphPlotRenderer
         double? dataMinY = finiteLinePoints.Length > 0 ? finiteLinePoints.Min(point => point.Y) : null;
         double? dataMaxY = finiteLinePoints.Length > 0 ? finiteLinePoints.Max(point => point.Y) : null;
 
+        var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
         DrawAxes(g, canvas.Font, plot, view, requestedMinX, requestedMaxX, requestedStep, requestedMinY, requestedMaxY, dataMinY, dataMaxY, density, Map, showRangeMarkers);
 
         foreach (var line in series)
         {
-            using var linePen = new Pen(line.Color, line.Width);
+            using var linePen = new Pen(line.Color, line.Width * strokeMultiplier);
             DrawSafePolyline(g, linePen, line.Points, Map, plot);
         }
 
@@ -346,19 +347,20 @@ public static class GraphPlotRenderer
     {
         g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
-        using var axisPen = new Pen(Color.FromArgb(38, 38, 38), 1f);
+        var xCoarseStep = ChooseCoarseStep(plot, view, density, vertical: true);
+        var yCoarseStep = ChooseCoarseStep(plot, view, density, vertical: false);
+        var strokeMultiplier = SmallScaleStrokeMultiplier(Math.Max(Math.Abs(xCoarseStep), Math.Abs(yCoarseStep)), density);
+        using var axisPen = new Pen(Color.FromArgb(38, 38, 38), 1f * strokeMultiplier);
         using var majorGridPen = new Pen(
             density == GraphPlotDensity.Compact ? Color.FromArgb(185, 194, 206) : Color.FromArgb(176, 186, 199),
-            density == GraphPlotDensity.Compact ? 0.9f : 1.05f);
+            (density == GraphPlotDensity.Compact ? 0.9f : 1.05f) * strokeMultiplier);
         using var minorGridPen = new Pen(
             density == GraphPlotDensity.Compact ? Color.FromArgb(234, 240, 248) : Color.FromArgb(229, 236, 246),
-            density == GraphPlotDensity.Compact ? 0.45f : 0.55f);
+            (density == GraphPlotDensity.Compact ? 0.45f : 0.55f) * strokeMultiplier);
         using var labelBrush = new SolidBrush(Color.FromArgb(31, 31, 31));
         using var axisLabelBack = new SolidBrush(Color.FromArgb(248, 252, 255));
         using var tickFont = new Font("Segoe UI", density == GraphPlotDensity.Compact ? 7.5f : 8f);
 
-        var xCoarseStep = ChooseCoarseStep(plot, view, density, vertical: true);
-        var yCoarseStep = ChooseCoarseStep(plot, view, density, vertical: false);
         var xFineStep = xCoarseStep / 10d;
         var yFineStep = yCoarseStep / 10d;
         var xLabelStep = ChooseLabelStep(plot, view, xCoarseStep, density, vertical: true);
@@ -484,7 +486,8 @@ public static class GraphPlotRenderer
         Font font,
         Func<PointF, PointF> map)
     {
-        using var rangePen = new Pen(Color.FromArgb(46, 110, 210), density == GraphPlotDensity.Compact ? 0.9f : 1.15f)
+        var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
+        using var rangePen = new Pen(Color.FromArgb(46, 110, 210), (density == GraphPlotDensity.Compact ? 0.9f : 1.15f) * strokeMultiplier)
         {
             DashStyle = DashStyle.Dash
         };
@@ -549,7 +552,8 @@ public static class GraphPlotRenderer
     {
         var minY = Math.Min(dataMinY, dataMaxY);
         var maxY = Math.Max(dataMinY, dataMaxY);
-        using var dataPen = new Pen(Color.FromArgb(20, 125, 82), density == GraphPlotDensity.Compact ? 0.9f : 1.15f)
+        var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
+        using var dataPen = new Pen(Color.FromArgb(20, 125, 82), (density == GraphPlotDensity.Compact ? 0.9f : 1.15f) * strokeMultiplier)
         {
             DashStyle = DashStyle.DashDot
         };
@@ -739,6 +743,26 @@ public static class GraphPlotRenderer
         using var borderPen = new Pen(Color.FromArgb(184, 207, 232), 1f);
         using var font = new Font("Segoe UI", density == GraphPlotDensity.Compact ? 7f : 8f, FontStyle.Regular);
         DrawCornerLabel(g, text, font, textBrush, backBrush, borderPen, plot);
+    }
+
+    private static float SmallScaleStrokeMultiplier(GraphPlotView view, GraphPlotDensity density)
+    {
+        var scale = Math.Max(Math.Abs(view.MaxX - view.MinX), Math.Abs(view.MaxY - view.MinY));
+        return SmallScaleStrokeMultiplier(scale, density);
+    }
+
+    private static float SmallScaleStrokeMultiplier(double scale, GraphPlotDensity density)
+    {
+        if (!double.IsFinite(scale) || scale > PicoMeter)
+            return 1f;
+
+        if (scale <= PlanckLengthMeters * 10d)
+            return density == GraphPlotDensity.Compact ? 1.75f : 1.95f;
+
+        if (scale <= 1e-18d)
+            return density == GraphPlotDensity.Compact ? 1.45f : 1.65f;
+
+        return density == GraphPlotDensity.Compact ? 1.22f : 1.35f;
     }
 
     private static void DrawAxisLabel(
