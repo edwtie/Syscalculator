@@ -32,7 +32,7 @@ internal sealed class UpdaterForm : Form
 {
     private readonly UpdateOptions _options;
     private readonly Label _statusLabel = new();
-    private readonly ProgressBar _progressBar = new();
+    private readonly UpdaterProgressBar _progressBar = new();
     private readonly Button _cancelButton = new();
     private readonly CancellationTokenSource _cancellation = new();
     private readonly UpdaterLanguage _language;
@@ -128,7 +128,7 @@ internal sealed class UpdaterForm : Form
             await WaitForSyscalculatorToExitAsync(cancellationToken);
 
             _statusLabel.Text = T("updater.copying", "Updating files...");
-            _progressBar.Style = ProgressBarStyle.Marquee;
+            _progressBar.IsMarquee = true;
             CopyDirectory(extractPath, _options.InstallDirectory);
         }
         finally
@@ -141,7 +141,7 @@ internal sealed class UpdaterForm : Form
     private async Task DownloadPackageAsync(string packagePath, CancellationToken cancellationToken)
     {
         _statusLabel.Text = T("updater.downloading", "Downloading update...");
-        _progressBar.Style = ProgressBarStyle.Continuous;
+        _progressBar.IsMarquee = false;
         _progressBar.Value = 0;
 
         using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
@@ -277,6 +277,106 @@ internal sealed class UpdaterForm : Form
     }
 
     private string T(string key, string fallback) => _language.Text(key, fallback);
+}
+
+internal sealed class UpdaterProgressBar : Control
+{
+    private readonly System.Windows.Forms.Timer _marqueeTimer;
+    private int _value;
+    private int _marqueeOffset;
+    private bool _isMarquee;
+
+    public UpdaterProgressBar()
+    {
+        Minimum = 0;
+        Maximum = 100;
+        SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+        BackColor = Color.FromArgb(245, 247, 250);
+        ForeColor = Color.FromArgb(24, 137, 74);
+        _marqueeTimer = new System.Windows.Forms.Timer { Interval = 35 };
+        _marqueeTimer.Tick += (_, _) =>
+        {
+            _marqueeOffset = (_marqueeOffset + 8) % Math.Max(Width, 1);
+            Invalidate();
+        };
+    }
+
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public int Minimum { get; set; }
+
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public int Maximum { get; set; }
+
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public int Value
+    {
+        get => _value;
+        set
+        {
+            _value = Math.Clamp(value, Minimum, Maximum);
+            Invalidate();
+        }
+    }
+
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public bool IsMarquee
+    {
+        get => _isMarquee;
+        set
+        {
+            _isMarquee = value;
+            if (_isMarquee)
+                _marqueeTimer.Start();
+            else
+                _marqueeTimer.Stop();
+
+            Invalidate();
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            _marqueeTimer.Dispose();
+
+        base.Dispose(disposing);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        var bounds = ClientRectangle;
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+            return;
+
+        var track = Rectangle.Inflate(bounds, -1, -1);
+        using var trackBrush = new SolidBrush(BackColor);
+        e.Graphics.FillRectangle(trackBrush, track);
+
+        using var fillBrush = new SolidBrush(ForeColor);
+        if (IsMarquee)
+        {
+            var blockWidth = Math.Max(48, track.Width / 3);
+            var x = track.Left + _marqueeOffset - blockWidth;
+            e.Graphics.FillRectangle(fillBrush, x, track.Top, blockWidth, track.Height);
+        }
+        else if (Maximum > Minimum)
+        {
+            var fillWidth = Value >= Maximum
+                ? track.Width
+                : (int)Math.Floor(track.Width * ((double)(Value - Minimum) / (Maximum - Minimum)));
+
+            if (fillWidth > 0)
+                e.Graphics.FillRectangle(fillBrush, track.Left, track.Top, fillWidth, track.Height);
+        }
+
+        using var borderPen = new Pen(Color.FromArgb(150, 158, 168));
+        e.Graphics.DrawRectangle(borderPen, 0, 0, bounds.Width - 1, bounds.Height - 1);
+    }
 }
 
 internal sealed class UpdaterLanguage
