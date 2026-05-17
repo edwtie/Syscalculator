@@ -1,0 +1,30 @@
+{
+  "product": "Syscalculator",
+  "generatedAtUtc": "2026-05-17T00:00:00Z",
+  "channels": {
+    "daily": {
+      "version": "2.0.2026.05.17",
+      "date": "2026-05-17",
+      "title": "Syscalculator 2.0 Daily 2026-05-17",
+      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.17-daily/Syscalculator-2.0-daily-2.0.2026.05.17.exe",
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.17-daily",
+      "summary": "Daily build with graph preview fixes, Feedback UI polish, hosted feedback delivery and language updates."
+    },
+    "beta": {
+      "version": "2.0.2026.05.16",
+      "date": "2026-05-16",
+      "title": "Syscalculator 2.0 Beta 1",
+      "downloadUrl": "https://www.tiedragon.com/files/syscal20beta1.exe",
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.16-beta",
+      "summary": "First Syscalculator 2.0 Beta 1 test build."
+    },
+    "stable": {
+      "version": "",
+      "date": "",
+      "title": "",
+      "downloadUrl": "https://www.tiedragon.com",
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases",
+      "summary": "No production release is available yet."
+    }
+  }
+}

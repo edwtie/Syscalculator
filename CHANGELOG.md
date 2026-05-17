@@ -38,6 +38,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed the Feedback system information checkbox so it renders and toggles as a normal checkbox.
 - Removed the visible Mail text from the Feedback send button so only the envelope icon is shown.
 - Fixed missing localized Feedback dialog labels across bundled language files.
+- Fixed update-check language labels for the bundled language files.
 - Fixed missing About release channel label in German, French, Indonesian, Italian, Portuguese, Spanish and Simplified Chinese.
 
 **Additions:**
@@ -45,6 +46,8 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added expanded formula card content and solver step polish
 - Added advanced and statistics NOD help pages plus Dutch help text updates
 - Added Feedback menu and dialog translations for English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese.
+- Added automatic daily update checking with a manual About menu command and download prompt.
+- Added a hosted update manifest at `https://www.tiedragon.com/api/syscalculator-updates/syscalculator.json` for daily, beta and future stable channels.
 - Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.exe`.
 
 #### 2.0.2026.05.16 Daily Build

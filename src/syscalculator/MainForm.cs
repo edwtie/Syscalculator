@@ -63,6 +63,8 @@ public sealed class MainForm : Form
     private bool _allowRealClose;
     private bool _startWithWindows;
     private bool _showIntroductions;
+    private bool _automaticUpdateCheckEnabled;
+    private string _lastUpdateCheckDate = "";
 
     private NodCatalogItem? _currentItem;
     private NodDocument? _currentDocument;
@@ -103,6 +105,7 @@ public sealed class MainForm : Form
     private ToolStripMenuItem? _reverseDirectionMenuItem;
     private ToolStripMenuItem? _showIntroductionsMenuItem;
     private ToolStripMenuItem? _startWithWindowsMenuItem;
+    private ToolStripMenuItem? _automaticUpdateCheckMenuItem;
     private bool _updatingText;
     private int _defaultDecimals;
 
@@ -133,6 +136,8 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         _minimizeToTray = LoadBooleanSetting("minimizeToTray", defaultValue: true);
         _reverseDirection = LoadBooleanSetting("reverseDirection", defaultValue: false);
         _showIntroductions = LoadBooleanSetting("showIntroductions", defaultValue: true);
+        _automaticUpdateCheckEnabled = LoadBooleanSetting("automaticUpdateCheck", defaultValue: true);
+        _lastUpdateCheckDate = LoadStringSetting("lastUpdateCheckDate", "");
         _startWithWindows = LoadStartWithWindowsSetting();
         TopMost = _alwaysOnTop;
 
@@ -335,6 +340,20 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
                 : T("status.start_with_windows_off", "Syscalculator will not start with Windows."));
         };
         config.DropDownItems.Add(_startWithWindowsMenuItem);
+        _automaticUpdateCheckMenuItem = new ToolStripMenuItem(T("menu.config.auto_update_check", "Check for updates automatically"))
+        {
+            CheckOnClick = true,
+            Checked = _automaticUpdateCheckEnabled
+        };
+        _automaticUpdateCheckMenuItem.CheckedChanged += (_, _) =>
+        {
+            _automaticUpdateCheckEnabled = _automaticUpdateCheckMenuItem.Checked;
+            SaveSettings();
+            SetStatus(_automaticUpdateCheckEnabled
+                ? T("status.auto_update_check_on", "Automatic update check is on.")
+                : T("status.auto_update_check_off", "Automatic update check is off."));
+        };
+        config.DropDownItems.Add(_automaticUpdateCheckMenuItem);
         config.DropDownItems.Add(new ToolStripSeparator());
         config.DropDownItems.Add(T("menu.config.catalog_manager", "Catalog manager"), null, CatalogManager_Click);
 
@@ -354,6 +373,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         };
         userHelpItem.Click += UserHelp_Click;
         about.DropDownItems.Add(userHelpItem);
+        about.DropDownItems.Add(T("menu.about.check_updates", "Check for updates..."), null, CheckUpdates_Click);
         about.DropDownItems.Add(T("menu.about.feedback", "Feedback..."), null, Feedback_Click);
         about.DropDownItems.Add(new ToolStripSeparator());
         about.DropDownItems.Add(T("menu.about.syscalculator", "About Syscalculator"), null, About_Click);
@@ -478,6 +498,19 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
     // Zoek/commentaar: Laadt gegevens of instellingen voor LoadBooleanSetting.
     private static bool LoadBooleanSetting(string settingName, bool defaultValue)
     {
+        var value = LoadStringSetting(settingName, "");
+        if (string.IsNullOrWhiteSpace(value))
+            return defaultValue;
+
+        return value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("aan", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("on", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string LoadStringSetting(string settingName, string defaultValue)
+    {
         if (!File.Exists(SettingsPath))
             return defaultValue;
 
@@ -496,11 +529,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
             if (!key.Equals(settingName, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            return value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
-                value.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
-                value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
-                value.Equals("aan", StringComparison.OrdinalIgnoreCase) ||
-                value.Equals("on", StringComparison.OrdinalIgnoreCase);
+            return value;
         }
 
         return defaultValue;
@@ -521,7 +550,9 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
             "alwaysOnTop=" + (_alwaysOnTop ? "true" : "false") + Environment.NewLine +
             "minimizeToTray=" + (_minimizeToTray ? "true" : "false") + Environment.NewLine +
             "reverseDirection=" + (_reverseDirection ? "true" : "false") + Environment.NewLine +
-            "showIntroductions=" + (_showIntroductions ? "true" : "false") + Environment.NewLine);
+            "showIntroductions=" + (_showIntroductions ? "true" : "false") + Environment.NewLine +
+            "automaticUpdateCheck=" + (_automaticUpdateCheckEnabled ? "true" : "false") + Environment.NewLine +
+            "lastUpdateCheckDate=" + _lastUpdateCheckDate + Environment.NewLine);
     }
 
     // Zoek/commentaar: Laadt de Windows-startup registratie uit HKCU.
@@ -1874,6 +1905,100 @@ private void LoadStartupNodIfNeeded()
         dialog.ShowDialog(this);
     }
 
+    private async void CheckUpdates_Click(object? sender, EventArgs e)
+    {
+        await CheckForUpdatesAsync(showNoUpdateMessage: true);
+    }
+
+    private async Task CheckForUpdatesAsync(bool showNoUpdateMessage)
+    {
+        try
+        {
+            SetStatus(T("update.checking", "Checking for updates..."));
+            var result = await UpdateChecker.CheckAsync();
+            MarkUpdateCheckedToday();
+
+            if (!result.HasUpdate || result.Update is null)
+            {
+                SetStatus(T("update.none_status", "Syscalculator is up to date."));
+                if (showNoUpdateMessage)
+                {
+                    MessageBox.Show(
+                        this,
+                        T("update.none", "You already have the latest version for this channel."),
+                        T("update.title", "Syscalculator update"),
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+
+                return;
+            }
+
+            ShowUpdateAvailable(result.Update);
+        }
+        catch (Exception ex)
+        {
+            SetStatus(T("update.failed_status", "Update check failed."));
+            if (showNoUpdateMessage)
+            {
+                MessageBox.Show(
+                    this,
+                    string.Format(T("update.failed", "Could not check for updates.\n\n{0}"), ex.Message),
+                    T("update.title", "Syscalculator update"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+    }
+
+    private void ShowUpdateAvailable(UpdateChannelInfo update)
+    {
+        var title = string.IsNullOrWhiteSpace(update.Title)
+            ? T("update.available_title", "New Syscalculator version available")
+            : update.Title.Trim();
+        var version = string.IsNullOrWhiteSpace(update.Version) ? "-" : update.Version.Trim();
+        var date = string.IsNullOrWhiteSpace(update.Date) ? "-" : update.Date.Trim();
+        var summary = string.IsNullOrWhiteSpace(update.Summary) ? "" : Environment.NewLine + Environment.NewLine + update.Summary.Trim();
+        var message = string.Format(
+            T("update.available", "{0}\n\nVersion: {1}\nDate: {2}{3}\n\nDownload this update?"),
+            title,
+            version,
+            date,
+            summary);
+
+        var answer = MessageBox.Show(
+            this,
+            message,
+            T("update.title", "Syscalculator update"),
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Information);
+
+        if (answer == DialogResult.Yes)
+        {
+            UpdateChecker.OpenDownload(update);
+            SetStatus(T("update.download_opened", "Update download opened."));
+        }
+        else
+        {
+            SetStatus(T("update.later", "Update postponed."));
+        }
+    }
+
+    private void MarkUpdateCheckedToday()
+    {
+        _lastUpdateCheckDate = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        SaveSettings();
+    }
+
+    private bool ShouldRunAutomaticUpdateCheck()
+    {
+        if (!_automaticUpdateCheckEnabled)
+            return false;
+
+        var today = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        return !_lastUpdateCheckDate.Equals(today, StringComparison.Ordinal);
+    }
+
     private string BuildFeedbackSupportInfo()
     {
         var sb = new System.Text.StringBuilder();
@@ -2090,6 +2215,14 @@ private void LoadStartupNodIfNeeded()
 
         if (_minimizeToTray && WindowState == FormWindowState.Minimized)
             HideToTray(showBalloon: true);
+    }
+
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+
+        if (ShouldRunAutomaticUpdateCheck())
+            BeginInvoke(new Action(async () => await CheckForUpdatesAsync(showNoUpdateMessage: false)));
     }
 
     private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
