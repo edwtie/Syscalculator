@@ -954,10 +954,10 @@ public static class GraphPlotRenderer
     private static string FormatTick(double value, double step)
     {
         var abs = Math.Abs(value);
-        if (abs < 1e-38f)
+        var absStep = Math.Abs(step);
+        if (abs < 1e-300 && absStep >= 1e-30d)
             return "0";
 
-        var absStep = Math.Abs(step);
         if (TryFormatPlanckTick(value, step, absStep > 0f ? absStep : abs, out var planckTick))
             return planckTick;
 
@@ -981,13 +981,15 @@ public static class GraphPlotRenderer
             return false;
         }
 
-        if (Math.Abs(value) < PlanckLengthMeters)
+        var planckValue = value / PlanckLengthMeters;
+        var planckStep = step / PlanckLengthMeters;
+        if (Math.Abs(planckValue) < Math.Max(0.001d, Math.Abs(planckStep) / 1000d))
         {
             text = "0";
             return true;
         }
 
-        text = FormatCompactTick(value / PlanckLengthMeters, step / PlanckLengthMeters, " lP");
+        text = FormatCompactTick(planckValue, planckStep, " lP");
         return true;
     }
 
