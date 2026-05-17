@@ -243,12 +243,14 @@ textarea:hover {
 .kind-picker.open .kind-button {
   background: transparent;
   background-color: transparent;
-  box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.12);
+  border-bottom-color: rgba(17, 24, 39, 0.38);
+  box-shadow: none;
 }
 .kind-button:focus {
   outline: none;
-  border-color: rgba(17, 24, 39, 0.42);
-  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.10);
+  border-color: transparent;
+  border-bottom-color: rgba(17, 24, 39, 0.58);
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.30);
 }
 .kind-button:after {
   content: "";
@@ -270,9 +272,12 @@ textarea:hover {
   margin: 0;
   list-style: none;
   border-radius: 6px;
-  background: rgba(250, 247, 244, 0.78);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 10px 24px rgba(44, 36, 28, 0.18);
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  border-top: 0;
+  background: transparent;
+  background-color: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
 }
 .kind-picker.open .kind-list {
   display: block;
@@ -284,7 +289,9 @@ textarea:hover {
 }
 .kind-list li:hover,
 .kind-list li.active {
-  background: rgba(17, 24, 39, 0.10);
+  background: transparent;
+  background-color: transparent;
+  font-weight: 600;
 }
 textarea {
   resize: none;
