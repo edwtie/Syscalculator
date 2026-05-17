@@ -311,7 +311,7 @@ textarea::-webkit-scrollbar-thumb {
   display: inline-grid;
   place-content: center;
   position: relative;
-  border: 1.5px solid rgba(17, 24, 39, 0.78);
+  border: 1.2px solid rgba(17, 24, 39, 0.70);
   border-radius: 3px;
   background: transparent !important;
   background-color: transparent !important;
@@ -333,17 +333,18 @@ textarea::-webkit-scrollbar-thumb {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 9px;
-  height: 1.6px;
+  width: 8px;
+  height: 1.25px;
   border-radius: 999px;
-  background: #111827;
+  background: rgba(24, 30, 39, 0.92);
   transform-origin: center;
 }
 .check-row input:checked:before {
-  transform: translate(-50%, -50%) rotate(45deg);
+  transform: translate(-53%, -50%) rotate(42deg);
 }
 .check-row input:checked:after {
-  transform: translate(-50%, -50%) rotate(-45deg);
+  width: 8.6px;
+  transform: translate(-48%, -48%) rotate(-49deg);
 }
 .hint {
   grid-column: 2;
