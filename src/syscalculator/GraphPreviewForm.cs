@@ -12,6 +12,8 @@ public sealed class GraphPreviewForm : Form
     private const float NormalHalfYRange = 5f;
     private const int MaxVisibleStepPoints = 700;
     private const int MaxLineSamplePoints = 500;
+    private const decimal GraphRangeLimit = 1_000_000_000_000_000_000_000_000m;
+    private const decimal GraphStepMinimum = 0.000000000001m;
 
     private readonly Func<string> _getNodText;
     private readonly LanguageCatalog? _language;
@@ -109,23 +111,23 @@ public sealed class GraphPreviewForm : Form
         controls.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
 
         controls.Controls.Add(MakeToolbarLabel("X min"), 0, 0);
-        _xMin = MakeNumberBox(-5, -100000, 100000, 1);
+        _xMin = MakeNumberBox(-5, -GraphRangeLimit, GraphRangeLimit, 1);
         _xMin.ValueChanged += (_, _) => ApplyXRangeFromControls();
         controls.Controls.Add(_xMin, 1, 0);
         controls.Controls.Add(MakeToolbarLabel("X max"), 2, 0);
-        _xMax = MakeNumberBox(5, -100000, 100000, 1);
+        _xMax = MakeNumberBox(5, -GraphRangeLimit, GraphRangeLimit, 1);
         _xMax.ValueChanged += (_, _) => ApplyXRangeFromControls();
         controls.Controls.Add(_xMax, 3, 0);
         controls.Controls.Add(MakeToolbarLabel("Y min"), 4, 0);
-        _yMin = MakeNumberBox(-5, -100000000, 100000000, 1);
+        _yMin = MakeNumberBox(-5, -GraphRangeLimit, GraphRangeLimit, 1);
         _yMin.ValueChanged += (_, _) => ApplyYRangeFromControls();
         controls.Controls.Add(_yMin, 5, 0);
         controls.Controls.Add(MakeToolbarLabel("Y max"), 6, 0);
-        _yMax = MakeNumberBox(5, -100000000, 100000000, 1);
+        _yMax = MakeNumberBox(5, -GraphRangeLimit, GraphRangeLimit, 1);
         _yMax.ValueChanged += (_, _) => ApplyYRangeFromControls();
         controls.Controls.Add(_yMax, 7, 0);
         controls.Controls.Add(MakeToolbarLabel(T("editor.graph.step", "Step")), 8, 0);
-        _step = MakeNumberBox(1, 0.0001m, 100000, 1);
+        _step = MakeNumberBox(1, GraphStepMinimum, GraphRangeLimit, 1);
         _step.ValueChanged += (_, _) =>
         {
             if (!_applyingSyncState)
@@ -326,12 +328,7 @@ public sealed class GraphPreviewForm : Form
 
     private GraphPlotView CreateAspectViewFromSync(GraphPlotView sourceView)
     {
-        var centerX = (sourceView.MinX + sourceView.MaxX) / 2d;
-        var centerY = (sourceView.MinY + sourceView.MaxY) / 2d;
-        var halfY = Math.Max(GraphSurfaceApi.MinimumViewSpan / 2d, (sourceView.MaxY - sourceView.MinY) / 2d);
-        return GraphSurfaceApi.MatchViewToCanvasAspect(
-            new GraphPlotView(centerX - halfY, centerX + halfY, centerY - halfY, centerY + halfY),
-            _canvas);
+        return GraphSurfaceApi.MatchViewToCanvasAspect(sourceView, _canvas);
     }
 
     private void SetStepValue(decimal value)
@@ -376,13 +373,13 @@ public sealed class GraphPreviewForm : Form
     {
         return new NumericUpDown
         {
-            DecimalPlaces = 4,
+            DecimalPlaces = 12,
             Minimum = minimum,
             Maximum = maximum,
             Increment = increment,
             Value = value,
             Anchor = AnchorStyles.Left,
-            Width = 78,
+            Width = 86,
             Margin = new Padding(0)
         };
     }

@@ -26,6 +26,8 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 **Fixes:**
 - Fixed graph preview rendering and synchronization for richer 2D surfaces
+- Fixed live synchronization between the NOD Editor mini graph preview and the large Graph Preview window so zoom and pan keep the same viewport.
+- Fixed graph zoom behavior for very large and very small scales by preserving the synced X/Y span and widening graph range precision.
 - Fixed NOD math parsing/evaluation for advanced functions and statistics workflows
 - Fixed Windows shell identity for main app, NOD Editor and NOD Template Wizard shortcuts
 - Fixed the Feedback Mail and OK buttons by reading WebView2 feedback messages with case-insensitive JSON property names.

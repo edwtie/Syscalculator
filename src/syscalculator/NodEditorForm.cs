@@ -47,6 +47,8 @@ public sealed class NodEditorForm : Form
     private const int PowerResumeQuietMs = 1600;
     private const int GraphPreviewMaxLineSamplePoints = 500;
     private const int GraphPreviewMaxVisibleStepPoints = 350;
+    private const decimal GraphPreviewRangeLimit = 1_000_000_000_000_000_000_000_000m;
+    private const decimal GraphPreviewStepMinimum = 0.000000000001m;
     private static readonly Color NodHelpBubbleBackColor = Color.FromArgb(247, 251, 255);
     private static string RecentFilesConfigDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -1020,17 +1022,17 @@ public sealed class NodEditorForm : Form
         inputGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 29));
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("X min"), 0, 0);
-        _graphXMin = MakeGraphNumberBox(-5, -100000, 100000, 1);
+        _graphXMin = MakeGraphNumberBox(-5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
         _graphXMin.ValueChanged += (_, _) => ApplyGraphPreviewXRangeFromControls();
         inputGrid.Controls.Add(_graphXMin, 1, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("X max"), 2, 0);
-        _graphXMax = MakeGraphNumberBox(5, -100000, 100000, 1);
+        _graphXMax = MakeGraphNumberBox(5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
         _graphXMax.ValueChanged += (_, _) => ApplyGraphPreviewXRangeFromControls();
         inputGrid.Controls.Add(_graphXMax, 3, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel(T("editor.graph.step", "Step")), 4, 0);
-        _graphStep = MakeGraphNumberBox(1, 0.0001m, 100000, 1);
+        _graphStep = MakeGraphNumberBox(1, GraphPreviewStepMinimum, GraphPreviewRangeLimit, 1);
         _graphStep.ValueChanged += (_, _) =>
         {
             if (!_applyingGraphSyncState)
@@ -1039,12 +1041,12 @@ public sealed class NodEditorForm : Form
         inputGrid.Controls.Add(_graphStep, 5, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("Y min"), 0, 1);
-        _graphYMin = MakeGraphNumberBox(-5, -100000000, 100000000, 1);
+        _graphYMin = MakeGraphNumberBox(-5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
         _graphYMin.ValueChanged += (_, _) => ApplyGraphPreviewYRangeFromControls();
         inputGrid.Controls.Add(_graphYMin, 1, 1);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("Y max"), 2, 1);
-        _graphYMax = MakeGraphNumberBox(5, -100000000, 100000000, 1);
+        _graphYMax = MakeGraphNumberBox(5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
         _graphYMax.ValueChanged += (_, _) => ApplyGraphPreviewYRangeFromControls();
         inputGrid.Controls.Add(_graphYMax, 3, 1);
 
@@ -1469,13 +1471,13 @@ public sealed class NodEditorForm : Form
     {
         return new NumericUpDown
         {
-            DecimalPlaces = 4,
+            DecimalPlaces = 12,
             Minimum = minimum,
             Maximum = maximum,
             Increment = increment,
             Value = value,
             Anchor = AnchorStyles.Left | AnchorStyles.Right,
-            Width = 70,
+            Width = 80,
             Margin = new Padding(0)
         };
     }
@@ -1834,12 +1836,7 @@ public sealed class NodEditorForm : Form
 
     private GraphPlotView CreateGraphAspectViewFromSync(GraphPlotView sourceView)
     {
-        var centerX = (sourceView.MinX + sourceView.MaxX) / 2d;
-        var centerY = (sourceView.MinY + sourceView.MaxY) / 2d;
-        var halfY = Math.Max(GraphSurfaceApi.MinimumViewSpan / 2d, (sourceView.MaxY - sourceView.MinY) / 2d);
-        return GraphSurfaceApi.MatchViewToCanvasAspect(
-            new GraphPlotView(centerX - halfY, centerX + halfY, centerY - halfY, centerY + halfY),
-            _graphCanvas);
+        return GraphSurfaceApi.MatchViewToCanvasAspect(sourceView, _graphCanvas);
     }
 
     private void SetGraphStepValue(decimal value)
