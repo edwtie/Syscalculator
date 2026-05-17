@@ -365,6 +365,7 @@ button {
   background-color: transparent;
   color: #111827;
   font: inherit;
+  outline: none;
 }
 button.secondary {
   border-color: rgba(17, 24, 39, 0.28);
@@ -373,6 +374,12 @@ button.secondary {
 button:hover {
   background: rgba(17, 24, 39, 0.05);
   background-color: rgba(17, 24, 39, 0.05);
+  border-color: rgba(17, 24, 39, 0.52);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
+}
+button:focus-visible {
+  border-color: rgba(17, 24, 39, 0.70);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.14);
 }
 button.icon-only {
   min-width: 44px;
@@ -382,6 +389,11 @@ button.icon-only {
   justify-content: center;
   background: transparent;
   background-color: transparent;
+}
+button.icon-only:hover,
+button.icon-only:focus-visible {
+  background: rgba(17, 24, 39, 0.07);
+  background-color: rgba(17, 24, 39, 0.07);
 }
 .mail-icon {
   display: inline-block;
