@@ -174,10 +174,17 @@ internal sealed class UpdaterForm : Form
         }
 
         if (totalBytes is > 0)
-        {
-            _progressBar.Value = 100;
-            _statusLabel.Text = string.Format(T("updater.downloading_percent", "Downloading update... {0}%"), 100);
-        }
+            await CompleteDownloadProgressAsync(cancellationToken);
+    }
+
+    private async Task CompleteDownloadProgressAsync(CancellationToken cancellationToken)
+    {
+        _progressBar.Value = Math.Max(_progressBar.Minimum, _progressBar.Maximum - 1);
+        _progressBar.Value = _progressBar.Maximum;
+        _statusLabel.Text = string.Format(T("updater.downloading_percent", "Downloading update... {0}%"), 100);
+        _progressBar.Refresh();
+        _statusLabel.Refresh();
+        await Task.Delay(250, cancellationToken);
     }
 
     private void VerifyPackage(string packagePath)
