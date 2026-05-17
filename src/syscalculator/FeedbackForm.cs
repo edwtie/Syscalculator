@@ -1,6 +1,7 @@
 #nullable enable
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -12,6 +13,12 @@ namespace Syscalculator.UI.WinForms;
 internal sealed class FeedbackForm : Form
 {
     private const string SupportAddress = "info@tiedragon.com";
+    private const string FeedbackEndpointEnvironmentVariable = "SYSCALCULATOR_FEEDBACK_ENDPOINT";
+    private const string FeedbackEndpointFileName = "feedback-endpoint.txt";
+    private static readonly HttpClient FeedbackHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(12)
+    };
     private static readonly JsonSerializerOptions WebMessageJsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -80,7 +87,7 @@ internal sealed class FeedbackForm : Form
         _browser.NavigateToString(BuildHtml());
     }
 
-    private void Browser_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+    private async void Browser_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     {
         FeedbackPayload? payload;
         try
@@ -106,7 +113,7 @@ internal sealed class FeedbackForm : Form
 
         if (payload.Action.Equals("mail", StringComparison.OrdinalIgnoreCase))
         {
-            OpenMail(payload);
+            await SendFeedbackAsync(payload);
         }
     }
 
@@ -119,6 +126,9 @@ internal sealed class FeedbackForm : Form
             : string.Format(T("feedback.default_subject_converter", "Feedback over {0}"), _converterName);
         var messagePlaceholder = NormalizeLanguageNewLines(T("feedback.message_placeholder", "Wat gebeurde er?\r\n\r\nWat had u verwacht?\r\n\r\nStappen om het te herhalen:"));
         var background = LoadFeedbackBackgroundDataUri();
+        var deliveryHint = GetFeedbackEndpoint() is null
+            ? string.Format(T("feedback.copy_hint", "Open uw mailprogramma voor {0}."), SupportAddress)
+            : T("feedback.send_hint", "Feedback wordt veilig naar Tiedragon gestuurd.");
 
         return $$"""
 <!doctype html>
@@ -469,7 +479,7 @@ button.icon-only:focus-visible {
       <textarea id="message">{{H(messagePlaceholder)}}</textarea>
 
       <label class="check-row"><input id="includeSupport" type="checkbox" checked> {{H(T("feedback.include_support_info", "Supportinformatie meesturen"))}}</label>
-      <div class="hint">{{H(string.Format(T("feedback.copy_hint", "Open uw mailprogramma voor {0}."), SupportAddress))}}</div>
+      <div class="hint">{{H(deliveryHint)}}</div>
     </section>
     <footer class="buttons">
       <button class="icon-only" id="mail" title="{{H(T("feedback.open_mail", "Mail"))}}" aria-label="{{H(T("feedback.open_mail", "Mail"))}}"><span class="mail-icon"></span></button>
@@ -517,6 +527,57 @@ document.getElementById('message').focus();
 </body>
 </html>
 """;
+    }
+
+    private async Task SendFeedbackAsync(FeedbackPayload payload)
+    {
+        var endpoint = GetFeedbackEndpoint();
+        if (endpoint is not null && await TryPostFeedbackAsync(endpoint, payload))
+        {
+            MessageBox.Show(this,
+                T("feedback.sent", "Feedback is verstuurd. Dank u."),
+                T("feedback.title", "Feedback"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            DialogResult = DialogResult.OK;
+            Close();
+            return;
+        }
+
+        OpenMail(payload);
+    }
+
+    private async Task<bool> TryPostFeedbackAsync(Uri endpoint, FeedbackPayload payload)
+    {
+        try
+        {
+            var body = BuildFeedbackText(payload);
+            var request = new
+            {
+                product = AppVersionInfo.ProductName,
+                version = AppVersionInfo.DisplayVersion,
+                releaseChannel = AppVersionInfo.ReleaseChannel,
+                releaseDate = AppVersionInfo.ReleaseDate,
+                submittedAtUtc = DateTimeOffset.UtcNow,
+                kind = payload.Kind,
+                name = payload.Name,
+                email = payload.Email,
+                subject = payload.Subject,
+                message = payload.Message,
+                includeSupportInfo = payload.IncludeSupportInfo,
+                supportInfo = payload.IncludeSupportInfo ? payload.SupportInfo : "",
+                body
+            };
+
+            var json = JsonSerializer.Serialize(request);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var response = await FeedbackHttpClient.PostAsync(endpoint, content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private void OpenMail(FeedbackPayload payload)
@@ -594,6 +655,29 @@ document.getElementById('message').focus();
     private static string EmptyAsDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
 
     private static string H(string value) => WebUtility.HtmlEncode(value);
+
+    private static Uri? GetFeedbackEndpoint()
+    {
+        var configured = Environment.GetEnvironmentVariable(FeedbackEndpointEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, FeedbackEndpointFileName);
+            if (File.Exists(path))
+            {
+                configured = File.ReadLines(path).FirstOrDefault();
+            }
+        }
+
+        if (!Uri.TryCreate(configured?.Trim(), UriKind.Absolute, out var endpoint))
+        {
+            return null;
+        }
+
+        return endpoint.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+               endpoint.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            ? endpoint
+            : null;
+    }
 
     private static string NormalizeLanguageNewLines(string value)
     {
