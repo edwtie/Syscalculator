@@ -3246,7 +3246,7 @@ public sealed class NodEditorForm : Form
                 .Select(line => line.Trim())
                 .Where(line => line.Length > 0 && !line.StartsWith("#") && !line.StartsWith(";"))
                 .Select(Path.GetFullPath)
-                .Where(File.Exists)
+                .Where(IsRecentNodFile)
                 .DistinctBy(RecentFileIdentity, StringComparer.OrdinalIgnoreCase)
                 .Take(RecentFilesLimit)
                 .ToList();
@@ -3263,7 +3263,7 @@ public sealed class NodEditorForm : Form
         {
             var cleanPaths = paths
                 .Select(Path.GetFullPath)
-                .Where(File.Exists)
+                .Where(IsRecentNodFile)
                 .DistinctBy(RecentFileIdentity, StringComparer.OrdinalIgnoreCase)
                 .Take(RecentFilesLimit)
                 .ToList();
@@ -3282,6 +3282,9 @@ public sealed class NodEditorForm : Form
     private void AddRecentFile(string path)
     {
         var fullPath = Path.GetFullPath(path);
+        if (!IsRecentNodFile(fullPath))
+            return;
+
         var recentFiles = new List<string> { fullPath };
         recentFiles.AddRange(LoadRecentFiles().Where(item => !string.Equals(item, fullPath, StringComparison.OrdinalIgnoreCase)));
         SaveRecentFiles(recentFiles);
@@ -3303,6 +3306,7 @@ public sealed class NodEditorForm : Form
 
         _recentFilesMenuItem.DropDownItems.Clear();
         var recentFiles = LoadRecentFiles();
+        SaveRecentFiles(recentFiles);
         _recentFilesMenuItem.Enabled = recentFiles.Count > 0;
 
         if (recentFiles.Count == 0)
@@ -3332,6 +3336,12 @@ public sealed class NodEditorForm : Form
         var marker = $"{Path.DirectorySeparatorChar}Converters{Path.DirectorySeparatorChar}";
         var index = fullPath.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
         return index >= 0 ? fullPath[(index + 1)..] : fullPath;
+    }
+
+    private static bool IsRecentNodFile(string path)
+    {
+        return File.Exists(path) &&
+               Path.GetExtension(path).Equals(".nod", StringComparison.OrdinalIgnoreCase);
     }
 
     private void OpenRecentFile(string path)
@@ -3553,6 +3563,8 @@ public sealed class NodEditorForm : Form
         {
             Filter = T("editor.dialog.filter", "NOD files (*.nod)|*.nod|All files (*.*)|*.*"),
             Title = T("editor.dialog.save_title", "Save NOD as"),
+            DefaultExt = "nod",
+            AddExtension = true,
             FileName = Path.GetFileNameWithoutExtension(tab.Page.Text.Replace("*", "").Trim()) + ".nod"
         };
 
