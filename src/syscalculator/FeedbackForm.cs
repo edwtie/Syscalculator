@@ -198,16 +198,29 @@ input, textarea {
   font: inherit;
   box-shadow: none;
 }
-input:focus, textarea:focus {
+input:focus {
+  border-color: transparent;
+  border-bottom-color: rgba(17, 24, 39, 0.58);
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.30);
+}
+textarea:focus {
   border-color: rgba(17, 24, 39, 0.42);
   background: transparent !important;
   background-color: transparent !important;
-  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.10);
+  box-shadow: 0 0 0 1px rgba(17, 24, 39, 0.10);
 }
 input:hover, textarea:hover {
   background: transparent !important;
   background-color: transparent !important;
-  box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.12);
+  box-shadow: none;
+}
+input:hover {
+  border-bottom-color: rgba(17, 24, 39, 0.38);
+}
+textarea:hover {
+  box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.10);
 }
 .kind-picker {
   position: relative;
