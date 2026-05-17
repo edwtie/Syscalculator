@@ -13,17 +13,18 @@ internal static class Program
         ApplicationConfiguration.Initialize();
 
         var options = UpdateOptions.Parse(args);
+        var language = UpdaterLanguage.Load(options.InstallDirectory);
         if (!options.IsValid)
         {
             MessageBox.Show(
-                "De update kan niet starten omdat de updategegevens ontbreken.",
-                "Syscalculator updater",
+                language.Text("updater.invalid_options", "The update cannot start because update information is missing."),
+                language.Text("updater.title", "Syscalculator updater"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
             return;
         }
 
-        Application.Run(new UpdaterForm(options));
+        Application.Run(new UpdaterForm(options, language));
     }
 }
 
@@ -34,12 +35,14 @@ internal sealed class UpdaterForm : Form
     private readonly ProgressBar _progressBar = new();
     private readonly Button _cancelButton = new();
     private readonly CancellationTokenSource _cancellation = new();
+    private readonly UpdaterLanguage _language;
 
-    public UpdaterForm(UpdateOptions options)
+    public UpdaterForm(UpdateOptions options, UpdaterLanguage language)
     {
         _options = options;
+        _language = language;
 
-        Text = "Syscalculator updater";
+        Text = T("updater.title", "Syscalculator updater");
         Width = 520;
         Height = 180;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -53,14 +56,14 @@ internal sealed class UpdaterForm : Form
         _statusLabel.Top = 18;
         _statusLabel.Width = 468;
         _statusLabel.Height = 48;
-        _statusLabel.Text = "Update voorbereiden...";
+        _statusLabel.Text = T("updater.preparing", "Preparing update...");
 
         _progressBar.Left = 18;
         _progressBar.Top = 76;
         _progressBar.Width = 468;
         _progressBar.Height = 22;
 
-        _cancelButton.Text = "Annuleren";
+        _cancelButton.Text = T("updater.cancel", "Cancel");
         _cancelButton.Left = 380;
         _cancelButton.Top = 108;
         _cancelButton.Width = 106;
@@ -68,7 +71,7 @@ internal sealed class UpdaterForm : Form
         _cancelButton.Click += (_, _) =>
         {
             _cancelButton.Enabled = false;
-            _statusLabel.Text = "Update annuleren...";
+            _statusLabel.Text = T("updater.canceling", "Canceling update...");
             _cancellation.Cancel();
         };
 
@@ -85,24 +88,24 @@ internal sealed class UpdaterForm : Form
         {
             await RunUpdateAsync(_cancellation.Token);
             _cancelButton.Enabled = false;
-            _statusLabel.Text = "Update voltooid. Syscalculator wordt gestart...";
+            _statusLabel.Text = T("updater.completed", "Update completed. Starting Syscalculator...");
             RestartSyscalculator();
             Close();
         }
         catch (OperationCanceledException)
         {
-            _statusLabel.Text = "Update geannuleerd.";
+            _statusLabel.Text = T("updater.canceled", "Update canceled.");
             Close();
         }
         catch (Exception ex)
         {
-            _cancelButton.Text = "Sluiten";
+            _cancelButton.Text = T("updater.close", "Close");
             _cancelButton.Enabled = true;
             _cancelButton.Click += (_, _) => Close();
             MessageBox.Show(
                 this,
-                "De update is niet gelukt.\n\n" + ex.Message,
-                "Syscalculator updater",
+                string.Format(T("updater.failed", "The update failed.\n\n{0}"), ex.Message),
+                T("updater.title", "Syscalculator updater"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
@@ -118,13 +121,13 @@ internal sealed class UpdaterForm : Form
             await DownloadPackageAsync(packagePath, cancellationToken);
             VerifyPackage(packagePath);
 
-            _statusLabel.Text = "Update uitpakken...";
+            _statusLabel.Text = T("updater.extracting", "Extracting update...");
             Directory.CreateDirectory(extractPath);
             ZipFile.ExtractToDirectory(packagePath, extractPath, overwriteFiles: true);
 
             await WaitForSyscalculatorToExitAsync(cancellationToken);
 
-            _statusLabel.Text = "Bestanden bijwerken...";
+            _statusLabel.Text = T("updater.copying", "Updating files...");
             _progressBar.Style = ProgressBarStyle.Marquee;
             CopyDirectory(extractPath, _options.InstallDirectory);
         }
@@ -137,7 +140,7 @@ internal sealed class UpdaterForm : Form
 
     private async Task DownloadPackageAsync(string packagePath, CancellationToken cancellationToken)
     {
-        _statusLabel.Text = "Update downloaden...";
+        _statusLabel.Text = T("updater.downloading", "Downloading update...");
         _progressBar.Style = ProgressBarStyle.Continuous;
         _progressBar.Value = 0;
 
@@ -166,7 +169,7 @@ internal sealed class UpdaterForm : Form
             {
                 var percent = (int)Math.Clamp(downloaded * 100 / totalBytes.Value, 0, 100);
                 _progressBar.Value = percent;
-                _statusLabel.Text = $"Update downloaden... {percent}%";
+                _statusLabel.Text = string.Format(T("updater.downloading_percent", "Downloading update... {0}%"), percent);
             }
         }
     }
@@ -176,11 +179,11 @@ internal sealed class UpdaterForm : Form
         if (string.IsNullOrWhiteSpace(_options.Sha256))
             return;
 
-        _statusLabel.Text = "Update controleren...";
+        _statusLabel.Text = T("updater.verifying", "Verifying update...");
         using var stream = File.OpenRead(packagePath);
         var hash = Convert.ToHexString(SHA256.HashData(stream));
         if (!hash.Equals(_options.Sha256, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Het updatepakket heeft een andere controlecode dan verwacht.");
+            throw new InvalidOperationException(T("updater.hash_mismatch", "The update package has a different checksum than expected."));
     }
 
     private async Task WaitForSyscalculatorToExitAsync(CancellationToken cancellationToken)
@@ -191,7 +194,7 @@ internal sealed class UpdaterForm : Form
         try
         {
             var process = Process.GetProcessById(_options.ProcessId);
-            _statusLabel.Text = "Wachten tot Syscalculator sluit...";
+            _statusLabel.Text = T("updater.waiting_for_exit", "Waiting for Syscalculator to close...");
 
             while (!process.HasExited)
             {
@@ -258,6 +261,95 @@ internal sealed class UpdaterForm : Form
         catch
         {
         }
+    }
+
+    private string T(string key, string fallback) => _language.Text(key, fallback);
+}
+
+internal sealed class UpdaterLanguage
+{
+    private readonly Dictionary<string, string> _texts;
+
+    private UpdaterLanguage(Dictionary<string, string> texts)
+    {
+        _texts = texts;
+    }
+
+    public static UpdaterLanguage Load(string installDirectory)
+    {
+        var baseDirectory = Directory.Exists(installDirectory)
+            ? installDirectory
+            : AppContext.BaseDirectory;
+        var languageFile = LoadConfiguredLanguageFile(baseDirectory);
+        var texts = ReadLanguageFile(Path.Combine(baseDirectory, languageFile));
+
+        if (texts.Count == 0 && !languageFile.Equals("eng.lng", StringComparison.OrdinalIgnoreCase))
+            texts = ReadLanguageFile(Path.Combine(baseDirectory, "eng.lng"));
+
+        return new UpdaterLanguage(texts);
+    }
+
+    public string Text(string key, string fallback)
+    {
+        var text = _texts.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : fallback;
+
+        return text.Replace("\\n", Environment.NewLine, StringComparison.Ordinal);
+    }
+
+    private static string LoadConfiguredLanguageFile(string baseDirectory)
+    {
+        var configPath = Path.Combine(baseDirectory, "language.cfg");
+        if (!File.Exists(configPath))
+            return "eng.lng";
+
+        foreach (var rawLine in File.ReadAllLines(configPath))
+        {
+            var line = rawLine.Trim();
+            if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith(";", StringComparison.Ordinal))
+                continue;
+
+            var separator = line.IndexOf('=');
+            if (separator <= 0)
+                continue;
+
+            var key = line[..separator].Trim();
+            var value = line[(separator + 1)..].Trim();
+            if (!key.Equals("language", StringComparison.OrdinalIgnoreCase) || value.Length == 0)
+                continue;
+
+            return value.EndsWith(".lng", StringComparison.OrdinalIgnoreCase)
+                ? value
+                : value + ".lng";
+        }
+
+        return "eng.lng";
+    }
+
+    private static Dictionary<string, string> ReadLanguageFile(string path)
+    {
+        var texts = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!File.Exists(path))
+            return texts;
+
+        foreach (var rawLine in File.ReadAllLines(path))
+        {
+            var line = rawLine.Trim();
+            if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith(";", StringComparison.Ordinal))
+                continue;
+
+            var separator = line.IndexOf('=');
+            if (separator <= 0)
+                continue;
+
+            var key = line[..separator].Trim();
+            var value = line[(separator + 1)..].Trim();
+            if (key.Length > 0)
+                texts[key] = value;
+        }
+
+        return texts;
     }
 }
 
