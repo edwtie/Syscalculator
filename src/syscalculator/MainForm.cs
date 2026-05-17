@@ -161,7 +161,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         LoadStartupNodIfNeeded();
 
         if (_startInTray)
-            BeginInvoke(() => HideToTray(showBalloon: false));
+            BeginInvoke(HideToTray);
     }
 
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildMenu.
@@ -1134,7 +1134,7 @@ private void RebuildTrayMenu()
     _trayMenu = new ContextMenuStrip();
 
     _trayMenu.Items.Add(T("tray.show", "Show Syscalculator"), null, (_, _) => RestoreFromTray());
-    _trayMenu.Items.Add(T("tray.hide", "Hide to system tray"), null, (_, _) => HideToTray(showBalloon: true));
+    _trayMenu.Items.Add(T("tray.hide", "Hide to system tray"), null, (_, _) => HideToTray());
     _trayMenu.Items.Add(new ToolStripSeparator());
     _trayMenu.Items.Add(T("tray.wizard", "WizardExpress"), null, WizardExpress_Click);
     _trayMenu.Items.Add(T("tray.calculator", "Calculator"), null, Calculator_Click);
@@ -2219,7 +2219,7 @@ private void LoadNodFilePath(string nodPath)
         _trayMenu = new ContextMenuStrip();
 
         _trayMenu.Items.Add(T("tray.show", "Show Syscalculator"), null, (_, _) => RestoreFromTray());
-        _trayMenu.Items.Add(T("tray.hide", "Hide to system tray"), null, (_, _) => HideToTray(showBalloon: true));
+        _trayMenu.Items.Add(T("tray.hide", "Hide to system tray"), null, (_, _) => HideToTray());
         _trayMenu.Items.Add(new ToolStripSeparator());
         _trayMenu.Items.Add(T("tray.wizard", "WizardExpress"), null, WizardExpress_Click);
         _trayMenu.Items.Add(T("tray.calculator", "Calculator"), null, Calculator_Click);
@@ -2243,7 +2243,7 @@ private void LoadNodFilePath(string nodPath)
     }
 
     // Zoek/commentaar: Verbergt het venster of onderdeel voor HideToTray.
-    private void HideToTray(bool showBalloon)
+    private void HideToTray()
     {
         if (_notifyIcon is null)
             return;
@@ -2254,14 +2254,6 @@ private void LoadNodFilePath(string nodPath)
         _notifyIcon.Visible = true;
         _notifyIcon.Text = BuildTrayText();
 
-        if (showBalloon)
-        {
-            _notifyIcon.ShowBalloonTip(
-                1000,
-                T("dialog.tray_title", "Syscalculator"),
-                T("dialog.tray_message", "Syscalculator is running in the system tray."),
-                ToolTipIcon.Info);
-        }
     }
 
     // Zoek/commentaar: Herstelt een venster of toestand voor RestoreFromTray.
@@ -2297,7 +2289,7 @@ private void LoadNodFilePath(string nodPath)
         base.OnResize(e);
 
         if (_minimizeToTray && WindowState == FormWindowState.Minimized)
-            HideToTray(showBalloon: true);
+            HideToTray();
     }
 
     protected override void OnShown(EventArgs e)
@@ -2334,7 +2326,7 @@ private void LoadNodFilePath(string nodPath)
         if (!_allowRealClose && _minimizeToTray && e.CloseReason == CloseReason.UserClosing)
         {
             e.Cancel = true;
-            HideToTray(showBalloon: true);
+            HideToTray();
             return;
         }
 
