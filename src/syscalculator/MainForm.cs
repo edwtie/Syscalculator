@@ -1962,10 +1962,10 @@ private void LoadNodFilePath(string nodPath)
 
     private async void CheckUpdates_Click(object? sender, EventArgs e)
     {
-        await CheckForUpdatesAsync(showNoUpdateMessage: true);
+        await CheckForUpdatesAsync(showNoUpdateMessage: true, startUpdateWhenAvailable: true);
     }
 
-    private async Task CheckForUpdatesAsync(bool showNoUpdateMessage)
+    private async Task CheckForUpdatesAsync(bool showNoUpdateMessage, bool startUpdateWhenAvailable = false)
     {
         try
         {
@@ -1989,7 +1989,10 @@ private void LoadNodFilePath(string nodPath)
                 return;
             }
 
-            ShowUpdateAvailable(result.Update);
+            if (startUpdateWhenAvailable)
+                StartAvailableUpdate(result.Update);
+            else
+                ShowUpdateAvailable(result.Update);
         }
         catch (Exception ex)
         {
@@ -2003,6 +2006,21 @@ private void LoadNodFilePath(string nodPath)
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
+        }
+    }
+
+    private void StartAvailableUpdate(UpdateChannelInfo update)
+    {
+        if (UpdateChecker.StartUpdater(update))
+        {
+            SetStatus(T("update.updater_started", "Updater started."));
+            _allowRealClose = true;
+            BeginInvoke(new Action(Close));
+        }
+        else
+        {
+            UpdateChecker.OpenDownload(update);
+            SetStatus(T("update.download_opened", "Update download opened."));
         }
     }
 
@@ -2030,19 +2048,7 @@ private void LoadNodFilePath(string nodPath)
             MessageBoxIcon.Information);
 
         if (answer == DialogResult.Yes)
-        {
-            if (UpdateChecker.StartUpdater(update))
-            {
-                SetStatus(T("update.updater_started", "Updater started."));
-                _allowRealClose = true;
-                BeginInvoke(new Action(Close));
-            }
-            else
-            {
-                UpdateChecker.OpenDownload(update);
-                SetStatus(T("update.download_opened", "Update download opened."));
-            }
-        }
+            StartAvailableUpdate(update);
         else
         {
             SetStatus(T("update.later", "Update postponed."));
