@@ -15,6 +15,7 @@ internal sealed class FeedbackForm : Form
     private const string SupportAddress = "info@tiedragon.com";
     private const string FeedbackEndpointEnvironmentVariable = "SYSCALCULATOR_FEEDBACK_ENDPOINT";
     private const string FeedbackEndpointFileName = "feedback-endpoint.txt";
+    private const string DefaultFeedbackEndpoint = "https://www.tiedragon.com/api/syscalculator-feedback/index.php";
     private static readonly HttpClient FeedbackHttpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(12)
@@ -666,6 +667,11 @@ document.getElementById('message').focus();
             {
                 configured = File.ReadLines(path).FirstOrDefault();
             }
+        }
+
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            configured = DefaultFeedbackEndpoint;
         }
 
         if (!Uri.TryCreate(configured?.Trim(), UriKind.Absolute, out var endpoint))
