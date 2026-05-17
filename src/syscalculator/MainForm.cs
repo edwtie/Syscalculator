@@ -1975,8 +1975,17 @@ private void LoadStartupNodIfNeeded()
 
         if (answer == DialogResult.Yes)
         {
-            UpdateChecker.OpenDownload(update);
-            SetStatus(T("update.download_opened", "Update download opened."));
+            if (UpdateChecker.StartUpdater(update))
+            {
+                SetStatus(T("update.updater_started", "Updater started."));
+                _allowRealClose = true;
+                BeginInvoke(new Action(Close));
+            }
+            else
+            {
+                UpdateChecker.OpenDownload(update);
+                SetStatus(T("update.download_opened", "Update download opened."));
+            }
         }
         else
         {

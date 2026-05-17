@@ -79,6 +79,7 @@ update.failed_status=Updatepruefung fehlgeschlagen.
 update.available_title=Neue Syscalculator-Version verfuegbar
 update.available={0}\n\nVersion: {1}\nDatum: {2}{3}\n\nDieses Update herunterladen?
 update.download_opened=Update-Download geoeffnet.
+update.updater_started=Updater started.
 update.later=Update verschoben.
 
 dialog.open_nod.title=NOD oeffnen

@@ -79,6 +79,7 @@ update.failed_status=Error al buscar actualizaciones.
 update.available_title=Nueva version de Syscalculator disponible
 update.available={0}\n\nVersion: {1}\nFecha: {2}{3}\n\nDescargar esta actualizacion?
 update.download_opened=Descarga de actualizacion abierta.
+update.updater_started=Updater started.
 update.later=Actualizacion pospuesta.
 
 dialog.open_nod.title=Abrir NOD

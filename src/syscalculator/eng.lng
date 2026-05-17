@@ -79,6 +79,7 @@ update.failed_status=Update check failed.
 update.available_title=New Syscalculator version available
 update.available={0}\n\nVersion: {1}\nDate: {2}{3}\n\nDownload this update?
 update.download_opened=Update download opened.
+update.updater_started=Updater started.
 update.later=Update postponed.
 
 dialog.open_nod.title=Open NOD

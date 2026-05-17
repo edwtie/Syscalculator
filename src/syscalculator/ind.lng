@@ -75,6 +75,7 @@ update.failed_status=Pemeriksaan pembaruan gagal.
 update.available_title=Versi Syscalculator baru tersedia
 update.available={0}\n\nVersi: {1}\nTanggal: {2}{3}\n\nUnduh pembaruan ini?
 update.download_opened=Unduhan pembaruan dibuka.
+update.updater_started=Updater started.
 update.later=Pembaruan ditunda.
 
 dialog.open_nod.title=Buka NOD

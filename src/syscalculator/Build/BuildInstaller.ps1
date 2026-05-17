@@ -7,9 +7,12 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..\..')
 $project = Join-Path $repoRoot 'src\syscalculator\Syscalculator.UI.WinForms.csproj'
+$updaterProject = Join-Path $repoRoot 'src\Syscalculator.Updater\Syscalculator.Updater.csproj'
 $publishDir = Join-Path $repoRoot 'artifacts\publish\Syscalculator\win-x64'
+$updaterPublishDir = Join-Path $publishDir 'Updater'
 $installerScript = Join-Path $repoRoot 'installer\Syscalculator.iss'
 $generatedVersionFile = Join-Path $repoRoot 'src\syscalculator\AppVersionInfo.Generated.cs'
+$updatesDir = Join-Path $repoRoot 'artifacts\updates'
 
 $isccCommand = Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue
 $isccPath = if ($isccCommand) { $isccCommand.Source } else { $null }
@@ -37,6 +40,11 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE."
 }
 
+dotnet publish $updaterProject -c Release -r win-x64 --self-contained false -o $updaterPublishDir
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet publish updater failed with exit code $LASTEXITCODE."
+}
+
 if (-not (Test-Path -LiteralPath (Join-Path $publishDir 'Syscalculator.exe'))) {
     throw "Publish output is missing Syscalculator.exe: $publishDir"
 }
@@ -57,6 +65,20 @@ else {
 $env:SYSCALC_INSTALL_VERSION = $installVersion
 $env:SYSCALC_INSTALL_CHANNEL = $Channel
 
+if (-not (Test-Path $updatesDir)) {
+    New-Item -ItemType Directory -Path $updatesDir | Out-Null
+}
+
+$packagePath = Join-Path $updatesDir "Syscalculator-2.0-$Channel-$installVersion.zip"
+if (Test-Path $packagePath) {
+    Remove-Item -LiteralPath $packagePath -Force
+}
+
+Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath $packagePath -CompressionLevel Optimal
+$packageHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $packagePath).Hash.ToLowerInvariant()
+
 & $isccPath $installerScript
 
 Write-Host "Installer created in artifacts\installer for channel '$Channel' version '$env:SYSCALC_INSTALL_VERSION'."
+Write-Host "Updater package created: $packagePath"
+Write-Host "Updater package sha256: $packageHash"

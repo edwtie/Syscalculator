@@ -79,6 +79,7 @@ update.failed_status=Updatecontrole mislukt.
 update.available_title=Nieuwe Syscalculator versie beschikbaar
 update.available={0}\n\nVersie: {1}\nDatum: {2}{3}\n\nDeze update downloaden?
 update.download_opened=Update-download geopend.
+update.updater_started=Updater gestart.
 update.later=Update uitgesteld.
 
 dialog.open_nod.title=NOD openen

@@ -75,6 +75,7 @@ update.failed_status=Echec de la verification des mises a jour.
 update.available_title=Nouvelle version de Syscalculator disponible
 update.available={0}\n\nVersion: {1}\nDate: {2}{3}\n\nTelecharger cette mise a jour?
 update.download_opened=Telechargement de la mise a jour ouvert.
+update.updater_started=Updater started.
 update.later=Mise a jour reportee.
 
 dialog.open_nod.title=Ouvrir NOD
