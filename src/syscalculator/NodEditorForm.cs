@@ -1355,7 +1355,8 @@ public sealed class NodEditorForm : Form
         using var form = new AboutForm(
             _language,
             LanguageCatalog.ListAvailable(AppContext.BaseDirectory),
-            _language.FileName)
+            _language.FileName,
+            AppVersionInfo.ReleaseChannel)
         {
             TopMost = TopMost
         };

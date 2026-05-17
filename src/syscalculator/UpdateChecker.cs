@@ -21,23 +21,34 @@ internal static class UpdateChecker
         AllowTrailingCommas = true
     };
 
-    public static async Task<UpdateCheckResult> CheckAsync(CancellationToken cancellationToken = default)
+    public static async Task<UpdateCheckResult> CheckAsync(string channel, CancellationToken cancellationToken = default)
     {
         using var response = await HttpClient.GetAsync(DefaultManifestUrl, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         var manifest = await JsonSerializer.DeserializeAsync<UpdateManifest>(stream, JsonOptions, cancellationToken);
+        var manifestChannel = NormalizeChannel(channel);
         if (manifest?.Channels is null ||
-            !manifest.Channels.TryGetValue(AppVersionInfo.ReleaseChannel.ToLowerInvariant(), out var channel) ||
-            channel is null)
+            !manifest.Channels.TryGetValue(manifestChannel, out var channelInfo) ||
+            channelInfo is null)
         {
             return UpdateCheckResult.NoUpdate();
         }
 
-        return IsNewer(channel.Version, channel.Date)
-            ? UpdateCheckResult.Available(channel)
+        return IsNewer(channelInfo.Version, channelInfo.Date)
+            ? UpdateCheckResult.Available(channelInfo)
             : UpdateCheckResult.NoUpdate();
+    }
+
+    public static string NormalizeChannel(string? channel)
+    {
+        return channel?.Trim().ToLowerInvariant() switch
+        {
+            "beta" => "beta",
+            "stable" or "production" => "stable",
+            _ => "daily"
+        };
     }
 
     public static void OpenDownload(UpdateChannelInfo update)
@@ -80,10 +91,9 @@ internal static class UpdateChecker
         Process.Start(new ProcessStartInfo
         {
             FileName = tempUpdater,
-            Arguments = BuildArguments(args),
             WorkingDirectory = tempDirectory,
-            UseShellExecute = true
-        });
+            UseShellExecute = false
+        }.WithArguments(args));
 
         return true;
     }
@@ -121,19 +131,6 @@ internal static class UpdateChecker
         }
     }
 
-    private static string BuildArguments(IEnumerable<string> args)
-    {
-        return string.Join(" ", args.Select(QuoteArgument));
-    }
-
-    private static string QuoteArgument(string value)
-    {
-        if (value.Length == 0)
-            return "\"\"";
-
-        return "\"" + value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
-    }
-
     private static string? NormalizeDate(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -155,6 +152,17 @@ internal static class UpdateChecker
             .ToArray();
 
         return parts.Length == 0 ? null : string.Join(".", parts);
+    }
+}
+
+internal static class ProcessStartInfoExtensions
+{
+    public static ProcessStartInfo WithArguments(this ProcessStartInfo startInfo, IEnumerable<string> arguments)
+    {
+        foreach (var argument in arguments)
+            startInfo.ArgumentList.Add(argument);
+
+        return startInfo;
     }
 }
 

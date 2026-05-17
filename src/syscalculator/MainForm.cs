@@ -65,6 +65,7 @@ public sealed class MainForm : Form
     private bool _showIntroductions;
     private bool _automaticUpdateCheckEnabled;
     private string _lastUpdateCheckDate = "";
+    private string _updateChannel = "daily";
 
     private NodCatalogItem? _currentItem;
     private NodDocument? _currentDocument;
@@ -106,6 +107,8 @@ public sealed class MainForm : Form
     private ToolStripMenuItem? _showIntroductionsMenuItem;
     private ToolStripMenuItem? _startWithWindowsMenuItem;
     private ToolStripMenuItem? _automaticUpdateCheckMenuItem;
+    private ToolStripMenuItem? _dailyUpdateChannelMenuItem;
+    private ToolStripMenuItem? _betaUpdateChannelMenuItem;
     private bool _updatingText;
     private int _defaultDecimals;
 
@@ -138,6 +141,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         _showIntroductions = LoadBooleanSetting("showIntroductions", defaultValue: true);
         _automaticUpdateCheckEnabled = LoadBooleanSetting("automaticUpdateCheck", defaultValue: true);
         _lastUpdateCheckDate = LoadStringSetting("lastUpdateCheckDate", "");
+        _updateChannel = UpdateChecker.NormalizeChannel(LoadStringSetting("updateChannel", AppVersionInfo.ReleaseChannel));
         _startWithWindows = LoadStartWithWindowsSetting();
         TopMost = _alwaysOnTop;
 
@@ -354,6 +358,22 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
                 : T("status.auto_update_check_off", "Automatic update check is off."));
         };
         config.DropDownItems.Add(_automaticUpdateCheckMenuItem);
+        var updateChannelMenu = new ToolStripMenuItem(T("menu.config.update_channel", "Update channel"));
+        _dailyUpdateChannelMenuItem = new ToolStripMenuItem(T("menu.config.update_channel.daily", "Daily"))
+        {
+            CheckOnClick = true,
+            Checked = _updateChannel.Equals("daily", StringComparison.OrdinalIgnoreCase)
+        };
+        _betaUpdateChannelMenuItem = new ToolStripMenuItem(T("menu.config.update_channel.beta", "Beta"))
+        {
+            CheckOnClick = true,
+            Checked = _updateChannel.Equals("beta", StringComparison.OrdinalIgnoreCase)
+        };
+        _dailyUpdateChannelMenuItem.Click += (_, _) => SetUpdateChannel("daily");
+        _betaUpdateChannelMenuItem.Click += (_, _) => SetUpdateChannel("beta");
+        updateChannelMenu.DropDownItems.Add(_dailyUpdateChannelMenuItem);
+        updateChannelMenu.DropDownItems.Add(_betaUpdateChannelMenuItem);
+        config.DropDownItems.Add(updateChannelMenu);
         config.DropDownItems.Add(new ToolStripSeparator());
         config.DropDownItems.Add(T("menu.config.catalog_manager", "Catalog manager"), null, CatalogManager_Click);
 
@@ -541,6 +561,24 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         SaveSettings();
     }
 
+    private void SetUpdateChannel(string channel)
+    {
+        _updateChannel = UpdateChecker.NormalizeChannel(channel);
+
+        if (_dailyUpdateChannelMenuItem is not null)
+            _dailyUpdateChannelMenuItem.Checked = _updateChannel.Equals("daily", StringComparison.OrdinalIgnoreCase);
+
+        if (_betaUpdateChannelMenuItem is not null)
+            _betaUpdateChannelMenuItem.Checked = _updateChannel.Equals("beta", StringComparison.OrdinalIgnoreCase);
+
+        SaveSettings();
+        SetStatus(string.Format(
+            T("status.update_channel_changed", "Update channel: {0}."),
+            _updateChannel.Equals("beta", StringComparison.OrdinalIgnoreCase)
+                ? T("menu.config.update_channel.beta", "Beta")
+                : T("menu.config.update_channel.daily", "Daily")));
+    }
+
     // Zoek/commentaar: Slaat gegevens of instellingen op voor SaveSettings.
     private void SaveSettings()
     {
@@ -552,6 +590,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
             "reverseDirection=" + (_reverseDirection ? "true" : "false") + Environment.NewLine +
             "showIntroductions=" + (_showIntroductions ? "true" : "false") + Environment.NewLine +
             "automaticUpdateCheck=" + (_automaticUpdateCheckEnabled ? "true" : "false") + Environment.NewLine +
+            "updateChannel=" + _updateChannel + Environment.NewLine +
             "lastUpdateCheckDate=" + _lastUpdateCheckDate + Environment.NewLine);
     }
 
@@ -1881,7 +1920,8 @@ private void LoadStartupNodIfNeeded()
         using var form = new AboutForm(
             _language,
             LanguageCatalog.ListAvailable(AppContext.BaseDirectory),
-            _language.FileName);
+            _language.FileName,
+            _updateChannel);
 
         if (ShowOwnedDialog(form) == DialogResult.OK && form.SelectedLanguageFile is not null)
             ChangeLanguage(form.SelectedLanguageFile);
@@ -1915,7 +1955,7 @@ private void LoadStartupNodIfNeeded()
         try
         {
             SetStatus(T("update.checking", "Checking for updates..."));
-            var result = await UpdateChecker.CheckAsync();
+            var result = await UpdateChecker.CheckAsync(_updateChannel);
             MarkUpdateCheckedToday();
 
             if (!result.HasUpdate || result.Update is null)

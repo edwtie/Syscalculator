@@ -19,6 +19,7 @@ internal sealed class AboutForm : Form
     private bool _initializingLanguage;
     private bool _languageRefreshPending;
     private string _currentLanguageFile;
+    private readonly string _updateChannel;
 
     public string? SelectedLanguageFile { get; private set; }
 
@@ -26,11 +27,13 @@ internal sealed class AboutForm : Form
     public AboutForm(
         LanguageCatalog language,
         IReadOnlyList<LanguageCatalog.LanguageInfo> languages,
-        string currentLanguageFile)
+        string currentLanguageFile,
+        string updateChannel)
     {
         _language = language;
         _languages = languages;
         _currentLanguageFile = currentLanguageFile;
+        _updateChannel = UpdateChecker.NormalizeChannel(updateChannel);
 
         ClientSize = new Size(1320, 700);
         MinimumSize = ClientSize;
@@ -157,7 +160,7 @@ internal sealed class AboutForm : Form
             CornerRadius = 10,
             CellBorderStyle = TableLayoutPanelCellBorderStyle.None,
         };
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 154));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 178));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 94));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 114));
@@ -180,9 +183,17 @@ internal sealed class AboutForm : Form
         AddPair(grid, T("about.product_name", "Product name:"), AppVersionInfo.ProductName);
         AddPair(grid, T("about.version", "Version:"), AppVersionInfo.ProductVersion);
         AddPair(grid, T("about.release_channel", "Release channel:"), AppVersionInfo.ReleaseChannel);
+        AddPair(grid, T("about.update_channel", "Update channel:"), FormatUpdateChannel(_updateChannel));
         AddPair(grid, T("about.build", "Build date:"), AppVersionInfo.BuildNumber);
         AddPair(grid, T("about.release_date", "Release date:"), FormatReleaseDate(AppVersionInfo.ReleaseDate));
         return grid;
+    }
+
+    private string FormatUpdateChannel(string channel)
+    {
+        return channel.Equals("beta", StringComparison.OrdinalIgnoreCase)
+            ? T("menu.config.update_channel.beta", "Beta")
+            : T("menu.config.update_channel.daily", "Daily");
     }
 
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildCopyrightSection.

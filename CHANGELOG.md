@@ -40,6 +40,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed missing localized Feedback dialog labels across bundled language files.
 - Fixed update-check language labels for the bundled language files.
 - Fixed missing About release channel label in German, French, Indonesian, Italian, Portuguese, Spanish and Simplified Chinese.
+- Fixed updater launch arguments so paths are passed directly to the standalone updater without fragile command-line quoting.
 
 **Additions:**
 - Added a feedback/support information window with bundled artwork
@@ -49,6 +50,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added automatic daily update checking with a manual About menu command and download prompt.
 - Added a standalone zip updater that runs outside Syscalculator, downloads the update package, verifies SHA256 and replaces the app files without using Inno Setup.
 - Added a hosted update manifest at `https://www.tiedragon.com/api/syscalculator-updates/syscalculator.json` for daily, beta and future stable channels.
+- Added configurable update channel selection for Daily and Beta in Config, with the active update channel shown in About.
 - Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.exe`.
 
 #### 2.0.2026.05.16 Daily Build
