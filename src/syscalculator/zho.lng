@@ -37,6 +37,7 @@ menu.tools.trace=跟踪
 menu.tools.show_intro=再次显示介绍
 menu.about=关于
 menu.about.syscalculator=关于 Syscalculator
+menu.about.feedback=反馈...
 
 toolbar.file=文件:
 
@@ -102,6 +103,7 @@ language.restart_required=语言已更改。请重新启动 Syscalculator 以应
 about.version_title=版本信息
 about.product_name=产品名称:
 about.version=版本:
+about.release_channel=发布频道:
 about.build=构建号:
 about.release_date=发布日期:
 about.copyright_title=版权
@@ -114,6 +116,27 @@ about.language_title=语言
 about.system_info=系统信息...
 about.license=许可证...
 about.license_text=Syscalculator 2.0 Beta 版本。内部评估许可证。
+
+feedback.title=反馈
+feedback.heading=发送反馈
+feedback.subtitle=请写下发生了什么、您期望的结果，或您的想法。
+feedback.default_subject=关于 Syscalculator 的反馈
+feedback.default_subject_converter=关于 {0} 的反馈
+feedback.message_placeholder=发生了什么？\n\n您期望什么？\n\n重复步骤：
+feedback.kind=类型
+feedback.kind.problem=问题
+feedback.kind.idea=想法
+feedback.kind.question=问题咨询
+feedback.kind.other=其他
+feedback.name=姓名
+feedback.email=电子邮件
+feedback.subject=主题
+feedback.message=消息
+feedback.include_support_info=发送系统信息
+feedback.copy_hint=为 {0} 打开邮件程序。
+feedback.open_mail=邮件
+feedback.mail_failed=无法打开邮件。反馈消息已复制到剪贴板。
+feedback.webview_error=WebView2 无法启动。
 
 find.title=查找 / 替换
 find.find=查找

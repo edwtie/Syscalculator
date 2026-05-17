@@ -20,6 +20,18 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.17.022 Daily Build
+
+**Date:** 2026-05-17 13:31
+
+**Fixes:**
+- Fixed missing localized Feedback dialog labels across bundled language files
+- Fixed missing About release channel label in German, French, Indonesian, Italian, Portuguese, Spanish and Simplified Chinese
+
+**Additions:**
+- Added Feedback menu and dialog translations for English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese
+- Published the daily language hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.022.exe`.
+
 #### 2.0.2026.05.17.018 Daily Build
 
 **Date:** 2026-05-17 13:27

@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Tampilkan pengantar lagi
 menu.about=Tentang
 menu.about.syscalculator=Tentang Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=Berkas:
 
@@ -102,6 +103,7 @@ language.restart_required=Bahasa diubah. Mulai ulang Syscalculator untuk menerap
 about.version_title=Informasi versi
 about.product_name=Nama produk:
 about.version=Versi:
+about.release_channel=Kanal rilis:
 about.build=Nomor build:
 about.release_date=Tanggal rilis:
 about.copyright_title=Hak cipta
@@ -114,6 +116,27 @@ about.language_title=Bahasa
 about.system_info=Informasi sistem...
 about.license=Lisensi...
 about.license_text=Build beta Syscalculator 2.0. Lisensi evaluasi internal.
+
+feedback.title=Feedback
+feedback.heading=Kirim feedback
+feedback.subtitle=Tulis apa yang terjadi, apa yang Anda harapkan, atau ide Anda.
+feedback.default_subject=Feedback tentang Syscalculator
+feedback.default_subject_converter=Feedback tentang {0}
+feedback.message_placeholder=Apa yang terjadi?\n\nApa yang Anda harapkan?\n\nLangkah untuk mengulang:
+feedback.kind=Jenis
+feedback.kind.problem=Masalah
+feedback.kind.idea=Ide
+feedback.kind.question=Pertanyaan
+feedback.kind.other=Lainnya
+feedback.name=Nama
+feedback.email=E-mail
+feedback.subject=Subjek
+feedback.message=Pesan
+feedback.include_support_info=Kirim informasi sistem
+feedback.copy_hint=Buka program e-mail Anda untuk {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Mail tidak dapat dibuka. Pesan feedback disalin ke clipboard.
+feedback.webview_error=WebView2 tidak dapat dimulai.
 
 find.title=Cari / ganti
 find.find=Cari

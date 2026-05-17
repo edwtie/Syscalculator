@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Einleitung erneut anzeigen
 menu.about=Info
 menu.about.syscalculator=Info zu Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=Datei:
 
@@ -102,6 +103,7 @@ trace.none=Kein Trace verfuegbar.
 about.version_title=Versionsinformationen
 about.product_name=Produktname:
 about.version=Version:
+about.release_channel=Releasekanal:
 about.build=Buildnummer:
 about.release_date=Veroeffentlichungsdatum:
 about.copyright_title=Copyright
@@ -114,6 +116,27 @@ about.language_title=Sprache
 about.system_info=Systeminformationen...
 about.license=Lizenz...
 about.license_text=Syscalculator 2.0 Beta-Build. Interne Evaluierungslizenz.
+
+feedback.title=Feedback
+feedback.heading=Feedback senden
+feedback.subtitle=Beschreiben Sie, was passiert ist, was Sie erwartet haben, oder welche Idee Sie haben.
+feedback.default_subject=Feedback zu Syscalculator
+feedback.default_subject_converter=Feedback zu {0}
+feedback.message_placeholder=Was ist passiert?\n\nWas haben Sie erwartet?\n\nSchritte zum Wiederholen:
+feedback.kind=Typ
+feedback.kind.problem=Problem
+feedback.kind.idea=Idee
+feedback.kind.question=Frage
+feedback.kind.other=Sonstiges
+feedback.name=Name
+feedback.email=E-Mail
+feedback.subject=Betreff
+feedback.message=Nachricht
+feedback.include_support_info=Systeminformationen mitsenden
+feedback.copy_hint=Oeffnen Sie Ihr Mailprogramm fuer {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Mail konnte nicht geoeffnet werden. Die Feedback-Nachricht wurde in die Zwischenablage kopiert.
+feedback.webview_error=WebView2 konnte nicht starten.
 
 find.title=Suchen / Ersetzen
 find.find=Suchen

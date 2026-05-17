@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Mostra di nuovo introduzione
 menu.about=Informazioni
 menu.about.syscalculator=Informazioni su Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=File:
 
@@ -102,6 +103,7 @@ language.restart_required=Lingua cambiata. Riavvia Syscalculator per applicare t
 about.version_title=Informazioni versione
 about.product_name=Nome prodotto:
 about.version=Versione:
+about.release_channel=Canale rilascio:
 about.build=Numero build:
 about.release_date=Data rilascio:
 about.copyright_title=Copyright
@@ -114,6 +116,27 @@ about.language_title=Lingua
 about.system_info=Informazioni di sistema...
 about.license=Licenza...
 about.license_text=Build beta di Syscalculator 2.0. Licenza interna di valutazione.
+
+feedback.title=Feedback
+feedback.heading=Invia feedback
+feedback.subtitle=Scrivi cosa succede, cosa ti aspettavi, o quale idea hai.
+feedback.default_subject=Feedback su Syscalculator
+feedback.default_subject_converter=Feedback su {0}
+feedback.message_placeholder=Cosa e successo?\n\nCosa ti aspettavi?\n\nPassaggi per ripetere:
+feedback.kind=Tipo
+feedback.kind.problem=Problema
+feedback.kind.idea=Idea
+feedback.kind.question=Domanda
+feedback.kind.other=Altro
+feedback.name=Nome
+feedback.email=E-mail
+feedback.subject=Oggetto
+feedback.message=Messaggio
+feedback.include_support_info=Invia informazioni di sistema
+feedback.copy_hint=Apri il programma mail per {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Impossibile aprire la mail. Il messaggio di feedback e stato copiato negli appunti.
+feedback.webview_error=WebView2 non si e avviato.
 
 find.title=Trova / sostituisci
 find.find=Trova

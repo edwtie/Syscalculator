@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Show introduction again
 menu.about=About
 menu.about.syscalculator=About Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=File:
 
@@ -89,6 +90,27 @@ about.language_title=Language
 about.system_info=System information...
 about.license=License...
 about.license_text=Syscalculator 2.0 beta build. Internal evaluation license.
+
+feedback.title=Feedback
+feedback.heading=Send feedback
+feedback.subtitle=Write what happened, what you expected, or what idea you have.
+feedback.default_subject=Feedback about Syscalculator
+feedback.default_subject_converter=Feedback about {0}
+feedback.message_placeholder=What happened?\n\nWhat did you expect?\n\nSteps to repeat:
+feedback.kind=Type
+feedback.kind.problem=Problem
+feedback.kind.idea=Idea
+feedback.kind.question=Question
+feedback.kind.other=Other
+feedback.name=Name
+feedback.email=E-mail
+feedback.subject=Subject
+feedback.message=Message
+feedback.include_support_info=Send system information
+feedback.copy_hint=Open your mail program for {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Mail could not be opened. The feedback message was copied to the clipboard.
+feedback.webview_error=WebView2 could not start.
 dialog.tray_title=Syscalculator
 dialog.tray_message=Syscalculator is running in the system tray.
 dialog.open_nod.file_not_found=File not found: {0}

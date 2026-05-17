@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Afficher encore l'introduction
 menu.about=A propos
 menu.about.syscalculator=A propos de Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=Fichier:
 
@@ -102,6 +103,7 @@ language.restart_required=Langue modifiee. Redemarrez Syscalculator pour appliqu
 about.version_title=Informations de version
 about.product_name=Nom du produit:
 about.version=Version:
+about.release_channel=Canal de sortie:
 about.build=Numero de build:
 about.release_date=Date de sortie:
 about.copyright_title=Copyright
@@ -114,6 +116,27 @@ about.language_title=Langue
 about.system_info=Informations systeme...
 about.license=Licence...
 about.license_text=Build beta de Syscalculator 2.0. Licence d'evaluation interne.
+
+feedback.title=Feedback
+feedback.heading=Envoyer un feedback
+feedback.subtitle=Decrivez ce qui se passe, ce que vous attendiez, ou votre idee.
+feedback.default_subject=Feedback sur Syscalculator
+feedback.default_subject_converter=Feedback sur {0}
+feedback.message_placeholder=Que s'est-il passe ?\n\nQu'attendiez-vous ?\n\nEtapes pour reproduire :
+feedback.kind=Type
+feedback.kind.problem=Probleme
+feedback.kind.idea=Idee
+feedback.kind.question=Question
+feedback.kind.other=Autre
+feedback.name=Nom
+feedback.email=E-mail
+feedback.subject=Sujet
+feedback.message=Message
+feedback.include_support_info=Envoyer les informations systeme
+feedback.copy_hint=Ouvrez votre programme mail pour {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Impossible d'ouvrir le mail. Le message de feedback a ete copie dans le presse-papiers.
+feedback.webview_error=WebView2 n'a pas pu demarrer.
 
 find.title=Rechercher / remplacer
 find.find=Rechercher

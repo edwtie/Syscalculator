@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Mostrar introducao novamente
 menu.about=Sobre
 menu.about.syscalculator=Sobre Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=Arquivo:
 
@@ -102,6 +103,7 @@ language.restart_required=Idioma alterado. Reinicie o Syscalculator para aplicar
 about.version_title=Informacoes da versao
 about.product_name=Nome do produto:
 about.version=Versao:
+about.release_channel=Canal de lancamento:
 about.build=Numero da build:
 about.release_date=Data de lancamento:
 about.copyright_title=Copyright
@@ -114,6 +116,27 @@ about.language_title=Idioma
 about.system_info=Informacoes do sistema...
 about.license=Licenca...
 about.license_text=Build beta do Syscalculator 2.0. Licenca interna de avaliacao.
+
+feedback.title=Feedback
+feedback.heading=Enviar feedback
+feedback.subtitle=Escreva o que aconteceu, o que esperava, ou qual ideia voce tem.
+feedback.default_subject=Feedback sobre Syscalculator
+feedback.default_subject_converter=Feedback sobre {0}
+feedback.message_placeholder=O que aconteceu?\n\nO que esperava?\n\nPassos para repetir:
+feedback.kind=Tipo
+feedback.kind.problem=Problema
+feedback.kind.idea=Ideia
+feedback.kind.question=Pergunta
+feedback.kind.other=Outro
+feedback.name=Nome
+feedback.email=E-mail
+feedback.subject=Assunto
+feedback.message=Mensagem
+feedback.include_support_info=Enviar informacoes do sistema
+feedback.copy_hint=Abra seu programa de e-mail para {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Nao foi possivel abrir o e-mail. A mensagem de feedback foi copiada para a area de transferencia.
+feedback.webview_error=WebView2 nao conseguiu iniciar.
 
 find.title=Localizar / substituir
 find.find=Localizar

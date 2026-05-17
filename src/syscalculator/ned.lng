@@ -37,6 +37,7 @@ menu.tools.trace=Trace
 menu.tools.show_intro=Introductie opnieuw tonen
 menu.about=Over
 menu.about.syscalculator=Over Syscalculator
+menu.about.feedback=Feedback...
 
 toolbar.file=Bestand:
 
@@ -89,6 +90,27 @@ about.language_title=Taal
 about.system_info=Systeem informatie...
 about.license=Licentie...
 about.license_text=Syscalculator 2.0 beta build. Interne evaluatielicentie.
+
+feedback.title=Feedback
+feedback.heading=Feedback sturen
+feedback.subtitle=Schrijf wat er gebeurt, wat u verwachtte, of welk idee u hebt.
+feedback.default_subject=Feedback over Syscalculator
+feedback.default_subject_converter=Feedback over {0}
+feedback.message_placeholder=Wat gebeurde er?\n\nWat had u verwacht?\n\nStappen om het te herhalen:
+feedback.kind=Soort
+feedback.kind.problem=Probleem
+feedback.kind.idea=Idee
+feedback.kind.question=Vraag
+feedback.kind.other=Overig
+feedback.name=Naam
+feedback.email=E-mail
+feedback.subject=Onderwerp
+feedback.message=Bericht
+feedback.include_support_info=Systeeminformatie meesturen
+feedback.copy_hint=Open uw mailprogramma voor {0}.
+feedback.open_mail=Mail
+feedback.mail_failed=Mail openen lukte niet. Het feedbackbericht is naar het klembord gekopieerd.
+feedback.webview_error=WebView2 kon niet starten.
 dialog.tray_title=Syscalculator
 dialog.tray_message=Syscalculator draait in het systeemvak.
 dialog.open_nod.file_not_found=Bestand niet gevonden: {0}
