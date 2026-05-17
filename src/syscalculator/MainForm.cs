@@ -1998,7 +1998,7 @@ private void LoadNodFilePath(string nodPath)
             {
                 MessageBox.Show(
                     this,
-                    string.Format(T("update.failed", "Could not check for updates.\n\n{0}"), ex.Message),
+                    string.Format(NormalizeUpdateDialogText(T("update.failed", "Could not check for updates.\n\n{0}")), ex.Message),
                     T("update.title", "Syscalculator update"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
@@ -2010,13 +2010,13 @@ private void LoadNodFilePath(string nodPath)
     {
         var title = string.IsNullOrWhiteSpace(update.Title)
             ? T("update.available_title", "New Syscalculator version available")
-            : update.Title.Trim();
+            : NormalizeUpdateDialogText(update.Title.Trim());
         var versionText = string.IsNullOrWhiteSpace(update.DisplayVersion) ? update.Version : update.DisplayVersion;
         var version = string.IsNullOrWhiteSpace(versionText) ? "-" : NormalizeUpdateDialogText(versionText.Trim());
         var date = string.IsNullOrWhiteSpace(update.Date) ? "-" : update.Date.Trim();
         var summary = string.IsNullOrWhiteSpace(update.Summary) ? "" : Environment.NewLine + Environment.NewLine + NormalizeUpdateDialogText(update.Summary.Trim());
         var message = string.Format(
-            T("update.available", "{0}\n\nVersion: {1}\nDate: {2}{3}\n\nDownload this update?"),
+            NormalizeUpdateDialogText(T("update.available", "{0}\n\nVersion: {1}\nDate: {2}{3}\n\nDownload this update?")),
             title,
             version,
             date,
