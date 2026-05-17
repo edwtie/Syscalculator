@@ -810,7 +810,7 @@ internal sealed class FeedbackSentForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
-        ClientSize = new Size(560, 374);
+        ClientSize = new Size(420, 280);
         BackColor = TransparentClientColor;
         TransparencyKey = TransparentClientColor;
         AppWindowIcon.ApplyTo(this);
@@ -818,7 +818,8 @@ internal sealed class FeedbackSentForm : Form
         _cardImage = LoadSentCardImage();
         var card = new PictureBox
         {
-            Bounds = new Rectangle(150, 108, 260, 154),
+            Bounds = new Rectangle(68, 58, 300, 178),
+            BackColor = Color.FromArgb(252, 250, 245),
             Image = _cardImage,
             SizeMode = PictureBoxSizeMode.StretchImage
         };
@@ -829,10 +830,10 @@ internal sealed class FeedbackSentForm : Form
             AutoSize = false,
             BackColor = Color.Transparent,
             ForeColor = Color.FromArgb(32, 34, 32),
-            Font = CreateHandwritingFont(19f, FontStyle.Regular),
+            Font = CreateHandwritingFont(17f, FontStyle.Regular),
             Text = message,
             TextAlign = ContentAlignment.MiddleCenter,
-            Bounds = new Rectangle(20, 42, 220, 68)
+            Bounds = new Rectangle(18, 45, 264, 82)
         };
         card.Controls.Add(messageLabel);
 
@@ -843,7 +844,7 @@ internal sealed class FeedbackSentForm : Form
             BackColor = Color.FromArgb(248, 246, 240),
             ForeColor = Color.FromArgb(24, 24, 24),
             Font = new Font(GetUiFontFamily(), 9f, FontStyle.Regular),
-            Bounds = new Rectangle(410, 284, 82, 28),
+            Bounds = new Rectangle(286, 242, 82, 28),
             DialogResult = DialogResult.OK
         };
         okButton.FlatAppearance.BorderColor = Color.FromArgb(42, 42, 42);
