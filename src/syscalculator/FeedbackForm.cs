@@ -189,8 +189,8 @@ input, textarea {
   width: 100%;
   border: 1px solid transparent;
   border-bottom-color: var(--line);
-  background: var(--paper) !important;
-  background-color: var(--paper) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   color: #0f172a;
   border-radius: 3px;
   padding: 4px 6px;
@@ -200,13 +200,13 @@ input, textarea {
 }
 input:focus, textarea:focus {
   border-color: rgba(17, 24, 39, 0.42);
-  background: var(--paper-strong) !important;
-  background-color: var(--paper-strong) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.10);
 }
 input:hover, textarea:hover {
-  background: rgba(255,255,255,0.18) !important;
-  background-color: rgba(255,255,255,0.18) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.12);
 }
 .kind-picker {
@@ -219,7 +219,8 @@ input:hover, textarea:hover {
   border: 1px solid transparent;
   border-bottom-color: var(--line);
   border-radius: 3px;
-  background: var(--paper);
+  background: transparent;
+  background-color: transparent;
   color: #0f172a;
   padding: 4px 28px 4px 6px;
   text-align: left;
@@ -227,7 +228,8 @@ input:hover, textarea:hover {
 }
 .kind-button:hover,
 .kind-picker.open .kind-button {
-  background: rgba(255,255,255,0.18);
+  background: transparent;
+  background-color: transparent;
   box-shadow: 0 0 0 1px rgba(65, 78, 96, 0.12);
 }
 .kind-button:focus {
@@ -275,13 +277,13 @@ textarea {
   resize: none;
   min-height: 0;
   line-height: 1.45;
-  background: rgba(255,255,255,0.04) !important;
-  background-color: rgba(255,255,255,0.04) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   border-color: rgba(55, 66, 82, 0.18);
 }
 textarea:focus {
-  background: rgba(255,255,255,0.16) !important;
-  background-color: rgba(255,255,255,0.16) !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 textarea::-webkit-scrollbar {
   width: 10px;
