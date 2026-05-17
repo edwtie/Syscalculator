@@ -800,10 +800,15 @@ document.getElementById('message').focus();
 internal sealed class FeedbackSentForm : Form
 {
     private static readonly Color TransparentClientColor = Color.FromArgb(255, 0, 255);
-    private readonly Image? _cardImage;
+    private readonly WebView2 _browser;
+    private readonly string _message;
+    private readonly string _okText;
 
     public FeedbackSentForm(string title, string message, string okText)
     {
+        _message = message;
+        _okText = okText;
+
         Text = title;
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.None;
@@ -815,58 +820,152 @@ internal sealed class FeedbackSentForm : Form
         TransparencyKey = TransparentClientColor;
         AppWindowIcon.ApplyTo(this);
 
-        _cardImage = LoadSentCardImage();
-        var card = new PictureBox
+        _browser = new WebView2
         {
-            Bounds = new Rectangle(0, 0, 330, 210),
-            BackColor = Color.FromArgb(252, 250, 245),
-            Image = _cardImage,
-            SizeMode = PictureBoxSizeMode.StretchImage
+            Dock = DockStyle.Fill,
+            DefaultBackgroundColor = Color.Transparent,
+            CreationProperties = new CoreWebView2CreationProperties
+            {
+                UserDataFolder = WebView2UserDataFolder.GetPath()
+            }
         };
-        Controls.Add(card);
+        _browser.CoreWebView2InitializationCompleted += Browser_CoreWebView2InitializationCompleted;
+        Controls.Add(_browser);
 
-        var messageLabel = new Label
-        {
-            AutoSize = false,
-            BackColor = Color.Transparent,
-            ForeColor = Color.FromArgb(32, 34, 32),
-            Font = CreateHandwritingFont(17f, FontStyle.Regular),
-            Text = message,
-            TextAlign = ContentAlignment.MiddleCenter,
-            Bounds = new Rectangle(24, 44, 282, 88)
-        };
-        card.Controls.Add(messageLabel);
-
-        var okButton = new Button
-        {
-            Text = okText,
-            FlatStyle = FlatStyle.Flat,
-            BackColor = Color.FromArgb(252, 250, 245),
-            ForeColor = Color.FromArgb(24, 24, 24),
-            Font = new Font(GetUiFontFamily(), 9.75f, FontStyle.Regular),
-            Bounds = new Rectangle(113, 156, 104, 30),
-            DialogResult = DialogResult.OK
-        };
-        okButton.FlatAppearance.BorderColor = Color.FromArgb(88, 24, 30, 39);
-        okButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(238, 235, 228);
-        okButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(225, 221, 214);
-        card.Controls.Add(okButton);
-
-        AcceptButton = okButton;
-        CancelButton = okButton;
+        Shown += async (_, _) => await InitializeBrowserAsync();
     }
 
-    protected override void Dispose(bool disposing)
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
-        if (disposing)
+        if (keyData is Keys.Enter or Keys.Escape)
         {
-            _cardImage?.Dispose();
+            DialogResult = DialogResult.OK;
+            Close();
+            return true;
         }
 
-        base.Dispose(disposing);
+        return base.ProcessCmdKey(ref msg, keyData);
     }
 
-    private static Image? LoadSentCardImage()
+    private async Task InitializeBrowserAsync()
+    {
+        try
+        {
+            await _browser.EnsureCoreWebView2Async();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or COMException)
+        {
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+    }
+
+    private void Browser_CoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
+    {
+        if (!e.IsSuccess || _browser.CoreWebView2 is null)
+        {
+            DialogResult = DialogResult.OK;
+            Close();
+            return;
+        }
+
+        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+        _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+        _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+        _browser.CoreWebView2.Settings.IsStatusBarEnabled = false;
+        _browser.CoreWebView2.WebMessageReceived += (_, _) =>
+        {
+            DialogResult = DialogResult.OK;
+            Close();
+        };
+        _browser.NavigateToString(BuildHtml());
+    }
+
+    private string BuildHtml()
+    {
+        var cardImage = LoadSentCardDataUri();
+        return $$"""
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+body {
+  display: grid;
+  place-items: center;
+}
+.card {
+  width: 330px;
+  height: 210px;
+  background-color: rgb(252, 250, 245);
+  background-image: url('{{cardImage}}');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: relative;
+}
+.message {
+  position: absolute;
+  left: 24px;
+  top: 44px;
+  width: 282px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: rgb(32, 34, 32);
+  font: 26px "Segoe Print", "Segoe Script", "Comic Sans MS", cursive;
+  line-height: 1.55;
+}
+button {
+  position: absolute;
+  left: 113px;
+  top: 156px;
+  width: 104px;
+  height: 30px;
+  border: 1px solid rgba(24, 30, 39, 0.34);
+  border-radius: 4px;
+  background: transparent;
+  color: #111827;
+  font: 13px "Segoe UI", Arial, sans-serif;
+  outline: none;
+}
+button:hover {
+  background: rgba(17, 24, 39, 0.05);
+  border-color: rgba(17, 24, 39, 0.52);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
+}
+button:focus-visible {
+  border-color: rgba(17, 24, 39, 0.70);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.14);
+}
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="message">{{WebUtility.HtmlEncode(_message)}}</div>
+    <button id="ok" autofocus>{{WebUtility.HtmlEncode(_okText)}}</button>
+  </main>
+<script>
+document.getElementById('ok').addEventListener('click', () => chrome.webview.postMessage('ok'));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === 'Escape') {
+    chrome.webview.postMessage('ok');
+  }
+});
+</script>
+</body>
+</html>
+""";
+    }
+
+    private static string LoadSentCardDataUri()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "FeedbackSentBackground.png");
         if (!File.Exists(path))
@@ -876,36 +975,19 @@ internal sealed class FeedbackSentForm : Form
 
         if (!File.Exists(path))
         {
-            return null;
+            return "";
         }
 
         using var source = Image.FromFile(path);
         var sourceCard = new Rectangle(414, 304, 708, 421);
-        var card = new Bitmap(sourceCard.Width, sourceCard.Height);
-        using var graphics = Graphics.FromImage(card);
-        graphics.DrawImage(source, new Rectangle(Point.Empty, card.Size), sourceCard, GraphicsUnit.Pixel);
-        return card;
-    }
-
-    private static Font CreateHandwritingFont(float size, FontStyle style)
-    {
-        foreach (var familyName in new[] { "Segoe Print", "Segoe Script", "Comic Sans MS" })
+        using var card = new Bitmap(sourceCard.Width, sourceCard.Height);
+        using (var graphics = Graphics.FromImage(card))
         {
-            try
-            {
-                return new Font(familyName, size, style);
-            }
-            catch
-            {
-                // Try the next handwriting-style font available on this Windows install.
-            }
+            graphics.DrawImage(source, new Rectangle(Point.Empty, card.Size), sourceCard, GraphicsUnit.Pixel);
         }
 
-        return new Font(GetUiFontFamily(), size, style);
-    }
-
-    private static FontFamily GetUiFontFamily()
-    {
-        return SystemFonts.MessageBoxFont?.FontFamily ?? FontFamily.GenericSansSerif;
+        using var stream = new MemoryStream();
+        card.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+        return "data:image/png;base64," + Convert.ToBase64String(stream.ToArray());
     }
 }
