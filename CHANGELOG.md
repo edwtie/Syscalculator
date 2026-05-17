@@ -20,6 +20,16 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.17.010 Daily Build
+
+**Date:** 2026-05-17 13:23
+
+**Fixes:**
+- Fixed the Feedback Mail and OK buttons by reading WebView2 feedback messages with case-insensitive JSON property names.
+
+**Additions:**
+- Published the daily hotfix installer as `Syscalculator-2.0-daily-2.0.2026.05.17.010.exe`.
+
 #### 2.0.2026.05.17.005 Daily Build
 
 **Date:** 2026-05-17 13:18

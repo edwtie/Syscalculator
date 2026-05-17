@@ -12,6 +12,10 @@ namespace Syscalculator.UI.WinForms;
 internal sealed class FeedbackForm : Form
 {
     private const string SupportAddress = "info@tiedragon.com";
+    private static readonly JsonSerializerOptions WebMessageJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     private readonly LanguageCatalog _language;
     private readonly string _supportInfo;
@@ -81,7 +85,7 @@ internal sealed class FeedbackForm : Form
         FeedbackPayload? payload;
         try
         {
-            payload = JsonSerializer.Deserialize<FeedbackPayload>(e.WebMessageAsJson);
+            payload = JsonSerializer.Deserialize<FeedbackPayload>(e.WebMessageAsJson, WebMessageJsonOptions);
         }
         catch
         {
