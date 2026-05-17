@@ -302,13 +302,37 @@ textarea::-webkit-scrollbar-thumb {
   cursor: pointer;
 }
 .check-row input {
-  appearance: auto;
-  -webkit-appearance: checkbox;
+  appearance: none;
+  -webkit-appearance: none;
   width: 14px;
   height: 14px;
   margin: 0;
   flex: 0 0 auto;
-  accent-color: #0067d8;
+  display: inline-grid;
+  place-content: center;
+  border: 1.5px solid rgba(0, 86, 190, 0.72);
+  border-radius: 3px;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none;
+}
+.check-row input:focus {
+  border-color: rgba(0, 86, 190, 0.88);
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: 0 0 0 2px rgba(0, 86, 190, 0.12);
+}
+.check-row input:hover {
+  background: rgba(0, 86, 190, 0.06) !important;
+  background-color: rgba(0, 86, 190, 0.06) !important;
+}
+.check-row input:checked:after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  border: solid #0067d8;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
 }
 .hint {
   grid-column: 2;
@@ -326,7 +350,8 @@ button {
   height: 30px;
   border: 1px solid rgba(0, 83, 180, 0.55);
   border-radius: 4px;
-  background: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.12);
+  background-color: rgba(255,255,255,0.12);
   color: #001f4d;
   font: inherit;
 }
@@ -334,13 +359,18 @@ button.secondary {
   border-color: rgba(140, 150, 162, 0.45);
   color: #111827;
 }
-button:hover { background: rgba(238, 246, 255, 0.94); }
+button:hover {
+  background: rgba(238, 246, 255, 0.30);
+  background-color: rgba(238, 246, 255, 0.30);
+}
 button.icon-only {
   min-width: 44px;
   width: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
+  background-color: transparent;
 }
 .mail-icon {
   display: inline-block;
