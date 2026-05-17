@@ -349,7 +349,7 @@ public static class GraphPlotRenderer
 
         var xCoarseStep = ChooseCoarseStep(plot, view, density, vertical: true);
         var yCoarseStep = ChooseCoarseStep(plot, view, density, vertical: false);
-        var strokeMultiplier = SmallScaleStrokeMultiplier(Math.Max(Math.Abs(xCoarseStep), Math.Abs(yCoarseStep)), density);
+        var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
         using var axisPen = new Pen(Color.FromArgb(38, 38, 38), 1f * strokeMultiplier);
         using var majorGridPen = new Pen(
             density == GraphPlotDensity.Compact ? Color.FromArgb(185, 194, 206) : Color.FromArgb(176, 186, 199),
@@ -758,12 +758,12 @@ public static class GraphPlotRenderer
             return 1f;
 
         if (scale <= PlanckLengthMeters * 10d)
-            return density == GraphPlotDensity.Compact ? 1.75f : 1.95f;
+            return density == GraphPlotDensity.Compact ? 3.2f : 3.8f;
 
         if (scale <= 1e-18d)
-            return density == GraphPlotDensity.Compact ? 1.45f : 1.65f;
+            return density == GraphPlotDensity.Compact ? 2.4f : 2.8f;
 
-        return density == GraphPlotDensity.Compact ? 1.22f : 1.35f;
+        return density == GraphPlotDensity.Compact ? 1.8f : 2.1f;
     }
 
     private static void DrawAxisLabel(
