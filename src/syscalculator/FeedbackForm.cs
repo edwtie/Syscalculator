@@ -873,12 +873,35 @@ internal sealed class FeedbackSentForm : Form
         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
         _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
         _browser.CoreWebView2.Settings.IsStatusBarEnabled = false;
-        _browser.CoreWebView2.WebMessageReceived += (_, _) =>
+        _browser.CoreWebView2.WebMessageReceived += (_, _) => CloseDialog();
+        _browser.CoreWebView2.NavigationStarting += (_, args) =>
         {
-            DialogResult = DialogResult.OK;
-            Close();
+            if (!args.Uri.StartsWith("syscalculator-feedback://ok", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            args.Cancel = true;
+            CloseDialog();
         };
         _browser.NavigateToString(BuildHtml());
+    }
+
+    private void CloseDialog()
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(CloseDialog);
+            return;
+        }
+
+        DialogResult = DialogResult.OK;
+        Close();
     }
 
     private string BuildHtml()
@@ -953,13 +976,19 @@ button:focus-visible {
 <body>
   <main class="card">
     <div class="message">{{WebUtility.HtmlEncode(_message)}}</div>
-    <button id="ok" autofocus>{{WebUtility.HtmlEncode(_okText)}}</button>
+    <button id="ok" type="button" autofocus>{{WebUtility.HtmlEncode(_okText)}}</button>
   </main>
 <script>
-document.getElementById('ok').addEventListener('click', () => chrome.webview.postMessage('ok'));
+function closeDialog() {
+  if (window.chrome && chrome.webview) {
+    chrome.webview.postMessage('ok');
+  }
+  window.location.href = 'syscalculator-feedback://ok';
+}
+document.getElementById('ok').addEventListener('click', closeDialog);
 document.addEventListener('keydown', event => {
   if (event.key === 'Enter' || event.key === 'Escape') {
-    chrome.webview.postMessage('ok');
+    closeDialog();
   }
 });
 </script>
