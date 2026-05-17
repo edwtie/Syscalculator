@@ -48,7 +48,7 @@ public sealed class NodEditorForm : Form
     private const int GraphPreviewMaxLineSamplePoints = 500;
     private const int GraphPreviewMaxVisibleStepPoints = 350;
     private const decimal GraphPreviewRangeLimit = 1_000_000_000_000_000_000_000_000m;
-    private const decimal GraphPreviewStepMinimum = 0.000000000001m;
+    private const decimal GraphPreviewStepMinimum = 0.0000000000000000000000000001m;
     private static readonly Color NodHelpBubbleBackColor = Color.FromArgb(247, 251, 255);
     private static string RecentFilesConfigDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -1471,7 +1471,7 @@ public sealed class NodEditorForm : Form
     {
         return new NumericUpDown
         {
-            DecimalPlaces = 12,
+            DecimalPlaces = 28,
             Minimum = minimum,
             Maximum = maximum,
             Increment = increment,

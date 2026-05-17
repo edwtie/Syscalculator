@@ -30,7 +30,7 @@ public readonly record struct GraphRangeControls(
 /// </remarks>
 public static class GraphSurfaceApi
 {
-    public const double MinimumViewSpan = 1e-34;
+    public const double MinimumViewSpan = 1.616255e-35;
 
     /// <summary>
     /// Creates the standard graph UI chrome: navigation controls and point-table overlay.
@@ -244,6 +244,9 @@ public static class GraphSurfaceApi
     private static void SetNumberBoxValue(NumericUpDown box, double value)
     {
         if (!double.IsFinite(value))
+            return;
+
+        if (value != 0d && Math.Abs(value) < Math.Pow(10d, -box.DecimalPlaces))
             return;
 
         decimal decimalValue;

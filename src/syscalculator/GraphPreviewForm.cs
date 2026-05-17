@@ -13,7 +13,7 @@ public sealed class GraphPreviewForm : Form
     private const int MaxVisibleStepPoints = 700;
     private const int MaxLineSamplePoints = 500;
     private const decimal GraphRangeLimit = 1_000_000_000_000_000_000_000_000m;
-    private const decimal GraphStepMinimum = 0.000000000001m;
+    private const decimal GraphStepMinimum = 0.0000000000000000000000000001m;
 
     private readonly Func<string> _getNodText;
     private readonly LanguageCatalog? _language;
@@ -373,7 +373,7 @@ public sealed class GraphPreviewForm : Form
     {
         return new NumericUpDown
         {
-            DecimalPlaces = 12,
+            DecimalPlaces = 28,
             Minimum = minimum,
             Maximum = maximum,
             Increment = increment,
