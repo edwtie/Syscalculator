@@ -47,6 +47,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added advanced and statistics NOD help pages plus Dutch help text updates
 - Added Feedback menu and dialog translations for English, Dutch, German, French, Italian, Portuguese, Spanish, Indonesian and Simplified Chinese.
 - Added automatic daily update checking with a manual About menu command and download prompt.
+- Added a standalone zip updater that runs outside Syscalculator, downloads the update package, verifies SHA256 and replaces the app files without using Inno Setup.
 - Added a hosted update manifest at `https://www.tiedragon.com/api/syscalculator-updates/syscalculator.json` for daily, beta and future stable channels.
 - Published the daily installer as `Syscalculator-2.0-daily-2.0.2026.05.17.exe`.
 
