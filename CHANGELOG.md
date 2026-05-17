@@ -30,6 +30,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Fixed graph zoom behavior for very large and very small scales by preserving the synced X/Y span and widening graph range precision.
 - Fixed smallest-scale graph zoom down to the Planck-length cue without rounding synced viewport controls back to zero.
 - Fixed ultra-small graph scale readability by thickening graph, grid and marker lines from subatomic scale down to the Planck cue.
+- Fixed pico-and-smaller graph rendering by hiding the fine detail grid once the scale becomes too small to draw usefully.
 - Fixed NOD math parsing/evaluation for advanced functions and statistics workflows
 - Fixed Windows shell identity for main app, NOD Editor and NOD Template Wizard shortcuts
 - Fixed the Feedback Mail and OK buttons by reading WebView2 feedback messages with case-insensitive JSON property names.

@@ -373,9 +373,10 @@ public static class GraphPlotRenderer
         DrawSmallScaleCue(g, plot, xCoarseStep, yCoarseStep, density);
 
         var minFineGridPixels = ChooseMinFineGridPixels(xCoarseStep, yCoarseStep, density);
-        if (xFineStep >= PlanckLengthMeters && PixelsPerStep(plot, view, xFineStep, vertical: true) >= minFineGridPixels)
+        var showFineGrid = Math.Max(Math.Abs(xCoarseStep), Math.Abs(yCoarseStep)) > PicoMeter;
+        if (showFineGrid && xFineStep >= PlanckLengthMeters && PixelsPerStep(plot, view, xFineStep, vertical: true) >= minFineGridPixels)
             DrawGridLines(g, plot, view, xFineStep, vertical: true, minorGridPen, map, skipStep: xCoarseStep);
-        if (yFineStep >= PlanckLengthMeters && PixelsPerStep(plot, view, yFineStep, vertical: false) >= minFineGridPixels)
+        if (showFineGrid && yFineStep >= PlanckLengthMeters && PixelsPerStep(plot, view, yFineStep, vertical: false) >= minFineGridPixels)
             DrawGridLines(g, plot, view, yFineStep, vertical: false, minorGridPen, map, skipStep: yCoarseStep);
 
         var lastXLabelRight = float.NegativeInfinity;
