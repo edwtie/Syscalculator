@@ -36,7 +36,7 @@ internal static class UpdateChecker
             return UpdateCheckResult.NoUpdate();
         }
 
-        return IsNewer(channelInfo.Version, channelInfo.Date)
+        return IsAvailableUpdate(channelInfo)
             ? UpdateCheckResult.Available(channelInfo)
             : UpdateCheckResult.NoUpdate();
     }
@@ -96,6 +96,55 @@ internal static class UpdateChecker
         }.WithArguments(args));
 
         return true;
+    }
+
+    private static bool IsAvailableUpdate(UpdateChannelInfo update)
+    {
+        if (HasDifferentPackageId(update))
+            return true;
+
+        return IsNewer(update.Version, update.Date);
+    }
+
+    private static bool HasDifferentPackageId(UpdateChannelInfo update)
+    {
+        if (string.IsNullOrWhiteSpace(update.PackageId))
+            return false;
+
+        var updateDate = NormalizeDate(update.Date) ?? NormalizeDate(update.Version);
+        var currentDate = NormalizeDate(AppVersionInfo.BuildDate);
+        if (updateDate is not null && currentDate is not null && string.CompareOrdinal(updateDate, currentDate) > 0)
+            return true;
+
+        if (updateDate is not null && currentDate is not null && string.CompareOrdinal(updateDate, currentDate) < 0)
+            return false;
+
+        return !update.PackageId.Equals(ReadInstalledPackageId(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ReadInstalledPackageId()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "update-state.cfg");
+        if (!File.Exists(path))
+            return "";
+
+        foreach (var rawLine in File.ReadAllLines(path))
+        {
+            var line = rawLine.Trim();
+            if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith(";", StringComparison.Ordinal))
+                continue;
+
+            var separator = line.IndexOf('=');
+            if (separator <= 0)
+                continue;
+
+            var key = line[..separator].Trim();
+            var value = line[(separator + 1)..].Trim();
+            if (key.Equals("packageId", StringComparison.OrdinalIgnoreCase))
+                return value;
+        }
+
+        return "";
     }
 
     private static bool IsNewer(string? version, string? date)
@@ -203,6 +252,9 @@ internal sealed class UpdateChannelInfo
 
     [JsonPropertyName("packageUrl")]
     public string? PackageUrl { get; set; }
+
+    [JsonPropertyName("packageId")]
+    public string? PackageId { get; set; }
 
     [JsonPropertyName("sha256")]
     public string? Sha256 { get; set; }
