@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /*
  * Syscalculator feedback endpoint.
@@ -19,45 +18,45 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    respond(405, ['ok' => false, 'error' => 'method_not_allowed']);
+    respond(405, array('ok' => false, 'error' => 'method_not_allowed'));
 }
 
-$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
 if (!rateLimit($clientIp)) {
-    respond(429, ['ok' => false, 'error' => 'rate_limited']);
+    respond(429, array('ok' => false, 'error' => 'rate_limited'));
 }
 
-$contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+$contentLength = (int)(isset($_SERVER['CONTENT_LENGTH']) ? $_SERVER['CONTENT_LENGTH'] : 0);
 if ($contentLength <= 0 || $contentLength > MAX_BODY_BYTES) {
-    respond(413, ['ok' => false, 'error' => 'invalid_size']);
+    respond(413, array('ok' => false, 'error' => 'invalid_size'));
 }
 
 $raw = file_get_contents('php://input', false, null, 0, MAX_BODY_BYTES + 1);
 if ($raw === false || strlen($raw) > MAX_BODY_BYTES) {
-    respond(413, ['ok' => false, 'error' => 'invalid_size']);
+    respond(413, array('ok' => false, 'error' => 'invalid_size'));
 }
 
 $payload = json_decode($raw, true);
 if (!is_array($payload)) {
-    respond(400, ['ok' => false, 'error' => 'invalid_json']);
+    respond(400, array('ok' => false, 'error' => 'invalid_json'));
 }
 
-$subject = cleanLine((string)($payload['subject'] ?? 'Syscalculator feedback'));
-$kind = cleanLine((string)($payload['kind'] ?? 'Feedback'));
-$name = cleanLine((string)($payload['name'] ?? ''));
-$email = cleanLine((string)($payload['email'] ?? ''));
-$message = trim((string)($payload['message'] ?? ''));
-$supportInfo = trim((string)($payload['supportInfo'] ?? ''));
-$version = cleanLine((string)($payload['version'] ?? ''));
-$channel = cleanLine((string)($payload['releaseChannel'] ?? ''));
-$submittedAt = cleanLine((string)($payload['submittedAtUtc'] ?? gmdate(DATE_ATOM)));
+$subject = cleanLine((string)getValue($payload, 'subject', 'Syscalculator feedback'));
+$kind = cleanLine((string)getValue($payload, 'kind', 'Feedback'));
+$name = cleanLine((string)getValue($payload, 'name', ''));
+$email = cleanLine((string)getValue($payload, 'email', ''));
+$message = trim((string)getValue($payload, 'message', ''));
+$supportInfo = trim((string)getValue($payload, 'supportInfo', ''));
+$version = cleanLine((string)getValue($payload, 'version', ''));
+$channel = cleanLine((string)getValue($payload, 'releaseChannel', ''));
+$submittedAt = cleanLine((string)getValue($payload, 'submittedAtUtc', gmdate(DATE_ATOM)));
 
 if ($message === '' && $subject === '') {
-    respond(400, ['ok' => false, 'error' => 'empty_feedback']);
+    respond(400, array('ok' => false, 'error' => 'empty_feedback'));
 }
 
 $mailSubject = '[Syscalculator feedback] ' . ($subject !== '' ? $subject : $kind);
-$body = buildMailBody([
+$body = buildMailBody(array(
     'submittedAt' => $submittedAt,
     'kind' => $kind,
     'name' => $name,
@@ -68,20 +67,20 @@ $body = buildMailBody([
     'message' => $message,
     'supportInfo' => $supportInfo,
     'ip' => $clientIp,
-]);
+));
 
 $stored = SAVE_COPY ? saveCopy($payload, $body) : false;
 $mailed = sendMail($mailSubject, $body, $email);
 
 if (!$mailed && !$stored) {
-    respond(500, ['ok' => false, 'error' => 'delivery_failed']);
+    respond(500, array('ok' => false, 'error' => 'delivery_failed'));
 }
 
-respond(200, ['ok' => true, 'mailed' => $mailed, 'stored' => $stored]);
+respond(200, array('ok' => true, 'mailed' => $mailed, 'stored' => $stored));
 
-function buildMailBody(array $data): string
+function buildMailBody($data)
 {
-    return implode("\n", [
+    return implode("\n", array(
         'Syscalculator feedback',
         '======================',
         '',
@@ -102,17 +101,17 @@ function buildMailBody(array $data): string
         '-------------------',
         trim((string)$data['supportInfo']),
         '',
-    ]);
+    ));
 }
 
-function sendMail(string $subject, string $body, string $replyTo): bool
+function sendMail($subject, $body, $replyTo)
 {
-    $headers = [
+    $headers = array(
         'From: Syscalculator Feedback <' . FEEDBACK_FROM . '>',
         'MIME-Version: 1.0',
         'Content-Type: text/plain; charset=UTF-8',
         'X-Mailer: PHP/' . phpversion(),
-    ];
+    );
 
     if ($replyTo !== '' && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
         $headers[] = 'Reply-To: ' . $replyTo;
@@ -121,7 +120,7 @@ function sendMail(string $subject, string $body, string $replyTo): bool
     return @mail(FEEDBACK_TO, encodedSubject($subject), $body, implode("\r\n", $headers));
 }
 
-function saveCopy(array $payload, string $body): bool
+function saveCopy($payload, $body)
 {
     if (!is_dir(COPY_DIR) && !@mkdir(COPY_DIR, 0750, true) && !is_dir(COPY_DIR)) {
         return false;
@@ -129,18 +128,18 @@ function saveCopy(array $payload, string $body): bool
 
     protectCopyDir();
 
-    $record = [
+    $record = array(
         'receivedAtUtc' => gmdate(DATE_ATOM),
         'payload' => $payload,
         'mailBody' => $body,
-    ];
+    );
 
     $file = COPY_DIR . '/feedback-' . gmdate('Y-m') . '.jsonl';
-    $line = json_encode($record, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+    $line = json_encode_compat($record) . "\n";
     return @file_put_contents($file, $line, FILE_APPEND | LOCK_EX) !== false;
 }
 
-function rateLimit(string $clientIp): bool
+function rateLimit($clientIp)
 {
     $dir = sys_get_temp_dir() . '/syscalculator-feedback-rate';
     if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
@@ -159,24 +158,24 @@ function rateLimit(string $clientIp): bool
     return true;
 }
 
-function cleanLine(string $value): string
+function cleanLine($value)
 {
-    return trim(str_replace(["\r", "\n"], ' ', $value));
+    return trim(str_replace(array("\r", "\n"), ' ', $value));
 }
 
-function dash(string $value): string
+function dash($value)
 {
     $value = trim($value);
     return $value === '' ? '-' : $value;
 }
 
-function encodedSubject(string $subject): string
+function encodedSubject($subject)
 {
     $subject = cleanLine($subject);
     return '=?UTF-8?B?' . base64_encode($subject) . '?=';
 }
 
-function protectCopyDir(): void
+function protectCopyDir()
 {
     $htaccess = COPY_DIR . '/.htaccess';
     if (!is_file($htaccess)) {
@@ -189,9 +188,46 @@ function protectCopyDir(): void
     }
 }
 
-function respond(int $status, array $body)
+function respond($status, $body)
 {
-    http_response_code($status);
-    echo json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if (function_exists('http_response_code')) {
+        http_response_code($status);
+    } else {
+        header(statusHeader($status));
+    }
+
+    echo json_encode_compat($body);
     exit;
+}
+
+function getValue($array, $key, $default)
+{
+    return isset($array[$key]) ? $array[$key] : $default;
+}
+
+function json_encode_compat($value)
+{
+    $flags = 0;
+    if (defined('JSON_UNESCAPED_SLASHES')) {
+        $flags |= JSON_UNESCAPED_SLASHES;
+    }
+    if (defined('JSON_UNESCAPED_UNICODE')) {
+        $flags |= JSON_UNESCAPED_UNICODE;
+    }
+
+    return $flags === 0 ? json_encode($value) : json_encode($value, $flags);
+}
+
+function statusHeader($status)
+{
+    $texts = array(
+        200 => 'OK',
+        400 => 'Bad Request',
+        405 => 'Method Not Allowed',
+        413 => 'Payload Too Large',
+        429 => 'Too Many Requests',
+        500 => 'Internal Server Error',
+    );
+    $text = isset($texts[$status]) ? $texts[$status] : 'Status';
+    return 'HTTP/1.1 ' . $status . ' ' . $text;
 }
