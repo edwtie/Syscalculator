@@ -128,7 +128,7 @@ internal sealed class FeedbackForm : Form
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root {
-  --blue: #0041aa;
+  --accent: #111827;
   --ink: #10213a;
   --muted: #465970;
   --paper: rgba(255, 255, 255, 0.03);
@@ -161,7 +161,7 @@ body {
 }
 h1 {
   margin: 0;
-  color: var(--blue);
+  color: var(--accent);
   font-size: 20px;
   line-height: 1.15;
 }
@@ -199,10 +199,10 @@ input, textarea {
   box-shadow: none;
 }
 input:focus, textarea:focus {
-  border-color: rgba(0, 86, 190, 0.38);
+  border-color: rgba(17, 24, 39, 0.42);
   background: var(--paper-strong) !important;
   background-color: var(--paper-strong) !important;
-  box-shadow: 0 0 0 2px rgba(0, 86, 190, 0.10);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.10);
 }
 input:hover, textarea:hover {
   background: rgba(255,255,255,0.18) !important;
@@ -232,8 +232,8 @@ input:hover, textarea:hover {
 }
 .kind-button:focus {
   outline: none;
-  border-color: rgba(0, 86, 190, 0.38);
-  box-shadow: 0 0 0 2px rgba(0, 86, 190, 0.10);
+  border-color: rgba(17, 24, 39, 0.42);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.10);
 }
 .kind-button:after {
   content: "";
@@ -269,7 +269,7 @@ input:hover, textarea:hover {
 }
 .kind-list li:hover,
 .kind-list li.active {
-  background: rgba(0, 86, 190, 0.16);
+  background: rgba(17, 24, 39, 0.10);
 }
 textarea {
   resize: none;
