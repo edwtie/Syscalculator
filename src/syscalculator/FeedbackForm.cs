@@ -331,16 +331,19 @@ textarea::-webkit-scrollbar-thumb {
 .check-row input:checked:after {
   content: "";
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 9px;
-  height: 1.8px;
+  height: 1.6px;
   border-radius: 999px;
   background: #111827;
+  transform-origin: center;
 }
 .check-row input:checked:before {
-  transform: rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 .check-row input:checked:after {
-  transform: rotate(-45deg);
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 .hint {
   grid-column: 2;
@@ -356,20 +359,20 @@ textarea::-webkit-scrollbar-thumb {
 button {
   min-width: 104px;
   height: 30px;
-  border: 1px solid rgba(0, 83, 180, 0.55);
+  border: 1px solid rgba(17, 24, 39, 0.34);
   border-radius: 4px;
-  background: rgba(255,255,255,0.12);
-  background-color: rgba(255,255,255,0.12);
-  color: #001f4d;
+  background: transparent;
+  background-color: transparent;
+  color: #111827;
   font: inherit;
 }
 button.secondary {
-  border-color: rgba(140, 150, 162, 0.45);
+  border-color: rgba(17, 24, 39, 0.28);
   color: #111827;
 }
 button:hover {
-  background: rgba(238, 246, 255, 0.30);
-  background-color: rgba(238, 246, 255, 0.30);
+  background: rgba(17, 24, 39, 0.05);
+  background-color: rgba(17, 24, 39, 0.05);
 }
 button.icon-only {
   min-width: 44px;
@@ -384,7 +387,7 @@ button.icon-only {
   display: inline-block;
   width: 15px;
   height: 11px;
-  border: 1.5px solid #0041aa;
+  border: 1.5px solid #111827;
   border-radius: 2px;
   position: relative;
   top: 1px;
@@ -395,7 +398,7 @@ button.icon-only {
   position: absolute;
   top: 1px;
   width: 9px;
-  border-top: 1.5px solid #0041aa;
+  border-top: 1.5px solid #111827;
 }
 .mail-icon:before { left: 0; transform: rotate(35deg); transform-origin: left top; }
 .mail-icon:after { right: 0; transform: rotate(-35deg); transform-origin: right top; }
