@@ -310,27 +310,27 @@ textarea::-webkit-scrollbar-thumb {
   flex: 0 0 auto;
   display: inline-grid;
   place-content: center;
-  border: 1.5px solid rgba(0, 86, 190, 0.72);
+  border: 1.5px solid rgba(17, 24, 39, 0.78);
   border-radius: 3px;
   background: transparent !important;
   background-color: transparent !important;
   box-shadow: none;
 }
 .check-row input:focus {
-  border-color: rgba(0, 86, 190, 0.88);
+  border-color: rgba(17, 24, 39, 0.92);
   background: transparent !important;
   background-color: transparent !important;
-  box-shadow: 0 0 0 2px rgba(0, 86, 190, 0.12);
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.10);
 }
 .check-row input:hover {
-  background: rgba(0, 86, 190, 0.06) !important;
-  background-color: rgba(0, 86, 190, 0.06) !important;
+  background: rgba(17, 24, 39, 0.05) !important;
+  background-color: rgba(17, 24, 39, 0.05) !important;
 }
 .check-row input:checked:after {
   content: "";
   width: 4px;
   height: 8px;
-  border: solid #0067d8;
+  border: solid #111827;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg) translate(-1px, -1px);
 }
