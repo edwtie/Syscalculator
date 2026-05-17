@@ -117,7 +117,7 @@ internal sealed class FeedbackForm : Form
         var defaultSubject = string.IsNullOrWhiteSpace(_converterName)
             ? T("feedback.default_subject", "Feedback over Syscalculator")
             : string.Format(T("feedback.default_subject_converter", "Feedback over {0}"), _converterName);
-        var messagePlaceholder = T("feedback.message_placeholder", "Wat gebeurde er?\r\n\r\nWat had u verwacht?\r\n\r\nStappen om het te herhalen:");
+        var messagePlaceholder = NormalizeLanguageNewLines(T("feedback.message_placeholder", "Wat gebeurde er?\r\n\r\nWat had u verwacht?\r\n\r\nStappen om het te herhalen:"));
         var background = LoadFeedbackBackgroundDataUri();
 
         return $$"""
@@ -519,6 +519,15 @@ document.getElementById('message').focus();
     private static string EmptyAsDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
 
     private static string H(string value) => WebUtility.HtmlEncode(value);
+
+    private static string NormalizeLanguageNewLines(string value)
+    {
+        return value
+            .Replace("\\r\\n", "\n", StringComparison.Ordinal)
+            .Replace("\\n", "\n", StringComparison.Ordinal)
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n');
+    }
 
     private string T(string key, string fallback) => _language.Text(key, fallback);
 
