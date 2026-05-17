@@ -799,7 +799,8 @@ document.getElementById('message').focus();
 
 internal sealed class FeedbackSentForm : Form
 {
-    private readonly Image? _backgroundImage;
+    private static readonly Color TransparentClientColor = Color.FromArgb(255, 0, 255);
+    private readonly Image? _cardImage;
 
     public FeedbackSentForm(string title, string message, string okText)
     {
@@ -810,17 +811,18 @@ internal sealed class FeedbackSentForm : Form
         MinimizeBox = false;
         ShowInTaskbar = false;
         ClientSize = new Size(560, 374);
-        BackColor = Color.FromArgb(68, 70, 69);
+        BackColor = TransparentClientColor;
+        TransparencyKey = TransparentClientColor;
         AppWindowIcon.ApplyTo(this);
 
-        _backgroundImage = LoadSentBackgroundImage();
-        var canvas = new PictureBox
+        _cardImage = LoadSentCardImage();
+        var card = new PictureBox
         {
-            Dock = DockStyle.Fill,
-            Image = _backgroundImage,
+            Bounds = new Rectangle(150, 108, 260, 154),
+            Image = _cardImage,
             SizeMode = PictureBoxSizeMode.StretchImage
         };
-        Controls.Add(canvas);
+        Controls.Add(card);
 
         var messageLabel = new Label
         {
@@ -830,9 +832,9 @@ internal sealed class FeedbackSentForm : Form
             Font = CreateHandwritingFont(19f, FontStyle.Regular),
             Text = message,
             TextAlign = ContentAlignment.MiddleCenter,
-            Bounds = new Rectangle(144, 150, 272, 72)
+            Bounds = new Rectangle(20, 42, 220, 68)
         };
-        canvas.Controls.Add(messageLabel);
+        card.Controls.Add(messageLabel);
 
         var okButton = new Button
         {
@@ -841,13 +843,13 @@ internal sealed class FeedbackSentForm : Form
             BackColor = Color.FromArgb(248, 246, 240),
             ForeColor = Color.FromArgb(24, 24, 24),
             Font = new Font(GetUiFontFamily(), 9f, FontStyle.Regular),
-            Bounds = new Rectangle(408, 286, 82, 28),
+            Bounds = new Rectangle(410, 284, 82, 28),
             DialogResult = DialogResult.OK
         };
         okButton.FlatAppearance.BorderColor = Color.FromArgb(42, 42, 42);
         okButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(238, 235, 228);
         okButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(225, 221, 214);
-        canvas.Controls.Add(okButton);
+        Controls.Add(okButton);
 
         AcceptButton = okButton;
         CancelButton = okButton;
@@ -857,13 +859,13 @@ internal sealed class FeedbackSentForm : Form
     {
         if (disposing)
         {
-            _backgroundImage?.Dispose();
+            _cardImage?.Dispose();
         }
 
         base.Dispose(disposing);
     }
 
-    private static Image? LoadSentBackgroundImage()
+    private static Image? LoadSentCardImage()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "FeedbackSentBackground.png");
         if (!File.Exists(path))
@@ -871,7 +873,17 @@ internal sealed class FeedbackSentForm : Form
             path = Path.Combine(AppContext.BaseDirectory, "FeedbackSentBackground.png");
         }
 
-        return File.Exists(path) ? Image.FromFile(path) : null;
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        using var source = Image.FromFile(path);
+        var sourceCard = new Rectangle(414, 304, 708, 421);
+        var card = new Bitmap(sourceCard.Width, sourceCard.Height);
+        using var graphics = Graphics.FromImage(card);
+        graphics.DrawImage(source, new Rectangle(Point.Empty, card.Size), sourceCard, GraphicsUnit.Pixel);
+        return card;
     }
 
     private static Font CreateHandwritingFont(float size, FontStyle style)
