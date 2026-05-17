@@ -3,16 +3,16 @@
   "generatedAtUtc": "2026-05-18T00:00:00Z",
   "channels": {
     "daily": {
-      "version": "2026.05.18.1",
+      "version": "2026.05.18.2",
       "displayVersion": "2026.05.18",
       "date": "2026-05-18",
       "title": "Syscalculator 2.0 Daily 2026-05-18",
       "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.18-daily/Syscalculator-2.0-daily-2.0.2026.05.18.exe",
       "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-daily-2.0.2026.05.18.zip",
-      "packageId": "daily-2026.05.18-privacy-about-001",
-      "sha256": "7e2b82eb9800fe9f7db119d35c7daa985d7d8da150b85e81bf679f180bda1dfb",
+      "packageId": "daily-2026.05.18-privacy-button-002",
+      "sha256": "09a0934c18bf10bf1e3cd207aaf75839c2da36bc7e68395fe1ceadcd01b85140",
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.18-daily",
-      "summary": "Daily build with Privacy statement links in About, Dutch and English privacy pages, production Store release helper and language updates."
+      "summary": "Daily build with Privacy moved to an About dialog button, Dutch and English privacy pages, production Store release helper and language updates."
     },
     "beta": {
       "version": "2.0.2026.05.17",

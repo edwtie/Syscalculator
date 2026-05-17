@@ -163,7 +163,7 @@ internal sealed class AboutForm : Form
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 178));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 94));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 136));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 114));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
       
@@ -219,7 +219,6 @@ internal sealed class AboutForm : Form
     {
         var grid = CreateSection("\U0001F310", T("about.website_title", "Website"));
         AddLinkRow(grid, AppVersionInfo.Website, AppVersionInfo.Website);
-        AddLinkRow(grid, T("about.privacy", "Privacy statement"), GetPrivacyUrl());
         AddIconFullRow(grid, "\u2709", T("about.email_title", "E-mail"), 28, FontStyle.Bold);
         AddLinkRow(grid, AppVersionInfo.Email, "mailto:" + AppVersionInfo.Email);
         return grid;
@@ -316,7 +315,7 @@ internal sealed class AboutForm : Form
             Padding = new Padding(14, 10, 14, 8),
         };
         bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 470));
+        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 600));
 
         var systemButton = new Button
         {
@@ -341,6 +340,15 @@ internal sealed class AboutForm : Form
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
 
+        var privacyButton = new Button
+        {
+            Text = T("about.privacy", "Privacy..."),
+            Width = 130,
+            Height = 34,
+            Anchor = AnchorStyles.None,
+        };
+        privacyButton.Click += (_, _) => OpenLink(GetPrivacyUrl());
+
         var okButton = new Button
         {
             Text = "OK",
@@ -358,6 +366,7 @@ internal sealed class AboutForm : Form
         };
         buttonRow.Controls.Add(okButton);
         buttonRow.Controls.Add(licenseButton);
+        buttonRow.Controls.Add(privacyButton);
         buttonRow.Controls.Add(systemButton);
 
         bar.Controls.Add(buttonRow, 1, 0);
