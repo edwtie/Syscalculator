@@ -105,10 +105,18 @@ function Invoke-Build {
     $originalUpdateState = if (Test-Path $updateStatePath) { Get-Content $updateStatePath -Raw } else { $null }
 
     try {
-        if ($channelInfo -and $channelInfo.packageId) {
-            $markerText = "# Installed update package marker.`r`n# Used by the updater so same-date daily packages can still be detected without showing a build number.`r`npackageId=$($channelInfo.packageId)`r`n"
+        $packageId = if ($channelInfo -and $channelInfo.packageId) {
+            $channelInfo.packageId
+        } elseif ($releaseChannelName -eq "production") {
+            "production-$dateVersion-store-001"
+        } else {
+            ""
+        }
+
+        if ($packageId) {
+            $markerText = "# Installed update package marker.`r`n# Used by the updater so same-date packages can still be detected without showing a build number.`r`npackageId=$packageId`r`n"
             [System.IO.File]::WriteAllText($updateStatePath, $markerText, [System.Text.UTF8Encoding]::new($false))
-            Write-Host "Using package marker: $($channelInfo.packageId)"
+            Write-Host "Using package marker: $packageId"
         }
 
         powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName

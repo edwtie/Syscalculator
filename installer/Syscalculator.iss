@@ -17,6 +17,11 @@
   #define MyBuildChannel "daily"
 #endif
 
+#define MySelfContained GetEnv("SYSCALC_SELF_CONTAINED")
+#if MySelfContained == ""
+  #define MySelfContained "false"
+#endif
+
 [Setup]
 AppId={{2EC35B6A-1C36-4B5F-AB75-4D4A2F3F8F90}
 AppName={#MyAppName}
@@ -193,9 +198,14 @@ begin
 end;
 
 function InitializeSetup: Boolean;
+#if MySelfContained != "true"
 var
   ErrorCode: Integer;
+#endif
 begin
+#if MySelfContained == "true"
+  Result := True;
+#else
   Result := IsDotNet10DesktopRuntimeInstalled;
   if not Result then
   begin
@@ -204,6 +214,7 @@ begin
       ShellExec('open', '{#DotNetDesktopRuntimeURL}', '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
     end;
   end;
+#endif
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

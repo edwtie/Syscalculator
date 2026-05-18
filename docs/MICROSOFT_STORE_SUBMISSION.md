@@ -22,6 +22,7 @@ Official Microsoft references:
 - Keep Store release notes user-facing and short.
 - Do not mention internal build numbers in Store text.
 - Sign the installer and bundled executable files before Store submission.
+- Production Store installers are self-contained so the Store silent install does not fail when the .NET Desktop Runtime is missing.
 
 ## Helper Commands
 
@@ -32,6 +33,24 @@ STORE_RELEASE.bat build
 ```
 
 `STORE_RELEASE.bat` uses the production channel. It is intentionally separate from `BETA_RELEASE.bat`.
+
+## Standard Install Scenario
+
+Use the production installer, not Daily or Beta.
+
+Install command:
+
+```bat
+Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+```
+
+Uninstall command:
+
+```bat
+"%LOCALAPPDATA%\Programs\Syscalculator\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+```
+
+Daily and Beta installers are framework-dependent and can stop when Microsoft .NET Desktop Runtime is missing. Production installers are built self-contained to avoid the Store error `Installation cancelled by user`.
 
 ## Partner Center Checklist
 
