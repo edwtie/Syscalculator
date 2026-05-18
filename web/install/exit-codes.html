@@ -155,8 +155,8 @@
           </tr>
           <tr>
             <td>Network failure</td>
-            <td>Not applicable</td>
-            <td>The Syscalculator production installer does not require network access after the EXE has started. Download failures before launch are reported by the delivery platform, not by the installer EXE.</td>
+            <td><code>1</code></td>
+            <td>The production installer is self-contained, but Syscalculator uses network access for update checks and update downloads. Network or update-feed failures are treated as a general failure.</td>
           </tr>
           <tr>
             <td>Package rejected during installation</td>
@@ -167,6 +167,9 @@
       </table>
 
       <h2>Miscellaneous EXE return codes</h2>
+      <p>
+        Network access is used by Syscalculator update checks and update downloads. If a network or update-feed failure must be represented as an EXE return code, use <code>1</code>.
+      </p>
       <table>
         <thead>
           <tr>

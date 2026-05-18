@@ -54,7 +54,7 @@ Standard install scenario return codes:
 | Another installation is already in progress | 1618 |
 | Disk space is full | 4 |
 | Reboot required | 3010 |
-| Network failure | Not applicable; the production installer is self-contained and does not download files during installation |
+| Network failure | 1 |
 | Package rejected during installation | 7 |
 
 Miscellaneous EXE return code documentation URL:
