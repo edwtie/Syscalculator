@@ -57,6 +57,9 @@ Standard install scenario return codes:
 | Network failure | 1 | `https://www.tiedragon.com/install/exit-codes.html#1` |
 | Package rejected during installation | 7 | `https://www.tiedragon.com/install/exit-codes.html#7` |
 | Miscellaneous install failure scenarios | 1 | `https://www.tiedragon.com/install/exit-codes.html#1` |
+| Miscellaneous install failure scenarios | 2 | `https://www.tiedragon.com/install/exit-codes.html#2` |
+| Miscellaneous install failure scenarios | 3 | `https://www.tiedragon.com/install/exit-codes.html#3` |
+| Miscellaneous install failure scenarios | 6 | `https://www.tiedragon.com/install/exit-codes.html#6` |
 
 Uninstall command:
 
