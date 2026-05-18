@@ -27,7 +27,7 @@
 AppId={{2EC35B6A-1C36-4B5F-AB75-4D4A2F3F8F90}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-AppVerName={#MyAppName} {#MyAppVersion} {#MyBuildChannel}
+AppVerName={#MyAppName} 2.0
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
