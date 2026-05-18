@@ -34,6 +34,46 @@ STORE_RELEASE.bat build
 
 `STORE_RELEASE.bat` uses the production channel. It is intentionally separate from `BETA_RELEASE.bat`.
 
+## Code Signing Check
+
+Microsoft recommends signing MSI/EXE Store packages, and the MSI/EXE package requirements state that the installer binary and all bundled PE files must be digitally signed with a code signing certificate that chains to a CA in the Microsoft Trusted Root Program.
+
+Current local status:
+
+```powershell
+Get-AuthenticodeSignature "artifacts\installer\Syscalculator-2.0-production-2.0.2026.05.18.exe"
+```
+
+Expected before Store submission:
+
+```text
+Status: Valid
+```
+
+Current result before signing:
+
+```text
+Status: NotSigned
+```
+
+Use the Windows SDK signing tool after a trusted code signing certificate is installed:
+
+```bat
+"C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" sign /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /n "Tiedragon" "artifacts\installer\Syscalculator-2.0-production-2.0.2026.05.18.exe"
+```
+
+Then verify:
+
+```bat
+"C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" verify /pa /all "artifacts\installer\Syscalculator-2.0-production-2.0.2026.05.18.exe"
+```
+
+Notes:
+
+- A self-signed certificate is not acceptable for Store MSI/EXE submission.
+- The installer must be re-uploaded to the versioned HTTPS URL after signing because signing changes the file hash.
+- Do not modify the binary behind the submitted URL after Partner Center submission.
+
 ## Standard Install Scenario
 
 Use the production installer, not Daily or Beta.
