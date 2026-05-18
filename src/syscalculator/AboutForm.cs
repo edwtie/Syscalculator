@@ -224,6 +224,13 @@ internal sealed class AboutForm : Form
         return grid;
     }
 
+    private string GetPrivacyUrl()
+    {
+        return _currentLanguageFile.Equals("ned.lng", StringComparison.OrdinalIgnoreCase)
+            ? AppVersionInfo.PrivacyUrlDutch
+            : AppVersionInfo.PrivacyUrl;
+    }
+
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildLanguageSection.
     private Control BuildLanguageSection(string currentLanguageFile)
     {
@@ -308,7 +315,7 @@ internal sealed class AboutForm : Form
             Padding = new Padding(14, 10, 14, 8),
         };
         bar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 470));
+        bar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 600));
 
         var systemButton = new Button
         {
@@ -333,6 +340,15 @@ internal sealed class AboutForm : Form
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
 
+        var privacyButton = new Button
+        {
+            Text = T("about.privacy", "Privacy..."),
+            Width = 130,
+            Height = 34,
+            Anchor = AnchorStyles.None,
+        };
+        privacyButton.Click += (_, _) => OpenLink(GetPrivacyUrl());
+
         var okButton = new Button
         {
             Text = "OK",
@@ -350,6 +366,7 @@ internal sealed class AboutForm : Form
         };
         buttonRow.Controls.Add(okButton);
         buttonRow.Controls.Add(licenseButton);
+        buttonRow.Controls.Add(privacyButton);
         buttonRow.Controls.Add(systemButton);
 
         bar.Controls.Add(buttonRow, 1, 0);

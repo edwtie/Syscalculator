@@ -105,10 +105,18 @@ function Invoke-Build {
     $originalUpdateState = if (Test-Path $updateStatePath) { Get-Content $updateStatePath -Raw } else { $null }
 
     try {
-        if ($channelInfo -and $channelInfo.packageId) {
-            $markerText = "# Installed update package marker.`r`n# Used by the updater so same-date daily packages can still be detected without showing a build number.`r`npackageId=$($channelInfo.packageId)`r`n"
+        $packageId = if ($channelInfo -and $channelInfo.packageId) {
+            $channelInfo.packageId
+        } elseif ($releaseChannelName -eq "production") {
+            "production-$dateVersion-store-001"
+        } else {
+            ""
+        }
+
+        if ($packageId) {
+            $markerText = "# Installed update package marker.`r`n# Used by the updater so same-date packages can still be detected without showing a build number.`r`npackageId=$packageId`r`n"
             [System.IO.File]::WriteAllText($updateStatePath, $markerText, [System.Text.UTF8Encoding]::new($false))
-            Write-Host "Using package marker: $($channelInfo.packageId)"
+            Write-Host "Using package marker: $packageId"
         }
 
         powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName
@@ -152,6 +160,8 @@ function Write-Help {
     Write-Host "  DAILY_RELEASE.bat check beta        Same check for beta channel"
     Write-Host "  BETA_RELEASE.bat                    Shortcut for beta check"
     Write-Host "  BETA_RELEASE.bat hash               Shortcut for beta hashes"
+    Write-Host "  STORE_RELEASE.bat                   Shortcut for production Store release check"
+    Write-Host "  STORE_RELEASE.bat build             Build production installer for Microsoft Store submission"
     Write-Host ""
     Write-Host "Notes:"
     Write-Host "  This helper does not store FTP credentials."

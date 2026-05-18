@@ -13,6 +13,8 @@ $updaterPublishDir = Join-Path $publishDir 'Updater'
 $installerScript = Join-Path $repoRoot 'installer\Syscalculator.iss'
 $generatedVersionFile = Join-Path $repoRoot 'src\syscalculator\AppVersionInfo.Generated.cs'
 $updatesDir = Join-Path $repoRoot 'artifacts\updates'
+$isSelfContained = $Channel -eq 'production'
+$selfContainedArg = if ($isSelfContained) { 'true' } else { 'false' }
 
 $isccCommand = Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue
 $isccPath = if ($isccCommand) { $isccCommand.Source } else { $null }
@@ -35,12 +37,12 @@ if (Test-Path $publishDir) {
     Remove-Item -LiteralPath $publishDir -Recurse -Force
 }
 
-dotnet publish $project -c Release -r win-x64 --self-contained false -o $publishDir
+dotnet publish $project -c Release -r win-x64 --self-contained $selfContainedArg -o $publishDir
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE."
 }
 
-dotnet publish $updaterProject -c Release -r win-x64 --self-contained false -o $updaterPublishDir
+dotnet publish $updaterProject -c Release -r win-x64 --self-contained $selfContainedArg -o $updaterPublishDir
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish updater failed with exit code $LASTEXITCODE."
 }
@@ -55,7 +57,7 @@ if ($versionText -notmatch 'BuildNumber\s*=\s*"(?<build>[^"]+)"') {
 }
 
 $buildNumber = $Matches['build']
-$installVersion = if (($Channel -eq 'daily' -or $Channel -eq 'beta') -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
+$installVersion = if (($Channel -eq 'daily' -or $Channel -eq 'beta' -or $Channel -eq 'production') -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
     "2.0.$($Matches['date'])"
 }
 else {
@@ -64,6 +66,7 @@ else {
 
 $env:SYSCALC_INSTALL_VERSION = $installVersion
 $env:SYSCALC_INSTALL_CHANNEL = $Channel
+$env:SYSCALC_SELF_CONTAINED = $selfContainedArg
 
 if (-not (Test-Path $updatesDir)) {
     New-Item -ItemType Directory -Path $updatesDir | Out-Null
@@ -80,5 +83,6 @@ $packageHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $packagePath).Hash.T
 & $isccPath $installerScript
 
 Write-Host "Installer created in artifacts\installer for channel '$Channel' version '$env:SYSCALC_INSTALL_VERSION'."
+Write-Host "Self-contained publish: $selfContainedArg"
 Write-Host "Updater package created: $packagePath"
 Write-Host "Updater package sha256: $packageHash"

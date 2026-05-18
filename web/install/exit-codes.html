@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Syscalculator Installer Return Codes</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #d7dce3;
+      --paper: #ffffff;
+      --bg: #f3f4f6;
+      --accent: #0f4c81;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    main {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    article {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 40px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    h2 {
+      margin: 32px 0 10px;
+      font-size: 20px;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 26px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f7;
+      font-weight: 700;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background: #f5f7fa;
+      border: 1px solid #e4e8ee;
+      padding: 1px 4px;
+    }
+
+    .updated,
+    .note {
+      color: var(--muted);
+    }
+
+    .scenario-list {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    section.scenario {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 18px;
+      scroll-margin-top: 24px;
+    }
+
+    section.scenario h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 8px 14px;
+      margin: 0;
+    }
+
+    dt {
+      font-weight: 700;
+    }
+
+    dd {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <article>
+      <h1>Syscalculator Installer Return Codes</h1>
+      <p class="updated">Last updated: 2026-05-18</p>
+
+      <p>
+        Syscalculator production installers are EXE installers built with Inno Setup. The production installer is self-contained and does not download files during installation.
+      </p>
+
+      <h2>Microsoft Store install command</h2>
+      <p>
+        Use this command for unattended Microsoft Store validation:
+      </p>
+      <p>
+        <code>Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010</code>
+      </p>
+
+      <h2>Partner Center install scenarios</h2>
+      <p>
+        Provide the following EXE return code value and scenario-specific documentation URL for each Microsoft Partner Center install scenario.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Install scenario</th>
+            <th>EXE return code value</th>
+            <th>Specific documentation URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Successful install</td>
+            <td><code>0</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#0">https://www.tiedragon.com/install/exit-codes.html#0</a></td>
+          </tr>
+          <tr>
+            <td>Installation cancelled by user</td>
+            <td><code>5</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#5">https://www.tiedragon.com/install/exit-codes.html#5</a></td>
+          </tr>
+          <tr>
+            <td>Application already exists</td>
+            <td><code>1638</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#1638">https://www.tiedragon.com/install/exit-codes.html#1638</a></td>
+          </tr>
+          <tr>
+            <td>Another installation is already in progress</td>
+            <td><code>1618</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#1618">https://www.tiedragon.com/install/exit-codes.html#1618</a></td>
+          </tr>
+          <tr>
+            <td>Disk space is full</td>
+            <td><code>4</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#4">https://www.tiedragon.com/install/exit-codes.html#4</a></td>
+          </tr>
+          <tr>
+            <td>Reboot required</td>
+            <td><code>3010</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#3010">https://www.tiedragon.com/install/exit-codes.html#3010</a></td>
+          </tr>
+          <tr>
+            <td>Network failure</td>
+            <td><code>1</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#1">https://www.tiedragon.com/install/exit-codes.html#1</a></td>
+          </tr>
+          <tr>
+            <td>Package rejected during installation</td>
+            <td><code>7</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#7">https://www.tiedragon.com/install/exit-codes.html#7</a></td>
+          </tr>
+          <tr>
+            <td>Miscellaneous install failure scenarios</td>
+            <td><code>3</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html#3">https://www.tiedragon.com/install/exit-codes.html#3</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Separate scenario articles</h2>
+      <div class="scenario-list">
+        <section class="scenario" id="0">
+          <h3>Successful install</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>0</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#0">https://www.tiedragon.com/install/exit-codes.html#0</a></dd>
+            <dt>Meaning</dt>
+            <dd>The installer completed successfully and no reboot was requested.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="5">
+          <h3>Installation cancelled by user</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>5</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#5">https://www.tiedragon.com/install/exit-codes.html#5</a></dd>
+            <dt>Meaning</dt>
+            <dd>The user cancelled during the installation phase.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="1638">
+          <h3>Application already exists</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>1638</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#1638">https://www.tiedragon.com/install/exit-codes.html#1638</a></dd>
+            <dt>Meaning</dt>
+            <dd>A production installation of Syscalculator is already registered on the device. This is a Syscalculator-specific compatibility code.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="1618">
+          <h3>Another installation is already in progress</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>1618</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#1618">https://www.tiedragon.com/install/exit-codes.html#1618</a></dd>
+            <dt>Meaning</dt>
+            <dd>Windows or deployment tooling reports that another installation must finish before this one can continue.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="4">
+          <h3>Disk space is full</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>4</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#4">https://www.tiedragon.com/install/exit-codes.html#4</a></dd>
+            <dt>Meaning</dt>
+            <dd>A fatal error occurred during the installation phase, for example because files could not be written.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="3010">
+          <h3>Reboot required</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>3010</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#3010">https://www.tiedragon.com/install/exit-codes.html#3010</a></dd>
+            <dt>Meaning</dt>
+            <dd>The installer completed but requested a restart. This value is enabled by the <code>/RESTARTEXITCODE=3010</code> install argument.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="1">
+          <h3>Network failure and miscellaneous failure</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>1</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#1">https://www.tiedragon.com/install/exit-codes.html#1</a></dd>
+            <dt>Meaning</dt>
+            <dd>The production installer is self-contained, but Syscalculator uses network access for update checks and update downloads. Network, update-feed, and miscellaneous failures are treated as a general failure.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="2">
+          <h3>Cancelled before install started</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>2</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#2">https://www.tiedragon.com/install/exit-codes.html#2</a></dd>
+            <dt>Meaning</dt>
+            <dd>The user cancelled before the actual installation started.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="3">
+          <h3>Miscellaneous install failure scenarios</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>3</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#3">https://www.tiedragon.com/install/exit-codes.html#3</a></dd>
+            <dt>Meaning</dt>
+            <dd>A fatal error occurred while preparing to install. Use this code for the Microsoft Partner Center miscellaneous install failure scenario.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="6">
+          <h3>Setup terminated by debugger</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>6</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#6">https://www.tiedragon.com/install/exit-codes.html#6</a></dd>
+            <dt>Meaning</dt>
+            <dd>The setup process was forcefully terminated by the Inno Setup debugger.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario" id="7">
+          <h3>Package rejected during installation</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>7</code></dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#7">https://www.tiedragon.com/install/exit-codes.html#7</a></dd>
+            <dt>Meaning</dt>
+            <dd>The setup preparation stage determined that installation cannot proceed.</dd>
+          </dl>
+        </section>
+
+        <section class="scenario">
+          <h3>Detailed miscellaneous install failure scenarios</h3>
+          <dl>
+            <dt>EXE return code value</dt>
+            <dd><code>3</code> for the Partner Center miscellaneous scenario. Additional detailed setup codes are listed below.</dd>
+            <dt>Documentation URL</dt>
+            <dd><a href="https://www.tiedragon.com/install/exit-codes.html#3">https://www.tiedragon.com/install/exit-codes.html#3</a></dd>
+            <dt>Meaning</dt>
+            <dd>Use the detailed return code table below for setup initialization failures, preparation failures, installation failures, cancellation, existing installation, concurrent installation, and reboot-required outcomes.</dd>
+          </dl>
+        </section>
+      </div>
+
+      <h2>Detailed return code reference</h2>
+      <p>
+        Network access is used by Syscalculator update checks and update downloads. If a network or update-feed failure must be represented as an EXE return code, use <code>1</code>.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Return code</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>0</code></td>
+            <td>Setup completed successfully.</td>
+          </tr>
+          <tr>
+            <td><code>1</code></td>
+            <td>Setup failed to initialize.</td>
+          </tr>
+          <tr>
+            <td><code>2</code></td>
+            <td>The user cancelled before the actual installation started.</td>
+          </tr>
+          <tr>
+            <td><code>3</code></td>
+            <td>A fatal error occurred while preparing to install.</td>
+          </tr>
+          <tr>
+            <td><code>4</code></td>
+            <td>A fatal error occurred during installation.</td>
+          </tr>
+          <tr>
+            <td><code>5</code></td>
+            <td>The user cancelled during installation.</td>
+          </tr>
+          <tr>
+            <td><code>6</code></td>
+            <td>The setup process was forcefully terminated by the Inno Setup debugger.</td>
+          </tr>
+          <tr>
+            <td><code>7</code></td>
+            <td>Setup determined that installation cannot proceed.</td>
+          </tr>
+          <tr>
+            <td><code>8</code></td>
+            <td>Setup determined that installation cannot proceed until the system is restarted.</td>
+          </tr>
+          <tr>
+            <td><code>1618</code></td>
+            <td>Another installation is already in progress.</td>
+          </tr>
+          <tr>
+            <td><code>1638</code></td>
+            <td>Syscalculator production is already installed.</td>
+          </tr>
+          <tr>
+            <td><code>3010</code></td>
+            <td>Installation completed and a reboot is required.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="note">
+        The standard Inno Setup exit codes are documented by Inno Setup at
+        <a href="https://jrsoftware.org/ishelp/topic_setupexitcodes.htm">https://jrsoftware.org/ishelp/topic_setupexitcodes.htm</a>.
+      </p>
+    </article>
+  </main>
+</body>
+</html>
