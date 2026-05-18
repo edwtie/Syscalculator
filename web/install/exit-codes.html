@@ -113,54 +113,107 @@
         <code>Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010</code>
       </p>
 
-      <h2>Standard scenarios</h2>
+      <h2>Partner Center install scenarios</h2>
+      <p>
+        Provide the following EXE return code value and this documentation URL for each Microsoft Partner Center install scenario:
+        <code>https://www.tiedragon.com/install/exit-codes.html</code>
+      </p>
       <table>
         <thead>
           <tr>
-            <th>Scenario</th>
-            <th>Return code</th>
-            <th>Meaning</th>
+            <th>Install scenario</th>
+            <th>EXE return code value</th>
+            <th>Specific documentation URL</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>Successful install</td>
             <td><code>0</code></td>
-            <td>The installer completed successfully and no reboot was requested.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Installation cancelled by user</td>
             <td><code>5</code></td>
-            <td>The user cancelled during the installation phase.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Application already exists</td>
             <td><code>1638</code></td>
-            <td>A production installation of Syscalculator is already registered on the device. This is a Syscalculator-specific compatibility code.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Another installation is already in progress</td>
             <td><code>1618</code></td>
-            <td>Windows or deployment tooling reports that another installation must finish before this one can continue.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Disk space is full</td>
             <td><code>4</code></td>
-            <td>A fatal error occurred during the installation phase, for example because files could not be written.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Reboot required</td>
             <td><code>3010</code></td>
-            <td>The installer completed but requested a restart. This value is enabled by the <code>/RESTARTEXITCODE=3010</code> install argument.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Network failure</td>
             <td><code>1</code></td>
-            <td>The production installer is self-contained, but Syscalculator uses network access for update checks and update downloads. Network or update-feed failures are treated as a general failure.</td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
           </tr>
           <tr>
             <td>Package rejected during installation</td>
             <td><code>7</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
+          </tr>
+          <tr>
+            <td>Miscellaneous install failure scenarios</td>
+            <td><code>1, 2, 3, 4, 5, 7, 8, 1618, 1638, 3010</code></td>
+            <td><a href="https://www.tiedragon.com/install/exit-codes.html">https://www.tiedragon.com/install/exit-codes.html</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Scenario meanings</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Install scenario</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Successful install</td>
+            <td>The installer completed successfully and no reboot was requested.</td>
+          </tr>
+          <tr>
+            <td>Installation cancelled by user</td>
+            <td>The user cancelled during the installation phase.</td>
+          </tr>
+          <tr>
+            <td>Application already exists</td>
+            <td>A production installation of Syscalculator is already registered on the device. This is a Syscalculator-specific compatibility code.</td>
+          </tr>
+          <tr>
+            <td>Another installation is already in progress</td>
+            <td>Windows or deployment tooling reports that another installation must finish before this one can continue.</td>
+          </tr>
+          <tr>
+            <td>Disk space is full</td>
+            <td>A fatal error occurred during the installation phase, for example because files could not be written.</td>
+          </tr>
+          <tr>
+            <td>Reboot required</td>
+            <td>The installer completed but requested a restart. This value is enabled by the <code>/RESTARTEXITCODE=3010</code> install argument.</td>
+          </tr>
+          <tr>
+            <td>Network failure</td>
+            <td>The production installer is self-contained, but Syscalculator uses network access for update checks and update downloads. Network or update-feed failures are treated as a general failure.</td>
+          </tr>
+          <tr>
+            <td>Package rejected during installation</td>
             <td>The setup preparation stage determined that installation cannot proceed.</td>
           </tr>
         </tbody>
