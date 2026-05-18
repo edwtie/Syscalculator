@@ -46,22 +46,17 @@ Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /N
 
 Standard install scenario return codes:
 
-| Scenario | Return code |
-| --- | ---: |
-| Successful install | 0 |
-| Installation cancelled by user | 5 |
-| Application already exists | 1638 |
-| Another installation is already in progress | 1618 |
-| Disk space is full | 4 |
-| Reboot required | 3010 |
-| Network failure | 1 |
-| Package rejected during installation | 7 |
-
-Miscellaneous EXE return code documentation URL:
-
-```text
-https://www.tiedragon.com/install/exit-codes.html
-```
+| Scenario | Return code | Documentation URL |
+| --- | ---: | --- |
+| Successful install | 0 | `https://www.tiedragon.com/install/exit-codes.html#successful-install` |
+| Installation cancelled by user | 5 | `https://www.tiedragon.com/install/exit-codes.html#installation-cancelled-by-user` |
+| Application already exists | 1638 | `https://www.tiedragon.com/install/exit-codes.html#application-already-exists` |
+| Another installation is already in progress | 1618 | `https://www.tiedragon.com/install/exit-codes.html#another-installation-is-already-in-progress` |
+| Disk space is full | 4 | `https://www.tiedragon.com/install/exit-codes.html#disk-space-is-full` |
+| Reboot required | 3010 | `https://www.tiedragon.com/install/exit-codes.html#reboot-required` |
+| Network failure | 1 | `https://www.tiedragon.com/install/exit-codes.html#network-failure` |
+| Package rejected during installation | 7 | `https://www.tiedragon.com/install/exit-codes.html#package-rejected-during-installation` |
+| Miscellaneous install failure scenarios | 1, 2, 3, 4, 5, 7, 8, 1618, 1638, 3010 | `https://www.tiedragon.com/install/exit-codes.html#miscellaneous-install-failure-scenarios` |
 
 Uninstall command:
 
