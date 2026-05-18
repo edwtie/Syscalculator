@@ -41,7 +41,7 @@ Use the production installer, not Daily or Beta.
 Install command:
 
 ```bat
-Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010
 ```
 
 Standard install scenario return codes:
@@ -52,6 +52,16 @@ Standard install scenario return codes:
 | Installation cancelled by user | 5 |
 | Application already exists | 1638 |
 | Another installation is already in progress | 1618 |
+| Disk space is full | 4 |
+| Reboot required | 3010 |
+| Network failure | Not applicable; the production installer is self-contained and does not download files during installation |
+| Package rejected during installation | 7 |
+
+Miscellaneous EXE return code documentation URL:
+
+```text
+https://www.tiedragon.com/install/exit-codes.html
+```
 
 Uninstall command:
 
