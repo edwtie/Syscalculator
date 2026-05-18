@@ -44,6 +44,15 @@ Install command:
 Syscalculator-2.0-production-2.0.2026.05.18.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
+Standard install scenario return codes:
+
+| Scenario | Return code |
+| --- | ---: |
+| Successful install | 0 |
+| Installation cancelled by user | 5 |
+| Application already exists | 1638 |
+| Another installation is already in progress | 1618 |
+
 Uninstall command:
 
 ```bat
