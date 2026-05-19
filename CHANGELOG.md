@@ -49,6 +49,7 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 - Added localized classic NOD-to-NOD 2.0 help text outside Dutch/English.
 - Added localized clipboard/Excel Help fallback text outside Dutch/English.
 - Added explicit help text for clipboard and Excel/Microsoft 365 behavior.
+- Added Windows clipboard history (`Win+V`) guidance for WizardExpress/Excel users.
 - Added graph input tooltips for normal decimal input, `10^n` style input and SI-style examples.
 - Added committed graph input behavior: typing is applied on Enter or focus leave, while zooming and panning keep using display-only updates.
 - Added scale-aware step spinner behavior using readable steps such as `0.5`, `0.75`, `1`, `1.25`, `1.5`, `2`, `2.5`, `5` and `7.5` times powers of ten.
