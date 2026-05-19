@@ -10,16 +10,19 @@ namespace Tiedragon.ClipboardConvert;
 /// </summary>
 public static class ClipboardConvertApi
 {
+    public const int WmClipboardUpdate = 0x031D;
+
     /// <summary>
     /// Reads text and debug metadata from the clipboard.
     /// </summary>
     public static ClipboardSnapshot ReadSnapshot()
     {
+        var sequenceNumber = GetSequenceNumber();
         try
         {
             var data = Clipboard.GetDataObject();
             if (data is null)
-                return ClipboardSnapshot.Empty;
+                return new ClipboardSnapshot("", Array.Empty<string>(), "none", sequenceNumber);
 
             var formats = data.GetFormats();
             string text;
@@ -31,11 +34,62 @@ public static class ClipboardConvertApi
             else
                 text = Clipboard.ContainsText() ? Clipboard.GetText() : "";
 
-            return new ClipboardSnapshot(text, formats, DescribeClipboardOwner());
+            return new ClipboardSnapshot(text, formats, DescribeClipboardOwner(), sequenceNumber);
         }
         catch
         {
-            return ClipboardSnapshot.Empty;
+            return new ClipboardSnapshot("", Array.Empty<string>(), "none", sequenceNumber);
+        }
+    }
+
+    /// <summary>
+    /// Returns the Win32 clipboard sequence number, or 0 when the platform call is unavailable.
+    /// </summary>
+    public static uint GetSequenceNumber()
+    {
+        try
+        {
+            return GetClipboardSequenceNumber();
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Registers a window to receive WM_CLIPBOARDUPDATE notifications.
+    /// </summary>
+    public static bool TryAddClipboardFormatListener(IntPtr windowHandle)
+    {
+        if (windowHandle == IntPtr.Zero)
+            return false;
+
+        try
+        {
+            return AddClipboardFormatListenerNative(windowHandle);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Removes a previously registered WM_CLIPBOARDUPDATE listener.
+    /// </summary>
+    public static bool TryRemoveClipboardFormatListener(IntPtr windowHandle)
+    {
+        if (windowHandle == IntPtr.Zero)
+            return false;
+
+        try
+        {
+            return RemoveClipboardFormatListenerNative(windowHandle);
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -357,6 +411,15 @@ public static class ClipboardConvertApi
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetClipboardOwner();
+
+    [DllImport("user32.dll")]
+    private static extern uint GetClipboardSequenceNumber();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool AddClipboardFormatListenerNative(IntPtr hwnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool RemoveClipboardFormatListenerNative(IntPtr hwnd);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);

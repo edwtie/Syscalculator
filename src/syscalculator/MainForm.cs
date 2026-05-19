@@ -2091,8 +2091,7 @@ private void LoadNodFilePath(string nodPath)
         sb.AppendLine($"Input label: {_currentMeta?.Input1 ?? "-"}");
         sb.AppendLine($"Output label: {_currentMeta?.Input2 ?? "-"}");
         sb.AppendLine($"OS: {Environment.OSVersion}");
-        sb.AppendLine($".NET: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription}");
-        sb.AppendLine($"Process: {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}");
+        sb.Append(RuntimeDiagnostics.Capture().ToSupportText(T));
         return sb.ToString();
     }
 
@@ -2126,6 +2125,8 @@ private void LoadNodFilePath(string nodPath)
 
         var configuration = HelpContent("help.main.page.configuration.body", "main/configuration.html");
 
+        var updater = HelpContent("help.main.page.updater.body", "main/updater.html");
+
         var window = HelpContent("help.main.page.window.body", "main/window.html");
 
         var nodFiles = HelpContent("help.main.page.nodfiles.body", "main/nodfiles.html");
@@ -2147,6 +2148,7 @@ private void LoadNodFilePath(string nodPath)
             new NodHelpPage("wizard", T("help.main.page.wizard.title", "WizardExpress"), WrapMainHelpPage(T("help.main.page.wizard.title", "WizardExpress"), wizard)),
             new NodHelpPage("calculator", T("help.main.page.calculator.title", "Calculator"), WrapMainHelpPage(T("help.main.page.calculator.title", "Calculator"), calculator)),
             new NodHelpPage("configuration", T("help.main.page.configuration.title", "Configuration"), WrapMainHelpPage(T("help.main.page.configuration.title", "Configuration"), configuration)),
+            new NodHelpPage("updater", T("help.main.page.updater.title", "Updater"), WrapMainHelpPage(T("help.main.page.updater.title", "Updater"), updater)),
             new NodHelpPage("window", T("help.main.page.window.title", "Window, tray and decimals"), WrapMainHelpPage(T("help.main.page.window.title", "Window, tray and decimals"), window)),
             new NodHelpPage("nodfiles", T("help.main.page.nodfiles.title", "NOD files and catalog"), WrapMainHelpPage(T("help.main.page.nodfiles.title", "NOD files and catalog"), nodFiles)),
             new NodHelpPage("nodeditor", T("help.main.page.nodeditor.title", "NOD Editor guide"), WrapMainHelpPage(T("help.main.page.nodeditor.title", "NOD Editor guide"), nodEditorGuide)),

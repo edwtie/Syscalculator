@@ -1,0 +1,8 @@
+<Files "download">
+    ForceType application/msix
+    Header set Content-Disposition "attachment; filename=\"syscalculator.msix\""
+</Files>
+
+AddType application/msix .msix
+AddType application/appinstaller .appinstaller
+AddType application/msixbundle .msixbundle

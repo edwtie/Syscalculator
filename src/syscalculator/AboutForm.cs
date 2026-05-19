@@ -196,6 +196,17 @@ internal sealed class AboutForm : Form
             : T("menu.config.update_channel.daily", "Daily");
     }
 
+    private string GetLicenseText()
+    {
+        if (AppVersionInfo.ReleaseChannel.Equals("Beta", StringComparison.OrdinalIgnoreCase))
+            return T("about.license_text.beta", "Syscalculator 2.0 beta build. Internal evaluation license.");
+
+        if (AppVersionInfo.ReleaseChannel.Equals("Stable", StringComparison.OrdinalIgnoreCase))
+            return T("about.license_text.stable", "Syscalculator 2.0. Licensed software.");
+
+        return T("about.license_text.daily", "Syscalculator 2.0 daily build. Internal evaluation license.");
+    }
+
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildCopyrightSection.
     private Control BuildCopyrightSection()
     {
@@ -335,7 +346,7 @@ internal sealed class AboutForm : Form
         };
         licenseButton.Click += (_, _) => MessageBox.Show(
             this,
-            T("about.license_text", "Syscalculator 2.0 beta build. Internal evaluation license."),
+            GetLicenseText(),
             T("about.license", "License..."),
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
@@ -581,6 +592,7 @@ internal sealed class AboutForm : Form
         content.Controls.Add(titleBlock, 0, 0);
 
         var process = Process.GetCurrentProcess();
+        var runtime = RuntimeDiagnostics.Capture();
         var tabs = new TabControl
         {
             Dock = DockStyle.Fill,
@@ -618,7 +630,10 @@ internal sealed class AboutForm : Form
             ("Versie", AppVersionInfo.ProductVersion),
             ("Channel", AppVersionInfo.ReleaseChannel),
             ("Build date", AppVersionInfo.BuildNumber),
-            (".NET", RuntimeInformation.FrameworkDescription),
+            (T("about.runtime_app", "App runtime"), runtime.AppRuntimeDescription),
+            (T("about.runtime_bundled", "Bundled"), runtime.FormatBundledForDisplay()),
+            (T("about.runtime_installed", "Installed"), runtime.FormatInstalledForDisplay(T)),
+            (T("about.runtime_status", "Status"), runtime.FormatStatusForDisplay(T)),
             ("Proces", RuntimeInformation.ProcessArchitecture.ToString()),
             ("Geheugen", $"{process.WorkingSet64 / 1024 / 1024} MB")
         }));
@@ -750,7 +765,7 @@ internal sealed class AboutForm : Form
         return bitmap;
     }
 
-    private static string BuildSystemInformationText()
+    private string BuildSystemInformationText()
     {
         var process = Process.GetCurrentProcess();
         var sb = new StringBuilder();
@@ -789,8 +804,7 @@ internal sealed class AboutForm : Form
         sb.AppendLine();
         sb.AppendLine("Runtime");
         sb.AppendLine("-------");
-        sb.AppendLine($".NET: {RuntimeInformation.FrameworkDescription}");
-        sb.AppendLine($"Process architecture: {RuntimeInformation.ProcessArchitecture}");
+        sb.Append(RuntimeDiagnostics.Capture().ToSupportText(T));
         sb.AppendLine($"64-bit OS: {Environment.Is64BitOperatingSystem}");
         sb.AppendLine($"64-bit process: {Environment.Is64BitProcess}");
         sb.AppendLine($"Processor count: {Environment.ProcessorCount}");

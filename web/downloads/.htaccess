@@ -1,0 +1,5 @@
+AddType application/msix .msix
+AddType application/appinstaller .appinstaller
+AddType application/msixbundle .msixbundle
+AddType application/appx .appx
+AddType application/appxbundle .appxbundle

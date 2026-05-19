@@ -48,6 +48,8 @@ public sealed class WizardExpressForm : Form
     private ClipboardConversionSummary? _lastConversionSummary;
     private bool _lastForwardDirection = true;
     private bool _excelClipboardWarningShown;
+    private bool _clipboardListenerRegistered;
+    private uint _lastObservedClipboardSequence;
     private WizardStatus _status = WizardStatus.Empty;
 
     private enum WizardStatus { Empty, Ready, Done, ClipboardOverwritten, Error }
@@ -92,6 +94,37 @@ public sealed class WizardExpressForm : Form
             _debugForm = null;
         };
         _stateTimer.Start();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        _clipboardListenerRegistered = ClipboardConvertApi.TryAddClipboardFormatListener(Handle);
+    }
+
+    protected override void OnHandleDestroyed(EventArgs e)
+    {
+        if (_clipboardListenerRegistered)
+        {
+            ClipboardConvertApi.TryRemoveClipboardFormatListener(Handle);
+            _clipboardListenerRegistered = false;
+        }
+
+        base.OnHandleDestroyed(e);
+    }
+
+    protected override void WndProc(ref Message m)
+    {
+        if (m.Msg == ClipboardConvertApi.WmClipboardUpdate &&
+            IsHandleCreated &&
+            !IsDisposed &&
+            _input is not null &&
+            _output is not null)
+        {
+            BeginInvoke(new Action(() => RefreshWizardState()));
+        }
+
+        base.WndProc(ref m);
     }
 
     private void BuildLayout()
@@ -389,6 +422,7 @@ public sealed class WizardExpressForm : Form
             }
 
             _input.Text = clipboardText;
+            _lastObservedClipboardSequence = snapshot.SequenceNumber;
             _lastSeenClipboardText = _input.Text;
             if (!string.Equals(clipboardText, _lastConvertedClipboardText, StringComparison.Ordinal))
             {
@@ -676,6 +710,14 @@ public sealed class WizardExpressForm : Form
         try
         {
             var snapshot = ReadClipboardSnapshot();
+            if (snapshot.SequenceNumber != 0 &&
+                snapshot.SequenceNumber == _lastObservedClipboardSequence &&
+                _status is WizardStatus.Done or WizardStatus.ClipboardOverwritten)
+            {
+                return;
+            }
+
+            _lastObservedClipboardSequence = snapshot.SequenceNumber;
             var currentClipboard = snapshot.Text;
 
             // Hoofdregel van de oude wizard:

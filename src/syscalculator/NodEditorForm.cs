@@ -271,17 +271,21 @@ public sealed class NodEditorForm : Form
     private Label _graphPointerStatusLabel = null!;
     private Label _graphStatus = null!;
     private Button _graphToggleTableButton = null!;
+    private readonly ToolTip _graphInputToolTip = new();
+    private readonly HashSet<NumericUpDown> _editedGraphNumberBoxes = new();
     private readonly List<PointF> _graphPreviewFitPoints = new();
     private readonly List<PointF> _graphPreviewPoints = new();
     private readonly List<PointF> _graphPreviewStepPoints = new();
     private string _graphPointClipboardText = "";
     private string _graphDisabledMessage = "";
+    private string _graphDataTextSignature = "";
     private NodDocument? _graphPreviewDocument;
     private double _graphSampleMinX = -GraphNormalHalfYRange;
     private double _graphSampleMaxX = GraphNormalHalfYRange;
     private GraphPlotView _graphMarkerView = new(-GraphNormalHalfYRange, GraphNormalHalfYRange, -GraphNormalHalfYRange, GraphNormalHalfYRange);
     private string _graphPointerText = "";
     private bool _draggingGraphPointPanel;
+    private bool _graphPointTableRequestedVisible = true;
     private bool _updatingGraphXRangeControls;
     private bool _updatingGraphYRangeControls;
     private bool _applyingGraphSyncState;
@@ -298,6 +302,8 @@ public sealed class NodEditorForm : Form
     private double _graphPanStartMaxX;
     private double _graphPanStartMinY;
     private double _graphPanStartMaxY;
+    private double _graphUserStep = 1d;
+    private bool _updatingGraphStepDisplay;
     private string _pendingFormulaMathMarkup = "";
     private string _pendingCalculationMathMarkup = "";
     private Label _previewDialogName = null!;
@@ -359,6 +365,60 @@ public sealed class NodEditorForm : Form
     {
         "input", "math", "chg", "trans", "field", "match", "given", "constraint", "preview"
     };
+
+    private readonly record struct NodCommandGroup(
+        string Id,
+        string TitleKey,
+        string FallbackTitle,
+        string ContentKey,
+        string ContentFile,
+        string[] Keywords);
+
+    private static readonly NodCommandGroup[] NodCommandGroups =
+    [
+        new(
+            "commands-basic",
+            "editor.nod_help.page.commands.basic",
+            "Basis en velden",
+            "editor.nod_help.full.commands.basic",
+            "nod/full/commands-basic.html",
+            ["Name", "input", "inputr", "input1", "input2", "Result", "Resfou", "Symb1", "Symb2", "Symb3", "Symb4", "format"]),
+        new(
+            "commands-math",
+            "editor.nod_help.page.commands.math",
+            "Rekenen",
+            "editor.nod_help.full.commands.math",
+            "nod/full/commands-math.html",
+            ["math", "reverse"]),
+        new(
+            "commands-text",
+            "editor.nod_help.page.commands.text",
+            "Tekst en vertaling",
+            "editor.nod_help.full.commands.text",
+            "nod/full/commands-text.html",
+            ["trans", "chg"]),
+        new(
+            "commands-data",
+            "editor.nod_help.page.commands.data",
+            "Data",
+            "editor.nod_help.full.commands.data",
+            "nod/full/commands-data.html",
+            ["table", "field", "output", "phoneformat", "lookup", "match"]),
+        new(
+            "commands-equation",
+            "editor.nod_help.page.commands.equation",
+            "Vergelijkingen",
+            "editor.nod_help.full.commands.equation",
+            "nod/full/commands-equation.html",
+            ["given", "equation", "solve", "constraint"]),
+        new(
+            "commands-system",
+            "editor.nod_help.page.commands.system",
+            "NOD-systeem",
+            "editor.nod_help.full.commands.system",
+            "nod/full/commands-system.html",
+            ["mode", "URLN", "preview", "backup", "indoprint", "indoend", "end"])
+    ];
 
     // Startpunt van het editorvenster: bouwt de UI en opent eventueel direct een .nod-bestand.
     public NodEditorForm(string? path = null, bool openTemplateWizard = false)
@@ -1023,32 +1083,47 @@ public sealed class NodEditorForm : Form
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("X min"), 0, 0);
         _graphXMin = MakeGraphNumberBox(-5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
-        _graphXMin.ValueChanged += (_, _) => ApplyGraphPreviewXRangeFromControls();
+        _graphXMin.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphXMin)) ApplyGraphPreviewXRangeFromControls(); };
         inputGrid.Controls.Add(_graphXMin, 1, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("X max"), 2, 0);
         _graphXMax = MakeGraphNumberBox(5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
-        _graphXMax.ValueChanged += (_, _) => ApplyGraphPreviewXRangeFromControls();
+        _graphXMax.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphXMax)) ApplyGraphPreviewXRangeFromControls(); };
         inputGrid.Controls.Add(_graphXMax, 3, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel(T("editor.graph.step", "Step")), 4, 0);
         _graphStep = MakeGraphNumberBox(1, GraphPreviewStepMinimum, GraphPreviewRangeLimit, 1);
         _graphStep.ValueChanged += (_, _) =>
         {
-            if (!_applyingGraphSyncState)
+            if (!_applyingGraphSyncState && !_updatingGraphStepDisplay && !IsEditingGraphNumberBox(_graphStep))
+            {
+                _graphUserStep = GraphSurfaceApi.GetNumberBoxValue(_graphStep);
                 GenerateGraphPreview();
+            }
         };
         inputGrid.Controls.Add(_graphStep, 5, 0);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("Y min"), 0, 1);
         _graphYMin = MakeGraphNumberBox(-5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
-        _graphYMin.ValueChanged += (_, _) => ApplyGraphPreviewYRangeFromControls();
+        _graphYMin.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphYMin)) ApplyGraphPreviewYRangeFromControls(); };
         inputGrid.Controls.Add(_graphYMin, 1, 1);
 
         inputGrid.Controls.Add(MakeGraphToolbarLabel("Y max"), 2, 1);
         _graphYMax = MakeGraphNumberBox(5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
-        _graphYMax.ValueChanged += (_, _) => ApplyGraphPreviewYRangeFromControls();
+        _graphYMax.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphYMax)) ApplyGraphPreviewYRangeFromControls(); };
         inputGrid.Controls.Add(_graphYMax, 3, 1);
+        ApplyGraphInputTooltips(_graphXMin, _graphXMax, _graphYMin, _graphYMax, _graphStep);
+        AttachGraphCommittedInput(_graphXMin, ApplyGraphPreviewXRangeFromControls);
+        AttachGraphCommittedInput(_graphXMax, ApplyGraphPreviewXRangeFromControls);
+        AttachGraphCommittedInput(_graphYMin, ApplyGraphPreviewYRangeFromControls);
+        AttachGraphCommittedInput(_graphYMax, ApplyGraphPreviewYRangeFromControls);
+        AttachGraphCommittedInput(_graphStep, () =>
+        {
+            _graphUserStep = GraphSurfaceApi.GetNumberBoxValue(_graphStep);
+            if (!_applyingGraphSyncState)
+                GenerateGraphPreview();
+        });
+        AttachGraphStepSpinner(_graphStep, CommitGraphStepSpinner);
 
         _graphShowRangeLines = new CheckBox
         {
@@ -1061,6 +1136,7 @@ public sealed class NodEditorForm : Form
         _graphShowRangeLines.CheckedChanged += (_, _) =>
         {
             ApplyGraphRangeLineVisibility();
+            UpdateGraphRangeInputMode();
             NotifyGraphPreviewSyncStateChanged();
             _graphCanvas.Invalidate();
         };
@@ -1192,6 +1268,7 @@ public sealed class NodEditorForm : Form
 
         _graphStatus = new Label { Text = "", Visible = false };
         InitializeGraphPreviewBaseView();
+        UpdateGraphRangeInputMode();
 
         return panel;
     }
@@ -1199,7 +1276,7 @@ public sealed class NodEditorForm : Form
     private void InitializeGraphPreviewBaseView()
     {
         var view = GraphSurfaceApi.MatchViewToCanvasAspect(
-            new GraphPlotView((double)_graphXMin.Value, (double)_graphXMax.Value, (double)_graphYMin.Value, (double)_graphYMax.Value),
+            new GraphPlotView(GraphSurfaceApi.GetNumberBoxValue(_graphXMin), GraphSurfaceApi.GetNumberBoxValue(_graphXMax), GraphSurfaceApi.GetNumberBoxValue(_graphYMin), GraphSurfaceApi.GetNumberBoxValue(_graphYMax)),
             _graphCanvas);
         SetGraphPreviewView(view);
         _graphMarkerView = view;
@@ -1208,8 +1285,136 @@ public sealed class NodEditorForm : Form
         _graphDisabledMessage = "";
     }
 
+    private void ApplyGraphInputTooltips(params Control[] controls)
+    {
+        var text = T(
+            "editor.graph.input_tooltip",
+            "Voorbeelden:\r\n1,05\r\n0,5 = 5 x 10⁻¹\r\n0,0000005 = 500 n = 5 x 10⁻⁷\r\n10⁵ (ook: 10^5)\r\n10⁻⁵ (ook: 10^-5)\r\n1e-5\r\n10 n\r\n2 k");
+        foreach (var control in controls)
+            _graphInputToolTip.SetToolTip(control, text);
+    }
+
+    private void AttachGraphCommittedInput(NumericUpDown box, Action commit)
+    {
+        box.TextChanged += (_, _) =>
+        {
+            if (box.Focused)
+                _editedGraphNumberBoxes.Add(box);
+        };
+        box.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+            CommitEditedGraphNumberBox(box, commit);
+        };
+        box.Leave += (_, _) => CommitEditedGraphNumberBox(box, commit);
+    }
+
+    private bool IsEditingGraphNumberBox(NumericUpDown box)
+    {
+        return _editedGraphNumberBoxes.Contains(box);
+    }
+
+    private void CommitEditedGraphNumberBox(NumericUpDown box, Action commit)
+    {
+        if (!_editedGraphNumberBoxes.Remove(box))
+            return;
+
+        box.Validate();
+        GraphSurfaceApi.CommitNumberBoxValue(box);
+        commit();
+    }
+
+    private void AttachGraphStepSpinner(NumericUpDown box, Action<decimal> commit)
+    {
+        box.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode != Keys.Up && e.KeyCode != Keys.Down)
+                return;
+
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+            commit(GetNextGraphScaleAwareStep(GraphSurfaceApi.GetNumberBoxValue(box), e.KeyCode == Keys.Up));
+        };
+        box.MouseWheel += (_, e) =>
+        {
+            ((HandledMouseEventArgs)e).Handled = true;
+            commit(GetNextGraphScaleAwareStep(GraphSurfaceApi.GetNumberBoxValue(box), e.Delta > 0));
+        };
+    }
+
+    private void CommitGraphStepSpinner(decimal value)
+    {
+        var clamped = Math.Clamp(value, _graphStep.Minimum, _graphStep.Maximum);
+        _graphUserStep = (double)clamped;
+        SetGraphStepDisplay(_graphUserStep);
+        if (!_applyingGraphSyncState)
+            GenerateGraphPreview();
+    }
+
+    private static decimal GetNextGraphScaleAwareStep(double current, bool increase)
+    {
+        if (!double.IsFinite(current) || current <= 0d)
+            current = 1d;
+
+        var exponent = Math.Floor(Math.Log10(current));
+        var scale = Math.Pow(10d, exponent);
+        var normalized = current / scale;
+        double next;
+        if (increase)
+        {
+            next = normalized < 0.5d ? 0.5d :
+                normalized < 0.75d ? 0.75d :
+                normalized < 1d ? 1d :
+                normalized < 1.25d ? 1.25d :
+                normalized < 1.5d ? 1.5d :
+                normalized < 2d ? 2d :
+                normalized < 2.5d ? 2.5d :
+                normalized < 5d ? 5d :
+                normalized < 7.5d ? 7.5d :
+                10d;
+        }
+        else
+        {
+            next = normalized > 7.5d ? 7.5d :
+                normalized > 5d ? 5d :
+                normalized > 2.5d ? 2.5d :
+                normalized > 2d ? 2d :
+                normalized > 1.5d ? 1.5d :
+                normalized > 1.25d ? 1.25d :
+                normalized > 1d ? 1d :
+                normalized > 0.75d ? 0.75d :
+                normalized > 0.5d ? 0.5d :
+                0.1d;
+        }
+
+        var result = next * scale;
+        if (next == 0.1d)
+            result = scale / 10d;
+
+        try
+        {
+            return (decimal)result;
+        }
+        catch (OverflowException)
+        {
+            return current < 1d ? GraphPreviewStepMinimum : GraphPreviewRangeLimit;
+        }
+    }
+
     private void SetGraphPointTableVisible(bool visible)
     {
+        _graphPointTableRequestedVisible = visible;
+        ApplyGraphPointTableVisibility();
+    }
+
+    private void ApplyGraphPointTableVisibility()
+    {
+        var hasRows = _graphPointTable.Rows.Count > 0;
+        var visible = _graphPointTableRequestedVisible && hasRows;
         _graphPointPanel.Visible = visible;
         UpdateGraphPointerStatusVisibility();
         if (_graphToggleTableButton is GraphToolbarIconButton iconButton)
@@ -1218,6 +1423,13 @@ public sealed class NodEditorForm : Form
             iconButton.TooltipText = visible ? T("editor.graph.hide_table", "Hide table") : T("editor.graph.show_table", "Show table");
         }
         _graphCanvas.Invalidate();
+    }
+
+    private void UpdateGraphPointTableAvailability()
+    {
+        var hasRows = _graphPointTable.Rows.Count > 0;
+        _graphToggleTableButton.Enabled = hasRows;
+        ApplyGraphPointTableVisibility();
     }
 
     private void UpdateGraphPointerStatusVisibility()
@@ -1350,6 +1562,20 @@ public sealed class NodEditorForm : Form
         ApplyGraphPreviewSyncState(state);
     }
 
+    private void InvalidateGraphPreviewData()
+    {
+        _graphDataTextSignature = "";
+        _graphPreviewDocument = null;
+        _graphPreviewFitPoints.Clear();
+        _graphPreviewPoints.Clear();
+        _graphPreviewStepPoints.Clear();
+        _graphPointClipboardText = "";
+        if (_graphPointTable is not null)
+            FillGraphPointTable([]);
+        _graphCanvas?.Invalidate();
+        _graphPreviewForm?.InvalidateGraphData();
+    }
+
     private void ShowAbout()
     {
         using var form = new AboutForm(
@@ -1472,10 +1698,11 @@ public sealed class NodEditorForm : Form
     {
         return new NumericUpDown
         {
-            DecimalPlaces = 28,
+            DecimalPlaces = 1,
             Minimum = minimum,
             Maximum = maximum,
             Increment = increment,
+            Tag = (double)value,
             Value = value,
             Anchor = AnchorStyles.Left | AnchorStyles.Right,
             Width = 80,
@@ -1505,12 +1732,13 @@ public sealed class NodEditorForm : Form
         _graphPreviewPoints.Clear();
         _graphPreviewStepPoints.Clear();
         FillGraphPointTable([]);
+        var graphTextSignature = editor.Text;
 
         try
         {
             var min = _graphSampleMinX;
             var max = _graphSampleMaxX;
-            var step = (double)_graphStep.Value;
+            var step = _graphUserStep;
 
             if (min > max)
             {
@@ -1537,13 +1765,11 @@ public sealed class NodEditorForm : Form
                 _graphPreviewStepPoints.Clear();
                 FillGraphPointTable([]);
                 SetGraphPointTableVisible(false);
-                _graphToggleTableButton.Enabled = false;
                 _graphCanvas.Invalidate();
                 return;
             }
 
             _graphDisabledMessage = "";
-            _graphToggleTableButton.Enabled = true;
             var skipped = 0;
             var visibleMin = Math.Min(min, max);
             var visibleMax = Math.Max(min, max);
@@ -1578,6 +1804,7 @@ public sealed class NodEditorForm : Form
             }
 
             var displayStep = ChooseGraphDisplayedStep(step, visibleMin, visibleMax, GraphPreviewMaxVisibleStepPoints);
+            SetGraphStepDisplay(displayStep);
             var firstStep = Math.Ceiling(visibleMin / displayStep) * displayStep;
             for (var i = 0; i < GraphPreviewMaxVisibleStepPoints; i++)
             {
@@ -1601,6 +1828,7 @@ public sealed class NodEditorForm : Form
             }
 
             FillGraphPointTable(_graphPreviewStepPoints);
+            _graphDataTextSignature = graphTextSignature;
             _graphStatus.Text = _graphPreviewPoints.Count == 0
                 ? string.Format(T("editor.graph.no_numeric_points", "No numeric points. Skipped: {0}."), skipped)
                 : string.Format(T("editor.graph.points_status", "Points: {0}. Skipped: {1}. Range: {2:0.####} to {3:0.####}."), _graphPreviewPoints.Count, skipped, min, max);
@@ -1623,13 +1851,14 @@ public sealed class NodEditorForm : Form
         _graphPointTable.Rows.Clear();
         foreach (var point in points)
         {
-            var x = point.X.ToString("0.############", CultureInfo.InvariantCulture);
-            var y = point.Y.ToString("0.############", CultureInfo.InvariantCulture);
+            var x = FormatGraphDisplayNumber(point.X);
+            var y = FormatGraphDisplayNumber(point.Y);
             _graphPointTable.Rows.Add(x, y);
             clipboardLines.Add($"{x}\t{y}");
         }
         _graphPointTable.ClearSelection();
         _graphPointTable.ResumeLayout();
+        UpdateGraphPointTableAvailability();
 
         _graphPointClipboardText = string.Join(Environment.NewLine, clipboardLines);
     }
@@ -1686,9 +1915,12 @@ public sealed class NodEditorForm : Form
 
     private static string FormatGraphStatusNumber(float value)
     {
-        return Math.Abs(value) < 0.0000001f
-            ? "0"
-            : value.ToString("0.0", CultureInfo.CurrentCulture);
+        return FormatGraphDisplayNumber(value);
+    }
+
+    private static string FormatGraphDisplayNumber(double value)
+    {
+        return GraphPlotRenderer.FormatDisplayNumber(value);
     }
 
     private bool IsGraphPreviewCompatible(NodDocument document, out string reason)
@@ -1750,14 +1982,14 @@ public sealed class NodEditorForm : Form
         if (_updatingGraphXRangeControls)
             return;
 
-        if (_graphXMin.Value >= _graphXMax.Value)
+        if (GraphSurfaceApi.GetNumberBoxValue(_graphXMin) >= GraphSurfaceApi.GetNumberBoxValue(_graphXMax))
         {
             _graphStatus.Text = "X min moet kleiner zijn dan X max.";
             return;
         }
 
-        _graphSampleMinX = (double)_graphXMin.Value;
-        _graphSampleMaxX = (double)_graphXMax.Value;
+        _graphSampleMinX = GraphSurfaceApi.GetNumberBoxValue(_graphXMin);
+        _graphSampleMaxX = GraphSurfaceApi.GetNumberBoxValue(_graphXMax);
         GenerateGraphPreview();
     }
 
@@ -1766,7 +1998,7 @@ public sealed class NodEditorForm : Form
         if (_updatingGraphYRangeControls || !_graphHasView)
             return;
 
-        if (_graphYMin.Value >= _graphYMax.Value)
+        if (GraphSurfaceApi.GetNumberBoxValue(_graphYMin) >= GraphSurfaceApi.GetNumberBoxValue(_graphYMax))
         {
             _graphStatus.Text = "Y min moet kleiner zijn dan Y max.";
             return;
@@ -1796,7 +2028,7 @@ public sealed class NodEditorForm : Form
 
     private GraphPreviewSyncState CreateGraphPreviewSyncState()
     {
-        return new GraphPreviewSyncState(GetGraphPreviewView(), _graphMarkerView, _graphStep.Value, _graphShowRangeLines.Checked);
+        return new GraphPreviewSyncState(GetGraphPreviewView(), _graphMarkerView, (decimal)_graphUserStep, _graphShowRangeLines.Checked);
     }
 
     private void NotifyGraphPreviewSyncStateChanged()
@@ -1843,8 +2075,8 @@ public sealed class NodEditorForm : Form
     private void SetGraphStepValue(decimal value)
     {
         var clamped = Math.Clamp(value, _graphStep.Minimum, _graphStep.Maximum);
-        if (_graphStep.Value != clamped)
-            _graphStep.Value = clamped;
+        _graphUserStep = (double)clamped;
+        SetGraphStepDisplay(_graphUserStep);
     }
 
     private void SetGraphPreviewRangeControls(GraphPlotView view)
@@ -1885,10 +2117,22 @@ public sealed class NodEditorForm : Form
         if (_graphShowRangeLines.Checked)
         {
             SetGraphPreviewRangeControls(_graphMarkerView);
+            UpdateGraphRangeInputMode();
             return;
         }
 
         UpdateGraphPreviewViewportRangeControlsIfNeeded();
+        UpdateGraphRangeInputMode();
+    }
+
+    private void UpdateGraphRangeInputMode()
+    {
+        var editable = _graphShowRangeLines.Checked;
+        foreach (var box in new[] { _graphXMin, _graphXMax, _graphYMin, _graphYMax, _graphStep })
+        {
+            box.Enabled = editable;
+            box.ReadOnly = !editable;
+        }
     }
 
     private void ZoomGraphPreview(float factor)
@@ -2029,6 +2273,12 @@ public sealed class NodEditorForm : Form
         if (_graphPreviewDocument is null || !_graphHasView)
             return;
 
+        if (CurrentEditor?.Text != _graphDataTextSignature)
+        {
+            InvalidateGraphPreviewData();
+            return;
+        }
+
         var visibleMin = Math.Min(_graphViewMinX, _graphViewMaxX);
         var visibleMax = Math.Max(_graphViewMinX, _graphViewMaxX);
         var width = visibleMax - visibleMin;
@@ -2057,12 +2307,13 @@ public sealed class NodEditorForm : Form
             }
         }
 
-        var requestedStep = (float)_graphStep.Value;
+        var requestedStep = _graphUserStep;
         if (requestedStep > 0)
         {
             var stepMin = visibleMin;
             var stepMax = visibleMax;
             var displayStep = ChooseGraphDisplayedStep(requestedStep, stepMin, stepMax, GraphPreviewMaxVisibleStepPoints);
+            SetGraphStepDisplay(displayStep);
             var firstStep = Math.Ceiling(stepMin / displayStep) * displayStep;
             for (var i = 0; i < GraphPreviewMaxVisibleStepPoints; i++)
             {
@@ -2075,7 +2326,11 @@ public sealed class NodEditorForm : Form
                 {
                     var result = NodEngine.ConvertForward(_graphPreviewDocument, input);
                     if (TryGetGraphNumber(result, out var y))
-                        stepPoints.Add(new PointF((float)x, (float)y));
+                    {
+                        var point = new PointF((float)x, (float)y);
+                        if (IsGraphPreviewPointInsideCurrentView(point))
+                            stepPoints.Add(point);
+                    }
                 }
                 catch
                 {
@@ -2091,17 +2346,66 @@ public sealed class NodEditorForm : Form
         FillGraphPointTable(stepPoints);
     }
 
+    private bool IsGraphPreviewPointInsideCurrentView(PointF point)
+    {
+        return float.IsFinite(point.X) &&
+               float.IsFinite(point.Y) &&
+               point.X >= _graphViewMinX &&
+               point.X <= _graphViewMaxX &&
+               point.Y >= _graphViewMinY &&
+               point.Y <= _graphViewMaxY;
+    }
+
     private static double ChooseGraphDisplayedStep(double requestedStep, double min, double max, int maxPoints)
     {
         if (!double.IsFinite(requestedStep) || requestedStep <= 0 || !double.IsFinite(min) || !double.IsFinite(max) || max <= min)
             return Math.Max(1.0, requestedStep);
 
-        var estimatedPoints = (max - min) / requestedStep;
-        if (!double.IsFinite(estimatedPoints) || estimatedPoints <= maxPoints)
+        var targetRows = Math.Max(8, maxPoints / 2);
+        var rawStep = (max - min) / targetRows;
+        if (!double.IsFinite(rawStep) || rawStep <= 0)
             return requestedStep;
 
-        var multiplier = Math.Ceiling(estimatedPoints / maxPoints);
-        return requestedStep * Math.Max(1.0, multiplier);
+        return NiceGraphStep(rawStep);
+    }
+
+    private static double NiceGraphStep(double value)
+    {
+        if (!double.IsFinite(value) || value <= 0d)
+            return 1d;
+
+        var exponent = Math.Floor(Math.Log10(value));
+        var baseValue = Math.Pow(10d, exponent);
+        var fraction = value / baseValue;
+        var niceFraction = ChooseGraphStepMantissa(fraction);
+        return niceFraction * baseValue;
+    }
+
+    private static double ChooseGraphStepMantissa(double fraction)
+    {
+        return fraction <= 0.5d ? 0.5d :
+            fraction <= 0.75d ? 0.75d :
+            fraction <= 1d ? 1d :
+            fraction <= 1.25d ? 1.25d :
+            fraction <= 1.5d ? 1.5d :
+            fraction <= 2d ? 2d :
+            fraction <= 2.5d ? 2.5d :
+            fraction <= 5d ? 5d :
+            fraction <= 7.5d ? 7.5d :
+            10d;
+    }
+
+    private void SetGraphStepDisplay(double value)
+    {
+        _updatingGraphStepDisplay = true;
+        try
+        {
+            GraphSurfaceApi.SetNumberBoxValue(_graphStep, value);
+        }
+        finally
+        {
+            _updatingGraphStepDisplay = false;
+        }
     }
 
     private static string FormatGraphPreviewInput(double value)
@@ -2131,16 +2435,16 @@ public sealed class NodEditorForm : Form
             e.Graphics,
             _graphCanvas,
             _graphPreviewPoints,
-            _graphPreviewStepPoints.Count > 0 ? _graphPreviewStepPoints : _graphPreviewPoints,
+            _graphPreviewStepPoints,
             new GraphPlotView(_graphViewMinX, _graphViewMaxX, _graphViewMinY, _graphViewMaxY),
-            _graphShowRangeLines.Checked ? _graphMarkerView.MinX : (float)_graphXMin.Value,
-            _graphShowRangeLines.Checked ? _graphMarkerView.MaxX : (float)_graphXMax.Value,
-            (float)_graphStep.Value,
+            _graphShowRangeLines.Checked ? _graphMarkerView.MinX : GraphSurfaceApi.GetNumberBoxValue(_graphXMin),
+            _graphShowRangeLines.Checked ? _graphMarkerView.MaxX : GraphSurfaceApi.GetNumberBoxValue(_graphXMax),
+            GraphSurfaceApi.GetNumberBoxValue(_graphStep),
             _graphDisabledMessage,
             "Generate graph",
             GraphPlotDensity.Compact,
-            (float)_graphYMin.Value,
-            (float)_graphYMax.Value,
+            (float)GraphSurfaceApi.GetNumberBoxValue(_graphYMin),
+            (float)GraphSurfaceApi.GetNumberBoxValue(_graphYMax),
             _graphShowRangeLines.Checked);
     }
 
@@ -3108,6 +3412,7 @@ public sealed class NodEditorForm : Form
         editor.TextChanged += (_, _) =>
         {
             if (_highlighting || _applyingTextHistory) return;
+            InvalidateGraphPreviewData();
             TrackEditorTextChange(tab);
             SetTabDirty(tab, !IsCleanEditorText(tab));
             UpdateLineNumbers(tab);
@@ -5233,6 +5538,8 @@ public sealed class NodEditorForm : Form
         var structure = HelpContent("editor.nod_help.full.structure", "nod/full/structure.html");
         var workflow = HelpContent("editor.nod_help.full.workflow", "nod/full/workflow.html");
         var symbols = HelpContent("editor.nod_help.full.symbols", "nod/full/symbols.html");
+        var graphPreview = HelpContent("editor.nod_help.full.graph_preview", "nod/full/graph-preview.html");
+        var siScale = HelpContent("editor.nod_help.full.si_scale", "nod/full/si-scale.html");
         var commands = HelpContent("editor.nod_help.full.commands", "nod/full/commands.html");
         var examples = HelpContent("editor.nod_help.full.examples", "nod/full/examples.html");
         var troubleshooting = HelpContent("editor.nod_help.full.troubleshooting", "nod/full/troubleshooting.html");
@@ -5247,29 +5554,54 @@ public sealed class NodEditorForm : Form
             new("workflow", T("editor.nod_help.page.workflow", "Werkwijze"), WrapNodHelpPage(T("editor.nod_help.page.workflow", "Werkwijze"), workflow)),
             new("structure", T("editor.nod_help.page.structure", "Basisstructuur"), WrapNodHelpPage(T("editor.nod_help.page.structure", "Basisstructuur"), structure)),
             new("symbols", T("editor.nod_help.page.symbols", "Symbolen"), WrapNodHelpPage(T("editor.nod_help.page.symbols", "Symbolen"), symbols + BuildSymbolOverviewLinks())),
+            new("graph-preview", T("editor.nod_help.page.graph_preview", "Graph Preview"), WrapNodHelpPage(T("editor.nod_help.page.graph_preview", "Graph Preview"), graphPreview)),
+            new("si-scale", T("editor.nod_help.page.si_scale", "SI en schaalweergave"), WrapNodHelpPage(T("editor.nod_help.page.si_scale", "SI en schaalweergave"), siScale)),
             new("commands", T("editor.nod_help.page.commands", "Belangrijke commands"), WrapNodHelpPage(T("editor.nod_help.page.commands", "Belangrijke commands"), commands)),
             new("examples", T("editor.nod_help.page.examples", "Examples"), WrapNodHelpPage(T("editor.nod_help.page.examples", "Examples"), examples)),
             new("troubleshooting", T("editor.nod_help.page.troubleshooting", "Veelgemaakte fouten"), WrapNodHelpPage(T("editor.nod_help.page.troubleshooting", "Veelgemaakte fouten"), troubleshooting))
         };
 
+        var addedCommands = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var group in NodCommandGroups)
+        {
+            var groupTitle = T(group.TitleKey, group.FallbackTitle);
+            var groupBody = HelpContent(group.ContentKey, group.ContentFile);
+            pages.Add(new NodHelpPage(group.Id, groupTitle, WrapNodHelpPage(groupTitle, groupBody)));
+
+            foreach (var keyword in group.Keywords)
+            {
+                AddNodCommandHelpPage(pages, keyword, groupTitle);
+                addedCommands.Add(keyword);
+            }
+        }
+
         foreach (var keyword in NodKeywords)
         {
-            var title = T($"editor.nod_help.page.command.{keyword.ToLowerInvariant()}", keyword);
-            var body = T($"editor.nod_help.{keyword.ToLowerInvariant()}", GetDefaultNodHelpHtml(keyword))
-                + BuildInputCommandHelp(keyword)
-                + BuildMathCommandHelp(keyword)
-                + BuildVisualFormulaHelp(keyword)
-                + BuildTextCommandHelp(keyword)
-                + BuildImprovedTransHelp(keyword)
-                + BuildReverseCommandHelp(keyword)
-                + BuildModeCommandHelp(keyword)
-                + BuildPhoneFormatCommandHelp(keyword)
-                + BuildSymbolCommandDiagram(keyword);
-            body = AddVersionBadgesToCommandHelp(keyword, body);
-            pages.Add(new NodHelpPage("cmd:" + keyword.ToLowerInvariant(), title, WrapNodHelpPage(title, body)));
+            if (addedCommands.Contains(keyword))
+                continue;
+
+            AddNodCommandHelpPage(pages, keyword, T("editor.nod_help.page.commands.other", "Overige commands"));
         }
 
         return pages;
+    }
+
+    private void AddNodCommandHelpPage(List<NodHelpPage> pages, string keyword, string groupTitle)
+    {
+        var commandTitle = T($"editor.nod_help.page.command.{keyword.ToLowerInvariant()}", keyword);
+        var title = groupTitle + " / " + commandTitle;
+        var body = T($"editor.nod_help.{keyword.ToLowerInvariant()}", GetDefaultNodHelpHtml(keyword))
+            + BuildInputCommandHelp(keyword)
+            + BuildMathCommandHelp(keyword)
+            + BuildVisualFormulaHelp(keyword)
+            + BuildTextCommandHelp(keyword)
+            + BuildImprovedTransHelp(keyword)
+            + BuildReverseCommandHelp(keyword)
+            + BuildModeCommandHelp(keyword)
+            + BuildPhoneFormatCommandHelp(keyword)
+            + BuildSymbolCommandDiagram(keyword);
+        body = AddVersionBadgesToCommandHelp(keyword, body);
+        pages.Add(new NodHelpPage("cmd:" + keyword.ToLowerInvariant(), title, WrapNodHelpPage(title, body)));
     }
 
     private string BuildCompatibilityHelp()

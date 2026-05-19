@@ -49,9 +49,9 @@ public sealed class NodHelpForm : Form
         var topicPaneWidth = CalculateTopicPaneWidth(pages);
 
         Text = title;
-        Width = Math.Max(900, topicPaneWidth + 600);
-        Height = 600;
-        MinimumSize = new Size(740, 420);
+        Width = Math.Max(1040, topicPaneWidth + 720);
+        Height = 720;
+        MinimumSize = new Size(900, 560);
         StartPosition = FormStartPosition.CenterParent;
         KeyPreview = true;
         KeyDown += NodHelpForm_KeyDown;
@@ -75,6 +75,7 @@ public sealed class NodHelpForm : Form
         };
         foreach (var page in _pages)
             _topics.Items.Add(page);
+        _topics.CollapseAllGroups();
         _topics.SelectedIndexChanged += (_, _) =>
         {
             if (!_suppressSearchReset)
@@ -345,28 +346,23 @@ public sealed class NodHelpForm : Form
     // Zoek/commentaar: Selecteert de eerste help-pagina.
     private void SelectFirstPage()
     {
-        if (_topics.Items.Count > 0)
-            _topics.SelectedIndex = 0;
+        _topics.SelectFirstVisible();
     }
 
     // Zoek/commentaar: Gaat naar de vorige of volgende help-pagina.
     private void SelectRelativePage(int offset)
     {
-        if (_topics.Items.Count == 0)
-            return;
-
-        var nextIndex = Math.Clamp(_topics.SelectedIndex + offset, 0, _topics.Items.Count - 1);
-        _topics.SelectedIndex = nextIndex;
+        _topics.SelectRelativeVisible(offset);
     }
 
     // Zoek/commentaar: Zet navigatieknoppen aan/uit op begin en einde.
     private void UpdateNavigationState()
     {
         var index = _topics.SelectedIndex;
-        var hasPages = _topics.Items.Count > 0;
-        _homeButton.Enabled = hasPages && index > 0;
-        _previousButton.Enabled = hasPages && index > 0;
-        _nextButton.Enabled = hasPages && index >= 0 && index < _topics.Items.Count - 1;
+        var hasPages = _topics.VisibleItemCount > 0;
+        _homeButton.Enabled = hasPages && _topics.HasPreviousVisible;
+        _previousButton.Enabled = hasPages && _topics.HasPreviousVisible;
+        _nextButton.Enabled = hasPages && index >= 0 && _topics.HasNextVisible;
     }
 
     // Zoek/commentaar: Verwerkt acties uit de HTML-help, zoals codevoorbeelden kopieren.
@@ -892,9 +888,10 @@ public sealed class HelpNavigationButton : Button
 
 internal sealed class HelpTopicsList : Control
 {
-    private const int ItemHeight = 24;
+    private const int ItemHeight = 27;
     private const int ScrollbarWidth = 15;
     private readonly List<NodHelpPage> _items = [];
+    private readonly HashSet<string> _collapsedGroups = new(StringComparer.OrdinalIgnoreCase);
     private int _selectedIndex = -1;
     private int _firstVisibleIndex;
     private bool _scrollbarHover;
@@ -925,6 +922,7 @@ internal sealed class HelpTopicsList : Control
                 return;
 
             _selectedIndex = next;
+            EnsureSelectedGroupExpanded();
             EnsureSelectedVisible();
             Invalidate();
             SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
@@ -934,6 +932,61 @@ internal sealed class HelpTopicsList : Control
     public NodHelpPage? SelectedItem =>
         _selectedIndex >= 0 && _selectedIndex < _items.Count ? _items[_selectedIndex] : null;
 
+    public int VisibleItemCount => GetVisibleIndices().Count;
+
+    public bool HasPreviousVisible
+    {
+        get
+        {
+            var visible = GetVisibleIndices();
+            return visible.IndexOf(_selectedIndex) > 0;
+        }
+    }
+
+    public bool HasNextVisible
+    {
+        get
+        {
+            var visible = GetVisibleIndices();
+            var index = visible.IndexOf(_selectedIndex);
+            return index >= 0 && index < visible.Count - 1;
+        }
+    }
+
+    public void SelectFirstVisible()
+    {
+        var visible = GetVisibleIndices();
+        if (visible.Count > 0)
+            SelectedIndex = visible[0];
+    }
+
+    public void SelectRelativeVisible(int offset)
+    {
+        var visible = GetVisibleIndices();
+        if (visible.Count == 0)
+            return;
+
+        var current = visible.IndexOf(_selectedIndex);
+        if (current < 0)
+            current = 0;
+
+        var next = Math.Clamp(current + offset, 0, visible.Count - 1);
+        SelectedIndex = visible[next];
+    }
+
+    public void CollapseAllGroups()
+    {
+        _collapsedGroups.Clear();
+        for (var i = 0; i < _items.Count; i++)
+        {
+            if (IsGroupHeader(i))
+                _collapsedGroups.Add(GetGroupTitle(_items[i].Title));
+        }
+
+        _firstVisibleIndex = Math.Clamp(_firstVisibleIndex, 0, MaxFirstVisibleIndex);
+        Invalidate();
+    }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
@@ -941,13 +994,15 @@ internal sealed class HelpTopicsList : Control
         g.Clear(BackColor);
 
         var listWidth = NeedsScrollbar ? ClientSize.Width - ScrollbarWidth : ClientSize.Width;
+        var visibleIndices = GetVisibleIndices();
         var visibleCount = VisibleCount;
         for (var row = 0; row < visibleCount; row++)
         {
-            var index = _firstVisibleIndex + row;
-            if (index < 0 || index >= _items.Count)
+            var visibleIndex = _firstVisibleIndex + row;
+            if (visibleIndex < 0 || visibleIndex >= visibleIndices.Count)
                 break;
 
+            var index = visibleIndices[visibleIndex];
             DrawItem(g, index, new Rectangle(0, row * ItemHeight, listWidth, ItemHeight));
         }
 
@@ -975,9 +1030,21 @@ internal sealed class HelpTopicsList : Control
             return;
         }
 
-        var index = _firstVisibleIndex + e.Y / ItemHeight;
-        if (index >= 0 && index < _items.Count)
+        var visible = GetVisibleIndices();
+        var visibleIndex = _firstVisibleIndex + e.Y / ItemHeight;
+        if (visibleIndex >= 0 && visibleIndex < visible.Count)
+        {
+            var index = visible[visibleIndex];
+            var rowRect = new Rectangle(0, (visibleIndex - _firstVisibleIndex) * ItemHeight, ClientSize.Width, ItemHeight);
+            if (IsGroupHeader(index)
+                && (GetToggleRectangle(rowRect).Contains(e.Location) || e.X <= rowRect.Left + 44))
+            {
+                ToggleGroup(GetGroupTitle(_items[index].Title));
+                return;
+            }
+
             SelectedIndex = index;
+        }
 
         base.OnMouseDown(e);
     }
@@ -1043,27 +1110,37 @@ internal sealed class HelpTopicsList : Control
         switch (e.KeyCode)
         {
             case Keys.Up:
-                SelectedIndex--;
+                SelectRelativeVisible(-1);
                 e.Handled = true;
                 break;
             case Keys.Down:
-                SelectedIndex++;
+                SelectRelativeVisible(1);
                 e.Handled = true;
                 break;
             case Keys.PageUp:
-                SelectedIndex -= VisibleCount;
+                SelectRelativeVisible(-VisibleCount);
                 e.Handled = true;
                 break;
             case Keys.PageDown:
-                SelectedIndex += VisibleCount;
+                SelectRelativeVisible(VisibleCount);
                 e.Handled = true;
                 break;
             case Keys.Home:
-                SelectedIndex = 0;
+                SelectFirstVisible();
                 e.Handled = true;
                 break;
             case Keys.End:
-                SelectedIndex = _items.Count - 1;
+                var visible = GetVisibleIndices();
+                if (visible.Count > 0)
+                    SelectedIndex = visible[^1];
+                e.Handled = true;
+                break;
+            case Keys.Left:
+                CollapseSelectedGroup();
+                e.Handled = true;
+                break;
+            case Keys.Right:
+                ExpandSelectedGroup();
                 e.Handled = true;
                 break;
         }
@@ -1078,20 +1155,48 @@ internal sealed class HelpTopicsList : Control
         base.OnResize(e);
     }
 
-    private bool NeedsScrollbar => _items.Count > VisibleCount;
+    private bool NeedsScrollbar => VisibleItemCount > VisibleCount;
 
     private int VisibleCount => Math.Max(1, ClientSize.Height / ItemHeight);
 
-    private int MaxFirstVisibleIndex => Math.Max(0, _items.Count - VisibleCount);
+    private int MaxFirstVisibleIndex => Math.Max(0, VisibleItemCount - VisibleCount);
 
     private void DrawItem(Graphics g, int index, Rectangle rect)
     {
         var selected = index == _selectedIndex;
-        var backgroundColor = selected ? Color.FromArgb(219, 234, 254) : BackColor;
-        var textColor = selected ? Color.FromArgb(15, 63, 143) : ForeColor;
+        var titleParts = _items[index].Title.Split('/', 2, StringSplitOptions.TrimEntries);
+        var isChild = titleParts.Length == 2;
+        var isGroup = IsGroupHeader(index);
+        var groupTitle = GetGroupTitle(_items[index].Title);
+        var collapsed = isGroup && _collapsedGroups.Contains(groupTitle);
+        var text = isChild ? titleParts[1] : titleParts[0];
+        var backgroundColor = selected
+            ? Color.FromArgb(219, 234, 254)
+            : isGroup ? Color.FromArgb(248, 250, 252)
+            : isChild ? Color.FromArgb(252, 253, 255) : BackColor;
+        var textColor = selected
+            ? Color.FromArgb(15, 63, 143)
+            : isGroup ? Color.FromArgb(15, 63, 143) : ForeColor;
 
         using (var background = new SolidBrush(backgroundColor))
             g.FillRectangle(background, rect);
+
+        if (isGroup)
+        {
+            using var separator = new Pen(Color.FromArgb(226, 232, 240));
+            g.DrawLine(separator, rect.Left + 8, rect.Bottom - 1, rect.Right - 8, rect.Bottom - 1);
+        }
+
+        if (isChild)
+        {
+            using var guide = new Pen(Color.FromArgb(203, 213, 225), 1);
+            var x = rect.Left + 24;
+            var hasNextSibling = index + 1 < _items.Count
+                && IsSameChildGroup(_items[index].Title, _items[index + 1].Title);
+            var midY = rect.Top + rect.Height / 2;
+            g.DrawLine(guide, x, rect.Top, x, hasNextSibling ? rect.Bottom : midY);
+            g.DrawLine(guide, x, midY, x + 12, midY);
+        }
 
         if (selected)
         {
@@ -1099,14 +1204,162 @@ internal sealed class HelpTopicsList : Control
             g.FillRectangle(accent, rect.Left, rect.Top + 3, 3, rect.Height - 6);
         }
 
-        var textRect = new Rectangle(rect.Left + 10, rect.Top, rect.Width - 14, rect.Height);
+        if (isGroup)
+            DrawToggle(g, GetToggleRectangle(rect), collapsed);
+
+        if (isGroup)
+            DrawFolder(g, new Rectangle(rect.Left + 27, rect.Top + 7, 15, 13), collapsed);
+        else if (isChild)
+            DrawLeaf(g, new Rectangle(rect.Left + 38, rect.Top + 8, 10, 11));
+
+        using var groupFont = isGroup ? new Font(Font, FontStyle.Bold) : null;
+        var drawFont = groupFont ?? Font;
+        var textLeft = isChild ? rect.Left + 53 : isGroup ? rect.Left + 48 : rect.Left + 10;
+        var textRect = new Rectangle(textLeft, rect.Top, rect.Width - textLeft - 8, rect.Height);
         TextRenderer.DrawText(
             g,
-            _items[index].Title.TrimStart(),
-            Font,
+            text,
+            drawFont,
             textRect,
             textColor,
             TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+    }
+
+    private static bool IsSameChildGroup(string currentTitle, string nextTitle)
+    {
+        var current = currentTitle.Split('/', 2, StringSplitOptions.TrimEntries);
+        var next = nextTitle.Split('/', 2, StringSplitOptions.TrimEntries);
+        return current.Length == 2
+            && next.Length == 2
+            && current[0].Equals(next[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    private List<int> GetVisibleIndices()
+    {
+        var visible = new List<int>(_items.Count);
+        for (var i = 0; i < _items.Count; i++)
+        {
+            var title = _items[i].Title;
+            if (IsChildTitle(title) && _collapsedGroups.Contains(GetGroupTitle(title)))
+                continue;
+
+            visible.Add(i);
+        }
+
+        return visible;
+    }
+
+    private bool IsGroupHeader(int index)
+    {
+        if (index < 0 || index >= _items.Count - 1)
+            return false;
+
+        var group = GetGroupTitle(_items[index].Title);
+        return IsChildTitle(_items[index + 1].Title)
+            && GetGroupTitle(_items[index + 1].Title).Equals(group, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsChildTitle(string title) => title.Split('/', 2, StringSplitOptions.TrimEntries).Length == 2;
+
+    private static string GetGroupTitle(string title) => title.Split('/', 2, StringSplitOptions.TrimEntries)[0];
+
+    private static Rectangle GetToggleRectangle(Rectangle rect) => new(rect.Left + 8, rect.Top + 6, 14, 14);
+
+    private void ToggleGroup(string groupTitle)
+    {
+        if (!_collapsedGroups.Add(groupTitle))
+            _collapsedGroups.Remove(groupTitle);
+
+        if (_selectedIndex >= 0
+            && IsChildTitle(_items[_selectedIndex].Title)
+            && GetGroupTitle(_items[_selectedIndex].Title).Equals(groupTitle, StringComparison.OrdinalIgnoreCase)
+            && _collapsedGroups.Contains(groupTitle))
+        {
+            var groupIndex = _items.FindIndex(page => GetGroupTitle(page.Title).Equals(groupTitle, StringComparison.OrdinalIgnoreCase) && !IsChildTitle(page.Title));
+            if (groupIndex >= 0)
+                _selectedIndex = groupIndex;
+        }
+
+        _firstVisibleIndex = Math.Clamp(_firstVisibleIndex, 0, MaxFirstVisibleIndex);
+        EnsureSelectedVisible();
+        Invalidate();
+        SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void EnsureSelectedGroupExpanded()
+    {
+        if (_selectedIndex < 0 || _selectedIndex >= _items.Count)
+            return;
+
+        var title = _items[_selectedIndex].Title;
+        if (IsChildTitle(title))
+            _collapsedGroups.Remove(GetGroupTitle(title));
+    }
+
+    private void CollapseSelectedGroup()
+    {
+        if (_selectedIndex < 0 || _selectedIndex >= _items.Count)
+            return;
+
+        var group = GetGroupTitle(_items[_selectedIndex].Title);
+        if (!_collapsedGroups.Contains(group))
+            ToggleGroup(group);
+    }
+
+    private void ExpandSelectedGroup()
+    {
+        if (_selectedIndex < 0 || _selectedIndex >= _items.Count)
+            return;
+
+        var group = GetGroupTitle(_items[_selectedIndex].Title);
+        if (_collapsedGroups.Contains(group))
+            ToggleGroup(group);
+    }
+
+    private static void DrawToggle(Graphics g, Rectangle rect, bool collapsed)
+    {
+        using var border = new Pen(Color.FromArgb(96, 120, 160), 1);
+        using var fill = new SolidBrush(Color.White);
+        g.FillRectangle(fill, rect);
+        g.DrawRectangle(border, rect);
+
+        using var pen = new Pen(Color.FromArgb(71, 85, 105), 1.4f)
+        {
+            StartCap = LineCap.Round,
+            EndCap = LineCap.Round
+        };
+        var midX = rect.Left + rect.Width / 2;
+        var midY = rect.Top + rect.Height / 2;
+        g.DrawLine(pen, rect.Left + 3, midY, rect.Right - 3, midY);
+        if (collapsed)
+            g.DrawLine(pen, midX, rect.Top + 3, midX, rect.Bottom - 3);
+    }
+
+    private static void DrawFolder(Graphics g, Rectangle rect, bool collapsed)
+    {
+        using var fill = new SolidBrush(collapsed ? Color.FromArgb(239, 246, 255) : Color.FromArgb(219, 234, 254));
+        using var border = new Pen(Color.FromArgb(37, 99, 235), 1);
+        using var path = new GraphicsPath();
+        path.AddLine(rect.Left, rect.Top + 4, rect.Left + 5, rect.Top + 4);
+        path.AddLine(rect.Left + 7, rect.Top + 1, rect.Left + 12, rect.Top + 1);
+        path.AddLine(rect.Right, rect.Top + 5, rect.Right, rect.Bottom);
+        path.AddLine(rect.Left, rect.Bottom, rect.Left, rect.Top + 4);
+        path.CloseFigure();
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.FillPath(fill, path);
+        g.DrawPath(border, path);
+        g.SmoothingMode = SmoothingMode.None;
+    }
+
+    private static void DrawLeaf(Graphics g, Rectangle rect)
+    {
+        using var fill = new SolidBrush(Color.White);
+        using var border = new Pen(Color.FromArgb(148, 163, 184), 1);
+        g.FillRectangle(fill, rect);
+        g.DrawRectangle(border, rect);
+        using var line = new Pen(Color.FromArgb(148, 163, 184), 1);
+        g.DrawLine(line, rect.Left + 3, rect.Top + 4, rect.Right - 2, rect.Top + 4);
+        g.DrawLine(line, rect.Left + 3, rect.Top + 7, rect.Right - 2, rect.Top + 7);
     }
 
     private void DrawScrollbar(Graphics g, Rectangle rect)
@@ -1127,7 +1380,8 @@ internal sealed class HelpTopicsList : Control
     private Rectangle GetThumbRectangle()
     {
         var visible = VisibleCount;
-        var height = Math.Max(44, (int)Math.Round(ClientSize.Height * visible / (double)_items.Count));
+        var visibleItems = Math.Max(1, VisibleItemCount);
+        var height = Math.Max(44, (int)Math.Round(ClientSize.Height * visible / (double)visibleItems));
         height = Math.Min(ClientSize.Height, height);
         var top = MaxFirstVisibleIndex == 0
             ? 0
@@ -1140,10 +1394,14 @@ internal sealed class HelpTopicsList : Control
         if (_selectedIndex < 0)
             return;
 
-        if (_selectedIndex < _firstVisibleIndex)
-            _firstVisibleIndex = _selectedIndex;
-        else if (_selectedIndex >= _firstVisibleIndex + VisibleCount)
-            _firstVisibleIndex = _selectedIndex - VisibleCount + 1;
+        var visibleIndex = GetVisibleIndices().IndexOf(_selectedIndex);
+        if (visibleIndex < 0)
+            return;
+
+        if (visibleIndex < _firstVisibleIndex)
+            _firstVisibleIndex = visibleIndex;
+        else if (visibleIndex >= _firstVisibleIndex + VisibleCount)
+            _firstVisibleIndex = visibleIndex - VisibleCount + 1;
 
         _firstVisibleIndex = Math.Clamp(_firstVisibleIndex, 0, MaxFirstVisibleIndex);
     }

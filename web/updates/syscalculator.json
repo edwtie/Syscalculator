@@ -1,30 +1,27 @@
 {
   "product": "Syscalculator",
-  "generatedAtUtc": "2026-05-18T00:00:00Z",
+  "generatedAtUtc": "2026-05-19T00:00:00Z",
   "channels": {
     "daily": {
-      "version": "2026.05.18.2",
-      "displayVersion": "2026.05.18",
-      "date": "2026-05-18",
-      "title": "Syscalculator 2.0 Daily 2026-05-18",
-      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.18-daily/Syscalculator-2.0-daily-2.0.2026.05.18.exe",
-      "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-daily-2.0.2026.05.18.zip",
-      "packageId": "daily-2026.05.18-privacy-button-002",
-      "sha256": "09a0934c18bf10bf1e3cd207aaf75839c2da36bc7e68395fe1ceadcd01b85140",
-      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.18-daily",
-      "summary": "Daily build with Privacy moved to an About dialog button, Dutch and English privacy pages, production Store release helper and language updates."
+      "version": "2026.05.19.1",
+      "displayVersion": "2026.05.19",
+      "date": "2026-05-19",
+      "title": "Syscalculator 2.0 Daily 2026-05-19",
+      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.19-daily/Syscalculator-2.0-daily-2.0.2026.05.19.exe",
+      "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-daily-2.0.2026.05.19.zip",
+      "packageId": "daily-2026.05.19-runtimecheck-003",
+      "sha256": "bf1af84c574a0d5bf8e4b6dac4211dff9989e14cc81204f30fd471f98f7554fc",
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.19-daily",
+      "summary": "Daily build with expanded updater help in all bundled languages, clearer Alpha/Beta warnings, NOD help tree improvements, graph/SI help updates, daily release packaging, self-contained .NET runtime files and localized runtime diagnostics."
     },
     "beta": {
-      "version": "2.0.2026.05.17",
-      "displayVersion": "2026.05.17",
-      "date": "2026-05-17",
-      "title": "Syscalculator 2.0 Beta 2",
-      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.17-beta/Syscalculator-2.0-beta-2.0.2026.05.17.exe",
-      "packageUrl": "https://www.tiedragon.com/api/syscalculator-updates/packages/Syscalculator-2.0-beta-2.0.2026.05.17.zip",
-      "packageId": "beta-2026.05.17-beta2-help-001",
-      "sha256": "54a39b441fb2d4f55b53bf12d031549674f0d2bdff8ffba0f27da830c07db1c3",
-      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.17-beta",
-      "summary": "Beta 2 with latest test-build help wording, Feedback polish, updater improvements and corrected About release channel display."
+      "version": "2.0.2026.05.16",
+      "displayVersion": "2026.05.16",
+      "date": "2026-05-16",
+      "title": "Syscalculator 2.0 Beta 1",
+      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.16-beta/Syscalculator-2.0-beta-2.0.2026.05.16.exe",
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.16-beta",
+      "summary": "Beta 1 is the current public beta. This beta is installer-only and does not include the standalone zip updater package yet."
     },
     "stable": {
       "version": "",

@@ -20,6 +20,49 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.19 Daily Build
+
+**Date:** 2026-05-19
+
+**Fixes:**
+- Fixed NOD Editor help navigation so command groups are clearer, collapsible and visually shown as a tree.
+- Fixed main Help structure by adding a dedicated Updater page instead of hiding update behavior inside configuration text.
+- Clarified that Alpha and Beta builds are test versions that can cause problems and are not suitable for normal daily use.
+- Fixed missing main Help links so Start and Configuration point to the Updater page in every bundled language.
+- Fixed visible Help placeholder/fallback gaps in non-English language files.
+- Fixed the NOD Editor guide fallback so the editable HTML fallback is English and localized languages use their `.lng` text.
+- Fixed remaining Help language-key coverage so bundled languages no longer miss the short main Help, NOD Editor, graph/SI title and updater keys.
+- Fixed graph range inputs so backend values stay exact while the display may show rounded readable values.
+- Fixed graph X/Y marker labels so they use display formatting instead of long backend decimals.
+- Fixed graph step display so values such as `1`, `1.5` and `0.5` stay readable instead of showing unnecessary trailing zeroes.
+- Fixed graph table visibility so the table button is disabled when no calculated table rows exist and a hidden table stays hidden when requested.
+- Fixed graph redraw behavior so changing a NOD formula invalidates old graph/table data before the next generation.
+- Fixed daily package marker handling so same-date packages can still be detected without exposing a build number to users.
+- Fixed Daily and Beta installer packaging so Syscalculator is self-contained and no longer fails at startup when a separate .NET 10 x64 runtime is missing or not detected.
+- Fixed outdated Help text that still described Daily/Beta installers as framework-dependent.
+
+**Additions:**
+- Added expanded updater help across all bundled language files.
+- Added Daily/Beta/Alpha/Release channel explanation to updater help.
+- Added graph and SI display guidance to the NOD Editor help.
+- Added localized NOD Editor guide text outside Dutch/English.
+- Added localized classic NOD-to-NOD 2.0 help text outside Dutch/English.
+- Added localized clipboard/Excel Help fallback text outside Dutch/English.
+- Added explicit help text for clipboard and Excel/Microsoft 365 behavior.
+- Added Windows clipboard history (`Win+V`) guidance for WizardExpress/Excel users.
+- Added graph input tooltips for normal decimal input, `10^n` style input and SI-style examples.
+- Added committed graph input behavior: typing is applied on Enter or focus leave, while zooming and panning keep using display-only updates.
+- Added scale-aware step spinner behavior using readable steps such as `0.5`, `0.75`, `1`, `1.25`, `1.5`, `2`, `2.5`, `5` and `7.5` times powers of ten.
+- Added right-mouse rectangle zoom in the large Graph Preview with the same aspect ratio as the graph canvas.
+- Added a locator/minimap for deeply zoomed graph views, including axes, calculated line preview, range markers and a shrinking red view indicator.
+- Added NOD command group pages for basic fields, math, text, data, equations and NOD system commands.
+- Added a wider NOD Help dialog and clearer collapsible topic tree for large help sets.
+- Added the daily-to-beta procedure and release-line package matrix documentation.
+- Added build shortcuts for Beta MSIX and production MSIX packaging.
+- Added runtime diagnostics to About system information and Feedback support info, including bundled .NET runtime, installed shared runtime and whether the installed runtime is newer than the bundled one.
+- Added runtime diagnostic labels and status messages to all bundled language files.
+- Prepared the Daily installer and standalone updater package for `2026.05.19`.
+
 #### 2.0.2026.05.17 Daily Build
 
 **Date:** 2026-05-17

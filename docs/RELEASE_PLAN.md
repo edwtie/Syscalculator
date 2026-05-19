@@ -12,15 +12,28 @@ Syscalculator 2.0 Daily
 = active C#/.NET 10 development line
 = frequent builds for internal testing
 = may contain experimental features
+= package set: Inno Setup installer and standalone updater zip only
 
 Syscalculator 2.0 Beta
 = tester-ready builds promoted from daily
 = feature set should be stable enough for wider feedback
+= package set: MSIX test package, Inno Setup installer and standalone updater zip
 
 Syscalculator 2.0 Production
 = stable public release promoted from beta
 = installer and release notes must be complete
+= package set: MSIX package, Inno Setup installer and standalone updater zip
 ```
+
+## Package Matrix
+
+| Release line | Inno Setup | Updater zip | MSIX | Runtime policy | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| Daily | Yes | Yes | No | Self-contained | Internal daily testing and fast update checks. |
+| Beta | Yes | Yes | Yes | Self-contained | Tester builds, including Store/MSIX validation and package flights when needed. |
+| Release | Yes | Yes | Yes | Self-contained | Public production distribution through direct installer, updater and Microsoft Store/MSIX route. |
+
+Daily builds deliberately skip MSIX so experimental work stays lightweight. Beta is the first line where MSIX is allowed, because testers can validate packaging before production. Production release keeps MSIX, Inno Setup and the updater zip as public release artifacts.
 
 ## Current Priorities
 
@@ -35,6 +48,8 @@ Syscalculator 2.0 Production
 ### 2.0 Daily
 
 - Use `daily` for active work.
+- Build only the Inno Setup installer and standalone updater zip.
+- Do not create MSIX packages for Daily.
 - Daily builds may include experimental or hidden work, such as the solver/formula animation path.
 - Keep release notes honest: daily builds are for testing, not final production use.
 - Keep issue links updated for visible work:
@@ -47,6 +62,9 @@ Syscalculator 2.0 Production
 ### 2.0 Beta
 
 - Promote from `daily` after a daily build has been tested.
+- Build the Inno Setup installer, standalone updater zip and MSIX test package.
+- Use Microsoft Store package flights for Beta MSIX tester distribution when Store-based testing is needed.
+- Beta package flights must pass the Microsoft certification approving procedure before testers receive them.
 - Beta should include only features with a clear user path and documented limitations.
 - Solver animation may stay experimental unless the UI and tests are stable.
 - SQL connector should stay design/prototype unless connection safety and error handling are ready.
@@ -54,9 +72,11 @@ Syscalculator 2.0 Production
 ### 2.0 Production
 
 - Promote from `beta` only after install, startup, About, help and core NOD workflows are checked.
+- Build the Inno Setup installer, standalone updater zip and MSIX package.
 - Production notes must mention runtime requirements:
-  - .NET 10 Desktop Runtime
-  - Microsoft Edge WebView2 Runtime when needed
+  - Syscalculator 2.0 is packaged self-contained, so a separate .NET 10 Desktop Runtime is not required for normal Inno/MSIX packages.
+  - About -> System information and feedback support text must still report bundled versus installed .NET shared runtime status, including when an installed runtime is newer.
+  - Microsoft Edge WebView2 Runtime when needed.
 - Production should not depend on hidden local build state.
 
 ## Branch Flow
@@ -74,6 +94,8 @@ Rules:
 - Version and release notes must match the channel.
 
 See also: `docs/GIT_RELEASE_BRANCH_WORKFLOW.md`.
+
+Daily-to-Beta promotion procedure: `docs/DAILY_TO_BETA_PROCEDURE.md`.
 
 ## Build And Release Checklist
 
@@ -95,6 +117,18 @@ For Syscalculator 2.0 installer:
 ```
 
 Use `-Channel beta` or `-Channel production` only when promoting that release line.
+
+Shortcut commands:
+
+```bat
+DAILY_RELEASE.bat build
+BETA_RELEASE.bat build
+BETA_MSIX.bat
+STORE_RELEASE.bat build
+STORE_MSIX.bat
+```
+
+`DAILY_RELEASE.bat build` creates the Daily Inno Setup installer and updater zip. `BETA_RELEASE.bat build` creates the Beta Inno Setup installer and updater zip; `BETA_MSIX.bat` creates the Beta MSIX package. `STORE_RELEASE.bat build` creates the production Inno Setup installer and updater zip; `STORE_MSIX.bat` creates the production MSIX package.
 
 ### Smoke Test
 
@@ -144,6 +178,7 @@ For 2.0 Production, keep the notes short, clear and user-facing.
 - Core NOD 1.0 compatibility still works.
 - NOD 2.0 math/equation basics still work.
 - No known blocker issue is open for startup, install or data loss.
+- Follow `docs/DAILY_TO_BETA_PROCEDURE.md` before publishing the Beta artifacts.
 
 ### Beta To Production
 

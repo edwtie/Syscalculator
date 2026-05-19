@@ -178,8 +178,8 @@ public static class GraphSurfaceApi
     {
         return MatchViewToCanvasAspect(currentView with
         {
-            MinX = (double)xMin.Value,
-            MaxX = (double)xMax.Value
+            MinX = GetNumberBoxValue(xMin),
+            MaxX = GetNumberBoxValue(xMax)
         }, canvas);
     }
 
@@ -190,8 +190,8 @@ public static class GraphSurfaceApi
     {
         return MatchViewToCanvasAspect(currentView with
         {
-            MinY = (double)yMin.Value,
-            MaxY = (double)yMax.Value
+            MinY = GetNumberBoxValue(yMin),
+            MaxY = GetNumberBoxValue(yMax)
         }, canvas);
     }
 
@@ -241,13 +241,20 @@ public static class GraphSurfaceApi
         return GraphPlotRenderer.ScreenToGraph(screenPoint, plot, view);
     }
 
-    private static void SetNumberBoxValue(NumericUpDown box, double value)
+    public static double GetNumberBoxValue(NumericUpDown box)
+    {
+        return box.Tag is double exact && double.IsFinite(exact)
+            ? exact
+            : (double)box.Value;
+    }
+
+    public static void SetNumberBoxValue(NumericUpDown box, double value)
     {
         if (!double.IsFinite(value))
             return;
 
-        if (value != 0d && Math.Abs(value) < Math.Pow(10d, -box.DecimalPlaces))
-            return;
+        box.Tag = value;
+        box.DecimalPlaces = ChooseDisplayDecimalPlaces(value);
 
         decimal decimalValue;
         try
@@ -265,6 +272,21 @@ public static class GraphSurfaceApi
             decimalValue = box.Maximum;
 
         box.Value = decimalValue;
+    }
+
+    public static void CommitNumberBoxValue(NumericUpDown box)
+    {
+        box.Tag = (double)box.Value;
+    }
+
+    private static int ChooseDisplayDecimalPlaces(double value)
+    {
+        var abs = Math.Abs(value);
+        if (abs == 0d || abs >= 0.01d)
+            return 1;
+
+        var exponent = Math.Floor(Math.Log10(abs));
+        return Math.Clamp((int)(-exponent + 1), 1, 12);
     }
 
     private static double MinimumHalfSpan(double center)

@@ -1,6 +1,10 @@
 param(
     [ValidateSet('daily', 'beta', 'production')]
-    [string]$Channel = 'daily'
+    [string]$Channel = 'daily',
+
+    [string]$InstallVersion = '',
+
+    [string]$PackageId = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,7 +17,7 @@ $updaterPublishDir = Join-Path $publishDir 'Updater'
 $installerScript = Join-Path $repoRoot 'installer\Syscalculator.iss'
 $generatedVersionFile = Join-Path $repoRoot 'src\syscalculator\AppVersionInfo.Generated.cs'
 $updatesDir = Join-Path $repoRoot 'artifacts\updates'
-$isSelfContained = $Channel -eq 'production'
+$isSelfContained = $Channel -in @('daily', 'beta', 'production')
 $selfContainedArg = if ($isSelfContained) { 'true' } else { 'false' }
 
 $isccCommand = Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue
@@ -21,9 +25,9 @@ $isccPath = if ($isccCommand) { $isccCommand.Source } else { $null }
 
 if (-not $isccPath) {
     $candidatePaths = @(
+        (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe'),
         (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
-        (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe'),
-        (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe')
+        (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')
     )
 
     $isccPath = $candidatePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
@@ -57,7 +61,10 @@ if ($versionText -notmatch 'BuildNumber\s*=\s*"(?<build>[^"]+)"') {
 }
 
 $buildNumber = $Matches['build']
-$installVersion = if (($Channel -eq 'daily' -or $Channel -eq 'beta' -or $Channel -eq 'production') -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
+$installVersion = if (-not [string]::IsNullOrWhiteSpace($InstallVersion)) {
+    $InstallVersion
+}
+elseif (($Channel -eq 'daily' -or $Channel -eq 'beta' -or $Channel -eq 'production') -and $buildNumber -match '^(?<date>\d{4}\.\d{2}\.\d{2})\.\d{3}$') {
     "2.0.$($Matches['date'])"
 }
 else {
@@ -67,6 +74,21 @@ else {
 $env:SYSCALC_INSTALL_VERSION = $installVersion
 $env:SYSCALC_INSTALL_CHANNEL = $Channel
 $env:SYSCALC_SELF_CONTAINED = $selfContainedArg
+$env:SYSCALC_PACKAGE_ID = if (-not [string]::IsNullOrWhiteSpace($PackageId)) {
+    $PackageId
+}
+elseif (-not [string]::IsNullOrWhiteSpace($env:SYSCALC_PACKAGE_ID)) {
+    $env:SYSCALC_PACKAGE_ID
+}
+elseif ($Channel -eq 'production') {
+    "production-$($installVersion -replace '^2\.0\.', '')-installer-001"
+}
+elseif ($Channel -eq 'beta') {
+    "beta-$($installVersion -replace '^2\.0\.', '')-installer-001"
+}
+else {
+    "daily-$($installVersion -replace '^2\.0\.', '')-installer-001"
+}
 
 if (-not (Test-Path $updatesDir)) {
     New-Item -ItemType Directory -Path $updatesDir | Out-Null
@@ -84,5 +106,6 @@ $packageHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $packagePath).Hash.T
 
 Write-Host "Installer created in artifacts\installer for channel '$Channel' version '$env:SYSCALC_INSTALL_VERSION'."
 Write-Host "Self-contained publish: $selfContainedArg"
+Write-Host "Package marker: $env:SYSCALC_PACKAGE_ID"
 Write-Host "Updater package created: $packagePath"
 Write-Host "Updater package sha256: $packageHash"

@@ -23,6 +23,15 @@ pre code { background:transparent; border:0; padding:0; color:inherit; }
 .screenshot-frame { max-width:100%; margin:12px 0 8px; border:1px solid #d7dee8; border-radius:8px; overflow:hidden; background:#f8fafc; box-shadow:0 8px 22px rgba(15,23,42,.12); }
 .screenshot-frame img { display:block; width:100%; height:auto; }
 .shot-caption { font-size:12px; color:#475569; margin-top:6px; }
+.graph-help-shot { background:#ffffff; max-width:760px; }
+.graph-help-toolbar { display:flex; gap:6px; flex-wrap:nowrap; align-items:center; padding:6px 8px; border-bottom:1px solid #d7dee8; background:#f8fafc; font-size:12px; color:#0f172a; overflow:hidden; }
+.graph-help-toolbar span { white-space:nowrap; }
+.graph-help-toolbar b { display:inline-block; min-width:42px; margin-left:3px; padding:1px 5px; border:1px solid #cbd5e1; background:#ffffff; color:#0f172a; font-weight:400; }
+.graph-help-icon-button { display:inline-flex; width:44px; height:26px; }
+.graph-help-copy-button { margin-left:auto; }
+.graph-help-icon-button svg { display:block; width:44px; height:26px; }
+.graph-help-check::before { content:""; display:inline-block; width:10px; height:10px; margin-right:5px; border:1px solid #64748b; background:#ffffff; vertical-align:-1px; }
+.graph-help-shot svg { display:block; width:100%; height:auto; }
 .code-copy-wrap { position:relative; margin:10px 0 16px; }
 .code-copy-wrap pre { margin:0; padding-right:48px; }
 .code-copy-button { position:absolute; top:8px; right:8px; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:6px; background:transparent; color:#dbeafe; font-size:0; line-height:1; cursor:pointer; }
