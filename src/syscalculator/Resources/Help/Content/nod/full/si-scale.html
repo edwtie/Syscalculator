@@ -1,0 +1,51 @@
+<p>SI- en schaalweergave is bedoeld om getallen in de grafiek en tabel leesbaar te maken. Het is alleen <b>display</b>: de formule en backend blijven gewone getallen gebruiken.</p>
+
+<h2>Officiele SI-prefixen</h2>
+<table>
+  <tr><th>Symbool</th><th>Naam</th><th>Betekenis</th><th>Voorbeeld</th></tr>
+  <tr><td>Q</td><td>quetta</td><td>10<sup>30</sup></td><td>1 Q = 10<sup>30</sup></td></tr>
+  <tr><td>R</td><td>ronna</td><td>10<sup>27</sup></td><td>1 R = 10<sup>27</sup></td></tr>
+  <tr><td>Y</td><td>yotta</td><td>10<sup>24</sup></td><td>1 Y = 10<sup>24</sup></td></tr>
+  <tr><td>Z</td><td>zetta</td><td>10<sup>21</sup></td><td>1 Z = 10<sup>21</sup></td></tr>
+  <tr><td>E</td><td>exa</td><td>10<sup>18</sup></td><td>1 E = 10<sup>18</sup></td></tr>
+  <tr><td>P</td><td>peta</td><td>10<sup>15</sup></td><td>1 P = 10<sup>15</sup></td></tr>
+  <tr><td>T</td><td>tera</td><td>10<sup>12</sup></td><td>1 T = 10<sup>12</sup></td></tr>
+  <tr><td>G</td><td>giga</td><td>10<sup>9</sup></td><td>1 G = 1000000000</td></tr>
+  <tr><td>M</td><td>mega</td><td>10<sup>6</sup></td><td>1 M = 1000000</td></tr>
+  <tr><td>k</td><td>kilo</td><td>10<sup>3</sup></td><td>1 k = 1000</td></tr>
+  <tr><td>h</td><td>hecto</td><td>10<sup>2</sup></td><td>1 h = 100</td></tr>
+  <tr><td>da</td><td>deca</td><td>10<sup>1</sup></td><td>1 da = 10</td></tr>
+  <tr><td>-</td><td>basis</td><td>10<sup>0</sup></td><td>1 = basiswaarde</td></tr>
+  <tr><td>d</td><td>deci</td><td>10<sup>-1</sup></td><td>1 d = 0,1</td></tr>
+  <tr><td>c</td><td>centi</td><td>10<sup>-2</sup></td><td>1 c = 0,01</td></tr>
+  <tr><td>m</td><td>milli</td><td>10<sup>-3</sup></td><td>1 m = 0,001</td></tr>
+  <tr><td>u</td><td>micro</td><td>10<sup>-6</sup></td><td>1 u = 0,000001. Officieel SI: &micro;.</td></tr>
+  <tr><td>n</td><td>nano</td><td>10<sup>-9</sup></td><td>1 n = 0,000000001</td></tr>
+  <tr><td>p</td><td>pico</td><td>10<sup>-12</sup></td><td>1 p = 0,000000000001</td></tr>
+  <tr><td>f</td><td>femto</td><td>10<sup>-15</sup></td><td>1 f = 10<sup>-15</sup></td></tr>
+  <tr><td>a</td><td>atto</td><td>10<sup>-18</sup></td><td>1 a = 10<sup>-18</sup></td></tr>
+  <tr><td>z</td><td>zepto</td><td>10<sup>-21</sup></td><td>1 z = 10<sup>-21</sup></td></tr>
+  <tr><td>y</td><td>yocto</td><td>10<sup>-24</sup></td><td>1 y = 10<sup>-24</sup></td></tr>
+  <tr><td>r</td><td>ronto</td><td>10<sup>-27</sup></td><td>1 r = 10<sup>-27</sup></td></tr>
+  <tr><td>q</td><td>quecto</td><td>10<sup>-30</sup></td><td>1 q = 10<sup>-30</sup></td></tr>
+</table>
+
+<p><code>m</code> betekent <b>milli</b> en niet meter in deze grafiekweergave. Een meter is een basiseenheid; het prefix <code>m</code> is 10<sup>-3</sup>.</p>
+
+<h2>Niet-SI schaalhulpen</h2>
+<p>Sommige labels zijn geen officiele SI-prefix, maar helpen om extreme schaal te begrijpen. Zet daarom altijd de betekenis in de help of tooltip erbij.</p>
+<table>
+  <tr><th>Label</th><th>Naam</th><th>Betekenis</th><th>Opmerking</th></tr>
+  <tr><td>lj</td><td>lichtjaar</td><td>ongeveer 9,46 x 10<sup>15</sup></td><td>Geen SI-prefix. Bedoeld als schaalvoorbeeld voor zeer grote afstanden.</td></tr>
+  <tr><td>IP</td><td>kleinste schaal</td><td>10<sup>-35</sup></td><td>Geen SI-prefix. Display-hulp voor extreem kleine schaal.</td></tr>
+</table>
+
+<h2>Voorbeelden uit de natuur</h2>
+<ul>
+  <li>Een waterstofatoom is ongeveer 1 x 10<sup>-10</sup> meter groot.</li>
+  <li>Een gewone atoomkern zit ongeveer rond 10<sup>-15</sup> meter.</li>
+  <li>Een neutron/proton zit ook rond 10<sup>-15</sup> meter.</li>
+</ul>
+
+<h2>Invoer en waarschuwing</h2>
+<p>Een invoerveld mag SI-achtige tekst tonen als display, maar de backend moet altijd een echte numerieke waarde krijgen. Tijdens typen rekent de grafiek niet live mee; bij <b>Enter</b> of focusverlies wordt de waarde verwerkt.</p>

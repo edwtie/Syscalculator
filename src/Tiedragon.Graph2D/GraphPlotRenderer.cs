@@ -508,7 +508,7 @@ public static class GraphPlotRenderer
             {
                 var point = map(Point(minX, view.MinY));
                 g.DrawLine(rangePen, point.X, plot.Top, point.X, plot.Bottom);
-                minLabelRect = DrawMarkerLabel(g, $"X min {FormatTick(minX)}", font, rangeBrush, labelBack, labelBorder, point.X, labelY, plot);
+                minLabelRect = DrawMarkerLabel(g, $"X min {FormatDisplayNumber(minX)}", font, rangeBrush, labelBack, labelBorder, point.X, labelY, plot);
             }
 
             if (maxX >= view.MinX && maxX <= view.MaxX)
@@ -518,14 +518,14 @@ public static class GraphPlotRenderer
                 var maxLabelY = labelY;
                 if (!minLabelRect.IsEmpty)
                 {
-                    var testSize = g.MeasureString($"X max {FormatTick(maxX)}", font);
+                    var testSize = g.MeasureString($"X max {FormatDisplayNumber(maxX)}", font);
                     var testX = Math.Clamp(point.X - testSize.Width / 2 - 3, plot.Left + 2, plot.Right - testSize.Width - 8);
                     maxLabelRect = new RectangleF(testX, maxLabelY, testSize.Width + 6, testSize.Height + 2);
                     if (maxLabelRect.IntersectsWith(minLabelRect))
                         maxLabelY = Math.Max(plot.Top + 4, labelY - maxLabelRect.Height - 3);
                 }
 
-                DrawMarkerLabel(g, $"X max {FormatTick(maxX)}", font, rangeBrush, labelBack, labelBorder, point.X, maxLabelY, plot);
+                DrawMarkerLabel(g, $"X max {FormatDisplayNumber(maxX)}", font, rangeBrush, labelBack, labelBorder, point.X, maxLabelY, plot);
             }
         }
 
@@ -538,7 +538,7 @@ public static class GraphPlotRenderer
         }
 
         if (double.IsFinite(requestedStep) && requestedStep > 0)
-            DrawCornerLabel(g, $"Step {FormatTick(requestedStep)}", font, rangeBrush, labelBack, labelBorder, plot);
+            DrawCornerLabel(g, $"Step {FormatDisplayNumber(requestedStep)}", font, rangeBrush, labelBack, labelBorder, plot);
     }
 
     private static void DrawDataYRangeMarkers(
@@ -569,7 +569,7 @@ public static class GraphPlotRenderer
 
             var point = map(Point(view.MinX, minY));
             g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
-            DrawYMarkerLabel(g, $"Y min/max {FormatTick(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
+            DrawYMarkerLabel(g, $"Y min/max {FormatDisplayNumber(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
             return;
         }
 
@@ -578,14 +578,14 @@ public static class GraphPlotRenderer
         {
             var point = map(Point(view.MinX, maxY));
             g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
-            maxLabelRect = DrawYMarkerLabel(g, $"Y max {FormatTick(maxY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
+            maxLabelRect = DrawYMarkerLabel(g, $"Y max {FormatDisplayNumber(maxY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, RectangleF.Empty, preferAbove: true);
         }
 
         if (minY >= view.MinY && minY <= view.MaxY)
         {
             var point = map(Point(view.MinX, minY));
             g.DrawLine(dataPen, plot.Left, point.Y, plot.Right, point.Y);
-            DrawYMarkerLabel(g, $"Y min {FormatTick(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, maxLabelRect, preferAbove: false);
+            DrawYMarkerLabel(g, $"Y min {FormatDisplayNumber(minY)}", font, dataBrush, labelBack, labelBorder, point.Y, plot, maxLabelRect, preferAbove: false);
         }
     }
 
@@ -944,6 +944,11 @@ public static class GraphPlotRenderer
             minY = 0;
         else if (maxY < 0 && Math.Abs(maxY) <= range * 3f)
             maxY = 0;
+    }
+
+    public static string FormatDisplayNumber(double value)
+    {
+        return FormatTick(value, 0d);
     }
 
     private static string FormatTick(double value)

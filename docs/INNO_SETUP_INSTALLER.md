@@ -26,11 +26,13 @@ The installer includes:
 - NOD Editor shortcut using `-tool`
 - NOD Template Wizard shortcut using `-wizardtool`
 - `.nod` file association
-- Microsoft .NET 10 Desktop Runtime x64 prerequisite check
+- self-contained .NET runtime files for Syscalculator 2.0
 - grouped `.nod` converter directories based on the legacy `broncode.zip` structure
 - uninstall support
 
-Because the 2.0 installer is framework-dependent, it checks for `Microsoft.WindowsDesktop.App` 10.x before setup continues. When the runtime is missing, setup offers to open the official Microsoft .NET 10 Desktop Runtime download page and then stops so the user can install the runtime first.
+Daily, Beta and Production 2.0 installers are built self-contained. That keeps test machines from failing at startup with a separate `.NET 10` runtime prompt. The Inno script still contains the old .NET runtime prerequisite check as a fallback for a deliberate framework-dependent build, but normal 2.0 packages set `SYSCALC_SELF_CONTAINED=true` and skip that check.
+
+Syscalculator still reports runtime diagnostics in About -> System information and in feedback support text. It shows the bundled `.NET` runtime, the highest installed shared runtime when present, and whether the installed runtime is older, equal or newer than the bundled runtime.
 
 `ISCC.exe` must be available in PATH. Install Inno Setup 6 if the command is missing.
 

@@ -1,0 +1,42 @@
+<p>The updater keeps Syscalculator current without changing your NOD files or personal settings.</p>
+
+<h2>Where to find it</h2>
+<ul>
+  <li><b>About &gt; Check for updates...</b> checks immediately.</li>
+  <li><b>Config &gt; Check for updates automatically</b> controls whether Syscalculator checks at startup.</li>
+  <li><b>Config &gt; Update channel</b> selects which release line is checked.</li>
+</ul>
+
+<h2>Update channels</h2>
+<table>
+  <tr><th>Channel</th><th>Purpose</th><th>Typical package</th></tr>
+  <tr><td><b>Daily</b></td><td>Frequent test builds for quick fixes and daily work.</td><td>Inno Setup installer and updater package.</td></tr>
+  <tr><td><b>Beta</b></td><td>Test builds for evaluation. A beta can contain unfinished features or regressions and is not meant for everyday production use.</td><td>MSIX, Inno Setup installer and updater package.</td></tr>
+  <tr><td><b>Alpha</b></td><td>Very early internal builds. Alpha builds are only for experiments and can break more easily.</td><td>Only when an alpha test package is published.</td></tr>
+  <tr><td><b>Release</b></td><td>Stable public release line.</td><td>MSIX and Inno Setup installer.</td></tr>
+</table>
+
+<h2>How an update runs</h2>
+<ol>
+  <li>Syscalculator reads the secure update manifest from Tiedragon.</li>
+  <li>It compares the package date, version and package identity with the installed build.</li>
+  <li>When a newer package is available, Syscalculator asks whether you want to download it.</li>
+  <li>The separate updater downloads the package, checks the SHA-256 value when available, waits for Syscalculator to close, updates the files and starts Syscalculator again.</li>
+</ol>
+
+<h2>What the updater does not change</h2>
+<ul>
+  <li>It does not edit your NOD converter files.</li>
+  <li>It does not change your language, catalog or converter settings.</li>
+  <li>It does not switch Daily/Beta/Release by itself. The selected channel decides what is checked.</li>
+</ul>
+
+<h2>If something goes wrong</h2>
+<ul>
+  <li>If there is no internet connection, the update check can fail. Try again later from <b>About &gt; Check for updates...</b>.</li>
+  <li>If the checksum does not match, the updater stops. This protects against incomplete or wrong packages.</li>
+  <li>If Syscalculator is still open, the updater waits until it can safely replace the files.</li>
+  <li>If you use the Microsoft Store/MSIX route, Windows may handle installation rules differently from the Inno Setup installer.</li>
+</ul>
+
+<div class="warning"><b>Important:</b> Alpha and Beta builds can cause problems because they are test versions. They are not suitable for normal daily use. For normal users, use the Release channel when it is available.</div>

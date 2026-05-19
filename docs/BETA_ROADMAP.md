@@ -4,10 +4,10 @@
 
 | Area | Beta 1 - 2026-05-16 | Beta 2 - 2026-05-17 |
 | --- | --- | --- |
-| Release goal | First cleaned tester build after the early Beta 1 refreshes. | Promote the fixed Daily work into a tester-ready Beta 2. |
+| Release goal | First cleaned tester build after the early Beta 1 refreshes. | Planned tester build after more validation. |
 | Version display | Date-only installer version `2.0.2026.05.16`. | Date-only installer version `2.0.2026.05.17`. |
-| Distribution | Installer only. Public download path used `syscal20beta1.exe`. | Installer plus zip updater package. GitHub release assets and hosted update package are both available. |
-| Update channel | Beta existed as a channel, but without the full zip updater package flow. | Beta channel has manifest `packageUrl`, `packageId`, and SHA256 for same-date update detection. |
+| Distribution | Installer only. Public download path used `syscal20beta1.exe`. | Test/pre-release assets exist, but Beta 2 is not the current public beta. |
+| Update channel | Beta 1 does not include the standalone zip updater package yet. | Planned to add manifest `packageUrl`, `packageId`, and SHA256 after more testing. |
 | About screen | Release channel could still show Daily because the app used a hardcoded channel. | Release channel is detected from `update-state.cfg`, so installed beta packages show Beta. |
 | Help text | Some help pages still mentioned Daily build/version wording. | Help text uses channel-neutral test-build wording. |
 | Graph preview | Included the promoted 2026-05-16 graph preview and mini preview fixes. | Adds live mini preview to graph sync, precision fixes, Planck-scale labels, ultra-small line thickening, and pico-scale detail-grid cutoff. |
@@ -23,7 +23,7 @@
 - Update zip: `Syscalculator-2.0-beta-2.0.2026.05.17.zip`
 - Package marker: `beta-2026.05.17-beta2-help-001`
 - Update zip SHA256: `54a39b441fb2d4f55b53bf12d031549674f0d2bdff8ffba0f27da830c07db1c3`
-- Status: tester-ready, but still not production.
+- Status: GitHub pre-release/test build only. Beta 1 remains the current public beta until the updater and feedback flow have been tested further.
 
 ## Roadmap
 
@@ -48,12 +48,12 @@
 ### Production Readiness
 
 - Freeze user-facing labels for About, updater, Feedback, Help, and Config.
-- Keep Microsoft Store submission on the production channel only; do not submit Daily or Beta installers.
+- Keep Daily outside MSIX. Beta may build MSIX for tester validation; public Microsoft Store submission stays on the production channel until a private tester policy is chosen.
 - Confirm no help page describes Daily-only behavior unless the user is actually in Daily channel documentation.
 - Check clean install on a fresh Windows profile.
 - Check update from Beta 1 to Beta 2/Beta 3.
 - Check update from Daily to Beta does not downgrade or loop.
-- Verify .NET Desktop Runtime and WebView2 runtime requirements are documented in release notes.
+- Verify self-contained .NET packaging and WebView2 runtime requirements are documented in release notes.
 - Keep experimental NOD 2.1 ideas clearly marked as future/research.
 
 ### Production Release Gate

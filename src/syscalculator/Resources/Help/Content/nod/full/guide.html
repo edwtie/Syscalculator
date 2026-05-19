@@ -1,16 +1,77 @@
-<p>[editor.nod_help.guide.intro]</p>
-<h2>[editor.nod_help.guide.window_title]</h2>
+<p>This guide is the practical route through the NOD Editor. Use it when you create a converter, inspect an old NOD file, test a formula, or want to view a graph.</p>
+
+<h2>The Editor Window</h2>
 {NodEditorScreenshot}
-<p class="shot-caption">[editor.nod_help.guide.screenshot_caption]</p>
-<h2>[editor.nod_help.guide.create_title]</h2>
+<p class="shot-caption">Example: a converter with code editor, preview, command tip and tools.</p>
+
+<h2>Workflow</h2>
 <ol>
-  <li>[editor.nod_help.guide.create.name]</li>
-  <li>[editor.nod_help.guide.create.symbols]</li>
-  <li>[editor.nod_help.guide.create.rules]</li>
-  <li>[editor.nod_help.guide.create.validate]</li>
-  <li>[editor.nod_help.guide.create.save]</li>
+  <li>Open an existing <code>.nod</code> file or create a new file with <b>New</b> or <b>Templates</b>.</li>
+  <li>Write the base lines: <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, input, output, optional symbols and then the calculation rules.</li>
+  <li>Use command tips and <b>More help</b> when you are unsure about a command.</li>
+  <li>Use <b>Validate</b> to find syntax errors.</li>
+  <li>Use <b>Test</b> and the preview to check whether the conversion is correct.</li>
+  <li>Use Graph Preview for formulas with X/Y behavior.</li>
+  <li>Save only when the converter is correct.</li>
 </ol>
-<h2>[editor.nod_help.guide.tips_title]</h2>
-<p>[editor.nod_help.guide.tips]</p>
-<h2>[editor.nod_help.guide.undo_title]</h2>
-<p>[editor.nod_help.guide.undo]</p>
+
+<h2>Converter Basics</h2>
+<pre>Name Celsius to Fahrenheit
+input1 Celsius
+input2 Fahrenheit
+format #.00
+math ans * 1.8
+math ans + 32
+end</pre>
+<p><code>ans</code> is the current value. On the first <code>math</code> line it is the input value; on later lines it is the previous result.</p>
+
+<h2>Important Areas</h2>
+<table>
+  <tr><th>Area</th><th>Purpose</th></tr>
+  <tr><td>Code editor</td><td>Write the NOD lines here. The editor shows coloring, tips and command help.</td></tr>
+  <tr><td>Preview/simulator</td><td>Shows labels, symbols, input, output and sample results.</td></tr>
+  <tr><td>Graph Preview</td><td>Shows the formula as a graph and displays table points.</td></tr>
+  <tr><td>Command help</td><td>Explains commands, examples and newer NOD 2.0 forms.</td></tr>
+  <tr><td>Recent files</td><td>Makes it easy to return to earlier NOD files.</td></tr>
+</table>
+
+<h2>Choosing Commands</h2>
+<ul>
+  <li>Use <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> for numeric calculations.</li>
+  <li>Use <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> for fixed text or value translations.</li>
+  <li>Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when mainly the start or a pattern of text must change.</li>
+  <li>Use <a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a> and <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a> for data converters.</li>
+  <li>Use <a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a> and <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a> for equation files.</li>
+</ul>
+
+<h2>Command Tips</h2>
+<p>The command tip belongs to the line where the caret is placed. It gives short help and can sometimes suggest a modern form. Use <b>Replace</b> only when you really want to adopt that form. Use <b>More help</b> for the full command page.</p>
+
+<h2>Validate And Test</h2>
+<ul>
+  <li><b>Validate</b> checks whether the text can be read as NOD.</li>
+  <li><b>Test</b> runs the converter with a sample value.</li>
+  <li>Formula mistakes are easier to see when you test with several values.</li>
+  <li>In graph files, mistakes often become visible because the line is missing, bends unexpectedly or falls outside the view.</li>
+</ul>
+
+<h2>Graph Preview</h2>
+<p>Graph Preview is described separately on the <a href="nodpage:graph-preview">Graph Preview</a> page. It explains X/Y range, Step, table points, lines, locator and rectangle zoom.</p>
+
+<h2>SI And Scale Display</h2>
+<p>The <a href="nodpage:si-scale">SI and scale display</a> page describes prefixes such as <code>k</code>, <code>M</code>, <code>n</code> and <code>p</code>, plus extra scale helpers such as <code>lj</code> and <code>IP</code>. This is display only; the backend keeps calculating with plain numbers.</p>
+
+<h2>Undo, Redo, Restore And Repair</h2>
+<ul>
+  <li><b>Undo</b> and <b>Redo</b> are about recent text edits.</li>
+  <li><b>Restore</b> returns the current tab to the last opened or saved version.</li>
+  <li><b>Repair lines</b> tries to repair pasted or merged NOD lines.</li>
+</ul>
+
+<h2>Work Safely</h2>
+<ul>
+  <li>Keep old NOD files when making a large change.</li>
+  <li>Use templates to start new files faster and more consistently.</li>
+  <li>Always test both directions when a converter uses reverse behavior.</li>
+  <li>Prefer several clear <code>math</code> lines over one unreadable mega-line.</li>
+</ul>

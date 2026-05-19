@@ -1,10 +1,35 @@
-# Microsoft Store Production Submission
+# Microsoft Store And MSIX Submission
 
-Syscalculator uses the Microsoft Store only for production releases. Daily and Beta builds stay outside the Store.
+Syscalculator uses MSIX from the Beta line onward. Daily builds stay outside MSIX.
 
-## Recommended Route
+- Daily: no MSIX package.
+- Beta: MSIX test package, Inno Setup installer and updater zip.
+- Release/production: MSIX package, Inno Setup installer and updater zip.
 
-Use the current Inno Setup `.exe` installer first. Microsoft supports listing an existing Win32 EXE/MSI app by giving Partner Center a versioned HTTPS download URL. That fits the current Syscalculator release flow better than converting to MSIX immediately.
+Production is the public Microsoft Store submission line. Beta MSIX packages use package flights when Store-based tester distribution is needed.
+
+## Beta Package Flights
+
+Use Microsoft Store package flights for Beta MSIX testing when testers should receive a Store-delivered package before production.
+
+Official Microsoft reference:
+
+- Package flights: https://learn.microsoft.com/nl-nl/windows/apps/publish/package-flights
+
+Rules:
+
+- Package flights are allowed for Beta MSIX packages.
+- Daily builds are not submitted as package flights.
+- A package flight still goes through the Microsoft certification approving procedure before testers receive it.
+- Store listing text stays the same for all customers; only the package differs for the selected tester group.
+- Testers must be added to a known user group / flight group in Partner Center.
+- Regular customers keep receiving the non-flighted production package.
+- Fix WACK/certification issues before using the package as a public production release, even if flighting allows some issues with notes.
+- If the Beta package is approved and ready, the same package can later be copied into a non-flighted production submission.
+
+## Recommended Production Route
+
+Use the current production MSIX package for Microsoft Store package validation. Keep the Inno Setup `.exe` installer as the non-Store production route for users who do not want to install through the Microsoft Store. Keep the production updater zip available for the app's built-in update flow.
 
 Official Microsoft references:
 
@@ -16,13 +41,14 @@ Official Microsoft references:
 ## Production Rules
 
 - Channel: `production`
-- Do not submit Daily or Beta installers.
+- Do not submit Daily packages.
+- Submit Beta MSIX only when using a deliberate tester/private-audience submission.
 - Use a versioned HTTPS installer URL, not a mutable generic file name.
 - Keep the installer version date-only when possible, for example `2.0.2026.05.17`.
 - Keep Store release notes user-facing and short.
 - Do not mention internal build numbers in Store text.
 - Sign the installer and bundled executable files before Store submission.
-- Production Store installers are self-contained so the Store silent install does not fail when the .NET Desktop Runtime is missing.
+- Store installers are self-contained so silent install and first startup do not fail when the .NET Desktop Runtime is missing or not detected. Runtime diagnostics can still show whether a local shared runtime is missing, equal to, older than or newer than the bundled runtime.
 
 ## Helper Commands
 
@@ -30,9 +56,10 @@ Official Microsoft references:
 STORE_RELEASE.bat
 STORE_RELEASE.bat hash
 STORE_RELEASE.bat build
+STORE_MSIX.bat
 ```
 
-`STORE_RELEASE.bat` uses the production channel. It is intentionally separate from `BETA_RELEASE.bat`.
+`STORE_RELEASE.bat` uses the production channel for the Inno Setup installer and updater zip. `STORE_MSIX.bat` creates the production MSIX package. They are intentionally separate from `BETA_RELEASE.bat` and `BETA_MSIX.bat`.
 
 ## Code Signing Check
 
@@ -104,7 +131,7 @@ Uninstall command:
 "%LOCALAPPDATA%\Programs\Syscalculator\unins000.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
 ```
 
-Daily and Beta installers are framework-dependent and can stop when Microsoft .NET Desktop Runtime is missing. Production installers are built self-contained to avoid the Store error `Installation cancelled by user`.
+Daily, Beta and Production installers are self-contained. Do not submit Daily or Beta to production Store validation, but keep their packaging runtime policy the same so testers do not hit a `.NET 10` startup prompt.
 
 ## Partner Center Checklist
 

@@ -109,6 +109,10 @@ function Invoke-Build {
             $channelInfo.packageId
         } elseif ($releaseChannelName -eq "production") {
             "production-$dateVersion-store-001"
+        } elseif ($releaseChannelName -eq "beta") {
+            "beta-$dateVersion-installer-001"
+        } elseif ($releaseChannelName -eq "daily") {
+            "daily-$dateVersion-installer-001"
         } else {
             ""
         }
@@ -119,7 +123,8 @@ function Invoke-Build {
             Write-Host "Using package marker: $packageId"
         }
 
-        powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName
+        $installVersion = "$appVersion.$dateVersion"
+        powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName -InstallVersion $installVersion -PackageId $packageId
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
     finally {
@@ -155,15 +160,19 @@ function Write-HashOnly {
 function Write-Help {
     Write-Host "Usage:"
     Write-Host "  DAILY_RELEASE.bat check             Show release paths, marker, hashes and git status"
-    Write-Host "  DAILY_RELEASE.bat build             Run dotnet build and BuildInstaller.ps1 for daily"
+    Write-Host "  DAILY_RELEASE.bat build             Build daily Inno Setup installer and updater zip"
     Write-Host "  DAILY_RELEASE.bat hash              Show local installer/update zip hashes"
     Write-Host "  DAILY_RELEASE.bat check beta        Same check for beta channel"
     Write-Host "  BETA_RELEASE.bat                    Shortcut for beta check"
+    Write-Host "  BETA_RELEASE.bat build              Build beta Inno Setup installer and updater zip"
     Write-Host "  BETA_RELEASE.bat hash               Shortcut for beta hashes"
-    Write-Host "  STORE_RELEASE.bat                   Shortcut for production Store release check"
-    Write-Host "  STORE_RELEASE.bat build             Build production installer for Microsoft Store submission"
+    Write-Host "  BETA_MSIX.bat                       Build beta MSIX test package"
+    Write-Host "  STORE_RELEASE.bat                   Shortcut for production release check"
+    Write-Host "  STORE_RELEASE.bat build             Build production Inno Setup installer and updater zip"
+    Write-Host "  STORE_MSIX.bat                      Build production MSIX package"
     Write-Host ""
     Write-Host "Notes:"
+    Write-Host "  Release lines: Daily = Inno + updater; Beta = MSIX + Inno + updater; Release = MSIX + Inno + updater."
     Write-Host "  This helper does not store FTP credentials."
     Write-Host "  Publish steps still use gh/curl manually after the package marker and release notes are chosen."
 }

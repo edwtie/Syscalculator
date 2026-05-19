@@ -1,0 +1,141 @@
+<p>De <b>Graph Preview</b> hoort bij de NOD Editor. Hij laat zien hoe een wiskundige converter zich gedraagt over een bereik van X-waarden. De grafiek is een hulpmiddel om een formule te controleren; de NOD-code blijft de bron.</p>
+
+<h2>Graph Preview openen</h2>
+<ol>
+  <li>Open een converter in de NOD Editor.</li>
+  <li>Schrijf een berekening met bijvoorbeeld <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>.</li>
+  <li>Gebruik de Graph Preview-tab of open het grote Graph Preview-venster.</li>
+  <li>Wijzig de formule in de editor; de grafiek wordt daarna opnieuw berekend.</li>
+</ol>
+
+<h2>Screenshot</h2>
+<div class="screenshot-frame graph-help-shot" role="img" aria-label="Graph Preview met punten, tabel, lijnen en locator.">
+  <div class="graph-help-toolbar">
+    <span>X min <b>-240,6</b></span>
+    <span>X max <b>240,6</b></span>
+    <span>Y min <b>-91,1</b></span>
+    <span>Y max <b>155,1</b></span>
+    <span>Step <b>1,5</b></span>
+    <span class="graph-help-icon-button graph-help-copy-button" aria-label="Kopieer punten">
+      <svg viewBox="0 0 44 26" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="43" height="25" rx="5" fill="#ffffff" stroke="#c7d3e2"/>
+        <rect x="14" y="6" width="11" height="13" fill="#eff6ff" stroke="#0f3f8f" stroke-width="1.7"/>
+        <rect x="18" y="9" width="12" height="14" fill="#ffffff" stroke="#0f3f8f" stroke-width="1.7"/>
+      </svg>
+    </span>
+    <span class="graph-help-icon-button" aria-label="Toon tabel">
+      <svg viewBox="0 0 44 26" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="43" height="25" rx="5" fill="#ffffff" stroke="#c7d3e2"/>
+        <rect x="10" y="6" width="14" height="14" fill="#eff6ff" stroke="#0f3f8f" stroke-width="1.7"/>
+        <path d="M10 11 H24 M14.7 6 V20 M19.4 6 V20" stroke="#0f3f8f" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M28.5 13 H36.5 M32.5 9 V17" stroke="#0f3f8f" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="graph-help-check">Lijnen</span>
+  </div>
+  <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <pattern id="nodGraphSmallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#dcecff" stroke-width="1"/>
+      </pattern>
+      <pattern id="nodGraphLargeGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+        <rect width="50" height="50" fill="url(#nodGraphSmallGrid)"/>
+        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#a9bfd8" stroke-width="1.2"/>
+      </pattern>
+    </defs>
+    <rect x="0" y="0" width="900" height="260" fill="url(#nodGraphLargeGrid)"/>
+    <line x1="445" y1="0" x2="445" y2="260" stroke="#1f2937" stroke-width="1.5"/>
+    <line x1="0" y1="192" x2="900" y2="192" stroke="#1f2937" stroke-width="1.5"/>
+    <path d="M333 260 L348 236 L363 212 L378 188 L393 164 L408 140 L423 116 L438 92 L453 68 L468 44 L485 16 L495 0" fill="none" stroke="#1d5fa7" stroke-width="2.2"/>
+    <g fill="#d92626">
+      <circle cx="348" cy="236" r="3.5"/><circle cx="363" cy="212" r="3.5"/><circle cx="378" cy="188" r="3.5"/><circle cx="393" cy="164" r="3.5"/><circle cx="408" cy="140" r="3.5"/><circle cx="423" cy="116" r="3.5"/><circle cx="438" cy="92" r="3.5"/><circle cx="453" cy="68" r="3.5"/><circle cx="468" cy="44" r="3.5"/><circle cx="485" cy="16" r="3.5"/>
+    </g>
+    <g font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#0f172a">
+      <text x="33" y="210">-225</text><text x="94" y="210">-200</text><text x="156" y="210">-175</text><text x="217" y="210">-150</text><text x="278" y="210">-125</text><text x="342" y="210">-100</text><text x="408" y="210">-25</text><text x="435" y="210">0</text><text x="560" y="210">50</text><text x="620" y="210">75</text><text x="682" y="210">100</text><text x="745" y="210">150</text><text x="825" y="210">225</text>
+      <text x="417" y="166">25</text><text x="417" y="116">50</text><text x="417" y="66">75</text><text x="410" y="22">150</text>
+    </g>
+    <g>
+      <rect x="24" y="25" width="200" height="132" rx="9" fill="#fdfeff" stroke="#e1eaf7"/>
+      <rect x="30" y="31" width="188" height="21" fill="#eff6ff"/>
+      <text x="35" y="46" font-family="Segoe UI Semibold, Segoe UI, Arial" font-size="13" fill="#0f3f8f">Punten</text>
+      <text x="95" y="46" font-family="Segoe UI, Arial" font-size="11" fill="#475569">(-67,5, -89,5)</text>
+      <path d="M207 37 L215 45 M215 37 L207 45" stroke="#0f3f8f" stroke-width="1.8" stroke-linecap="round"/>
+      <rect x="30" y="52" width="188" height="99" fill="#ffffff"/>
+      <rect x="30" y="52" width="74" height="21" fill="#eff6ff" stroke="#e1e8f2"/>
+      <rect x="104" y="52" width="96" height="21" fill="#eff6ff" stroke="#e1e8f2"/>
+      <text x="39" y="67" font-family="Segoe UI Semibold, Segoe UI, Arial" font-size="12" fill="#0f172a">x</text>
+      <text x="113" y="67" font-family="Segoe UI Semibold, Segoe UI, Arial" font-size="12" fill="#0f172a">y</text>
+      <g font-family="Consolas, monospace" font-size="12" fill="#0f172a">
+        <rect x="30" y="73" width="74" height="20" fill="#ffffff" stroke="#e1e8f2"/>
+        <rect x="104" y="73" width="96" height="20" fill="#ffffff" stroke="#e1e8f2"/>
+        <text x="39" y="88">-67,5</text><text x="113" y="88">-89,5</text>
+        <rect x="30" y="93" width="74" height="20" fill="#ffffff" stroke="#e1e8f2"/>
+        <rect x="104" y="93" width="96" height="20" fill="#ffffff" stroke="#e1e8f2"/>
+        <text x="39" y="108">-66</text><text x="113" y="108">-86,8</text>
+        <rect x="30" y="113" width="74" height="20" fill="#ffffff" stroke="#e1e8f2"/>
+        <rect x="104" y="113" width="96" height="20" fill="#ffffff" stroke="#e1e8f2"/>
+        <text x="39" y="128">-64,5</text><text x="113" y="128">-84,1</text>
+        <rect x="30" y="133" width="74" height="18" fill="#ffffff" stroke="#e1e8f2"/>
+        <rect x="104" y="133" width="96" height="18" fill="#ffffff" stroke="#e1e8f2"/>
+        <text x="39" y="147">-63</text><text x="113" y="147">-81,4</text>
+      </g>
+      <rect x="200" y="52" width="18" height="99" fill="#ffffff"/>
+      <rect x="209" y="58" width="4" height="38" rx="2" fill="#9aa8ba"/>
+    </g>
+    <g>
+      <rect x="675" y="150" width="205" height="82" fill="#ffffff" fill-opacity=".88" stroke="#0f4ea8"/>
+      <line x1="675" y1="192" x2="880" y2="192" stroke="#a9bfd8"/>
+      <line x1="777" y1="150" x2="777" y2="232" stroke="#a9bfd8"/>
+      <path d="M742 232 L754 210 L766 188 L778 166 L786 150" fill="none" stroke="#1d5fa7" stroke-width="1.6"/>
+      <rect x="760" y="184" width="38" height="16" fill="#f87171" fill-opacity=".28" stroke="#ef4444" stroke-width="2"/>
+    </g>
+    <g font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#0f4ea8">
+      <rect x="8" y="229" width="68" height="24" fill="#ffffff" fill-opacity=".78" stroke="#d7e4f5"/>
+      <text x="14" y="246">X min -241</text>
+      <rect x="823" y="229" width="70" height="24" fill="#ffffff" fill-opacity=".78" stroke="#d7e4f5"/>
+      <text x="829" y="246">X max 241</text>
+    </g>
+    <g>
+      <rect x="844" y="20" width="43" height="127" rx="9" fill="#fdfeff" stroke="#e1eaf7"/>
+      <rect x="849" y="25" width="33" height="33" rx="10" fill="#ffffff" stroke="#cbd8ea"/>
+      <rect x="849" y="66" width="33" height="33" rx="10" fill="#ffffff" stroke="#cbd8ea"/>
+      <rect x="849" y="107" width="33" height="33" rx="10" fill="#ffffff" stroke="#cbd8ea"/>
+    </g>
+    <g stroke="#1f2937" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M858 41 L866 34 L874 41 L874 50 L869 50 L869 44 L863 44 L863 50 L858 50 Z" stroke-width="1.8"/>
+      <path d="M858 82.5 L872 82.5 M865 75.5 L865 89.5" stroke-width="2.6"/>
+      <path d="M858 123.5 L872 123.5" stroke-width="2.6"/>
+    </g>
+  </svg>
+</div>
+<p class="shot-caption">Voorbeeld: de blauwe lijn is de berekende grafiek, rode punten horen bij de tabel en de kleine locator rechtsonder laat zien waar u bent ingezoomd.</p>
+
+<h2>Berekening en display</h2>
+<ul>
+  <li><b>Backend:</b> Syscalculator bewaart en rekent met de echte waarden.</li>
+  <li><b>Display:</b> velden, assen en tabel mogen korter worden getoond. De berekening verandert daardoor niet.</li>
+  <li>Bij typen wordt niet live opnieuw gerekend. De waarde wordt pas vastgezet met <b>Enter</b> of wanneer het veld de focus verlaat.</li>
+</ul>
+
+<h2>X min, X max, Y min en Y max</h2>
+<p>Deze velden bepalen het zichtbare venster. De zichtbare tekst mag afgerond zijn, maar de backend-waarde blijft nauwkeuriger. Daardoor kan een veld bijvoorbeeld <code>-0,31</code> tonen terwijl de grafiek intern met meer decimalen werkt.</p>
+
+<h2>Step, punten en tabel</h2>
+<p><b>Step</b> bepaalt de afstand tussen de rode berekenpunten en de tabelregels. Bij uitzoomen kiest Syscalculator automatisch een grotere zichtbare stap, zodat er niet te veel rode punten of berekeningen ontstaan. Bij inzoomen kan de stap weer kleiner worden.</p>
+<p>De pijltjes volgen logische tussenstappen, zoals <code>0,5</code>, <code>0,75</code>, <code>1,0</code>, <code>1,25</code>, <code>1,5</code>, <code>2,0</code>, <code>2,5</code>, <code>5,0</code> en <code>7,5</code>, steeds vermenigvuldigd met <code>10<sup>n</sup></code>.</p>
+<ul>
+  <li>Als er geen punten zijn, blijft de tabelknop uitgeschakeld.</li>
+  <li>Als de tabel bewust is verborgen, blijft hij verborgen totdat u hem zelf weer opent.</li>
+  <li>Wanneer de formule in de NOD Editor verandert, wordt de grafiek opnieuw berekend.</li>
+</ul>
+
+<h2>Lijnen</h2>
+<p><b>Lijnen</b> gaat over de blauwe bereiklijnen en groene markeringen. De normale X/Y-assen, het rooster, de berekende grafieklijn, rode Step-punten en tabel horen daar niet bij.</p>
+
+<h2>Locator en zoomrechthoek</h2>
+<p>De locator rechtsonder is een kleine kaart van het grotere gebied. De rode rechthoek of stip laat zien waar u in de grote grafiek zit. Als u extreem ver inzoomt, wordt de rechthoek steeds kleiner, tot ongeveer een pixel.</p>
+<ul>
+  <li>Sleep in de locator met de linkermuisknop om het zichtbare gebied te verplaatsen.</li>
+  <li>Teken in de grote grafiek met de rechtermuisknop een rode zoomrechthoek om precies naar dat gebied te zoomen.</li>
+  <li>De zoomrechthoek houdt dezelfde verhouding als de grafiek, zodat het beeld niet scheef wordt uitgerekt.</li>
+</ul>

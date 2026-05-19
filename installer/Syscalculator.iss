@@ -18,6 +18,11 @@
   #define MyBuildChannel "daily"
 #endif
 
+#define MyPackageId GetEnv("SYSCALC_PACKAGE_ID")
+#if MyPackageId == ""
+  #define MyPackageId MyBuildChannel + "-installer-001"
+#endif
+
 #define MySelfContained GetEnv("SYSCALC_SELF_CONTAINED")
 #if MySelfContained == ""
   #define MySelfContained "false"
@@ -267,6 +272,12 @@ begin
         ExpandConstant('{app}\language.cfg'),
         '# Active language file.' + #13#10 +
         'language=' + AppLanguageFile + #13#10,
+        False);
+      SaveStringToFile(
+        ExpandConstant('{app}\update-state.cfg'),
+        '# Installed update package marker.' + #13#10 +
+        '# Used by the updater and About dialog to detect the installed release channel.' + #13#10 +
+        'packageId={#MyPackageId}' + #13#10,
         False);
     end;
   end;

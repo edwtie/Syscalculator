@@ -2,5 +2,5 @@
 
 internal static class AppVersionGenerated
 {
-    public const string BuildNumber = "2026.05.18.029";
+    public const string BuildNumber = "2026.05.19.137";
 }
