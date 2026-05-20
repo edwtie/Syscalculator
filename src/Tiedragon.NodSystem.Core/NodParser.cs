@@ -241,10 +241,8 @@ public static class NodParser
 
     private static void ValidateMode(string value, int lineNumber)
     {
-        var mode = value.Trim();
-        if (mode.Equals("geometry", StringComparison.OrdinalIgnoreCase) ||
-            mode.Equals("geomary", StringComparison.OrdinalIgnoreCase))
-            throw new FormatException($"Line {lineNumber}: mode geometry is not supported in NOD 2.0 beta. Use formula cards for educational geometry, or wait for the future 3D graph/geometry engine.");
+        _ = value;
+        _ = lineNumber;
     }
 
     private static void FinalizeLegacyInputDefinitions(NodDocument doc)

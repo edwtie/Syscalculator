@@ -1033,7 +1033,7 @@ Test("parser supports named input output without deprecation", () =>
     AssertDecimal(0m, doc.Deprecations.Count);
 });
 
-Test("parser keeps xyz inputs as future metadata only", () =>
+Test("parser keeps xyz inputs as graph3d metadata", () =>
 {
     var doc = NodParser.Parse("""
     Name 3D point
@@ -1053,14 +1053,23 @@ Test("parser keeps xyz inputs as future metadata only", () =>
     AssertDecimal(0m, doc.Deprecations.Count);
 });
 
-Test("parser rejects geometry mode in nod 2 beta", () =>
+Test("parser supports geometry mode for graph3d math", () =>
 {
-    AssertThrows("Line 2: mode geometry is not supported in NOD 2.0 beta. Use formula cards for educational geometry, or wait for the future 3D graph/geometry engine.", () => NodParser.Parse("""
-    Name Geometry future
+    var doc = NodParser.Parse("""
+    Name Geometry 3D vector
     mode geometry
     input x X coordinate
+    input y Y coordinate
+    input z Z coordinate
+    math length(vec(3,4,12))
     end
-    """));
+    """);
+
+    AssertText("geometry", doc.Mode ?? "");
+    AssertDecimal(3m, doc.Inputs.Count);
+    AssertText("z", doc.Inputs[2].Name);
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(13m, result.NumericValue ?? 0);
 });
 
 Test("parser supports matrix 3x3 mode", () =>
