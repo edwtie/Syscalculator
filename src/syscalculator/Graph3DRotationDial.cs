@@ -145,10 +145,10 @@ internal sealed class Graph3DRotationDial : Control
         g.DrawEllipse(centerBorder, cx - hubRadius, cy - hubRadius, hubRadius * 2f, hubRadius * 2f);
 
         using var textBrush = new SolidBrush(Color.FromArgb(226, 232, 240));
-        using var smallFont = new Font("Segoe UI", Math.Max(6.5f, radius * 0.18f), FontStyle.Bold);
+        using var smallFont = new Font("Segoe UI", Math.Max(5.8f, radius * 0.15f), FontStyle.Bold);
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
         var yaw = NormalizeDegrees(_camera.YawDegrees);
-        g.DrawString($"{yaw:0} deg", smallFont, textBrush, new RectangleF(cx - radius * 0.58f, cy + radius * 0.40f, radius * 1.16f, radius * 0.34f), format);
+        g.DrawString($"{yaw:0} deg", smallFont, textBrush, new RectangleF(cx - radius * 0.52f, cy + radius * 0.46f, radius * 1.04f, radius * 0.28f), format);
     }
 
     private static void DrawCompassRose(Graphics g, float cx, float cy, float radius)
@@ -177,22 +177,22 @@ internal sealed class Graph3DRotationDial : Control
 
         DrawDirectionLabels(g, cx, cy, radius);
 
-        if (radius >= 42f)
+        if (radius >= 58f)
             DrawDegreeLabels(g, cx, cy, radius);
     }
 
     private static void DrawDirectionLabels(Graphics g, float cx, float cy, float radius)
     {
-        using var cardinalFont = new Font("Segoe UI", Math.Max(7.5f, radius * 0.24f), FontStyle.Bold);
-        using var interFont = new Font("Segoe UI", Math.Max(5.5f, radius * 0.15f), FontStyle.Bold);
+        using var cardinalFont = new Font("Segoe UI", Math.Max(6.5f, radius * 0.18f), FontStyle.Bold);
+        using var interFont = new Font("Segoe UI", Math.Max(5f, radius * 0.12f), FontStyle.Bold);
         using var cardinalBrush = new SolidBrush(Color.FromArgb(248, 250, 252));
         using var interBrush = new SolidBrush(Color.FromArgb(203, 213, 225));
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 
         for (var i = 0; i < CardinalLabels.Length; i++)
-            DrawPolarText(g, CardinalLabels[i], cardinalFont, cardinalBrush, format, cx, cy, radius * 0.47f, i * 90d);
+            DrawPolarText(g, CardinalLabels[i], cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, i * 90d);
 
-        if (radius < 32f)
+        if (radius < 48f)
             return;
 
         for (var i = 0; i < IntercardinalLabels.Length; i++)
