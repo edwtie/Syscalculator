@@ -5,10 +5,16 @@ using Tiedragon.Graph;
 
 namespace Tiedragon.Graph.G3D;
 
+/// <summary>
+/// Paints the reusable Graph3D compass dial and the matching degree readout.
+/// </summary>
 public static class Graph3DCompass
 {
     private static readonly string[] IntercardinalLabels = { "NE", "SE", "SW", "NW" };
 
+    /// <summary>
+    /// Draws a compact compass that visualizes the camera yaw.
+    /// </summary>
     public static void DrawCompass(
         Graphics graphics,
         Rectangle bounds,
@@ -52,6 +58,9 @@ public static class Graph3DCompass
         graphics.DrawEllipse(centerBorder, cx - hubRadius, cy - hubRadius, hubRadius * 2f, hubRadius * 2f);
     }
 
+    /// <summary>
+    /// Draws the normalized yaw angle below the compass dial.
+    /// </summary>
     public static void DrawDegreeReadout(Graphics graphics, Rectangle dialBounds, GraphCamera3D camera)
     {
         if (dialBounds.Width <= 0 || dialBounds.Height <= 0)
@@ -69,6 +78,9 @@ public static class Graph3DCompass
         graphics.DrawString($"{yaw:0} deg", font, text, bounds, format);
     }
 
+    /// <summary>
+    /// Normalizes an angle to the 0-359 degree range used by the compass display.
+    /// </summary>
     public static double NormalizeDegrees(double degrees)
     {
         if (!double.IsFinite(degrees))

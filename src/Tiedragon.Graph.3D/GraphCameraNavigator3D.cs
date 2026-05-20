@@ -2,6 +2,9 @@
 
 namespace Tiedragon.Graph.G3D;
 
+/// <summary>
+/// Named camera positions for Graph3D.
+/// </summary>
 public enum GraphCameraPreset3D
 {
     Isometric,
@@ -10,10 +13,19 @@ public enum GraphCameraPreset3D
     Right
 }
 
+/// <summary>
+/// Creates and updates Graph3D camera values for presets, rotation, and zoom.
+/// </summary>
 public static class GraphCameraNavigator3D
 {
+    /// <summary>
+    /// Gets the default isometric camera.
+    /// </summary>
     public static GraphCamera3D Default => Preset(GraphCameraPreset3D.Isometric);
 
+    /// <summary>
+    /// Creates a camera for the requested preset.
+    /// </summary>
     public static GraphCamera3D Preset(GraphCameraPreset3D preset)
     {
         return preset switch
@@ -25,6 +37,9 @@ public static class GraphCameraNavigator3D
         };
     }
 
+    /// <summary>
+    /// Rotates a camera and clamps pitch so the projection stays stable.
+    /// </summary>
     public static GraphCamera3D Rotate(GraphCamera3D camera, double deltaYawDegrees, double deltaPitchDegrees)
     {
         return camera with
@@ -35,6 +50,9 @@ public static class GraphCameraNavigator3D
         };
     }
 
+    /// <summary>
+    /// Applies a zoom factor while keeping zoom inside the supported range.
+    /// </summary>
     public static GraphCamera3D Zoom(GraphCamera3D camera, double factor)
     {
         if (!double.IsFinite(factor) || factor <= 0d)
@@ -43,16 +61,25 @@ public static class GraphCameraNavigator3D
         return camera with { Zoom = NormalizeZoom(camera.Zoom * factor) };
     }
 
+    /// <summary>
+    /// Zooms the camera in.
+    /// </summary>
     public static GraphCamera3D ZoomIn(GraphCamera3D camera, double factor = 1.15d)
     {
         return Zoom(camera, factor);
     }
 
+    /// <summary>
+    /// Zooms the camera out.
+    /// </summary>
     public static GraphCamera3D ZoomOut(GraphCamera3D camera, double factor = 1.15d)
     {
         return Zoom(camera, 1d / factor);
     }
 
+    /// <summary>
+    /// Resets the camera to a preset.
+    /// </summary>
     public static GraphCamera3D Reset(GraphCameraPreset3D preset = GraphCameraPreset3D.Isometric)
     {
         return Preset(preset);

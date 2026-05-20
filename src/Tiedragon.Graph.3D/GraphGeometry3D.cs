@@ -40,16 +40,25 @@ public static class GraphGeometry3D
 {
     private const double DegreesToRadians = Math.PI / 180d;
 
+    /// <summary>
+    /// Places a 2D graph point on a Z plane.
+    /// </summary>
     public static GraphPoint3D From2D(PointF point, double z = 0d)
     {
         return new GraphPoint3D(point.X, point.Y, z);
     }
 
+    /// <summary>
+    /// Places a list of 2D graph points on the same Z plane.
+    /// </summary>
     public static IReadOnlyList<GraphPoint3D> From2D(IReadOnlyList<PointF> points, double z = 0d)
     {
         return points.Select(point => From2D(point, z)).ToArray();
     }
 
+    /// <summary>
+    /// Extends a 2D view with a usable Z range.
+    /// </summary>
     public static GraphPlotView3D From2D(GraphPlotView view, double minZ = -1d, double maxZ = 1d)
     {
         if (minZ > maxZ)
@@ -65,6 +74,9 @@ public static class GraphGeometry3D
         return new GraphPlotView3D(view.MinX, view.MaxX, view.MinY, view.MaxY, minZ, maxZ);
     }
 
+    /// <summary>
+    /// Fits a 3D view around 2D points while keeping the requested Z plane visible.
+    /// </summary>
     public static GraphPlotView3D CreateFitViewFrom2D(
         IReadOnlyList<PointF> points,
         GraphPlotView? fallbackView = null,
@@ -83,6 +95,9 @@ public static class GraphGeometry3D
         };
     }
 
+    /// <summary>
+    /// Checks whether a 3D view has finite, increasing X, Y, and Z ranges.
+    /// </summary>
     public static bool IsValidView(GraphPlotView3D view)
     {
         return double.IsFinite(view.MinX) &&
@@ -96,6 +111,9 @@ public static class GraphGeometry3D
                view.MaxZ > view.MinZ;
     }
 
+    /// <summary>
+    /// Normalizes mutable X, Y, and Z ranges so flat or reversed ranges can still render.
+    /// </summary>
     public static void NormalizeRange(
         ref float minX,
         ref float maxX,
@@ -112,6 +130,9 @@ public static class GraphGeometry3D
         NormalizeAxis(ref minZ, ref maxZ, padZ ? 0.08f : 0f);
     }
 
+    /// <summary>
+    /// Creates a view that contains all finite 3D points, with fallback bounds for empty input.
+    /// </summary>
     public static GraphPlotView3D CreateFitView(
         IReadOnlyList<GraphPoint3D> points,
         double fallbackHalfRange = 5d)
@@ -149,6 +170,9 @@ public static class GraphGeometry3D
         return new GraphPlotView3D(minX, maxX, minY, maxY, minZ, maxZ);
     }
 
+    /// <summary>
+    /// Projects one graph-space point into canvas coordinates using the supplied camera.
+    /// </summary>
     public static GraphProjectedPoint ProjectToScreen(GraphPoint3D point, Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
     {
         if (!IsValidView(view) || plot.Width <= 0 || plot.Height <= 0)
@@ -164,6 +188,9 @@ public static class GraphGeometry3D
         return new GraphProjectedPoint(new PointF((float)screenX, (float)screenY), rotated.Z);
     }
 
+    /// <summary>
+    /// Projects a point list into canvas coordinates using the supplied camera.
+    /// </summary>
     public static IReadOnlyList<GraphProjectedPoint> ProjectToScreen(
         IReadOnlyList<GraphPoint3D> points,
         Rectangle plot,
@@ -173,6 +200,9 @@ public static class GraphGeometry3D
         return points.Select(point => ProjectToScreen(point, plot, view, camera)).ToArray();
     }
 
+    /// <summary>
+    /// Returns the center point of a 3D graph view.
+    /// </summary>
     public static GraphPoint3D Center(GraphPlotView3D view)
     {
         return new GraphPoint3D(

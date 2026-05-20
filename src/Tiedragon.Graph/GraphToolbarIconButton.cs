@@ -4,6 +4,9 @@ using System.Drawing.Drawing2D;
 
 namespace Tiedragon.Graph;
 
+/// <summary>
+/// Icon choices for the shared graph toolbar buttons.
+/// </summary>
 public enum GraphToolbarIcon
 {
     Copy,
@@ -12,6 +15,9 @@ public enum GraphToolbarIcon
     TableHidden
 }
 
+/// <summary>
+/// Shared WinForms toolbar button used by Graph2D and Graph3D overlays.
+/// </summary>
 public sealed class GraphToolbarIconButton : Button
 {
     private GraphToolbarIcon _icon;
@@ -19,6 +25,9 @@ public sealed class GraphToolbarIconButton : Button
     private bool _hover;
     private bool _pressed;
 
+    /// <summary>
+    /// Creates a graph toolbar button with the requested icon and tooltip text.
+    /// </summary>
     public GraphToolbarIconButton(GraphToolbarIcon icon, string tooltip)
     {
         _icon = icon;
@@ -39,6 +48,9 @@ public sealed class GraphToolbarIconButton : Button
         _toolTip.SetToolTip(this, tooltip);
     }
 
+    /// <summary>
+    /// Gets or sets the icon rendered inside the button.
+    /// </summary>
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public GraphToolbarIcon Icon
@@ -54,6 +66,9 @@ public sealed class GraphToolbarIconButton : Button
         }
     }
 
+    /// <summary>
+    /// Gets or sets the tooltip shown when the button is hovered.
+    /// </summary>
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string TooltipText

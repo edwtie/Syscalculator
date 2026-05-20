@@ -2,6 +2,9 @@
 
 namespace Tiedragon.Graph.G3D;
 
+/// <summary>
+/// Identifies one of the three graph axes.
+/// </summary>
 public enum GraphAxis3D
 {
     X,
@@ -9,6 +12,9 @@ public enum GraphAxis3D
     Z
 }
 
+/// <summary>
+/// Identifies the plane that owns a 3D grid line.
+/// </summary>
 public enum GraphGridPlane3D
 {
     XY,
@@ -16,6 +22,9 @@ public enum GraphGridPlane3D
     YZ
 }
 
+/// <summary>
+/// Logical grid line in graph coordinates before projection to the screen.
+/// </summary>
 public readonly record struct GraphGridLine3D(
     GraphPoint3D Start,
     GraphPoint3D End,
@@ -25,12 +34,18 @@ public readonly record struct GraphGridLine3D(
     bool IsAxis,
     bool IsMajor);
 
+/// <summary>
+/// Logical main axis line in graph coordinates.
+/// </summary>
 public readonly record struct GraphAxisLine3D(
     GraphPoint3D Start,
     GraphPoint3D End,
     GraphAxis3D Axis,
     string Label);
 
+/// <summary>
+/// Grid or axis line projected to screen coordinates, including depth for draw ordering.
+/// </summary>
 public readonly record struct GraphProjectedLine3D(
     PointF Start,
     PointF End,
@@ -40,14 +55,23 @@ public readonly record struct GraphProjectedLine3D(
     bool IsAxis,
     bool IsMajor);
 
+/// <summary>
+/// Complete logical Graph3D grid scene: regular grid lines plus main axes.
+/// </summary>
 public readonly record struct GraphGridScene3D(
     IReadOnlyList<GraphGridLine3D> GridLines,
     IReadOnlyList<GraphAxisLine3D> Axes);
 
+/// <summary>
+/// Builds and projects the reusable Graph3D grid.
+/// </summary>
 public static class Graph3DGrid
 {
     private const int MaxTicksPerAxis = 320;
 
+    /// <summary>
+    /// Creates a 3D grid scene for the supplied view and optional fixed grid step.
+    /// </summary>
     public static GraphGridScene3D Create(GraphPlotView3D view, int targetTicksPerAxis = 10, double? requestedStep = null)
     {
         if (!GraphGeometry3D.IsValidView(view))
@@ -86,6 +110,9 @@ public static class Graph3DGrid
         return new GraphGridScene3D(lines, axes);
     }
 
+    /// <summary>
+    /// Projects all regular grid lines to screen coordinates and sorts them back to front.
+    /// </summary>
     public static IReadOnlyList<GraphProjectedLine3D> ProjectGrid(
         GraphGridScene3D scene,
         Rectangle plot,
@@ -111,6 +138,9 @@ public static class Graph3DGrid
             .ToArray();
     }
 
+    /// <summary>
+    /// Projects the main X, Y, and Z axis lines to screen coordinates.
+    /// </summary>
     public static IReadOnlyList<GraphProjectedLine3D> ProjectAxes(
         GraphGridScene3D scene,
         Rectangle plot,

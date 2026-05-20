@@ -5,6 +5,9 @@ using System.Drawing.Text;
 
 namespace Tiedragon.Graph;
 
+/// <summary>
+/// Small text button for graph overlays, used for mode buttons such as 2D, 3D, and Top.
+/// </summary>
 public sealed class GraphTextOverlayButton : Control
 {
     private readonly Action _action;
@@ -13,6 +16,9 @@ public sealed class GraphTextOverlayButton : Control
     private bool _pressed;
     private bool _active;
 
+    /// <summary>
+    /// Creates a graph overlay button with text, a tooltip, and a click action.
+    /// </summary>
     public GraphTextOverlayButton(string text, string tooltip, Action action)
     {
         _action = action;
@@ -34,6 +40,9 @@ public sealed class GraphTextOverlayButton : Control
         BackColor = Color.White;
     }
 
+    /// <summary>
+    /// Gets or sets whether this button represents the active graph mode.
+    /// </summary>
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool Active
@@ -49,6 +58,9 @@ public sealed class GraphTextOverlayButton : Control
         }
     }
 
+    /// <summary>
+    /// Gets or sets the tooltip shown when the button is hovered.
+    /// </summary>
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string TooltipText
