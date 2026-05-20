@@ -10,6 +10,7 @@ op GitHub, in editors en in documentatie.
 |---|---|
 | [Softwarearchitectuur](SOFTWARE_ARCHITECTURE.md) | Overzicht van de app, Tiedragon Library, NOD core, runtime resources en overige projecten. |
 | [Help-architectuur](HELP_ARCHITECTURE.md) | Uitleg van de nieuwe help-laag, bewerkbare HTML/CSS/JS content, taalbestanden en SVG mockups. |
+| [Language package design](LANGUAGE_PACKAGE_DESIGN.md) | Ontwerp voor ZIP-taalpakketten met `.lng`, help, manual en assets. |
 | [NOD systeem-architectuur](NOD_SYSTEM_ARCHITECTURE.md) | Uitleg van invoer, parser, documentmodel, engine routes en resultaten van het NOD systeem. |
 | Tiedragon Graph architectuur | Overzicht van `Tiedragon.Graph`, `Tiedragon.Graph.2D` en `Tiedragon.Graph.3D`. |
 

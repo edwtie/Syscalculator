@@ -38,6 +38,16 @@ Resources/Help/Content
   taalteksten met eng.lng als fallback
 ```
 
+Voor grotere taalsets is er een apart ontwerp voor ZIP-taalpakketten:
+
+```text
+docs/LANGUAGE_PACKAGE_DESIGN.md
+```
+
+Dat ontwerp bundelt `.lng`, helpcontent, manualbestanden en taalafhankelijke
+assets in een installeerbaar pakket, zonder de huidige losse `.lng` bestanden
+te breken.
+
 ## Taalafspraak
 
 Schrijvers kunnen tekst taalafhankelijk maken met tokens:
