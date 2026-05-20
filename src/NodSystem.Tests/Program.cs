@@ -64,6 +64,44 @@ Test("pi circle", () =>
     AssertNear(78.539816m, value, 0.0001m);
 });
 
+Test("circle equation detects point on circle", () =>
+{
+    var vars = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["a"] = 0m,
+        ["b"] = 0m,
+        ["r"] = 5m,
+        ["x"] = 3m,
+        ["y"] = 4m
+    };
+
+    var left = NodExpressionEvaluator.Evaluate("(x-a)^2 + (y-b)^2", 0, vars);
+    var right = NodExpressionEvaluator.Evaluate("r^2", 0, vars);
+    var radius = NodExpressionEvaluator.Evaluate("distance(vec(a,b), vec(x,y))", 0, vars);
+
+    AssertDecimal(right, left);
+    AssertDecimal(5m, radius);
+});
+
+Test("circle equation detects point outside circle", () =>
+{
+    var vars = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["a"] = 1m,
+        ["b"] = 2m,
+        ["r"] = 5m,
+        ["x"] = 8m,
+        ["y"] = 6m
+    };
+
+    var left = NodExpressionEvaluator.Evaluate("(x-a)^2 + (y-b)^2", 0, vars);
+    var right = NodExpressionEvaluator.Evaluate("r^2", 0, vars);
+    var radius = NodExpressionEvaluator.Evaluate("distance(vec(a,b), vec(x,y))", 0, vars);
+
+    AssertTrue(left > right, "Point should be outside the circle when squared distance is greater than r^2.");
+    AssertNear(8.062257m, radius, 0.0001m);
+});
+
 Test("complex math", () =>
 {
     var value = NodExpressionEvaluator.Evaluate("sqrt((ans^2 + 25) / 3) + log(ans,2)", 8);
@@ -325,6 +363,26 @@ Test("equation can solve graph intersection", () =>
     var report = SolverStepBuilder.Build(doc, "0");
     if (report.EquationGraph is null)
         throw new Exception("Intersection solve should expose equation graph info.");
+});
+
+Test("equation circle radius from center and point", () =>
+{
+    var doc = NodParser.Parse("""
+    Name Cirkelstraal
+    mode equation
+    given a = 1
+    given b = 2
+    given x = 4
+    given y = 6
+    equation r = sqrt((x-a)^2 + (y-b)^2)
+    solve r
+    constraint r >= 0
+    end
+    """);
+
+    var result = NodEngine.SolveEquation(doc);
+    AssertText("r", result.Variable);
+    AssertDecimal(5m, result.Value);
 });
 
 Test("intersection solver demo nod parses and solves", () =>
