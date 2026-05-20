@@ -453,8 +453,8 @@ internal sealed class Graph3DPreviewForm : Form
             _disabledMessage,
             "Generate graph",
             GraphPlotDensity.Normal);
-        Graph3DRotationDial.DrawCompass(e.Graphics, _rotationDial.Bounds, _camera);
-        Graph3DRotationDial.DrawDegreeReadout(e.Graphics, _rotationDial, _camera);
+        Graph3DApi.DrawCompass(e.Graphics, _rotationDial.Bounds, _camera);
+        Graph3DApi.DrawCompassDegrees(e.Graphics, _rotationDial.Bounds, _camera);
     }
 
     private void InvalidateCanvas()

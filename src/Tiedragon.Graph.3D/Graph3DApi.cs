@@ -31,6 +31,21 @@ public static class Graph3DApi
         return GraphCameraNavigator3D.Reset(preset);
     }
 
+    public static void DrawCompass(
+        Graphics graphics,
+        Rectangle bounds,
+        GraphCamera3D camera,
+        bool hover = false,
+        bool pressed = false)
+    {
+        Graph3DCompass.DrawCompass(graphics, bounds, camera, hover, pressed);
+    }
+
+    public static void DrawCompassDegrees(Graphics graphics, Rectangle bounds, GraphCamera3D camera)
+    {
+        Graph3DCompass.DrawDegreeReadout(graphics, bounds, camera);
+    }
+
     public static GraphGridScene3D CreateGrid(GraphPlotView3D view, int targetTicksPerAxis = 10, double? requestedStep = null)
     {
         return Graph3DGrid.Create(view, targetTicksPerAxis, requestedStep);

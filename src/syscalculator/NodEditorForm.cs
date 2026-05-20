@@ -2056,8 +2056,8 @@ public sealed class NodEditorForm : Form
             GraphPlotDensity.Compact);
         if (_graph3DRotationDial is { Visible: true })
         {
-            Graph3DRotationDial.DrawCompass(e.Graphics, _graph3DRotationDial.Bounds, _graph3DCamera);
-            Graph3DRotationDial.DrawDegreeReadout(e.Graphics, _graph3DRotationDial, _graph3DCamera);
+            Graph3DApi.DrawCompass(e.Graphics, _graph3DRotationDial.Bounds, _graph3DCamera);
+            Graph3DApi.DrawCompassDegrees(e.Graphics, _graph3DRotationDial.Bounds, _graph3DCamera);
         }
         e.Graphics.Restore(state);
     }
