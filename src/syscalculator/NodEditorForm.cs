@@ -1809,21 +1809,19 @@ public sealed class NodEditorForm : Form
 
         if (_graph3DCommandPanel is not null)
         {
-            var left = _graph3DRotationDial is { Visible: true }
-                ? _graph3DRotationDial.Right + gap * 2
-                : surface.Left + gap;
+            var left = surface.Left + gap;
             var navLeft = _graph3DNavigationPanel?.Left ?? surface.Right;
             var bottomControlsNeed = left + _graph3DCommandPanel.Width + gap + (_graph3DNavigationPanel?.Width ?? 0) + gap;
             if (bottomControlsNeed <= surface.Right)
             {
                 var maxLeft = Math.Max(surface.Left + gap, navLeft - _graph3DCommandPanel.Width - gap);
                 _graph3DCommandPanel.Left = Math.Min(left, maxLeft);
-                _graph3DCommandPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DCommandPanel.Height - gap);
+                _graph3DCommandPanel.Top = surface.Top + gap;
             }
             else
             {
                 _graph3DCommandPanel.Left = surface.Left + gap;
-                _graph3DCommandPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DCommandPanel.Height - (_graph3DRotationDial?.Height ?? 0) - gap * 2);
+                _graph3DCommandPanel.Top = surface.Top + gap;
             }
             _graph3DCommandPanel.BringToFront();
         }
