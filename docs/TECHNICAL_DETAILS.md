@@ -1,6 +1,6 @@
 ﻿---
 
-# Technical Appendix — Syscalculator 2.0 Alpha 1
+# Technical Appendix — Syscalculator 2.0 Daily/Beta
 
 ## A. Project structure
 
@@ -22,13 +22,44 @@ src/
 │  ├─ EquationModel.cs
 │  └─ EnterpriseModel.cs
 │
+├─ Tiedragon.Graph
+│  ├─ GraphGeometry2D.cs
+│  ├─ GraphNumberFormatter.cs
+│  ├─ GraphArrowRenderer.cs
+│  ├─ GraphOverlayStyle.cs
+│  ├─ GraphToolbarIconButton.cs
+│  └─ GraphTextOverlayButton.cs
+│
+├─ Tiedragon.Graph.2D
+│  ├─ GraphSurfaceApi.cs
+│  ├─ GraphPlotRenderer.cs
+│  ├─ GraphOverlayButton.cs
+│  └─ GraphPointTableOverlay.cs
+│
+├─ Tiedragon.Graph.3D
+│  ├─ Graph3DApi.cs
+│  ├─ GraphGeometry3D.cs
+│  ├─ Graph3DGrid.cs
+│  ├─ Graph3DRenderer.cs
+│  ├─ GraphCameraNavigator3D.cs
+│  └─ Graph3DCompass.cs
+│
+├─ Tiedragon.Help
+├─ Tiedragon.ToolEditor
+├─ Tiedragon.ClipboardConvert
+│
 ├─ NodSystem.Tests
 │  └─ Program.cs
 │
 ├─ NodSystem.Demo
 │  └─ Program.cs
 │
-└─ Syscalculator.UI.WinForms
+├─ Syscalculator.Updater
+│  └─ Program.cs
+│
+├─ Syscalculator.UI.Uwp
+│
+└─ syscalculator
    ├─ MainForm.cs
    ├─ WizardExpressForm.cs
    ├─ NodEditorForm.cs
@@ -39,6 +70,20 @@ src/
    ├─ Program.cs
    ├─ freesyscal.cfg
    └─ Converters/
+```
+
+Current graph namespaces:
+
+```text
+Tiedragon.Graph       shared graph base
+Tiedragon.Graph.G2D   Graph2D public surface and renderer API
+Tiedragon.Graph.G3D   Graph3D public surface, projection, camera and grid API
+```
+
+The current graph architecture drawing is linked from `docs/ARCHITECTURE_INDEX.md` and lives at:
+
+```text
+docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg
 ```
 
 ## A1. NuGet package management
@@ -84,12 +129,12 @@ vraag1 / vraag2
 Appsnaam
 ```
 
-### Syscalculator 2.0 Alpha 1
+### Syscalculator 2.0 Daily/Beta
 
-In Alpha 1, these concerns are separated.
+In the 2.0 daily/beta line, these concerns are separated.
 
 ```text
-Syscalculator.UI.WinForms
+src/syscalculator
   ↓
 Tiedragon.NodSystem.Core
   ↓
@@ -98,6 +143,19 @@ NodParser / NodEngine / sub-engines
 
 The core library has no UI dependency.  
 The UI project depends on the core library.
+
+The graph UI is split into reusable Tiedragon graph projects:
+
+```text
+src/syscalculator
+  ↓
+Tiedragon.Graph.2D  namespace Tiedragon.Graph.G2D
+Tiedragon.Graph.3D  namespace Tiedragon.Graph.G3D
+  ↓
+Tiedragon.Graph     shared graph primitives
+```
+
+Graph3D is available on the daily branch as a native foundation for X/Y/Z graph space, camera rotation, grids, axes, labels, point tables, compass/navigation and vector arrows. It is not yet a finished surface-plot product: real `z = f(x,y)` surface sampling remains roadmap work tracked by GitHub issue #8, “Roadmap: continue 3D graph and surface visualization for advanced NOD math”.
 
 ## C. NOD parsing flow
 
@@ -721,8 +779,6 @@ The `*` means default converter.
 ## Q. Known technical debt
 
 ```text
-No .sln file yet
-No installer yet
 No dependency injection
 No formal unit test framework
 No CI/CD
@@ -736,13 +792,12 @@ No old MenuXP styling migrated
 
 ## R. Recommended next technical steps
 
-1. Add solution file:
+1. Keep the solution and release build scripts current:
 
-```bash
-dotnet new sln
-dotnet sln add src/Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj
-dotnet sln add src/NodSystem.Tests/NodSystem.Tests.csproj
-dotnet sln add src/syscalculator/Syscalculator.UI.WinForms.csproj
+```text
+Syscalculator20_UI_Prototype_OldModelConverterLook_BuildFix.sln
+BUILD_INSTALLER.bat
+installer/Syscalculator.iss
 ```
 
 2. Add real test framework:
