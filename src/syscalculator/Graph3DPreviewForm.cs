@@ -191,7 +191,7 @@ internal sealed class Graph3DPreviewForm : Form
         host.Controls.Add(_navigationPanel);
         _navigationPanel.BringToFront();
 
-        _rotationDial = new Graph3DRotationDial { Width = 88, Height = 88, Camera = _camera };
+        _rotationDial = new Graph3DRotationDial { Width = 88, Height = 106, Camera = _camera };
         _rotationDial.RotationDeltaRequested += (yaw, pitch) => RotateCamera(yaw, pitch);
         _rotationDial.ResetRequested += () => SetCamera(GraphCameraPreset3D.Isometric);
         host.Controls.Add(_rotationDial);

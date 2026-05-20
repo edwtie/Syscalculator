@@ -25,7 +25,7 @@ internal sealed class Graph3DRotationDial : Control
                  ControlStyles.ResizeRedraw, true);
 
         Width = 82;
-        Height = 82;
+        Height = 98;
         BackColor = Color.White;
         Cursor = Cursors.SizeAll;
         TabStop = false;
@@ -106,8 +106,12 @@ internal sealed class Graph3DRotationDial : Control
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
+        var readoutHeight = Math.Max(14, (int)Math.Round(Height * 0.18d));
+        var dialSize = Math.Max(1, Math.Min(Width, Height - readoutHeight));
+        var dialX = (Width - dialSize) / 2;
         using var path = new GraphicsPath();
-        path.AddEllipse(new Rectangle(0, 0, Math.Max(1, Width), Math.Max(1, Height)));
+        path.AddEllipse(new Rectangle(dialX, 0, dialSize, dialSize));
+        path.AddRectangle(new Rectangle(0, Height - readoutHeight - 1, Math.Max(1, Width), readoutHeight + 1));
         Region = new Region(path);
     }
 
@@ -117,8 +121,10 @@ internal sealed class Graph3DRotationDial : Control
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        var inset = Math.Max(4f, Math.Min(Width, Height) * 0.06f);
-        var rect = new RectangleF(inset, inset, Width - inset * 2f, Height - inset * 2f);
+        var readoutHeight = Math.Max(14f, Height * 0.18f);
+        var dialSize = Math.Min(Width, Height - readoutHeight);
+        var inset = Math.Max(4f, dialSize * 0.06f);
+        var rect = new RectangleF((Width - dialSize) / 2f + inset, inset, dialSize - inset * 2f, dialSize - inset * 2f);
         using var shadow = new SolidBrush(Color.FromArgb(28, 15, 23, 42));
         g.FillEllipse(shadow, rect.X + 1.5f, rect.Y + 2f, rect.Width, rect.Height);
 
@@ -148,7 +154,8 @@ internal sealed class Graph3DRotationDial : Control
         using var smallFont = new Font("Segoe UI", Math.Max(5.8f, radius * 0.15f), FontStyle.Bold);
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
         var yaw = NormalizeDegrees(_camera.YawDegrees);
-        g.DrawString($"{yaw:0} deg", smallFont, textBrush, new RectangleF(cx - radius * 0.52f, cy + radius * 0.46f, radius * 1.04f, radius * 0.28f), format);
+        using var readoutBrush = new SolidBrush(Color.FromArgb(15, 63, 143));
+        g.DrawString($"{yaw:0} deg", smallFont, readoutBrush, new RectangleF(0, Height - readoutHeight, Width, readoutHeight), format);
     }
 
     private static void DrawCompassRose(Graphics g, float cx, float cy, float radius)
