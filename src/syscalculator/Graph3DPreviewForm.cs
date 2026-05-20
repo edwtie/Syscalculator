@@ -454,6 +454,7 @@ internal sealed class Graph3DPreviewForm : Form
             _disabledMessage,
             "Generate graph",
             GraphPlotDensity.Normal);
+        Graph3DRotationDial.DrawDegreeReadout(e.Graphics, _rotationDial, _camera);
     }
 
     private void InvalidateCanvas()
@@ -701,7 +702,7 @@ internal sealed class Graph3DPreviewForm : Form
         _navigationPanel.Left = Math.Max(gap, host.ClientSize.Width - _navigationPanel.Width - gap);
         _navigationPanel.Top = Math.Max(gap, host.ClientSize.Height - _navigationPanel.Height - gap);
         _rotationDial.Left = gap;
-        _rotationDial.Top = Math.Max(gap, host.ClientSize.Height - _rotationDial.Height - gap);
+        _rotationDial.Top = Math.Max(gap, host.ClientSize.Height - _rotationDial.Height - gap - 16);
         _pointsPanel.Left = gap;
         _pointsPanel.Top = gap;
         _pointsPanel.BringToFront();

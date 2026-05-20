@@ -1806,7 +1806,7 @@ public sealed class NodEditorForm : Form
         if (_graph3DRotationDial is { Visible: true })
         {
             _graph3DRotationDial.Left = surface.Left + gap;
-            _graph3DRotationDial.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DRotationDial.Height - gap);
+            _graph3DRotationDial.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DRotationDial.Height - gap - 16);
             _graph3DRotationDial.BringToFront();
         }
 
@@ -2058,6 +2058,8 @@ public sealed class NodEditorForm : Form
             _graphDisabledMessage,
             "Generate graph",
             GraphPlotDensity.Compact);
+        if (_graph3DRotationDial is { Visible: true })
+            Graph3DRotationDial.DrawDegreeReadout(e.Graphics, _graph3DRotationDial, _graph3DCamera);
         e.Graphics.Restore(state);
     }
 

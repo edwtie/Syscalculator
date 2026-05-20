@@ -247,4 +247,26 @@ internal sealed class Graph3DRotationDial : Control
         g.DrawPolygon(outline, south);
     }
 
+    internal static void DrawDegreeReadout(Graphics g, Control dial, GraphCamera3D camera)
+    {
+        if (!dial.Visible)
+            return;
+
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        var yaw = NormalizeDegrees(camera.YawDegrees);
+        using var font = new Font("Segoe UI", 7f, FontStyle.Bold);
+        using var shadow = new SolidBrush(Color.FromArgb(230, 255, 255, 255));
+        using var text = new SolidBrush(Color.FromArgb(15, 63, 143));
+        using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+
+        var bounds = new RectangleF(dial.Left - 4f, dial.Bottom + 1f, dial.Width + 8f, 15f);
+        g.DrawString($"{yaw:0} deg", font, shadow, new RectangleF(bounds.X + 1f, bounds.Y + 1f, bounds.Width, bounds.Height), format);
+        g.DrawString($"{yaw:0} deg", font, text, bounds, format);
+    }
+
+    private static double NormalizeDegrees(double degrees)
+    {
+        var normalized = degrees % 360d;
+        return normalized < 0d ? normalized + 360d : normalized;
+    }
 }
