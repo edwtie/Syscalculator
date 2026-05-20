@@ -1810,7 +1810,7 @@ public sealed class NodEditorForm : Form
         if (_graph3DCommandPanel is not null)
         {
             var left = _graph3DRotationDial is { Visible: true }
-                ? _graph3DRotationDial.Right + gap
+                ? _graph3DRotationDial.Right + gap * 2
                 : surface.Left + gap;
             var navLeft = _graph3DNavigationPanel?.Left ?? surface.Right;
             var bottomControlsNeed = left + _graph3DCommandPanel.Width + gap + (_graph3DNavigationPanel?.Width ?? 0) + gap;
