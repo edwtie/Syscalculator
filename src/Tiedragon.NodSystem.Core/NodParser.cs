@@ -516,6 +516,7 @@ public static class NodParser
     /// wordt intern:
     /// length(vec(3,4))
     /// length(vec(3,4,12))
+    /// De uitkomst is de lengte van de vectorpijl vanaf de oorsprong.
     /// </summary>
     private static bool TryRewriteVectorMath(string value, out string expression)
     {

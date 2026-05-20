@@ -553,7 +553,7 @@ public static class FormulaCardCatalog
                 @"\vec{v}=(x,y),\quad |\vec{v}|=\sqrt{x^2+y^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
                 new[] { "VWO D", "PWS", "Vectoren", "2D graph", "Limited vector" },
-                "Een 2D vector kun je veilig tonen als pijl in een grafiek. Voor 3D-visualisatie gebruik je Graph 3D; geometry mode is nu beschikbaar voor X/Y/Z en NOD math.",
+                "Een 2D vector is een pijl vanaf de oorsprong naar (x,y); length(vec(...)) is de lengte van die pijl. Voor 3D-visualisatie gebruik je Graph 3D; geometry mode is beschikbaar voor X/Y/Z en NOD math.",
                 """
                 Name 2D vectorpijl notitie
                 input x X component
@@ -570,7 +570,7 @@ public static class FormulaCardCatalog
                 @"\vec{v}=(x,y,z),\quad |\vec{v}|=\sqrt{x^2+y^2+z^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>z</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
                 new[] { "VWO D", "PWS", "Vectoren", "3D", "Limited vector" },
-                "3D vectorlengte werkt numeriek in NOD math. Geometry mode en Graph 3D kunnen X/Y/Z-punten en grafiekruimte visualiseren.",
+                "3D vectorlengte is de lengte van de pijl vanaf de oorsprong naar (x,y,z). Geometry mode en Graph 3D kunnen X/Y/Z-punten en grafiekruimte visualiseren.",
                 """
                 Name 3D vectorlengte
                 input text Vectorcomponenten

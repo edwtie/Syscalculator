@@ -16,6 +16,8 @@ De tests controleren:
 - data field math
 */
 
+using Tiedragon.Graph;
+using Tiedragon.Graph.G3D;
 using Tiedragon.NodSystem.Core;
 
 var total = 0;
@@ -96,6 +98,27 @@ Test("expression vector length and scalar projection", () =>
     AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4,0))", 0));
     AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
     AssertDecimal(5m, NodExpressionEvaluator.Evaluate("|vec(3,4)|", 0));
+});
+
+Test("graph3d treats vector length as arrow from origin", () =>
+{
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4))", 0));
+    AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
+
+    var arrow2D = Graph3DApi.From2D(new PointF(3f, 4f), z: 0d);
+    AssertNear(3m, (decimal)arrow2D.X, 0.0001m);
+    AssertNear(4m, (decimal)arrow2D.Y, 0.0001m);
+    AssertNear(0m, (decimal)arrow2D.Z, 0.0001m);
+
+    var arrow3D = new GraphPoint3D(3d, 4d, 12d);
+    var plot = new Rectangle(0, 0, 400, 300);
+    var view = Graph3DApi.CreateFitView(new[] { new GraphPoint3D(0d, 0d, 0d), arrow3D });
+    var projectedOrigin = Graph3DApi.ProjectToScreen(new GraphPoint3D(0d, 0d, 0d), plot, view, Graph3DApi.DefaultCamera);
+    var projectedTip = Graph3DApi.ProjectToScreen(arrow3D, plot, view, Graph3DApi.DefaultCamera);
+
+    AssertTrue(float.IsFinite(projectedOrigin.Screen.X), "Graph3D origin projection should be finite.");
+    AssertTrue(float.IsFinite(projectedTip.Screen.X), "Graph3D vector tip projection should be finite.");
+    AssertTrue(projectedOrigin.Screen != projectedTip.Screen, "Graph3D vector arrow should project to a visible segment.");
 });
 
 Test("expression vector arithmetic keeps z component", () =>
@@ -1552,6 +1575,12 @@ static void AssertNear(decimal expected, decimal actual, decimal tolerance)
 {
     if (Math.Abs(expected - actual) > tolerance)
         throw new Exception($"Expected near {expected}, got {actual}.");
+}
+
+static void AssertTrue(bool condition, string message)
+{
+    if (!condition)
+        throw new Exception(message);
 }
 
 static void AssertThrows(string expectedMessage, Action action)
