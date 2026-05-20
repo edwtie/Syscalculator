@@ -1529,7 +1529,7 @@ public sealed class NodEditorForm : Form
         var graph3DRangePanel = new TableLayoutPanel
         {
             Dock = DockStyle.Left,
-            Width = 360,
+            Width = 382,
             Height = 75,
             ColumnCount = 6,
             RowCount = 3,
@@ -1599,11 +1599,11 @@ public sealed class NodEditorForm : Form
         graph3DRangePanel.Controls.Add(_graph3DShowRangeLines, 4, 2);
         graph3DRangePanel.SetColumnSpan(_graph3DShowRangeLines, 2);
         graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
         graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 76));
         graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
