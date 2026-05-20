@@ -1,4 +1,5 @@
 #nullable enable
+// Shared text button control for graph overlay modes such as 2D, 3D, and Top.
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;

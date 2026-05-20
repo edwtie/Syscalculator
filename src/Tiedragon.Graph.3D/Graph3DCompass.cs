@@ -1,4 +1,5 @@
 #nullable enable
+// Draws the Graph3D compass UI and degree text used by graph overlays.
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using Tiedragon.Graph;

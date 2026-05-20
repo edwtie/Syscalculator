@@ -1,5 +1,6 @@
 #nullable enable
 
+// Owns Graph3D camera presets, rotation, and zoom normalization.
 namespace Tiedragon.Graph.G3D;
 
 /// <summary>

@@ -1,4 +1,5 @@
 #nullable enable
+// Shared icon button control for graph overlay toolbars.
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 

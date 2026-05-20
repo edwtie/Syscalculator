@@ -1,5 +1,6 @@
 #nullable enable
 
+// Builds the logical Graph3D grid and projects it for rendering.
 namespace Tiedragon.Graph.G3D;
 
 /// <summary>
