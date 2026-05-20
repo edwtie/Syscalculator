@@ -371,13 +371,17 @@ public static class GraphSurfaceApi
         if (vector.Count is not 2 and not 3)
             throw new ArgumentException("Graph2D formula vectors must have 2 or 3 components.", nameof(vector));
 
+        var x = vector[0];
+        var y = vector[1];
+
         if (vector.Count == 2)
-            return new PointF((float)vector[0], (float)vector[1]);
+            return new PointF((float)x, (float)y);
 
-        if (Math.Abs(vector[2]) < double.Epsilon)
-            return new PointF((float)vector[0], (float)vector[1]);
+        var z = vector[2];
+        if (z == 0d)
+            return new PointF((float)x, (float)y);
 
-        return new PointF((float)(vector[0] / vector[2]), (float)(vector[1] / vector[2]));
+        return new PointF((float)(x / z), (float)(y / z));
     }
 
     public static double GetNumberBoxValue(NumericUpDown box)
