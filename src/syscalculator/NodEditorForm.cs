@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Drawing.Drawing2D;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Win32;
 using System.Net;
@@ -9,7 +10,9 @@ using System.Text.RegularExpressions;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Tiedragon.NodSystem.Core;
-using Tiedragon.Graph2D;
+using Tiedragon.Graph;
+using Tiedragon.Graph.G2D;
+using Tiedragon.Graph.G3D;
 using Tiedragon.ToolEditor;
 using Tiedragon.Help;
 
@@ -33,7 +36,8 @@ public sealed class NodEditorForm : Form
     private enum UnsavedChangesChoice { Save, Discard, Cancel }
 
     private const float GraphNormalHalfYRange = 5f;
-    private const int DockedTestPanelWidth = 382;
+    private const float Graph3DDefaultHalfRange = 100f;
+    private const int DockedTestPanelWidth = 420;
     private const int MaxDockedLivePreviewWidth = 250;
     private const int DockedSimulatorWidth = 360;
     private const int NodHelpPopupMinWidth = 330;
@@ -188,6 +192,188 @@ public sealed class NodEditorForm : Form
         }
     }
 
+    private sealed class GraphCanvasPanel : Panel
+    {
+        public GraphCanvasPanel()
+        {
+            DoubleBuffered = true;
+            ResizeRedraw = true;
+            SetStyle(
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.ResizeRedraw |
+                ControlStyles.UserPaint,
+                true);
+            UpdateStyles();
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            // The graph renderers clear the full canvas; skipping the default erase avoids zoom flicker.
+        }
+    }
+
+    private sealed class Graph3DOverlayFlowPanel : FlowLayoutPanel
+    {
+        public Graph3DOverlayFlowPanel()
+        {
+            DoubleBuffered = true;
+            SetStyle(
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.ResizeRedraw |
+                ControlStyles.UserPaint,
+                true);
+            BackColor = Color.White;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            using var path = GraphOverlayStyle.RoundedRect(
+                new RectangleF(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+                10f);
+            Region = new Region(path);
+        }
+    }
+
+    private sealed class Graph3DOverlayTablePanel : TableLayoutPanel
+    {
+        public Graph3DOverlayTablePanel()
+        {
+            DoubleBuffered = true;
+            SetStyle(
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.ResizeRedraw |
+                ControlStyles.UserPaint,
+                true);
+            BackColor = Color.White;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            using var path = GraphOverlayStyle.RoundedRect(
+                new RectangleF(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+                10f);
+            Region = new Region(path);
+        }
+    }
+
+    private sealed class Graph3DTextOverlayButton : Control
+    {
+        private readonly Action _action;
+        private readonly ToolTip _toolTip = new();
+        private bool _hover;
+        private bool _pressed;
+        private bool _active;
+
+        public Graph3DTextOverlayButton(string text, string tooltip, Action action)
+        {
+            _action = action;
+            Text = text;
+            Width = 34;
+            Height = 22;
+            Margin = new Padding(0, 1, 2, 0);
+            ForeColor = Color.FromArgb(15, 63, 143);
+            Cursor = Cursors.Hand;
+            TabStop = false;
+            Font = new Font("Segoe UI", 7f, FontStyle.Bold);
+            _toolTip.SetToolTip(this, tooltip);
+            SetStyle(
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.ResizeRedraw |
+                ControlStyles.UserPaint,
+                true);
+            BackColor = Color.White;
+        }
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool Active
+        {
+            get => _active;
+            set
+            {
+                if (_active == value)
+                    return;
+
+                _active = value;
+                Invalidate();
+            }
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            var rect = new RectangleF(0.5f, 0.5f, Width - 1f, Height - 1f);
+            var state = !Enabled
+                ? GraphOverlayVisualState.Disabled
+                : _pressed
+                    ? GraphOverlayVisualState.Pressed
+                    : _active
+                        ? GraphOverlayVisualState.Pressed
+                        : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
+            GraphOverlayStyle.PaintButtonChrome(e.Graphics, rect, 6f, state, translucent: false);
+
+            TextRenderer.DrawText(
+                e.Graphics,
+                Text,
+                Font,
+                ClientRectangle,
+                GraphOverlayStyle.TextColor(state),
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        }
+
+        protected override void OnMouseEnter(EventArgs e)
+        {
+            _hover = true;
+            Invalidate();
+            base.OnMouseEnter(e);
+        }
+
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            _hover = false;
+            _pressed = false;
+            Invalidate();
+            base.OnMouseLeave(e);
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                _pressed = true;
+                Invalidate();
+            }
+
+            base.OnMouseDown(e);
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            var fireClick = _pressed && ClientRectangle.Contains(e.Location);
+            _pressed = false;
+            Invalidate();
+            if (fireClick)
+                _action();
+            base.OnMouseUp(e);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            using var path = GraphOverlayStyle.RoundedRect(
+                new RectangleF(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+                6f);
+            Region = new Region(path);
+        }
+    }
+
     private static GraphicsPath RoundedTopRect(Rectangle rectangle, int radius)
     {
         var path = new GraphicsPath();
@@ -254,6 +440,7 @@ public sealed class NodEditorForm : Form
     private Button _validateButton = null!;
     private TabPage _converterTestPage = null!;
     private TabPage _graphPreviewPage = null!;
+    private TabPage _graph3DPage = null!;
     private HtmlMathPreviewControl _testFormulaView = null!;
     private HtmlMathPreviewControl _testCalculationView = null!;
     private TabControl _testTabs = null!;
@@ -261,22 +448,44 @@ public sealed class NodEditorForm : Form
     private NumericUpDown _graphXMax = null!;
     private NumericUpDown _graphYMin = null!;
     private NumericUpDown _graphYMax = null!;
+    private NumericUpDown _graph3DXMin = null!;
+    private NumericUpDown _graph3DXMax = null!;
+    private NumericUpDown _graph3DYMin = null!;
+    private NumericUpDown _graph3DYMax = null!;
+    private NumericUpDown _graph3DStep = null!;
+    private NumericUpDown _graphZMin = null!;
+    private NumericUpDown _graphZMax = null!;
+    private NumericUpDown _graphZStep = null!;
     private NumericUpDown _graphStep = null!;
     private CheckBox _graphShowRangeLines = null!;
+    private CheckBox _graph3DShowRangeLines = null!;
     private Panel _graphCanvas = null!;
+    private Panel _graph3DCanvas = null!;
+    private Panel _graph3DNavigationPanel = null!;
+    private Panel _graph3DCommandPanel = null!;
+    private Panel _graph3DRangePanel = null!;
+    private Graph3DTextOverlayButton _graph3DFlat2DButton = null!;
+    private Graph3DTextOverlayButton _graph3DIsoButton = null!;
+    private Graph3DTextOverlayButton _graph3DTopButton = null!;
     private Panel _graphPointPanel = null!;
+    private Panel _graph3DPointPanel = null!;
     private DataGridView _graphPointTable = null!;
+    private DataGridView _graph3DPointTable = null!;
     private Panel _graphPointTitleBar = null!;
+    private Panel _graph3DPointTitleBar = null!;
     private Panel _graphPointerStatusPanel = null!;
     private Label _graphPointerStatusLabel = null!;
     private Label _graphStatus = null!;
     private Button _graphToggleTableButton = null!;
+    private Button _graph3DToggleTableButton = null!;
+    private CheckBox _graph3DGridToggle = null!;
     private readonly ToolTip _graphInputToolTip = new();
     private readonly HashSet<NumericUpDown> _editedGraphNumberBoxes = new();
     private readonly List<PointF> _graphPreviewFitPoints = new();
     private readonly List<PointF> _graphPreviewPoints = new();
     private readonly List<PointF> _graphPreviewStepPoints = new();
     private string _graphPointClipboardText = "";
+    private string _graph3DPointClipboardText = "";
     private string _graphDisabledMessage = "";
     private string _graphDataTextSignature = "";
     private NodDocument? _graphPreviewDocument;
@@ -284,13 +493,23 @@ public sealed class NodEditorForm : Form
     private double _graphSampleMaxX = GraphNormalHalfYRange;
     private GraphPlotView _graphMarkerView = new(-GraphNormalHalfYRange, GraphNormalHalfYRange, -GraphNormalHalfYRange, GraphNormalHalfYRange);
     private string _graphPointerText = "";
+    private string _graph3DPointerText = "";
     private bool _draggingGraphPointPanel;
+    private bool _draggingGraph3DPointPanel;
     private bool _graphPointTableRequestedVisible = true;
+    private bool _graph3DPointTableRequestedVisible = true;
+    private bool _graph3DGridVisible = true;
     private bool _updatingGraphXRangeControls;
     private bool _updatingGraphYRangeControls;
+    private bool _updatingGraphZRangeControls;
+    private bool _updatingGraphZStepDisplay;
+    private bool _applyingGraph3DRangeControls;
+    private bool _applyingGraph3DPreviewSyncState;
     private bool _applyingGraphSyncState;
     private Point _graphPointPanelDragStart;
     private Point _graphPointPanelStartLocation;
+    private Point _graph3DPointPanelDragStart;
+    private Point _graph3DPointPanelStartLocation;
     private bool _graphHasView;
     private bool _graphPanning;
     private Point _graphPanStart;
@@ -303,6 +522,10 @@ public sealed class NodEditorForm : Form
     private double _graphPanStartMinY;
     private double _graphPanStartMaxY;
     private double _graphUserStep = 1d;
+    private double _graph3DViewMinX = -Graph3DDefaultHalfRange;
+    private double _graph3DViewMaxX = Graph3DDefaultHalfRange;
+    private double _graph3DViewMinY = -Graph3DDefaultHalfRange;
+    private double _graph3DViewMaxY = Graph3DDefaultHalfRange;
     private bool _updatingGraphStepDisplay;
     private string _pendingFormulaMathMarkup = "";
     private string _pendingCalculationMathMarkup = "";
@@ -325,6 +548,11 @@ public sealed class NodEditorForm : Form
     private FloatingToolForm? _floatingPreviewForm;
     private FloatingToolForm? _floatingSimulatorForm;
     private GraphPreviewForm? _graphPreviewForm;
+    private Graph3DPreviewForm? _graph3DPreviewForm;
+    private GraphCamera3D _graph3DCamera = Graph3DApi.DefaultCamera;
+    private Graph3DRotationDial _graph3DRotationDial = null!;
+    private bool _graph3DDragging;
+    private Point _graph3DDragStart;
     private bool _solverPreviewActive;
     private bool _panelsHiddenForSolver;
     private bool _testPanelWasVisibleBeforeSolver;
@@ -780,7 +1008,8 @@ public sealed class NodEditorForm : Form
         ConfigureViewToggleItem(_viewSimulatorItem);
         _viewRestorePanelsItem = AddMenuItem(view, T("editor.menu.view.restore_panels", "Restore panels"), (_, _) => RestoreDefaultPanels());
         view.DropDownOpening += (_, _) => UpdateViewMenuChecks();
-        AddMenuItem(view, T("editor.menu.view.graph_preview", "Graph Preview..."), (_, _) => ShowGraphPreviewWindow());
+        AddMenuItem(view, T("editor.menu.view.graph_preview", "Graph 2D..."), (_, _) => ShowGraphPreviewWindow());
+        AddMenuItem(view, T("editor.menu.view.graph3d_preview", "Graph 3D..."), (_, _) => ShowGraph3DPreviewWindow());
         AddMenuItem(view, T("editor.menu.view.intro_preview", "Introduction preview"), (_, _) => ShowIntroPreview());
         view.DropDownItems.Add(new ToolStripSeparator());
         AddMenuItem(view, T("editor.menu.view.undock_test_panel", "Undock test panel"), (_, _) => UndockTestPanel());
@@ -1009,17 +1238,24 @@ public sealed class NodEditorForm : Form
 
         _converterTestPage = new TabPage(T("editor.test.title", "Converter test"));
         _converterTestPage.Controls.Add(testPanel);
-        _graphPreviewPage = new TabPage(T("editor.graph.title", "Graph Preview"));
+        _graphPreviewPage = new TabPage(T("editor.graph.title", "Graph 2D"));
         _graphPreviewPage.Controls.Add(BuildGraphPreviewPanel());
+        _graph3DPage = new TabPage(T("editor.graph3d.title", "Graph 3D"));
+        _graph3DPage.Controls.Add(BuildGraph3DPanel());
         _testTabs.SelectedIndexChanged += (_, _) =>
         {
-            if (_testTabs.SelectedTab == _graphPreviewPage)
+            if (_testTabs.SelectedTab == _graphPreviewPage || _testTabs.SelectedTab == _graph3DPage)
                 GenerateGraphPreview();
+            ApplyGraph3DFocusLayout();
+            if (_testTabs.SelectedTab == _graph3DPage)
+                _graph3DCanvas.Invalidate();
         };
 
         _testTabs.TabPages.Add(_converterTestPage);
         _testTabs.TabPages.Add(_graphPreviewPage);
+        _testTabs.TabPages.Add(_graph3DPage);
         _testGroup.Controls.Add(_testTabs);
+        ApplyGraph3DFocusLayout();
 
         _previewSplit = new SplitContainer
         {
@@ -1044,6 +1280,7 @@ public sealed class NodEditorForm : Form
 
         _bottomPanel.Controls.Add(_testGroup, 0, 0);
         _bottomPanel.Controls.Add(_previewSplit, 1, 0);
+        ApplyGraph3DFocusLayout();
         _previewSplit.SizeChanged += (_, _) => AdjustPreviewSplitter();
 
         _mainSplit.Panel2.Controls.Add(_bottomPanel);
@@ -1112,6 +1349,7 @@ public sealed class NodEditorForm : Form
         _graphYMax = MakeGraphNumberBox(5, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
         _graphYMax.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphYMax)) ApplyGraphPreviewYRangeFromControls(); };
         inputGrid.Controls.Add(_graphYMax, 3, 1);
+
         ApplyGraphInputTooltips(_graphXMin, _graphXMax, _graphYMin, _graphYMax, _graphStep);
         AttachGraphCommittedInput(_graphXMin, ApplyGraphPreviewXRangeFromControls);
         AttachGraphCommittedInput(_graphXMax, ApplyGraphPreviewXRangeFromControls);
@@ -1139,6 +1377,7 @@ public sealed class NodEditorForm : Form
             UpdateGraphRangeInputMode();
             NotifyGraphPreviewSyncStateChanged();
             _graphCanvas.Invalidate();
+            _graph3DCanvas?.Invalidate();
         };
         inputGrid.Controls.Add(_graphShowRangeLines, 4, 1);
         inputGrid.SetColumnSpan(_graphShowRangeLines, 2);
@@ -1170,7 +1409,7 @@ public sealed class NodEditorForm : Form
             BackColor = Color.FromArgb(240, 244, 249)
         };
 
-        _graphCanvas = new Panel
+        _graphCanvas = new GraphCanvasPanel
         {
             Dock = DockStyle.Fill,
             BackColor = Color.White,
@@ -1273,6 +1512,780 @@ public sealed class NodEditorForm : Form
         return panel;
     }
 
+    private Control BuildGraph3DPanel()
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            RowCount = 2,
+            ColumnCount = 1,
+            Padding = new Padding(8, 8, 8, 6),
+            Margin = Padding.Empty,
+            BackColor = Color.FromArgb(250, 250, 250)
+        };
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 96));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var graphHost = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(240, 244, 249),
+            Margin = Padding.Empty
+        };
+
+        _graph3DCanvas = new GraphCanvasPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle,
+            MinimumSize = new Size(120, 120)
+        };
+        _graph3DCanvas.Paint += Graph3DCanvas_Paint;
+        _graph3DCanvas.MouseDown += Graph3DCanvas_MouseDown;
+        _graph3DCanvas.MouseMove += Graph3DCanvas_MouseMove;
+        _graph3DCanvas.MouseUp += Graph3DCanvas_MouseUp;
+        _graph3DCanvas.MouseWheel += Graph3DCanvas_MouseWheel;
+        _graph3DCanvas.MouseEnter += (_, _) =>
+        {
+            _graph3DCanvas.Focus();
+            _graph3DCanvas.Cursor = Cursors.SizeAll;
+        };
+        _graph3DCanvas.MouseLeave += (_, _) =>
+        {
+            if (!_graph3DDragging)
+                _graph3DCanvas.Cursor = Cursors.Default;
+        };
+        graphHost.Controls.Add(_graph3DCanvas);
+
+        _graph3DNavigationPanel = GraphOverlayButton.CreateNavigationGroup(
+            GraphOverlayButtonDensity.Compact,
+            T("editor.graph3d.reset_view", "Home / reset camera"),
+            (_, _) => SetGraph3DCamera(GraphCameraPreset3D.Isometric),
+            T("editor.graph3d.zoom_in", "Zoom in"),
+            (_, _) => ZoomGraph3DCamera(1.15),
+            T("editor.graph3d.zoom_out", "Zoom out"),
+            (_, _) => ZoomGraph3DCamera(1d / 1.15d));
+        graphHost.Controls.Add(_graph3DNavigationPanel);
+        _graph3DNavigationPanel.BringToFront();
+
+        _graph3DRotationDial = new Graph3DRotationDial { Camera = _graph3DCamera };
+        _graph3DRotationDial.RotationDeltaRequested += (yaw, pitch) => RotateGraph3DCamera(yaw, pitch);
+        _graph3DRotationDial.ResetRequested += () => SetGraph3DCamera(GraphCameraPreset3D.Isometric);
+        graphHost.Controls.Add(_graph3DRotationDial);
+        _graph3DRotationDial.BringToFront();
+
+        _graph3DCommandPanel = new Graph3DOverlayFlowPanel
+        {
+            Width = 258,
+            Height = 28,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = new Padding(2)
+        };
+        _graph3DCommandPanel.Paint += Graph3DOverlayPanel_Paint;
+        _graph3DFlat2DButton = MakeGraph3DButton("2D", T("editor.graph3d.front", "Front"), ToggleGraph3DFlat2DMode);
+        _graph3DCommandPanel.Controls.Add(_graph3DFlat2DButton);
+        _graph3DIsoButton = MakeGraph3DButton("3D", T("editor.graph3d.3d", "3D view"), () => SetGraph3DCamera(GraphCameraPreset3D.Isometric));
+        _graph3DCommandPanel.Controls.Add(_graph3DIsoButton);
+        _graph3DTopButton = MakeGraph3DButton("Top", T("editor.graph3d.top", "Top"), () => SetGraph3DCamera(GraphCameraPreset3D.Top));
+        _graph3DCommandPanel.Controls.Add(_graph3DTopButton);
+        _graph3DGridToggle = new CheckBox
+        {
+            Text = "Grid",
+            Checked = true,
+            AutoSize = true,
+            Height = 22,
+            Margin = new Padding(2, 3, 1, 0),
+            BackColor = Color.Transparent,
+            ForeColor = Color.FromArgb(15, 63, 143),
+            Font = new Font("Segoe UI", 7f, FontStyle.Bold)
+        };
+        _graph3DGridToggle.CheckedChanged += (_, _) =>
+        {
+            _graph3DGridVisible = _graph3DGridToggle.Checked;
+            _graph3DCanvas?.Invalidate();
+        };
+        _graphInputToolTip.SetToolTip(_graph3DGridToggle, T("editor.graph3d.grid", "Show 3D grid"));
+        _graph3DCommandPanel.Controls.Add(_graph3DGridToggle);
+        var copyButton = new GraphToolbarIconButton(GraphToolbarIcon.Copy, T("editor.graph3d.copy_points", "Copy 3D points"))
+        {
+            Width = 30,
+            Height = 22,
+            Margin = new Padding(2, 1, 0, 0)
+        };
+        copyButton.Click += (_, _) =>
+        {
+            if (!string.IsNullOrWhiteSpace(_graph3DPointClipboardText))
+                Clipboard.SetText(_graph3DPointClipboardText);
+        };
+        _graph3DCommandPanel.Controls.Add(copyButton);
+
+        var openButton = new GraphToolbarIconButton(GraphToolbarIcon.Open, T("editor.graph3d.open_large", "Open large graph"))
+        {
+            Width = 30,
+            Height = 22,
+            Margin = new Padding(2, 1, 0, 0)
+        };
+        openButton.Click += (_, _) => ShowGraph3DPreviewWindow();
+        _graph3DCommandPanel.Controls.Add(openButton);
+
+        _graph3DToggleTableButton = new GraphToolbarIconButton(GraphToolbarIcon.TableHidden, T("editor.graph3d.hide_table", "Hide 3D table"))
+        {
+            Width = 30,
+            Height = 22,
+            Margin = new Padding(2, 1, 0, 0)
+        };
+        _graph3DToggleTableButton.Click += (_, _) => SetGraph3DPointTableVisible(!_graph3DPointPanel.Visible);
+        _graph3DCommandPanel.Controls.Add(_graph3DToggleTableButton);
+        graphHost.Controls.Add(_graph3DCommandPanel);
+        _graph3DCommandPanel.BringToFront();
+
+        var graph3DRangePanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Left,
+            Width = 360,
+            Height = 75,
+            ColumnCount = 6,
+            RowCount = 3,
+            Padding = Padding.Empty,
+            Margin = Padding.Empty,
+            BackColor = Color.Transparent
+        };
+
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("X min"), 0, 0);
+        _graph3DXMin = MakeGraphNumberBox(-100, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
+        _graph3DXMin.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graph3DXMin)) ApplyGraph3DXRangeFromControls(); };
+        graph3DRangePanel.Controls.Add(_graph3DXMin, 1, 0);
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("X max"), 2, 0);
+        _graph3DXMax = MakeGraphNumberBox(100, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
+        _graph3DXMax.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graph3DXMax)) ApplyGraph3DXRangeFromControls(); };
+        graph3DRangePanel.Controls.Add(_graph3DXMax, 3, 0);
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel(T("editor.graph.step", "Step")), 4, 0);
+        _graph3DStep = MakeGraphNumberBox((decimal)GraphSurfaceApi.GetNumberBoxValue(_graphStep), GraphPreviewStepMinimum, GraphPreviewRangeLimit, 1);
+        _graph3DStep.ValueChanged += (_, _) =>
+        {
+            if (!_applyingGraphSyncState && !_updatingGraphStepDisplay && !IsEditingGraphNumberBox(_graph3DStep))
+                ApplyGraph3DStepFromControl();
+        };
+        graph3DRangePanel.Controls.Add(_graph3DStep, 5, 0);
+
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("Y min"), 0, 1);
+        _graph3DYMin = MakeGraphNumberBox(-100, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
+        _graph3DYMin.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graph3DYMin)) ApplyGraph3DYRangeFromControls(); };
+        graph3DRangePanel.Controls.Add(_graph3DYMin, 1, 1);
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("Y max"), 2, 1);
+        _graph3DYMax = MakeGraphNumberBox(100, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
+        _graph3DYMax.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graph3DYMax)) ApplyGraph3DYRangeFromControls(); };
+        graph3DRangePanel.Controls.Add(_graph3DYMax, 3, 1);
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("Grid step"), 4, 1);
+        _graphZStep = MakeGraphNumberBox(10, GraphPreviewStepMinimum, GraphPreviewRangeLimit, 1);
+        _graphZStep.ValueChanged += (_, _) =>
+        {
+            if (!_updatingGraphZStepDisplay && !IsEditingGraphNumberBox(_graphZStep))
+                ApplyGraphPreviewZRangeFromControls();
+        };
+        graph3DRangePanel.Controls.Add(_graphZStep, 5, 1);
+
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("Z min"), 0, 2);
+        _graphZMin = MakeGraphNumberBox(-100, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
+        _graphZMin.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphZMin)) ApplyGraphPreviewZRangeFromControls(); };
+        graph3DRangePanel.Controls.Add(_graphZMin, 1, 2);
+        graph3DRangePanel.Controls.Add(MakeGraphToolbarLabel("Z max"), 2, 2);
+        _graphZMax = MakeGraphNumberBox(100, -GraphPreviewRangeLimit, GraphPreviewRangeLimit, 1);
+        _graphZMax.ValueChanged += (_, _) => { if (!IsEditingGraphNumberBox(_graphZMax)) ApplyGraphPreviewZRangeFromControls(); };
+        graph3DRangePanel.Controls.Add(_graphZMax, 3, 2);
+        _graph3DShowRangeLines = new CheckBox
+        {
+            Text = T("editor.graph.lines", "Lines"),
+            Checked = true,
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            BackColor = Color.Transparent,
+            ForeColor = Color.FromArgb(15, 63, 143),
+            Font = new Font("Segoe UI", 7.5f, FontStyle.Bold),
+            Margin = new Padding(0, 3, 0, 0)
+        };
+        _graph3DShowRangeLines.CheckedChanged += (_, _) =>
+        {
+            UpdateGraph3DRangeInputMode();
+            _graph3DCanvas?.Invalidate();
+        };
+        graph3DRangePanel.Controls.Add(_graph3DShowRangeLines, 4, 2);
+        graph3DRangePanel.SetColumnSpan(_graph3DShowRangeLines, 2);
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
+        graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
+        graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
+        ApplyGraphInputTooltips(_graph3DXMin, _graph3DXMax, _graph3DYMin, _graph3DYMax, _graph3DStep, _graphZMin, _graphZMax, _graphZStep);
+        AttachGraphCommittedInput(_graph3DXMin, ApplyGraph3DXRangeFromControls);
+        AttachGraphCommittedInput(_graph3DXMax, ApplyGraph3DXRangeFromControls);
+        AttachGraphCommittedInput(_graph3DYMin, ApplyGraph3DYRangeFromControls);
+        AttachGraphCommittedInput(_graph3DYMax, ApplyGraph3DYRangeFromControls);
+        AttachGraphCommittedInput(_graph3DStep, ApplyGraph3DStepFromControl);
+        AttachGraphStepSpinner(_graph3DStep, CommitGraph3DStepSpinner);
+        AttachGraphCommittedInput(_graphZMin, ApplyGraphPreviewZRangeFromControls);
+        AttachGraphCommittedInput(_graphZMax, ApplyGraphPreviewZRangeFromControls);
+        AttachGraphCommittedInput(_graphZStep, ApplyGraphPreviewZRangeFromControls);
+        AttachGraphStepSpinner(_graphZStep, CommitGraphZStepSpinner);
+        _graph3DRangePanel = graph3DRangePanel;
+        UpdateGraph3DRangeInputMode();
+        panel.Controls.Add(_graph3DRangePanel, 0, 0);
+
+        var overlay = GraphPointTableOverlay.Create(
+            GraphOverlayButtonDensity.Compact,
+            T("editor.graph3d.points", "3D Points"),
+            () => _graph3DPointerText,
+            () => SetGraph3DPointTableVisible(false),
+            Graph3DPointPanel_MouseDown,
+            Graph3DPointPanel_MouseMove,
+            Graph3DPointPanel_MouseUp,
+            new[]
+            {
+                new GraphPointTableColumn("x", "x", 44),
+                new GraphPointTableColumn("y", "y", 44),
+                new GraphPointTableColumn("z", "z", 44)
+            },
+            tableWidthOverride: 148,
+            tableHeightOverride: 64,
+            titleProvider: () => IsGraph3DFlat2DView()
+                ? T("editor.graph3d.points_2d", "2D Points")
+                : T("editor.graph3d.points", "3D Points"));
+        _graph3DPointPanel = overlay.Overlay;
+        _graph3DPointTitleBar = overlay.TitleBar;
+        _graph3DPointTable = overlay.Table;
+        graphHost.Controls.Add(_graph3DPointPanel);
+        _graph3DPointPanel.Visible = false;
+        _graph3DPointPanel.BringToFront();
+        graphHost.Resize += (_, _) =>
+        {
+            PlaceGraph3DOverlays();
+            PlaceGraph3DPointOverlay();
+            _graph3DCanvas.Invalidate();
+        };
+        PlaceGraph3DOverlays();
+        PlaceGraph3DPointOverlay();
+        UpdateGraph3DModeButtons();
+        UpdateGraph3DPointTableAvailability();
+        panel.Controls.Add(graphHost, 0, 1);
+
+        return panel;
+    }
+
+    private Graph3DTextOverlayButton MakeGraph3DButton(string text, string tooltip, Action action)
+    {
+        return new Graph3DTextOverlayButton(text, tooltip, action);
+    }
+
+    private void PlaceGraph3DOverlays()
+    {
+        if (_graph3DCanvas.Parent is not Panel host)
+            return;
+
+        const int gap = 8;
+        var surface = GetGraph3DCompactSurfaceBounds(host);
+        if (_graph3DNavigationPanel is not null)
+        {
+            _graph3DNavigationPanel.Left = Math.Max(surface.Left + gap, surface.Right - _graph3DNavigationPanel.Width - gap);
+            _graph3DNavigationPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DNavigationPanel.Height - gap);
+            _graph3DNavigationPanel.BringToFront();
+        }
+
+        if (_graph3DRangePanel is not null && ReferenceEquals(_graph3DRangePanel.Parent, host))
+        {
+            _graph3DRangePanel.Left = Math.Max(surface.Left + gap, surface.Right - _graph3DRangePanel.Width - gap);
+            _graph3DRangePanel.Top = surface.Top + gap;
+            _graph3DRangePanel.BringToFront();
+        }
+
+        if (_graph3DRotationDial is { Visible: true })
+        {
+            _graph3DRotationDial.Left = surface.Left + gap;
+            _graph3DRotationDial.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DRotationDial.Height - gap);
+            _graph3DRotationDial.BringToFront();
+        }
+
+        if (_graph3DCommandPanel is not null)
+        {
+            var left = _graph3DRotationDial is { Visible: true }
+                ? _graph3DRotationDial.Right + gap
+                : surface.Left + gap;
+            var navLeft = _graph3DNavigationPanel?.Left ?? surface.Right;
+            var bottomControlsNeed = left + _graph3DCommandPanel.Width + gap + (_graph3DNavigationPanel?.Width ?? 0) + gap;
+            if (bottomControlsNeed <= surface.Right)
+            {
+                var maxLeft = Math.Max(surface.Left + gap, navLeft - _graph3DCommandPanel.Width - gap);
+                _graph3DCommandPanel.Left = Math.Min(left, maxLeft);
+                _graph3DCommandPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DCommandPanel.Height - gap);
+            }
+            else
+            {
+                _graph3DCommandPanel.Left = surface.Left + gap;
+                _graph3DCommandPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DCommandPanel.Height - (_graph3DRotationDial?.Height ?? 0) - gap * 2);
+            }
+            _graph3DCommandPanel.BringToFront();
+        }
+
+        _graph3DPointPanel?.BringToFront();
+    }
+
+    private static void Graph3DOverlayPanel_Paint(object? sender, PaintEventArgs e)
+    {
+        if (sender is not Panel panel)
+            return;
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        var rect = new RectangleF(0.5f, 0.5f, panel.Width - 1f, panel.Height - 1f);
+        GraphOverlayStyle.PaintPanelChrome(e.Graphics, rect, 10f, translucent: false);
+    }
+
+    private void ToggleGraph3DFlat2DMode()
+    {
+        SetGraph3DCamera(IsGraph3DFlat2DView()
+            ? GraphCameraPreset3D.Isometric
+            : GraphCameraPreset3D.Front);
+    }
+
+    private void SetGraph3DCamera(GraphCameraPreset3D preset)
+    {
+        _graph3DCamera = Graph3DApi.CameraPreset(preset);
+        if (IsGraph3DFlat2DView())
+            SyncGraph3DFlatViewFromGraph2D();
+        else
+            ResetGraph3DSpaceView();
+        if (_graph3DRotationDial is not null)
+            _graph3DRotationDial.Camera = _graph3DCamera;
+        UpdateGraph3DModeButtons();
+        UpdateGraph3DRangeInputMode();
+        _graph3DCanvas?.Invalidate();
+        UpdateGraph3DPreviewWindowData();
+    }
+
+    private void RotateGraph3DCamera(double yaw, double pitch)
+    {
+        _graph3DCamera = Graph3DApi.RotateCamera(_graph3DCamera, yaw, pitch);
+        if (_graph3DRotationDial is not null)
+            _graph3DRotationDial.Camera = _graph3DCamera;
+        UpdateGraph3DModeButtons();
+        UpdateGraph3DRangeInputMode();
+        _graph3DCanvas?.Invalidate();
+        UpdateGraph3DPreviewWindowData();
+    }
+
+    private void ZoomGraph3DCamera(double factor)
+    {
+        if (IsGraph3DFlat2DView())
+        {
+            ZoomGraph3DFlatViewAt((float)(1d / factor), new PointF(_graph3DCanvas.ClientSize.Width / 2f, _graph3DCanvas.ClientSize.Height / 2f));
+            return;
+        }
+
+        _graph3DCamera = Graph3DApi.ZoomCamera(_graph3DCamera, factor);
+        if (_graph3DRotationDial is not null)
+            _graph3DRotationDial.Camera = _graph3DCamera;
+        UpdateGraph3DModeButtons();
+        _graph3DCanvas?.Invalidate();
+        UpdateGraph3DPreviewWindowData();
+    }
+
+    private void UpdateGraph3DModeButtons()
+    {
+        var flat2D = IsGraph3DFlat2DView();
+        if (_graph3DFlat2DButton is not null)
+            _graph3DFlat2DButton.Active = flat2D;
+        if (_graph3DIsoButton is not null)
+            _graph3DIsoButton.Active = !flat2D && Graph3DCameraMatches(GraphCameraPreset3D.Isometric);
+        if (_graph3DTopButton is not null)
+            _graph3DTopButton.Active = !flat2D && Graph3DCameraMatches(GraphCameraPreset3D.Top);
+        if (_graph3DRotationDial is not null)
+            _graph3DRotationDial.Visible = !flat2D;
+        UpdateGraph3DPointTableMode();
+        PlaceGraph3DOverlays();
+    }
+
+    private void UpdateGraph3DPointTableMode()
+    {
+        if (_graph3DPointTable is null || _graph3DPointTable.Columns.Count < 3)
+            return;
+
+        var showZ = !IsGraph3DFlat2DView();
+        _graph3DPointTable.Columns[2].Visible = showZ;
+        _graph3DPointPanel.Width = showZ ? 158 : 132;
+        _graph3DPointTable.Width = showZ ? 148 : 122;
+        _graph3DPointTable.Columns[0].Width = showZ ? 44 : 54;
+        _graph3DPointTable.Columns[1].Width = showZ ? 44 : 54;
+        _graph3DPointTable.Columns[2].Width = 44;
+        _graph3DPointTitleBar.Width = _graph3DPointTable.Width;
+        _graph3DPointTitleBar.Invalidate();
+        KeepGraph3DPointOverlayInBounds();
+    }
+
+    private bool Graph3DCameraMatches(GraphCameraPreset3D preset)
+    {
+        var camera = Graph3DApi.CameraPreset(preset);
+        return Math.Abs(NormalizeGraph3DAngle(_graph3DCamera.YawDegrees - camera.YawDegrees)) < 0.0001d &&
+               Math.Abs(NormalizeGraph3DAngle(_graph3DCamera.PitchDegrees - camera.PitchDegrees)) < 0.0001d;
+    }
+
+    private static double NormalizeGraph3DAngle(double angle)
+    {
+        var normalized = angle % 360d;
+        if (normalized > 180d)
+            normalized -= 360d;
+        if (normalized < -180d)
+            normalized += 360d;
+        return normalized;
+    }
+
+    private GraphPlotView3D GetGraph3DView()
+    {
+        var view = GetGraph3DXYView();
+        var minZ = GraphSurfaceApi.GetNumberBoxValue(_graphZMin);
+        var maxZ = GraphSurfaceApi.GetNumberBoxValue(_graphZMax);
+        if (minZ >= maxZ)
+        {
+            minZ = -Graph3DDefaultHalfRange;
+            maxZ = Graph3DDefaultHalfRange;
+        }
+
+        return Graph3DApi.From2D(view, minZ, maxZ);
+    }
+
+    private GraphPlotView GetGraph3DXYView()
+    {
+        if (_graph3DXMin is null || _graph3DXMax is null || _graph3DYMin is null || _graph3DYMax is null)
+        {
+            return GetStoredGraph3DXYView();
+        }
+
+        if (IsGraph3DFlat2DView())
+            return GetStoredGraph3DXYView();
+
+        var minX = GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin);
+        var maxX = GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax);
+        var minY = GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin);
+        var maxY = GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax);
+        if (minX >= maxX || minY >= maxY)
+            return GetStoredGraph3DXYView();
+
+        return new GraphPlotView(minX, maxX, minY, maxY);
+    }
+
+    private GraphPlotView GetStoredGraph3DXYView()
+    {
+        var view = new GraphPlotView(_graph3DViewMinX, _graph3DViewMaxX, _graph3DViewMinY, _graph3DViewMaxY);
+        return GraphSurfaceApi.IsValidView(view)
+            ? view
+            : new GraphPlotView(-Graph3DDefaultHalfRange, Graph3DDefaultHalfRange, -Graph3DDefaultHalfRange, Graph3DDefaultHalfRange);
+    }
+
+    private void SetGraph3DXYView(GraphPlotView view)
+    {
+        _graph3DViewMinX = view.MinX;
+        _graph3DViewMaxX = view.MaxX;
+        _graph3DViewMinY = view.MinY;
+        _graph3DViewMaxY = view.MaxY;
+    }
+
+    private void ResetGraph3DSpaceView()
+    {
+        var view = new GraphPlotView(
+            -Graph3DDefaultHalfRange,
+            Graph3DDefaultHalfRange,
+            -Graph3DDefaultHalfRange,
+            Graph3DDefaultHalfRange);
+        SetGraph3DXYView(view);
+        SetGraph3DXYRangeControls(view);
+    }
+
+    private void SyncGraph3DFlatViewFromGraph2D()
+    {
+        var view = GetGraphPreviewView();
+        SetGraph3DXYView(view);
+        SetGraph3DXYRangeControls(view);
+    }
+
+    private void SetGraph3DXYRangeControls(GraphPlotView view)
+    {
+        if (_graph3DXMin is null || _graph3DXMax is null || _graph3DYMin is null || _graph3DYMax is null)
+            return;
+
+        _updatingGraphXRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        try
+        {
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DXMin, view.MinX);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DXMax, view.MaxX);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DYMin, view.MinY);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DYMax, view.MaxY);
+        }
+        finally
+        {
+            _updatingGraphYRangeControls = false;
+            _updatingGraphXRangeControls = false;
+        }
+    }
+
+    private void Graph3DCanvas_Paint(object? sender, PaintEventArgs e)
+    {
+        var surface = GetGraph3DCompactSurfaceBounds(_graph3DCanvas);
+        var state = e.Graphics.Save();
+        e.Graphics.SetClip(surface);
+        using var renderSurface = CreateGraph3DRenderSurface(_graph3DCanvas, surface);
+
+        if (IsGraph3DFlat2DView())
+        {
+            DrawGraph3DAsGraph2D(e.Graphics, renderSurface);
+            e.Graphics.Restore(state);
+            return;
+        }
+
+        Graph3DApi.Draw(
+            e.Graphics,
+            renderSurface,
+            _graphPreviewPoints,
+            _graphPreviewStepPoints,
+            GetGraph3DView(),
+            _graph3DCamera,
+            _graph3DGridVisible,
+            _graph3DShowRangeLines?.Checked ?? true,
+            GraphSurfaceApi.GetNumberBoxValue(_graphZStep),
+            _graphDisabledMessage,
+            "Generate graph",
+            GraphPlotDensity.Compact);
+        e.Graphics.Restore(state);
+    }
+
+    private static Rectangle GetGraph3DCompactSurfaceBounds(Control host)
+    {
+        var height = host.ClientSize.Height;
+        var width = host.ClientSize.Width;
+        if (height <= 0 || width <= 0)
+            return host.ClientRectangle;
+
+        var surfaceWidth = Math.Min(width, Math.Max(420, height * 2));
+        return new Rectangle(0, 0, surfaceWidth, height);
+    }
+
+    private static Control CreateGraph3DRenderSurface(Control canvas, Rectangle bounds)
+    {
+        return new GraphRenderSurface(bounds.Size, canvas.Font);
+    }
+
+    private sealed class GraphRenderSurface : Control
+    {
+        public GraphRenderSurface(Size clientSize, Font font)
+        {
+            ClientSize = clientSize;
+            Font = font;
+        }
+    }
+
+    private bool IsGraph3DFlat2DView()
+    {
+        static double AngleDistance(double angle, double target)
+        {
+            var delta = Math.Abs((angle - target) % 360d);
+            return delta > 180d ? 360d - delta : delta;
+        }
+
+        return AngleDistance(_graph3DCamera.YawDegrees, 0d) < 0.0001d &&
+               Math.Abs(_graph3DCamera.PitchDegrees) < 0.0001d;
+    }
+
+    private void UpdateGraph3DZRangeMode()
+    {
+        if (_graphZMin is null || _graphZMax is null)
+            return;
+
+        var flat2D = IsGraph3DFlat2DView();
+        var linesEditable = _graph3DShowRangeLines?.Checked ?? true;
+        if (flat2D)
+        {
+            _updatingGraphZRangeControls = true;
+            try
+            {
+                GraphSurfaceApi.SetNumberBoxValue(_graphZMin, 0d);
+                GraphSurfaceApi.SetNumberBoxValue(_graphZMax, 0d);
+            }
+            finally
+            {
+                _updatingGraphZRangeControls = false;
+            }
+        }
+
+        var zEditable = linesEditable && !flat2D;
+        _graphZMin.Enabled = zEditable;
+        _graphZMax.Enabled = zEditable;
+        _graphZMin.ReadOnly = !zEditable;
+        _graphZMax.ReadOnly = !zEditable;
+    }
+
+    private void UpdateGraph3DRangeInputMode()
+    {
+        if (_graph3DXMin is null || _graph3DXMax is null || _graph3DYMin is null || _graph3DYMax is null)
+            return;
+
+        var editable = _graph3DShowRangeLines?.Checked ?? true;
+        var flat2D = IsGraph3DFlat2DView();
+        if (!editable)
+            SetGraph3DXYRangeControls(GetGraph3DXYView());
+
+        foreach (var box in new[] { _graph3DXMin, _graph3DXMax, _graph3DYMin, _graph3DYMax, _graph3DStep })
+        {
+            if (box is null)
+                continue;
+
+            box.Enabled = editable;
+            box.ReadOnly = !editable;
+        }
+
+        if (_graphZStep is not null)
+        {
+            _graphZStep.Enabled = editable && !flat2D;
+            _graphZStep.ReadOnly = !editable || flat2D;
+        }
+
+        if (_graph3DGridToggle is not null)
+            _graph3DGridToggle.Enabled = !flat2D;
+
+        UpdateGraph3DZRangeMode();
+    }
+
+    private void DrawGraph3DAsGraph2D(Graphics graphics, Control canvas)
+    {
+        if (!_graphHasView && _graphPreviewDocument is not null)
+            ResetGraphPreviewView(invalidate: false);
+
+        var view = GetGraph3DXYView();
+        GraphSurfaceApi.Draw(
+            graphics,
+            canvas,
+            _graphPreviewPoints,
+            _graphPreviewStepPoints,
+            view,
+            GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin),
+            GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax),
+            GraphSurfaceApi.GetNumberBoxValue(_graph3DStep),
+            _graphDisabledMessage,
+            "Generate graph",
+            GraphPlotDensity.Compact,
+            (float)GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin),
+            (float)GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax),
+            _graph3DShowRangeLines?.Checked ?? true);
+    }
+
+    private void Graph3DCanvas_MouseDown(object? sender, MouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Left)
+            return;
+
+        _graph3DDragging = true;
+        _graph3DDragStart = e.Location;
+        if (IsGraph3DFlat2DView())
+        {
+            if (!EnsureGraphPreviewGeneratedForInteraction())
+            {
+                _graph3DDragging = false;
+                return;
+            }
+
+            var view = GetGraph3DXYView();
+            _graphPanStartMinX = view.MinX;
+            _graphPanStartMaxX = view.MaxX;
+            _graphPanStartMinY = view.MinY;
+            _graphPanStartMaxY = view.MaxY;
+        }
+
+        _graph3DCanvas.Cursor = Cursors.SizeAll;
+    }
+
+    private void Graph3DCanvas_MouseMove(object? sender, MouseEventArgs e)
+    {
+        if (!_graph3DDragging)
+            return;
+
+        if (IsGraph3DFlat2DView())
+        {
+            PanGraph3DFlatView(e.Location);
+            return;
+        }
+
+        var dx = e.X - _graph3DDragStart.X;
+        var dy = e.Y - _graph3DDragStart.Y;
+        _graph3DDragStart = e.Location;
+        RotateGraph3DCamera(dx * 0.6d, -dy * 0.45d);
+    }
+
+    private void Graph3DCanvas_MouseUp(object? sender, MouseEventArgs e)
+    {
+        _graph3DDragging = false;
+        _graph3DCanvas.Cursor = _graph3DCanvas.ClientRectangle.Contains(e.Location) ? Cursors.SizeAll : Cursors.Default;
+    }
+
+    private void Graph3DCanvas_MouseWheel(object? sender, MouseEventArgs e)
+    {
+        if (IsGraph3DFlat2DView())
+        {
+            if (EnsureGraphPreviewGeneratedForInteraction())
+                ZoomGraph3DFlatViewAt(e.Delta > 0 ? 0.85f : 1.18f, e.Location);
+            return;
+        }
+
+        ZoomGraph3DCamera(e.Delta > 0 ? 1.12d : 1d / 1.12d);
+    }
+
+    private void ZoomGraph3DFlatViewAt(float factor, PointF screenPoint)
+    {
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graph3DCanvas);
+        if (plot.Width <= 0 || plot.Height <= 0)
+            return;
+
+        var view = GetGraph3DXYView();
+        if (!GraphSurfaceApi.IsValidView(view))
+            return;
+
+        var anchor = GraphSurfaceApi.ScreenToGraph(screenPoint, plot, view);
+        var newWidth = (view.MaxX - view.MinX) * factor;
+        var newHeight = (view.MaxY - view.MinY) * factor;
+        if (newWidth < GraphSurfaceApi.MinimumViewSpan || newHeight < GraphSurfaceApi.MinimumViewSpan)
+            return;
+
+        var xRatio = (anchor.X - view.MinX) / (view.MaxX - view.MinX);
+        var yRatio = (anchor.Y - view.MinY) / (view.MaxY - view.MinY);
+        var nextView = new GraphPlotView(
+            anchor.X - newWidth * xRatio,
+            anchor.X - newWidth * xRatio + newWidth,
+            anchor.Y - newHeight * yRatio,
+            anchor.Y - newHeight * yRatio + newHeight);
+
+        ApplyGraph3DXYView(nextView, regenerate: false);
+    }
+
+    private void PanGraph3DFlatView(Point location)
+    {
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graph3DCanvas);
+        if (plot.Width <= 0 || plot.Height <= 0)
+            return;
+
+        var dx = location.X - _graph3DDragStart.X;
+        var dy = location.Y - _graph3DDragStart.Y;
+        var graphDx = dx / (double)plot.Width * (_graphPanStartMaxX - _graphPanStartMinX);
+        var graphDy = dy / (double)plot.Height * (_graphPanStartMaxY - _graphPanStartMinY);
+        var nextView = new GraphPlotView(
+            _graphPanStartMinX - graphDx,
+            _graphPanStartMaxX - graphDx,
+            _graphPanStartMinY + graphDy,
+            _graphPanStartMaxY + graphDy);
+
+        ApplyGraph3DXYView(nextView, regenerate: false);
+    }
+
     private void InitializeGraphPreviewBaseView()
     {
         var view = GraphSurfaceApi.MatchViewToCanvasAspect(
@@ -1353,6 +2366,46 @@ public sealed class NodEditorForm : Form
         SetGraphStepDisplay(_graphUserStep);
         if (!_applyingGraphSyncState)
             GenerateGraphPreview();
+    }
+
+    private void CommitGraph3DStepSpinner(decimal value)
+    {
+        var clamped = Math.Clamp(value, _graph3DStep.Minimum, _graph3DStep.Maximum);
+        _applyingGraph3DRangeControls = true;
+        try
+        {
+            _graphUserStep = (double)clamped;
+            SetGraphStepDisplay(_graphUserStep);
+            if (!_applyingGraphSyncState)
+                GenerateGraphPreview();
+        }
+        finally
+        {
+            _applyingGraph3DRangeControls = false;
+        }
+    }
+
+    private void CommitGraphZStepSpinner(decimal value)
+    {
+        var clamped = Math.Clamp(value, _graphZStep.Minimum, _graphZStep.Maximum);
+        SetGraphZStepDisplay((double)clamped);
+        ApplyGraphPreviewZRangeFromControls();
+    }
+
+    private void SetGraphZStepDisplay(double value)
+    {
+        if (!double.IsFinite(value) || value <= 0d)
+            return;
+
+        _updatingGraphZStepDisplay = true;
+        try
+        {
+            GraphSurfaceApi.SetNumberBoxValue(_graphZStep, value);
+        }
+        finally
+        {
+            _updatingGraphZStepDisplay = false;
+        }
     }
 
     private static decimal GetNextGraphScaleAwareStep(double current, bool increase)
@@ -1444,6 +2497,8 @@ public sealed class NodEditorForm : Form
     {
         if (_graphPointPanel is not null)
             SetGraphPointTableVisible(_graphPointPanel.Visible);
+        if (_graph3DPointPanel is not null)
+            SetGraph3DPointTableVisible(_graph3DPointPanel.Visible);
     }
 
     private void PlaceGraphPointOverlay()
@@ -1504,6 +2559,107 @@ public sealed class NodEditorForm : Form
         _graphPointPanel.Top = Math.Clamp(_graphPointPanel.Top, 6, Math.Max(6, parent.Height - _graphPointPanel.Height - 6));
     }
 
+    private void SetGraph3DPointTableVisible(bool visible)
+    {
+        _graph3DPointTableRequestedVisible = visible;
+        ApplyGraph3DPointTableVisibility();
+    }
+
+    private void ApplyGraph3DPointTableVisibility()
+    {
+        if (_graph3DPointTable is null || _graph3DPointPanel is null)
+            return;
+
+        var hasRows = _graph3DPointTable.Rows.Count > 0;
+        var visible = _graph3DPointTableRequestedVisible && hasRows;
+        _graph3DPointPanel.Visible = visible;
+        if (_graph3DToggleTableButton is not null)
+        {
+            _graph3DToggleTableButton.Enabled = hasRows;
+            _graphInputToolTip.SetToolTip(
+                _graph3DToggleTableButton,
+                visible ? T("editor.graph3d.hide_table", "Hide 3D table") : T("editor.graph3d.show_table", "Show 3D table"));
+            if (_graph3DToggleTableButton is GraphToolbarIconButton iconButton)
+            {
+                iconButton.Icon = visible ? GraphToolbarIcon.TableHidden : GraphToolbarIcon.TableVisible;
+                iconButton.TooltipText = visible ? T("editor.graph3d.hide_table", "Hide 3D table") : T("editor.graph3d.show_table", "Show 3D table");
+            }
+        }
+        _graph3DCanvas?.Invalidate();
+    }
+
+    private void UpdateGraph3DPointTableAvailability()
+    {
+        if (_graph3DPointTable is null)
+            return;
+
+        ApplyGraph3DPointTableVisibility();
+    }
+
+    private void PlaceGraph3DPointOverlay()
+    {
+        if (_graph3DPointPanel is null || _graph3DPointPanel.Parent is null)
+            return;
+
+        if (_graph3DPointPanel.Left <= 0 && _graph3DPointPanel.Top <= 0)
+        {
+            _graph3DPointPanel.Left = 10;
+            _graph3DPointPanel.Top = 10;
+        }
+
+        KeepGraph3DPointOverlayInBounds();
+        _graph3DPointPanel.BringToFront();
+    }
+
+    private void Graph3DPointPanel_MouseDown(object? sender, MouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Left || sender is not Control control || _graph3DPointPanel.Parent is null)
+            return;
+
+        _draggingGraph3DPointPanel = true;
+        _graph3DPointPanelDragStart = _graph3DPointPanel.Parent.PointToClient(control.PointToScreen(e.Location));
+        _graph3DPointPanelStartLocation = _graph3DPointPanel.Location;
+        _graph3DPointPanel.Cursor = Cursors.SizeAll;
+        _graph3DPointTable.Cursor = Cursors.SizeAll;
+        _graph3DPointPanel.BringToFront();
+    }
+
+    private void Graph3DPointPanel_MouseMove(object? sender, MouseEventArgs e)
+    {
+        if (!_draggingGraph3DPointPanel || sender is not Control control || _graph3DPointPanel.Parent is null)
+            return;
+
+        var current = _graph3DPointPanel.Parent.PointToClient(control.PointToScreen(e.Location));
+        _graph3DPointPanel.Left = _graph3DPointPanelStartLocation.X + current.X - _graph3DPointPanelDragStart.X;
+        _graph3DPointPanel.Top = _graph3DPointPanelStartLocation.Y + current.Y - _graph3DPointPanelDragStart.Y;
+        KeepGraph3DPointOverlayInBounds();
+    }
+
+    private void Graph3DPointPanel_MouseUp(object? sender, MouseEventArgs e)
+    {
+        _draggingGraph3DPointPanel = false;
+        _graph3DPointPanel.Cursor = Cursors.Default;
+        _graph3DPointTable.Cursor = Cursors.Default;
+    }
+
+    private void KeepGraph3DPointOverlayInBounds()
+    {
+        if (_graph3DPointPanel.Parent is null)
+            return;
+
+        var bounds = _graph3DCanvas is not null
+            ? _graph3DCanvas.Bounds
+            : new Rectangle(Point.Empty, _graph3DPointPanel.Parent.ClientSize);
+        _graph3DPointPanel.Left = Math.Clamp(
+            _graph3DPointPanel.Left,
+            bounds.Left + 6,
+            Math.Max(bounds.Left + 6, bounds.Right - _graph3DPointPanel.Width - 6));
+        _graph3DPointPanel.Top = Math.Clamp(
+            _graph3DPointPanel.Top,
+            bounds.Top + 6,
+            Math.Max(bounds.Top + 6, bounds.Bottom - _graph3DPointPanel.Height - 6));
+    }
+
     private static void CompactGraphStatusPanel_Paint(object? sender, PaintEventArgs e)
     {
         if (sender is not Panel panel)
@@ -1557,6 +2713,69 @@ public sealed class NodEditorForm : Form
             _graphPreviewForm.ApplySyncState(CreateGraphPreviewSyncState());
     }
 
+    private void ShowGraph3DPreviewWindow()
+    {
+        if (_graph3DPreviewForm is { IsDisposed: false })
+        {
+            _graph3DPreviewForm.BringToFront();
+            _graph3DPreviewForm.Focus();
+            UpdateGraph3DPreviewWindowData();
+            return;
+        }
+
+        if (!_graphHasView && ShouldGenerateGraphPreview())
+            GenerateGraphPreview();
+
+        _graph3DPreviewForm = new Graph3DPreviewForm
+        {
+            StartPosition = FormStartPosition.Manual,
+            Location = PointToScreen(new Point(Math.Max(80, Width - 860), 130)),
+            TopMost = TopMost
+        };
+        _graph3DPreviewForm.SyncStateChanged += Graph3DPreviewForm_SyncStateChanged;
+        _graph3DPreviewForm.FormClosed += (_, _) =>
+        {
+            if (_graph3DPreviewForm is not null)
+                _graph3DPreviewForm.SyncStateChanged -= Graph3DPreviewForm_SyncStateChanged;
+            _graph3DPreviewForm = null;
+        };
+        _graph3DPreviewForm.Show(this);
+        UpdateGraph3DPreviewWindowData();
+    }
+
+    private void UpdateGraph3DPreviewWindowData()
+    {
+        if (_graph3DPreviewForm is null || _graph3DPreviewForm.IsDisposed)
+            return;
+        if (_applyingGraph3DPreviewSyncState)
+            return;
+
+        var flat2D = IsGraph3DFlat2DView();
+        var view = flat2D
+            ? Graph3DApi.From2D(GetGraphPreviewView(), -Graph3DDefaultHalfRange, Graph3DDefaultHalfRange)
+            : GetGraph3DView();
+        var markerView = flat2D
+            ? _graphMarkerView
+            : new GraphPlotView(view.MinX, view.MaxX, view.MinY, view.MaxY);
+
+        _graph3DPreviewForm.SetData(
+            _graphPreviewPoints,
+            _graphPreviewStepPoints,
+            view,
+            markerView,
+            _graph3DCamera,
+            _graphUserStep,
+            GraphSurfaceApi.GetNumberBoxValue(_graphZStep),
+            _graph3DGridVisible,
+            _graph3DShowRangeLines?.Checked ?? true,
+            _graphDisabledMessage);
+    }
+
+    private void Graph3DPreviewForm_SyncStateChanged(object? sender, Graph3DPreviewSyncState state)
+    {
+        ApplyGraph3DPreviewSyncState(state);
+    }
+
     private void GraphPreviewForm_SyncStateChanged(object? sender, GraphPreviewSyncState state)
     {
         ApplyGraphPreviewSyncState(state);
@@ -1570,10 +2789,13 @@ public sealed class NodEditorForm : Form
         _graphPreviewPoints.Clear();
         _graphPreviewStepPoints.Clear();
         _graphPointClipboardText = "";
+        _graph3DPointClipboardText = "";
         if (_graphPointTable is not null)
             FillGraphPointTable([]);
         _graphCanvas?.Invalidate();
+        _graph3DCanvas?.Invalidate();
         _graphPreviewForm?.InvalidateGraphData();
+        _graph3DPreviewForm?.InvalidateGraphData();
     }
 
     private void ShowAbout()
@@ -1627,11 +2849,16 @@ public sealed class NodEditorForm : Form
         _topStripPanel.Height = _menuStrip.Height + _toolStrip.Height;
     }
 
+    private void ApplyGraph3DFocusLayout()
+    {
+        _graph3DCanvas?.Invalidate();
+    }
+
     private void ApplyPanelLanguage()
     {
         _testGroup.Text = T("editor.test.title", "Converter test") + "  \u00D7";
         _converterTestPage.Text = T("editor.test.title", "Converter test");
-        _graphPreviewPage.Text = T("editor.graph.title", "Graph Preview");
+        _graphPreviewPage.Text = T("editor.graph.title", "Graph 2D");
         _testInputLabel.Text = T("editor.test.input", "Test input");
         _testOutputLabel.Text = T("editor.test.output", "Output");
         _testFormulaLabel.Text = T("editor.test.formula", "Formula");
@@ -1766,6 +2993,7 @@ public sealed class NodEditorForm : Form
                 FillGraphPointTable([]);
                 SetGraphPointTableVisible(false);
                 _graphCanvas.Invalidate();
+                _graph3DCanvas?.Invalidate();
                 return;
             }
 
@@ -1834,11 +3062,13 @@ public sealed class NodEditorForm : Form
                 : string.Format(T("editor.graph.points_status", "Points: {0}. Skipped: {1}. Range: {2:0.####} to {3:0.####}."), _graphPreviewPoints.Count, skipped, min, max);
             ResetGraphPreviewView(invalidate: false);
             _graphCanvas.Invalidate();
+            _graph3DCanvas?.Invalidate();
         }
         catch (Exception ex)
         {
             _graphStatus.Text = string.Format(T("editor.graph.error", "Graph error: {0}"), ex.Message);
             _graphCanvas.Invalidate();
+            _graph3DCanvas?.Invalidate();
         }
     }
 
@@ -1861,6 +3091,32 @@ public sealed class NodEditorForm : Form
         UpdateGraphPointTableAvailability();
 
         _graphPointClipboardText = string.Join(Environment.NewLine, clipboardLines);
+        FillGraph3DPointTable(points);
+    }
+
+    private void FillGraph3DPointTable(IEnumerable<PointF> points)
+    {
+        if (_graph3DPointTable is null)
+            return;
+
+        var clipboardLines = new List<string>();
+        var flat2D = IsGraph3DFlat2DView();
+        _graph3DPointTable.SuspendLayout();
+        _graph3DPointTable.Rows.Clear();
+        foreach (var point in points)
+        {
+            var x = FormatGraphDisplayNumber(point.X);
+            var y = FormatGraphDisplayNumber(point.Y);
+            var z = FormatGraphDisplayNumber(0d);
+            _graph3DPointTable.Rows.Add(x, y, z);
+            clipboardLines.Add(flat2D ? $"{x}\t{y}" : $"{x}\t{y}\t{z}");
+        }
+        _graph3DPointTable.ClearSelection();
+        _graph3DPointTable.ResumeLayout();
+        _graph3DPointClipboardText = string.Join(Environment.NewLine, clipboardLines);
+        _graph3DPointerText = "";
+        _graph3DPointTitleBar?.Invalidate();
+        UpdateGraph3DPointTableAvailability();
     }
 
     private static bool TryGetGraphNumber(NodResult result, out double value)
@@ -1920,20 +3176,20 @@ public sealed class NodEditorForm : Form
 
     private static string FormatGraphDisplayNumber(double value)
     {
-        return GraphPlotRenderer.FormatDisplayNumber(value);
+        return GraphSurfaceApi.FormatDisplayNumber(value);
     }
 
     private bool IsGraphPreviewCompatible(NodDocument document, out string reason)
     {
         if (document.ChangeRules.Count > 0)
         {
-            reason = T("editor.graph.disabled_chg", "Graph Preview is disabled for chg converters.");
+            reason = T("editor.graph.disabled_chg", "Graph 2D is disabled for chg converters.");
             return false;
         }
 
         if (document.TranslateRules.Count > 0)
         {
-            reason = T("editor.graph.disabled_trans", "Graph Preview is disabled for trans converters.");
+            reason = T("editor.graph.disabled_trans", "Graph 2D is disabled for trans converters.");
             return false;
         }
 
@@ -1942,7 +3198,7 @@ public sealed class NodEditorForm : Form
             document.CalculusSteps.Count == 0 &&
             document.Equation is null)
         {
-            reason = T("editor.graph.disabled_math", "Graph Preview is only available for numeric math converters.");
+            reason = T("editor.graph.disabled_math", "Graph 2D is only available for numeric math converters.");
             return false;
         }
 
@@ -1974,7 +3230,10 @@ public sealed class NodEditorForm : Form
         NotifyGraphPreviewSyncStateChanged();
 
         if (invalidate)
+        {
             _graphCanvas.Invalidate();
+            _graph3DCanvas?.Invalidate();
+        }
     }
 
     private void ApplyGraphPreviewXRangeFromControls()
@@ -1990,6 +3249,7 @@ public sealed class NodEditorForm : Form
 
         _graphSampleMinX = GraphSurfaceApi.GetNumberBoxValue(_graphXMin);
         _graphSampleMaxX = GraphSurfaceApi.GetNumberBoxValue(_graphXMax);
+        SyncGraph3DRangeControlsFromGraphControls();
         GenerateGraphPreview();
     }
 
@@ -2007,10 +3267,163 @@ public sealed class NodEditorForm : Form
         SetGraphPreviewView(GraphSurfaceApi.CreateViewFromYRangeControls(GetGraphPreviewView(), _graphYMin, _graphYMax, _graphCanvas));
         if (_graphShowRangeLines.Checked)
             _graphMarkerView = GetGraphPreviewView();
+        SyncGraph3DRangeControlsFromGraphControls();
         ResampleGraphPreviewVisibleView();
         UpdateGraphPointerStatus(null);
         NotifyGraphPreviewSyncStateChanged();
         _graphCanvas.Invalidate();
+    }
+
+    private void ApplyGraph3DXRangeFromControls()
+    {
+        if (_updatingGraphXRangeControls)
+            return;
+
+        if (GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin) >= GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax))
+        {
+            _graphStatus.Text = "X min moet kleiner zijn dan X max.";
+            return;
+        }
+
+        _applyingGraph3DRangeControls = true;
+        _updatingGraphXRangeControls = true;
+        try
+        {
+            _graphSampleMinX = GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin);
+            _graphSampleMaxX = GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax);
+            var view = new GraphPlotView(
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin),
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax),
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin),
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax));
+            SetGraph3DXYView(view);
+            if (IsGraph3DFlat2DView())
+            {
+                GraphSurfaceApi.SetNumberBoxValue(_graphXMin, _graphSampleMinX);
+                GraphSurfaceApi.SetNumberBoxValue(_graphXMax, _graphSampleMaxX);
+            }
+            GenerateGraphPreview();
+        }
+        finally
+        {
+            _updatingGraphXRangeControls = false;
+            _applyingGraph3DRangeControls = false;
+        }
+    }
+
+    private void ApplyGraph3DYRangeFromControls()
+    {
+        if (_updatingGraphYRangeControls)
+            return;
+
+        if (GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin) >= GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax))
+        {
+            _graphStatus.Text = "Y min moet kleiner zijn dan Y max.";
+            return;
+        }
+
+        _applyingGraph3DRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        try
+        {
+            var view = new GraphPlotView(
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin),
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax),
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin),
+                GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax));
+            SetGraph3DXYView(view);
+            if (IsGraph3DFlat2DView())
+            {
+                GraphSurfaceApi.SetNumberBoxValue(_graphYMin, GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin));
+                GraphSurfaceApi.SetNumberBoxValue(_graphYMax, GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax));
+            }
+            _graph3DCanvas?.Invalidate();
+        }
+        finally
+        {
+            _updatingGraphYRangeControls = false;
+            _applyingGraph3DRangeControls = false;
+        }
+    }
+
+    private void ApplyGraph3DStepFromControl()
+    {
+        if (_updatingGraphStepDisplay)
+            return;
+
+        _applyingGraph3DRangeControls = true;
+        try
+        {
+            _graphUserStep = GraphSurfaceApi.GetNumberBoxValue(_graph3DStep);
+            SetGraphStepDisplay(_graphUserStep);
+            if (!_applyingGraphSyncState)
+                GenerateGraphPreview();
+        }
+        finally
+        {
+            _applyingGraph3DRangeControls = false;
+        }
+    }
+
+    private void ApplyGraph3DXYView(GraphPlotView view, bool regenerate)
+    {
+        _applyingGraph3DRangeControls = true;
+        _updatingGraphXRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        try
+        {
+            SetGraph3DXYView(view);
+
+            if (regenerate && !_applyingGraphSyncState)
+            {
+                _graphSampleMinX = view.MinX;
+                _graphSampleMaxX = view.MaxX;
+                GraphSurfaceApi.SetNumberBoxValue(_graphXMin, view.MinX);
+                GraphSurfaceApi.SetNumberBoxValue(_graphXMax, view.MaxX);
+                GraphSurfaceApi.SetNumberBoxValue(_graphYMin, view.MinY);
+                GraphSurfaceApi.SetNumberBoxValue(_graphYMax, view.MaxY);
+                GenerateGraphPreview();
+            }
+            else
+            {
+                if (_graph3DShowRangeLines?.Checked == false)
+                    SetGraph3DXYRangeControls(view);
+                _graph3DCanvas?.Invalidate();
+            }
+        }
+        finally
+        {
+            _updatingGraphYRangeControls = false;
+            _updatingGraphXRangeControls = false;
+            _applyingGraph3DRangeControls = false;
+        }
+    }
+
+    private void ApplyGraphPreviewZRangeFromControls()
+    {
+        if (_updatingGraphZRangeControls)
+            return;
+
+        if (IsGraph3DFlat2DView())
+        {
+            UpdateGraph3DZRangeMode();
+            _graph3DCanvas?.Invalidate();
+            return;
+        }
+
+        if (GraphSurfaceApi.GetNumberBoxValue(_graphZMin) >= GraphSurfaceApi.GetNumberBoxValue(_graphZMax))
+        {
+            _graphStatus.Text = "Z min moet kleiner zijn dan Z max.";
+            return;
+        }
+
+        if (GraphSurfaceApi.GetNumberBoxValue(_graphZStep) <= 0d)
+        {
+            _graphStatus.Text = "Z step moet groter zijn dan 0.";
+            return;
+        }
+
+        _graph3DCanvas?.Invalidate();
     }
 
     private GraphPlotView GetGraphPreviewView()
@@ -2067,6 +3480,83 @@ public sealed class NodEditorForm : Form
         }
     }
 
+    private void ApplyGraph3DPreviewSyncState(Graph3DPreviewSyncState state)
+    {
+        if (_applyingGraph3DPreviewSyncState)
+            return;
+
+        _applyingGraph3DPreviewSyncState = true;
+        _applyingGraph3DRangeControls = true;
+        _updatingGraphXRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        _updatingGraphZRangeControls = true;
+        _updatingGraphZStepDisplay = true;
+        try
+        {
+            _graph3DCamera = state.Camera;
+            if (_graph3DRotationDial is not null)
+                _graph3DRotationDial.Camera = _graph3DCamera;
+
+            SetGraph3DXYView(new GraphPlotView(state.View.MinX, state.View.MaxX, state.View.MinY, state.View.MaxY));
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DXMin, state.View.MinX);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DXMax, state.View.MaxX);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DYMin, state.View.MinY);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DYMax, state.View.MaxY);
+            GraphSurfaceApi.SetNumberBoxValue(_graphZMin, state.View.MinZ);
+            GraphSurfaceApi.SetNumberBoxValue(_graphZMax, state.View.MaxZ);
+            GraphSurfaceApi.SetNumberBoxValue(_graphZStep, state.GridStep);
+
+            _graph3DGridVisible = state.ShowGrid;
+            if (_graph3DGridToggle is not null)
+                _graph3DGridToggle.Checked = state.ShowGrid;
+            if (_graph3DShowRangeLines is not null)
+                _graph3DShowRangeLines.Checked = state.ShowLines;
+
+            var syncGraphPreviewWindow = false;
+            if (IsGraph3DFlat2DView())
+            {
+                _applyingGraphSyncState = true;
+                try
+                {
+                    SetGraphStepValue((decimal)state.Step);
+                    _graphShowRangeLines.Checked = state.ShowLines;
+                    _graphMarkerView = state.MarkerView;
+                    SetGraphPreviewView(CreateGraphAspectViewFromSync(new GraphPlotView(
+                        state.View.MinX,
+                        state.View.MaxX,
+                        state.View.MinY,
+                        state.View.MaxY)));
+                    if (_graphShowRangeLines.Checked)
+                        SetGraphPreviewRangeControls(_graphMarkerView);
+                    else
+                        UpdateGraphPreviewViewportRangeControlsIfNeeded();
+                    ResampleGraphPreviewVisibleView();
+                    _graphCanvas?.Invalidate();
+                    syncGraphPreviewWindow = true;
+                }
+                finally
+                {
+                    _applyingGraphSyncState = false;
+                }
+            }
+            if (syncGraphPreviewWindow)
+                NotifyGraphPreviewSyncStateChanged();
+
+            UpdateGraph3DModeButtons();
+            UpdateGraph3DRangeInputMode();
+            _graph3DCanvas?.Invalidate();
+        }
+        finally
+        {
+            _updatingGraphZStepDisplay = false;
+            _updatingGraphZRangeControls = false;
+            _updatingGraphYRangeControls = false;
+            _updatingGraphXRangeControls = false;
+            _applyingGraph3DRangeControls = false;
+            _applyingGraph3DPreviewSyncState = false;
+        }
+    }
+
     private GraphPlotView CreateGraphAspectViewFromSync(GraphPlotView sourceView)
     {
         return GraphSurfaceApi.MatchViewToCanvasAspect(sourceView, _graphCanvas);
@@ -2083,12 +3573,20 @@ public sealed class NodEditorForm : Form
     {
         _updatingGraphXRangeControls = true;
         _updatingGraphYRangeControls = true;
+        _updatingGraphZRangeControls = true;
         try
         {
             GraphSurfaceApi.SetRangeControlValues(new GraphRangeControls(_graphXMin, _graphXMax, _graphYMin, _graphYMax), view);
+            if (_graphZMin is not null && _graphZMax is not null)
+            {
+                GraphSurfaceApi.SetNumberBoxValue(_graphZMin, -Graph3DDefaultHalfRange);
+                GraphSurfaceApi.SetNumberBoxValue(_graphZMax, Graph3DDefaultHalfRange);
+            }
+            SyncGraph3DRangeControlsFromGraphControls();
         }
         finally
         {
+            _updatingGraphZRangeControls = false;
             _updatingGraphYRangeControls = false;
             _updatingGraphXRangeControls = false;
         }
@@ -2098,15 +3596,18 @@ public sealed class NodEditorForm : Form
     {
         _updatingGraphXRangeControls = true;
         _updatingGraphYRangeControls = true;
+        _updatingGraphZRangeControls = true;
         try
         {
             GraphSurfaceApi.SyncViewportRangeControls(
                 new GraphRangeControls(_graphXMin, _graphXMax, _graphYMin, _graphYMax),
                 GetGraphPreviewView(),
                 _graphShowRangeLines.Checked);
+            SyncGraph3DRangeControlsFromGraphControls();
         }
         finally
         {
+            _updatingGraphZRangeControls = false;
             _updatingGraphYRangeControls = false;
             _updatingGraphXRangeControls = false;
         }
@@ -2130,9 +3631,13 @@ public sealed class NodEditorForm : Form
         var editable = _graphShowRangeLines.Checked;
         foreach (var box in new[] { _graphXMin, _graphXMax, _graphYMin, _graphYMax, _graphStep })
         {
+            if (box is null)
+                continue;
+
             box.Enabled = editable;
             box.ReadOnly = !editable;
         }
+        UpdateGraph3DRangeInputMode();
     }
 
     private void ZoomGraphPreview(float factor)
@@ -2140,13 +3645,13 @@ public sealed class NodEditorForm : Form
         if (!EnsureGraphPreviewGeneratedForInteraction())
             return;
 
-        ZoomGraphPreviewAt(factor, new PointF(_graphCanvas.ClientSize.Width / 2f, _graphCanvas.ClientSize.Height / 2f));
+        ZoomGraphPreviewAt(_graphCanvas, factor, new PointF(_graphCanvas.ClientSize.Width / 2f, _graphCanvas.ClientSize.Height / 2f));
     }
 
     private void GraphCanvas_MouseWheel(object? sender, MouseEventArgs e)
     {
         if (EnsureGraphPreviewGeneratedForInteraction())
-            ZoomGraphPreviewAt(e.Delta > 0 ? 0.85f : 1.18f, e.Location);
+            ZoomGraphPreviewAt(_graphCanvas, e.Delta > 0 ? 0.85f : 1.18f, e.Location);
     }
 
     private bool EnsureGraphPreviewGeneratedForInteraction()
@@ -2187,13 +3692,13 @@ public sealed class NodEditorForm : Form
         return _graphHasView && _graphPreviewDocument is not null;
     }
 
-    private void ZoomGraphPreviewAt(float factor, PointF screenPoint)
+    private void ZoomGraphPreviewAt(Control canvas, float factor, PointF screenPoint)
     {
-        var plot = GetGraphPlotRectangle();
+        var plot = GraphSurfaceApi.GetPlotRectangle(canvas);
         if (plot.Width <= 0 || plot.Height <= 0)
             return;
 
-        var anchor = ScreenToGraphPoint(screenPoint, plot);
+        var anchor = GraphSurfaceApi.ScreenToGraph(screenPoint, plot, GetGraphPreviewView());
         var newWidth = (_graphViewMaxX - _graphViewMinX) * factor;
         var newHeight = (_graphViewMaxY - _graphViewMinY) * factor;
         if (newWidth < GraphSurfaceApi.MinimumViewSpan || newHeight < GraphSurfaceApi.MinimumViewSpan)
@@ -2210,6 +3715,7 @@ public sealed class NodEditorForm : Form
         ResampleGraphPreviewVisibleView();
         NotifyGraphPreviewSyncStateChanged();
         _graphCanvas.Invalidate();
+        _graph3DCanvas?.Invalidate();
     }
 
     private void GraphCanvas_MouseDown(object? sender, MouseEventArgs e)
@@ -2344,6 +3850,8 @@ public sealed class NodEditorForm : Form
         _graphPreviewStepPoints.Clear();
         _graphPreviewStepPoints.AddRange(stepPoints);
         FillGraphPointTable(stepPoints);
+        _graph3DCanvas?.Invalidate();
+        UpdateGraph3DPreviewWindowData();
     }
 
     private bool IsGraphPreviewPointInsideCurrentView(PointF point)
@@ -2401,6 +3909,33 @@ public sealed class NodEditorForm : Form
         try
         {
             GraphSurfaceApi.SetNumberBoxValue(_graphStep, value);
+            if (_graph3DStep is not null)
+                GraphSurfaceApi.SetNumberBoxValue(_graph3DStep, value);
+        }
+        finally
+        {
+            _updatingGraphStepDisplay = false;
+        }
+    }
+
+    private void SyncGraph3DRangeControlsFromGraphControls()
+    {
+        if (_applyingGraph3DRangeControls)
+            return;
+
+        if (_graph3DXMin is null || _graph3DXMax is null || _graph3DYMin is null || _graph3DYMax is null)
+            return;
+
+        if (_graph3DXMin.Focused || _graph3DXMax.Focused || _graph3DYMin.Focused || _graph3DYMax.Focused || _graph3DStep?.Focused == true)
+            return;
+
+        _updatingGraphStepDisplay = true;
+        try
+        {
+            if (IsGraph3DFlat2DView())
+                SyncGraph3DFlatViewFromGraph2D();
+            if (_graph3DStep is not null)
+                GraphSurfaceApi.SetNumberBoxValue(_graph3DStep, _graphUserStep);
         }
         finally
         {
@@ -2518,6 +4053,29 @@ public sealed class NodEditorForm : Form
             _mainSplit.SplitterDistance = splitterDistance;
     }
 
+    private bool TrySetPreviewSplitterDistance(int distance)
+    {
+        if (_previewSplit is null || _previewSplit.Width <= 0 || _previewSplit.IsDisposed)
+            return false;
+
+        var min = Math.Max(1, _previewSplit.Panel1MinSize);
+        var max = _previewSplit.Width - Math.Max(1, _previewSplit.Panel2MinSize);
+        if (max < min)
+            return false;
+
+        var clamped = Math.Clamp(distance, min, max);
+        try
+        {
+            if (_previewSplit.SplitterDistance != clamped)
+                _previewSplit.SplitterDistance = clamped;
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
     // Houdt de preview-splitter netjes verdeeld tussen live preview en simulator.
     private void AdjustPreviewSplitter()
     {
@@ -2529,15 +4087,14 @@ public sealed class NodEditorForm : Form
         if (available < desiredPanel1Min + DockedSimulatorWidth)
             return;
 
-        var splitterDistance = available - DockedSimulatorWidth;
-
         var min = _previewSplit.Panel1MinSize;
         var maxValid = _previewSplit.Width - _previewSplit.Panel2MinSize;
-        if (splitterDistance >= min && splitterDistance <= maxValid)
-        {
-            _previewSplit.SplitterDistance = splitterDistance;
+        if (maxValid < min)
+            return;
+
+        var splitterDistance = Math.Clamp(available - DockedSimulatorWidth, min, maxValid);
+        if (TrySetPreviewSplitterDistance(splitterDistance))
             AdjustLivePreviewWidth();
-        }
     }
 
     // Beperkt de breedte van de live preview zodat deze niet te breed wordt.
@@ -2842,13 +4399,14 @@ public sealed class NodEditorForm : Form
     private bool ShouldGenerateGraphPreview()
     {
         var floatingGraphVisible = _graphPreviewForm is { IsDisposed: false, Visible: true };
+        var floatingGraph3DVisible = _graph3DPreviewForm is { IsDisposed: false, Visible: true };
         var miniGraphVisible = _testTabs is not null
             && !_testTabs.IsDisposed
-            && _testTabs.SelectedTab == _graphPreviewPage
+            && (_testTabs.SelectedTab == _graphPreviewPage || _testTabs.SelectedTab == _graph3DPage)
             && _graphPreviewPage is { IsDisposed: false }
             && _testGroup is { Visible: true };
 
-        return floatingGraphVisible || miniGraphVisible;
+        return floatingGraphVisible || floatingGraph3DVisible || miniGraphVisible;
     }
 
     // Leest de huidige editorinhoud en werkt live preview en simulator bij.
@@ -3995,7 +5553,9 @@ public sealed class NodEditorForm : Form
         _graphHasView = false;
         _graphDisabledMessage = "";
         _graphCanvas?.Invalidate();
+        _graph3DCanvas?.Invalidate();
         _graphPointTable?.Rows.Clear();
+        _graph3DPointTable?.Rows.Clear();
         RefreshEditorTabStrip();
     }
 
@@ -4879,6 +6439,7 @@ public sealed class NodEditorForm : Form
         _testGroup.Dock = DockStyle.Left;
         _testGroup.Width = DockedTestPanelWidth;
         _testGroup.Visible = showPanel;
+        ApplyGraph3DFocusLayout();
         UpdateBottomPanelVisibility();
         UpdateViewMenuChecks();
     }
@@ -5554,7 +7115,7 @@ public sealed class NodEditorForm : Form
             new("workflow", T("editor.nod_help.page.workflow", "Werkwijze"), WrapNodHelpPage(T("editor.nod_help.page.workflow", "Werkwijze"), workflow)),
             new("structure", T("editor.nod_help.page.structure", "Basisstructuur"), WrapNodHelpPage(T("editor.nod_help.page.structure", "Basisstructuur"), structure)),
             new("symbols", T("editor.nod_help.page.symbols", "Symbolen"), WrapNodHelpPage(T("editor.nod_help.page.symbols", "Symbolen"), symbols + BuildSymbolOverviewLinks())),
-            new("graph-preview", T("editor.nod_help.page.graph_preview", "Graph Preview"), WrapNodHelpPage(T("editor.nod_help.page.graph_preview", "Graph Preview"), graphPreview)),
+            new("graph-preview", T("editor.nod_help.page.graph_preview", "Graph 2D"), WrapNodHelpPage(T("editor.nod_help.page.graph_preview", "Graph 2D"), graphPreview)),
             new("si-scale", T("editor.nod_help.page.si_scale", "SI en schaalweergave"), WrapNodHelpPage(T("editor.nod_help.page.si_scale", "SI en schaalweergave"), siScale)),
             new("commands", T("editor.nod_help.page.commands", "Belangrijke commands"), WrapNodHelpPage(T("editor.nod_help.page.commands", "Belangrijke commands"), commands)),
             new("examples", T("editor.nod_help.page.examples", "Examples"), WrapNodHelpPage(T("editor.nod_help.page.examples", "Examples"), examples)),

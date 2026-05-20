@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Tiedragon Graph architectuur</title>
+  <desc id="desc">Architectuur van de gedeelde Tiedragon.Graph basislaag met Graph.2D en Graph.3D modules en de Syscalculator UI als consument.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill:#f8fafc; }
+      .ink { fill:#0f172a; font-family:"Segoe UI", Arial, sans-serif; }
+      .muted { fill:#475569; font-family:"Segoe UI", Arial, sans-serif; }
+      .title { font-size:42px; font-weight:700; }
+      .subtitle { font-size:20px; }
+      .module-title { font-size:27px; font-weight:700; }
+      .module-sub { font-size:15px; }
+      .card-title { font-size:16px; font-weight:700; }
+      .card-text { font-size:13px; }
+      .tiny { font-size:12px; }
+      .root { fill:#f0fdf4; stroke:#16a34a; stroke-width:2.6; }
+      .g2d { fill:#eff6ff; stroke:#2563eb; stroke-width:2.6; }
+      .g3d { fill:#faf5ff; stroke:#7c3aed; stroke-width:2.6; }
+      .ui { fill:#fff7ed; stroke:#ea580c; stroke-width:2.6; }
+      .rule { fill:#f1f5f9; stroke:#64748b; stroke-width:2; }
+      .card { fill:#fff; stroke:#cbd5e1; stroke-width:1.4; }
+      .green { fill:#16a34a; }
+      .blue { fill:#2563eb; }
+      .violet { fill:#7c3aed; }
+      .orange { fill:#ea580c; }
+      .slate { fill:#475569; }
+      .line { stroke:#475569; stroke-width:3.4; fill:none; marker-end:url(#arrow); }
+      .soft-line { stroke:#94a3b8; stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1200"/>
+  <text class="ink title" x="70" y="86">Tiedragon Graph architectuur</text>
+  <text class="muted subtitle" x="74" y="122">Gedeelde basislaag met aparte 2D- en 3D-modules voor rendering, projectie en UI-surface gedrag.</text>
+
+  <rect x="1190" y="52" width="510" height="92" rx="16" class="card"/>
+  <text class="muted card-text" x="1222" y="84">Naamafspraak</text>
+  <text class="ink card-title" x="1222" y="111">Projects: Tiedragon.Graph, .2D, .3D</text>
+  <text class="muted card-text" x="1222" y="133">Namespaces: Tiedragon.Graph, .G2D, .G3D</text>
+
+  <rect x="420" y="190" width="960" height="270" rx="24" class="root"/>
+  <text class="ink module-title" x="465" y="245">Tiedragon.Graph</text>
+  <text class="muted module-sub" x="465" y="273">Superlaag / gedeelde basis voor 2D en 3D</text>
+  <text class="muted tiny" x="465" y="299">Assembly: Tiedragon.Graph.dll</text>
+  <text class="muted tiny" x="465" y="318">Namespace: Tiedragon.Graph</text>
+
+  <rect x="465" y="350" width="200" height="74" rx="12" class="card"/>
+  <rect x="465" y="350" width="9" height="74" rx="9" class="green"/>
+  <text class="ink card-title" x="492" y="380">GraphPlotView</text>
+  <text class="muted card-text" x="492" y="402">2D viewport contract</text>
+
+  <rect x="695" y="350" width="200" height="74" rx="12" class="card"/>
+  <rect x="695" y="350" width="9" height="74" rx="9" class="green"/>
+  <text class="ink card-title" x="722" y="380">GraphGeometry2D</text>
+  <text class="muted card-text" x="722" y="402">map, aspect, ranges</text>
+
+  <rect x="925" y="350" width="200" height="74" rx="12" class="card"/>
+  <rect x="925" y="350" width="9" height="74" rx="9" class="green"/>
+  <text class="ink card-title" x="952" y="380">GraphPlotDensity</text>
+  <text class="muted card-text" x="952" y="402">compact / normal</text>
+
+  <rect x="1155" y="350" width="180" height="74" rx="12" class="card"/>
+  <rect x="1155" y="350" width="9" height="74" rx="9" class="green"/>
+  <text class="ink card-title" x="1182" y="380">NumberFormatter</text>
+  <text class="muted card-text" x="1182" y="402">axis labels</text>
+
+  <rect x="190" y="590" width="610" height="325" rx="24" class="g2d"/>
+  <text class="ink module-title" x="235" y="645">Tiedragon.Graph.2D</text>
+  <text class="muted module-sub" x="235" y="673">2D renderer en graph surface UI</text>
+  <text class="muted tiny" x="235" y="699">Assembly: Tiedragon.Graph.2D.dll</text>
+  <text class="muted tiny" x="235" y="718">Namespace: Tiedragon.Graph.G2D</text>
+
+  <rect x="235" y="760" width="240" height="74" rx="12" class="card"/>
+  <rect x="235" y="760" width="9" height="74" rx="9" class="blue"/>
+  <text class="ink card-title" x="262" y="790">GraphPlotRenderer</text>
+  <text class="muted card-text" x="262" y="812">grid, axes, labels, data</text>
+
+  <rect x="515" y="760" width="240" height="74" rx="12" class="card"/>
+  <rect x="515" y="760" width="9" height="74" rx="9" class="blue"/>
+  <text class="ink card-title" x="542" y="790">GraphSurfaceApi</text>
+  <text class="muted card-text" x="542" y="812">canvas chrome + controls</text>
+
+  <rect x="235" y="850" width="240" height="44" rx="10" class="card"/>
+  <text class="muted card-text" x="262" y="878">Overlay buttons</text>
+
+  <rect x="515" y="850" width="240" height="44" rx="10" class="card"/>
+  <text class="muted card-text" x="542" y="878">Point table overlay</text>
+
+  <rect x="1000" y="590" width="610" height="325" rx="24" class="g3d"/>
+  <text class="ink module-title" x="1045" y="645">Tiedragon.Graph.3D</text>
+  <text class="muted module-sub" x="1045" y="673">3D camera, rooster, projectie en renderer</text>
+  <text class="muted tiny" x="1045" y="699">Assembly: Tiedragon.Graph.3D.dll</text>
+  <text class="muted tiny" x="1045" y="718">Namespace: Tiedragon.Graph.G3D</text>
+
+  <rect x="1045" y="760" width="240" height="74" rx="12" class="card"/>
+  <rect x="1045" y="760" width="9" height="74" rx="9" class="violet"/>
+  <text class="ink card-title" x="1072" y="790">Graph3DApi</text>
+  <text class="muted card-text" x="1072" y="812">public facade</text>
+
+  <rect x="1325" y="760" width="240" height="74" rx="12" class="card"/>
+  <rect x="1325" y="760" width="9" height="74" rx="9" class="violet"/>
+  <text class="ink card-title" x="1352" y="790">Graph3DRenderer</text>
+  <text class="muted card-text" x="1352" y="812">3D grid + data drawing</text>
+
+  <rect x="1045" y="850" width="240" height="44" rx="10" class="card"/>
+  <text class="muted card-text" x="1072" y="878">Camera navigator</text>
+
+  <rect x="1325" y="850" width="240" height="44" rx="10" class="card"/>
+  <text class="muted card-text" x="1352" y="878">3D geometry + grid scene</text>
+
+  <path class="line" d="M720,460 C680,520 610,540 500,590"/>
+  <path class="line" d="M1080,460 C1120,520 1190,540 1300,590"/>
+
+  <rect x="420" y="1010" width="960" height="120" rx="22" class="ui"/>
+  <text class="ink module-title" x="465" y="1060">Syscalculator UI</text>
+  <text class="muted module-sub" x="465" y="1088">NodEditorForm, GraphPreviewForm, SolverStepsForm en Graph3DRotationDial gebruiken de graph modules.</text>
+
+  <path class="soft-line" d="M575,1010 C520,970 490,945 475,915"/>
+  <path class="soft-line" d="M1225,1010 C1280,970 1310,945 1325,915"/>
+
+  <rect x="70" y="1010" width="270" height="120" rx="18" class="rule"/>
+  <text class="ink card-title" x="105" y="1052">Afhankelijkheidsrichting</text>
+  <text class="muted card-text" x="105" y="1078">Graph.2D -> Graph</text>
+  <text class="muted card-text" x="105" y="1100">Graph.3D -> Graph</text>
+
+  <rect x="1460" y="1010" width="270" height="120" rx="18" class="rule"/>
+  <text class="ink card-title" x="1495" y="1052">Geen lus</text>
+  <text class="muted card-text" x="1495" y="1078">Graph kent 2D/3D niet.</text>
+  <text class="muted card-text" x="1495" y="1100">2D en 3D blijven los.</text>
+</svg>

@@ -1,6 +1,7 @@
 #nullable enable
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
+using Tiedragon.Graph;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -27,10 +28,15 @@ internal sealed class GraphToolbarIconButton : Button
         Height = 26;
         FlatStyle = FlatStyle.Flat;
         FlatAppearance.BorderSize = 0;
-        BackColor = Color.White;
         Cursor = Cursors.Hand;
         TabStop = false;
-        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+        SetStyle(
+            ControlStyles.UserPaint |
+            ControlStyles.AllPaintingInWmPaint |
+            ControlStyles.OptimizedDoubleBuffer |
+            ControlStyles.ResizeRedraw,
+            true);
+        BackColor = Color.White;
         _toolTip.SetToolTip(this, tooltip);
     }
 
@@ -61,30 +67,23 @@ internal sealed class GraphToolbarIconButton : Button
     {
         var g = pevent.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.Clear(Parent?.BackColor ?? SystemColors.Control);
 
         var rect = new RectangleF(0.5f, 0.5f, ClientSize.Width - 1, ClientSize.Height - 1);
-        var backgroundColor = !Enabled
-            ? Color.FromArgb(246, 248, 252)
+        var state = !Enabled
+            ? GraphOverlayVisualState.Disabled
             : _pressed
-                ? Color.FromArgb(219, 234, 254)
-                : _hover
-                    ? Color.FromArgb(248, 251, 255)
-                    : Color.White;
-        using var background = new SolidBrush(backgroundColor);
-        using var borderPen = new Pen(Color.FromArgb(199, 211, 226), 1f);
-        using var path = RoundedRect(rect, 5f);
-        g.FillPath(background, path);
-        g.DrawPath(borderPen, path);
+                ? GraphOverlayVisualState.Pressed
+                : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
+        GraphOverlayStyle.PaintButtonChrome(g, rect, 6f, state, translucent: false);
 
-        var iconColor = Enabled ? Color.FromArgb(15, 63, 143) : Color.FromArgb(148, 163, 184);
+        var iconColor = GraphOverlayStyle.IconColor(state);
         using var pen = new Pen(iconColor, 1.7f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round,
             LineJoin = LineJoin.Round
         };
-        using var fill = new SolidBrush(Enabled ? Color.FromArgb(239, 246, 255) : Color.FromArgb(241, 245, 249));
+        using var fill = new SolidBrush(Enabled ? Color.FromArgb(170, 239, 246, 255) : Color.FromArgb(120, 241, 245, 249));
 
         var cx = ClientSize.Width / 2f;
         var cy = ClientSize.Height / 2f;
@@ -138,13 +137,23 @@ internal sealed class GraphToolbarIconButton : Button
         base.OnMouseUp(mevent);
     }
 
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        using var path = GraphOverlayStyle.RoundedRect(
+            new RectangleF(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+            6f);
+        Region = new Region(path);
+    }
+
     private static void DrawCopy(Graphics g, Pen pen, Brush fill, float cx, float cy)
     {
         var back = new RectangleF(cx - 8, cy - 7, 11, 13);
         var front = new RectangleF(cx - 4, cy - 4, 12, 14);
         g.FillRectangle(fill, back);
         g.DrawRectangle(pen, back.X, back.Y, back.Width, back.Height);
-        g.FillRectangle(Brushes.White, front);
+        using var frontFill = new SolidBrush(Color.FromArgb(185, 255, 255, 255));
+        g.FillRectangle(frontFill, front);
         g.DrawRectangle(pen, front.X, front.Y, front.Width, front.Height);
     }
 
@@ -178,15 +187,4 @@ internal sealed class GraphToolbarIconButton : Button
         }
     }
 
-    private static GraphicsPath RoundedRect(RectangleF rect, float radius)
-    {
-        var diameter = radius * 2;
-        var path = new GraphicsPath();
-        path.AddArc(rect.Left, rect.Top, diameter, diameter, 180, 90);
-        path.AddArc(rect.Right - diameter, rect.Top, diameter, diameter, 270, 90);
-        path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(rect.Left, rect.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-        return path;
-    }
 }

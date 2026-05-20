@@ -518,7 +518,7 @@ public sealed class NodHelpForm : Form
         {
             await EnsureSearchScriptAsync();
             var script = "window.syscalHelpSearch && window.syscalHelpSearch(" +
-                JavaScriptString(query) + ", " + _currentSearchIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
+                WebText.JavaScriptString(query) + ", " + _currentSearchIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
             var result = await _browser.CoreWebView2.ExecuteScriptAsync(script);
             if (int.TryParse(result, out var index))
                 _currentSearchIndex = index;
@@ -550,7 +550,7 @@ public sealed class NodHelpForm : Form
         {
             await EnsureSearchScriptAsync();
             var script = "window.syscalHelpMoveSearch && window.syscalHelpMoveSearch(" +
-                JavaScriptString(query) + ", " + offset.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
+                WebText.JavaScriptString(query) + ", " + offset.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
             var result = await _browser.CoreWebView2.ExecuteScriptAsync(script);
             if (int.TryParse(result, out var index) && index >= 0)
             {
@@ -681,14 +681,6 @@ public sealed class NodHelpForm : Form
 """);
     }
 
-    private static string JavaScriptString(string value)
-    {
-        return "\"" + value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n") + "\"";
-    }
 }
 
 public sealed class HelpNavigationButton : Button

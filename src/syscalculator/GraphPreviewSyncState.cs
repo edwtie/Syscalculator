@@ -1,4 +1,4 @@
-using Tiedragon.Graph2D;
+using Tiedragon.Graph;
 
 namespace Syscalculator.UI.WinForms;
 

@@ -1166,19 +1166,7 @@ internal class RoundedPanel : Panel
     }
 
     // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateRoundedRectangle.
-    internal static GraphicsPath CreateRoundedRectangle(Rectangle bounds, int radius)
-    {
-        var diameter = Math.Max(1, radius * 2);
-        var path = new GraphicsPath();
-
-        path.AddArc(bounds.Left, bounds.Top, diameter, diameter, 180, 90);
-        path.AddArc(bounds.Right - diameter, bounds.Top, diameter, diameter, 270, 90);
-        path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(bounds.Left, bounds.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-
-        return path;
-    }
+    internal static GraphicsPath CreateRoundedRectangle(Rectangle bounds, int radius) => UiGeometry.CreateRoundedRectangle(bounds, radius);
 }
 
 internal sealed class SystemInfoComputerIconPanel : Panel

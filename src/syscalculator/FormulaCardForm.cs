@@ -639,7 +639,7 @@ internal sealed class FormulaCardForm : Form
         {
             await EnsureSearchScriptAsync();
             var script = "window.syscalFormulaSearch && window.syscalFormulaSearch(" +
-                JavaScriptString(query) + ", " + _currentSearchIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
+                WebText.JavaScriptString(query) + ", " + _currentSearchIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
             var result = await _browser.CoreWebView2.ExecuteScriptAsync(script);
             if (int.TryParse(result, out var index))
                 _currentSearchIndex = index;
@@ -670,7 +670,7 @@ internal sealed class FormulaCardForm : Form
         {
             await EnsureSearchScriptAsync();
             var script = "window.syscalFormulaMoveSearch && window.syscalFormulaMoveSearch(" +
-                JavaScriptString(query) + ", " + offset.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
+                WebText.JavaScriptString(query) + ", " + offset.ToString(System.Globalization.CultureInfo.InvariantCulture) + ");";
             var result = await _browser.CoreWebView2.ExecuteScriptAsync(script);
             if (int.TryParse(result, out var index) && index >= 0)
             {
@@ -754,15 +754,6 @@ internal sealed class FormulaCardForm : Form
         return _englishLanguage.TryText(key, out var englishValue)
             ? englishValue
             : null;
-    }
-
-    private static string JavaScriptString(string value)
-    {
-        return "\"" + value
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n") + "\"";
     }
 
     private string BuildCardHtml(FormulaCard card)

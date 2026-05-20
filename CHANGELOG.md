@@ -20,6 +20,20 @@ Zie ook: `docs/SYSCALCULATOR_1_74_MAINTENANCE.md`.
 
 ### Daily Releases
 
+#### 2.0.2026.05.20 Daily Build
+
+**Date:** 2026-05-20
+
+**Fixes:**
+- Fixed Graph 3D layout clipping, splitter crashes, 2D-mode zoom behavior, grid/line toggles and graph control spacing.
+- Fixed Graph 2D naming so Graph Preview is shown as Graph 2D in the UI.
+- Fixed graph language labels across bundled languages.
+
+**Additions:**
+- Added Tiedragon.Graph shared architecture with G2D and G3D graph modules.
+- Added Graph 3D help documentation for 2D/3D/Top mode, X/Y/Z ranges, Step, Grid step, Grid and Lines behavior.
+- Added the Graph 3D architecture SVG.
+
 #### 2.0.2026.05.19 Daily Build
 
 **Date:** 2026-05-19

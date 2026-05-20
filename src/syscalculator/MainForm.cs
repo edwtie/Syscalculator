@@ -2057,9 +2057,7 @@ private void LoadNodFilePath(string nodPath)
 
     private static string NormalizeUpdateDialogText(string text)
     {
-        return text.Replace("\\r\\n", Environment.NewLine, StringComparison.Ordinal)
-            .Replace("\\n", Environment.NewLine, StringComparison.Ordinal)
-            .Replace("\\r", Environment.NewLine, StringComparison.Ordinal);
+        return WebText.DecodeEscapedNewLines(text, Environment.NewLine);
     }
 
     private void MarkUpdateCheckedToday()

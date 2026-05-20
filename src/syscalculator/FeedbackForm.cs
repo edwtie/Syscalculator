@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Tiedragon.Help;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -775,11 +776,7 @@ document.getElementById('message').focus();
 
     private static string NormalizeLanguageNewLines(string value)
     {
-        return value
-            .Replace("\\r\\n", "\n", StringComparison.Ordinal)
-            .Replace("\\n", "\n", StringComparison.Ordinal)
-            .Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n');
+        return WebText.NormalizeNewLines(value, "\n");
     }
 
     private string T(string key, string fallback) => _language.Text(key, fallback);
