@@ -128,15 +128,12 @@ internal sealed class Graph3DRotationDial : Control
         var dialSize = Math.Min(Width, Height);
         var inset = Math.Max(4f, dialSize * 0.06f);
         var rect = new RectangleF((Width - dialSize) / 2f + inset, (Height - dialSize) / 2f + inset, dialSize - inset * 2f, dialSize - inset * 2f);
-        using var shadow = new SolidBrush(Color.FromArgb(28, 15, 23, 42));
-        g.FillEllipse(shadow, rect.X + 1.5f, rect.Y + 2f, rect.Width, rect.Height);
-
         var state = _dragging
             ? GraphOverlayVisualState.Pressed
             : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
         using var rimFill = new SolidBrush(GraphOverlayStyle.ButtonFill(state, translucent: false));
         using var faceFill = new LinearGradientBrush(rect, Color.FromArgb(15, 23, 42), Color.FromArgb(30, 41, 59), LinearGradientMode.ForwardDiagonal);
-        using var border = new Pen(GraphOverlayStyle.ButtonBorder(state, translucent: false), 1f);
+        using var border = new Pen(Color.FromArgb(191, 219, 254), 1f);
         g.FillEllipse(rimFill, rect);
         g.FillEllipse(faceFill, RectangleF.Inflate(rect, -3f, -3f));
         g.DrawEllipse(border, rect);
