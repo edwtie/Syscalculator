@@ -126,7 +126,7 @@ internal sealed class Graph3DRotationDial : Control
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
         var dialSize = Math.Min(Width, Height);
-        var inset = Math.Max(4f, dialSize * 0.06f);
+        var inset = Math.Max(1f, dialSize * 0.015f);
         var rect = new RectangleF((Width - dialSize) / 2f + inset, (Height - dialSize) / 2f + inset, dialSize - inset * 2f, dialSize - inset * 2f);
         var state = _dragging
             ? GraphOverlayVisualState.Pressed
@@ -134,7 +134,7 @@ internal sealed class Graph3DRotationDial : Control
         var faceStart = state == GraphOverlayVisualState.Pressed ? Color.FromArgb(8, 13, 26) : Color.FromArgb(15, 23, 42);
         var faceEnd = state == GraphOverlayVisualState.Hover ? Color.FromArgb(42, 56, 79) : Color.FromArgb(30, 41, 59);
         using var faceFill = new LinearGradientBrush(rect, faceStart, faceEnd, LinearGradientMode.ForwardDiagonal);
-        using var border = new Pen(Color.FromArgb(191, 219, 254), 1f);
+        using var border = new Pen(Color.FromArgb(148, 163, 184), 1f);
         g.FillEllipse(faceFill, rect);
         g.DrawEllipse(border, rect);
 
