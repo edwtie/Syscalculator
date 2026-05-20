@@ -165,6 +165,33 @@ Test("expression matrix vector and matrix multiplication", () =>
     AssertDecimal(4m, NodExpressionEvaluator.Evaluate("mget(mat2(1,2,3,4) * mat2(2,0,1,2),1,2)", 0));
 });
 
+Test("expression matrix 3x3 determinant trace and lookup", () =>
+{
+    AssertDecimal(1m, NodExpressionEvaluator.Evaluate("det(mat3(1,2,3,0,1,4,5,6,0))", 0));
+    AssertDecimal(2m, NodExpressionEvaluator.Evaluate("trace(mat3(1,2,3,0,1,4,5,6,0))", 0));
+    AssertDecimal(6m, NodExpressionEvaluator.Evaluate("mget(mat3(1,2,3,0,1,4,5,6,0),3,2)", 0));
+});
+
+Test("expression matrix 3x3 vector and matrix multiplication", () =>
+{
+    AssertDecimal(14m, NodExpressionEvaluator.Evaluate("x(mat3(1,2,3,0,1,4,5,6,0) * vec(1,2,3))", 0));
+    AssertDecimal(14m, NodExpressionEvaluator.Evaluate("y(mat3(1,2,3,0,1,4,5,6,0) * vec(1,2,3))", 0));
+    AssertDecimal(17m, NodExpressionEvaluator.Evaluate("z(mat3(1,2,3,0,1,4,5,6,0) * vec(1,2,3))", 0));
+    AssertDecimal(6m, NodExpressionEvaluator.Evaluate("mget(mat3(1,2,3,0,1,4,5,6,0) * mat3(1,0,0,0,1,0,0,0,1),3,2)", 0));
+});
+
+Test("nod math supports matrix 3x3 determinant", () =>
+{
+    var doc = NodParser.Parse("""
+    Name Matrix 3x3 determinant
+    math det(mat3(1,2,3,0,1,4,5,6,0))
+    end
+    """);
+
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(1m, result.NumericValue ?? 0);
+});
+
 Test("expression statistics functions", () =>
 {
     AssertDecimal(40m, NodExpressionEvaluator.Evaluate("sum(2,4,4,4,5,5,7,9)", 0));
