@@ -8,7 +8,6 @@ namespace Syscalculator.UI.WinForms;
 
 internal sealed class Graph3DRotationDial : Control
 {
-    private static readonly string[] CardinalLabels = { "N", "E", "S", "W" };
     private static readonly string[] IntercardinalLabels = { "NE", "SE", "SW", "NW" };
 
     private readonly ToolTip _toolTip = new();
@@ -190,8 +189,10 @@ internal sealed class Graph3DRotationDial : Control
         using var interBrush = new SolidBrush(Color.FromArgb(203, 213, 225));
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 
-        for (var i = 0; i < CardinalLabels.Length; i++)
-            DrawPolarText(g, CardinalLabels[i], cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, i * 90d);
+        DrawPolarText(g, "N", cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, 0d);
+        DrawPolarText(g, "E", cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, 90d);
+        DrawPolarText(g, "S", cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, 180d);
+        DrawPolarText(g, "W", cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, 270d);
 
         if (radius < 48f)
             return;
