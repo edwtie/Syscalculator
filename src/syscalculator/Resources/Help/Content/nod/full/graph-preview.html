@@ -163,9 +163,9 @@
   <li><code>vec(3,4,12)</code> is een 3D-pijl van <code>(0,0,0)</code> naar <code>(3,4,12)</code>. De lengte is <code>13</code>.</li>
   <li><code>math vec 3 4</code> is een korte schrijfwijze voor <code>math length(vec(3,4))</code>.</li>
   <li><code>distance(vec(a,b), vec(x,y))</code> meet de afstand tussen twee punten.</li>
-  <li>Graph 2D projecteert deze pijlen in het vlak. Graph 3D projecteert ze met camera, rotatie en Z-diepte.</li>
+  <li>Graph 2D tekent 2D-vectoren direct in het vlak. Graph 3D projecteert ze met camera, rotatie en Z-diepte.</li>
 </ul>
-<p>Gebruik je een 3D-vector in Graph 2D, dan wordt hij als <b>XY-projectie</b> getoond. De formule <code>length(vec(x,y,z))</code> rekent dus met X, Y en Z, maar Graph 2D tekent alleen de pijl van <code>(0,0)</code> naar <code>(x,y)</code>. Graph 3D tekent dezelfde vector naar <code>(x,y,z)</code>.</p>
+<p>Gebruik je een 3D-vector in Graph 2D, dan kan hij als <b>perspectiefprojectie</b> worden getoond. De formule <code>length(vec(x,y,z))</code> rekent met X, Y en Z; de 2D-projectie gebruikt <code>(x/z, y/z)</code> zolang <code>z</code> niet nul is. Graph 3D tekent dezelfde vector naar <code>(x,y,z)</code>.</p>
 <pre>Name Geometry 3D vector
 mode geometry
 input x X coordinate

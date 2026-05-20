@@ -172,8 +172,8 @@ Test("graph2d treats vector length as arrow from origin", () =>
     AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
 
     var projectedVector3D = GraphSurfaceApi.ProjectFormulaVectorTo2D(new[] { 3d, 4d, 12d });
-    AssertNear(3m, (decimal)projectedVector3D.X, 0.0001m);
-    AssertNear(4m, (decimal)projectedVector3D.Y, 0.0001m);
+    AssertNear(0.25m, (decimal)projectedVector3D.X, 0.0001m);
+    AssertNear(0.333333m, (decimal)projectedVector3D.Y, 0.0001m);
 
     var plot = new Rectangle(0, 0, 400, 300);
     var view = GraphSurfaceApi.CreateFitView(new[] { new PointF(0f, 0f), projectedVector3D }, -1d, 4d, plot.Size);
@@ -184,13 +184,13 @@ Test("graph2d treats vector length as arrow from origin", () =>
     AssertTrue(float.IsFinite(projectedOrigin.X), "Graph2D origin projection should be finite.");
     AssertTrue(float.IsFinite(projectedTip.X), "Graph2D vector tip projection should be finite.");
     AssertTrue(projectedOrigin != projectedTip, "Graph2D vector arrow should project to a visible segment.");
-    AssertNear(3m, (decimal)roundTripTip.X, 0.0001m);
-    AssertNear(4m, (decimal)roundTripTip.Y, 0.0001m);
+    AssertNear(0.25m, (decimal)roundTripTip.X, 0.0001m);
+    AssertNear(0.333333m, (decimal)roundTripTip.Y, 0.0001m);
 
     using var bitmap = new Bitmap(400, 300);
     using var graphics = Graphics.FromImage(bitmap);
     graphics.Clear(Color.White);
-    GraphSurfaceApi.DrawVectorArrow(graphics, new PointF(0f, 0f), new PointF(3f, 4f), plot, view, Color.FromArgb(15, 63, 143));
+    GraphSurfaceApi.DrawVectorArrow(graphics, new PointF(0f, 0f), projectedVector3D, plot, view, Color.FromArgb(15, 63, 143));
     AssertTrue(HasNonWhitePixel(bitmap), "Graph2D vector arrow should draw pixels.");
 });
 

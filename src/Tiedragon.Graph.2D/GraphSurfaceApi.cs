@@ -362,14 +362,21 @@ public static class GraphSurfaceApi
     }
 
     /// <summary>
-    /// Projects a 2D or 3D formula vector to the Graph2D plane by keeping X/Y and ignoring Z.
+    /// Projects a formula vector to the Graph2D plane.
+    /// 2D vectors already live in the plane; 3D vectors use the basic perspective projection (x/z, y/z).
     /// </summary>
     public static PointF ProjectFormulaVectorTo2D(IReadOnlyList<double> vector)
     {
         if (vector.Count is not 2 and not 3)
             throw new ArgumentException("Graph2D formula vectors must have 2 or 3 components.", nameof(vector));
 
-        return new PointF((float)vector[0], (float)vector[1]);
+        if (vector.Count == 2)
+            return new PointF((float)vector[0], (float)vector[1]);
+
+        if (Math.Abs(vector[2]) < double.Epsilon)
+            throw new ArgumentException("Graph2D cannot perspective-project a 3D vector with z = 0.", nameof(vector));
+
+        return new PointF((float)(vector[0] / vector[2]), (float)(vector[1] / vector[2]));
     }
 
     public static double GetNumberBoxValue(NumericUpDown box)
