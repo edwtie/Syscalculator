@@ -2030,6 +2030,7 @@ public sealed class NodEditorForm : Form
 
     private void Graph3DCanvas_Paint(object? sender, PaintEventArgs e)
     {
+        e.Graphics.Clear(_graph3DCanvas.BackColor);
         var surface = GetGraph3DCompactSurfaceBounds(_graph3DCanvas);
         var state = e.Graphics.Save();
         e.Graphics.SetClip(surface);

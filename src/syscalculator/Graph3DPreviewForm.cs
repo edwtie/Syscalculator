@@ -418,6 +418,7 @@ internal sealed class Graph3DPreviewForm : Form
 
     private void Canvas_Paint(object? sender, PaintEventArgs e)
     {
+        e.Graphics.Clear(_canvas.BackColor);
         if (_flat2DMode)
         {
             var view = Get2DView();
