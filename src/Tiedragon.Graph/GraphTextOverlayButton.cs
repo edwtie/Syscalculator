@@ -1,4 +1,6 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Shared text button control for graph overlay modes such as 2D, 3D, and Top.
 using System.ComponentModel;
 using System.Drawing.Drawing2D;

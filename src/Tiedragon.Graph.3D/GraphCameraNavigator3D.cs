@@ -1,5 +1,6 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Owns Graph3D camera presets, rotation, and zoom normalization.
 namespace Tiedragon.Graph.G3D;
 

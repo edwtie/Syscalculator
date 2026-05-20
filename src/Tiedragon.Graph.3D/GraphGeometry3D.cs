@@ -1,5 +1,6 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Defines Graph3D geometry types and projection math shared by renderer and UI.
 using Tiedragon.Graph;
 

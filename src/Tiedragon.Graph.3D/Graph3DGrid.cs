@@ -1,5 +1,6 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Builds the logical Graph3D grid and projects it for rendering.
 namespace Tiedragon.Graph.G3D;
 

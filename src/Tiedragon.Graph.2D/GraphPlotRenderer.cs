@@ -1,4 +1,7 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Renders Graph2D grids, axes, labels, range markers, lines, and points.
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Globalization;

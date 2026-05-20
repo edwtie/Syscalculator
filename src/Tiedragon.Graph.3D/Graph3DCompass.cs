@@ -1,4 +1,6 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Draws the Graph3D compass UI and degree text used by graph overlays.
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;

@@ -1,4 +1,7 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Centralizes shared graph overlay colors, rounded shapes, and chrome painting.
 using System.Drawing.Drawing2D;
 
 namespace Tiedragon.Graph;

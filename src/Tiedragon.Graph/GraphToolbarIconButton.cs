@@ -1,4 +1,6 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Shared icon button control for graph overlay toolbars.
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
