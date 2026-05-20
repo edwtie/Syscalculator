@@ -1571,8 +1571,6 @@ public sealed class NodEditorForm : Form
         _graph3DRotationDial = new Graph3DRotationDial { Camera = _graph3DCamera };
         _graph3DRotationDial.RotationDeltaRequested += (yaw, pitch) => RotateGraph3DCamera(yaw, pitch);
         _graph3DRotationDial.ResetRequested += () => SetGraph3DCamera(GraphCameraPreset3D.Isometric);
-        graphHost.Controls.Add(_graph3DRotationDial);
-        _graph3DRotationDial.BringToFront();
 
         _graph3DCommandPanel = new Graph3DOverlayFlowPanel
         {
@@ -1807,7 +1805,6 @@ public sealed class NodEditorForm : Form
         {
             _graph3DRotationDial.Left = surface.Left + gap;
             _graph3DRotationDial.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DRotationDial.Height - gap - 16);
-            _graph3DRotationDial.BringToFront();
         }
 
         if (_graph3DCommandPanel is not null)
@@ -2059,7 +2056,10 @@ public sealed class NodEditorForm : Form
             "Generate graph",
             GraphPlotDensity.Compact);
         if (_graph3DRotationDial is { Visible: true })
+        {
+            Graph3DRotationDial.DrawCompass(e.Graphics, _graph3DRotationDial.Bounds, _graph3DCamera);
             Graph3DRotationDial.DrawDegreeReadout(e.Graphics, _graph3DRotationDial, _graph3DCamera);
+        }
         e.Graphics.Restore(state);
     }
 

@@ -121,15 +121,23 @@ internal sealed class Graph3DRotationDial : Control
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
+        DrawCompass(g, ClientRectangle, _camera, _hover, _dragging);
+    }
+
+    internal static void DrawCompass(Graphics g, Rectangle bounds, GraphCamera3D camera, bool hover = false, bool pressed = false)
+    {
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+            return;
+
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        var dialSize = Math.Min(Width, Height);
+        var dialSize = Math.Min(bounds.Width, bounds.Height);
         var inset = Math.Max(1f, dialSize * 0.015f);
-        var rect = new RectangleF((Width - dialSize) / 2f + inset, (Height - dialSize) / 2f + inset, dialSize - inset * 2f, dialSize - inset * 2f);
-        var state = _dragging
+        var rect = new RectangleF(bounds.Left + (bounds.Width - dialSize) / 2f + inset, bounds.Top + (bounds.Height - dialSize) / 2f + inset, dialSize - inset * 2f, dialSize - inset * 2f);
+        var state = pressed
             ? GraphOverlayVisualState.Pressed
-            : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
+            : hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
         var faceStart = state == GraphOverlayVisualState.Pressed ? Color.FromArgb(8, 13, 26) : Color.FromArgb(15, 23, 42);
         var faceEnd = state == GraphOverlayVisualState.Hover ? Color.FromArgb(42, 56, 79) : Color.FromArgb(30, 41, 59);
         using var faceFill = new LinearGradientBrush(rect, faceStart, faceEnd, LinearGradientMode.ForwardDiagonal);
@@ -137,11 +145,11 @@ internal sealed class Graph3DRotationDial : Control
         g.FillEllipse(faceFill, rect);
         g.DrawEllipse(border, rect);
 
-        var cx = Width / 2f;
-        var cy = Height / 2f;
+        var cx = bounds.Left + bounds.Width / 2f;
+        var cy = bounds.Top + bounds.Height / 2f;
         var radius = Math.Min(rect.Width, rect.Height) / 2f;
         DrawCompassRose(g, cx, cy, radius);
-        DrawCompassNeedle(g, cx, cy, radius);
+        DrawCompassNeedle(g, cx, cy, radius, camera);
 
         var hubRadius = Math.Max(5f, radius * 0.16f);
         using var centerFill = new SolidBrush(Color.FromArgb(226, 232, 240));
@@ -220,9 +228,9 @@ internal sealed class Graph3DRotationDial : Control
         g.DrawString(text, font, brush, new RectangleF(x - size / 2f, y - size / 2f, size, size), format);
     }
 
-    private void DrawCompassNeedle(Graphics g, float cx, float cy, float radius)
+    private static void DrawCompassNeedle(Graphics g, float cx, float cy, float radius, GraphCamera3D camera)
     {
-        var angle = (_camera.YawDegrees - 90d) * Math.PI / 180d;
+        var angle = (camera.YawDegrees - 90d) * Math.PI / 180d;
         var ux = (float)Math.Cos(angle);
         var uy = (float)Math.Sin(angle);
         var px = -uy;

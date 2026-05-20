@@ -194,8 +194,6 @@ internal sealed class Graph3DPreviewForm : Form
         _rotationDial = new Graph3DRotationDial { Width = 88, Height = 88, Camera = _camera };
         _rotationDial.RotationDeltaRequested += (yaw, pitch) => RotateCamera(yaw, pitch);
         _rotationDial.ResetRequested += () => SetCamera(GraphCameraPreset3D.Isometric);
-        host.Controls.Add(_rotationDial);
-        _rotationDial.BringToFront();
 
         var overlay = GraphPointTableOverlay.Create(
             GraphOverlayButtonDensity.Normal,
@@ -454,6 +452,7 @@ internal sealed class Graph3DPreviewForm : Form
             _disabledMessage,
             "Generate graph",
             GraphPlotDensity.Normal);
+        Graph3DRotationDial.DrawCompass(e.Graphics, _rotationDial.Bounds, _camera);
         Graph3DRotationDial.DrawDegreeReadout(e.Graphics, _rotationDial, _camera);
     }
 
@@ -706,7 +705,6 @@ internal sealed class Graph3DPreviewForm : Form
         _pointsPanel.Left = gap;
         _pointsPanel.Top = gap;
         _pointsPanel.BringToFront();
-        _rotationDial.BringToFront();
         _navigationPanel.BringToFront();
     }
 
