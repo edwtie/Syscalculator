@@ -427,6 +427,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D 显示完整的 XYZ 箭头。Graph 2D 使用 (x/z,y/z)，当 z = 0 时退回到 (x,y)。
+formula_card.card.vector-length-3d.title=3D 向量长度
+formula_card.card.vector-length-3d.description=3D 向量长度是从原点到 (x,y,z) 的箭头长度。Graph 3D 显示完整的 XYZ 箭头；Graph 2D 可以用 (x/z,y/z) 显示同一向量的透视投影，或在 z 为零时显示普通的 X/Y 箭头。
 
 common.yes=Yes
 common.no=No

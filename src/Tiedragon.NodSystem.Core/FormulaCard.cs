@@ -564,15 +564,15 @@ public static class FormulaCardCatalog
 
             new FormulaCard(
                 "vector-length-3d",
-                "3D vectorlengte",
+                "3D vector length",
                 "v = (x,y,z), |v| = sqrt(x^2 + y^2 + z^2)",
-                "Lengte van een 3D-vector.",
+                "Length of a 3D vector.",
                 @"\vec{v}=(x,y,z),\quad |\vec{v}|=\sqrt{x^2+y^2+z^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>z</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
                 new[] { "VWO D", "PWS", "Vectoren", "3D", "Limited vector" },
-                "3D vectorlengte is de lengte van de pijl vanaf de oorsprong naar (x,y,z). Graph 3D toont de volledige XYZ-pijl; Graph 2D kan dezelfde vector als perspectiefprojectie tonen met (x/z,y/z), of als gewone X/Y-pijl wanneer z nul is.",
+                "3D vector length is the length of the arrow from the origin to (x,y,z). Graph 3D shows the full XYZ arrow; Graph 2D can show the same vector as a perspective projection with (x/z,y/z), or as a plain X/Y arrow when z is zero.",
                 """
-                Name 3D vectorlengte
+                Name 3D vector length
                 mode geometry
                 input x X component
                 input y Y component

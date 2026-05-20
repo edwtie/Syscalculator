@@ -1317,7 +1317,7 @@ internal sealed class FormulaCardForm : Form
         """;
         var body = HelpHtml.RenderTemplate("formula-card.html", new Dictionary<string, string?>
         {
-            ["title"] = Html(card.Title),
+            ["title"] = Html(CardTitle(card)),
             ["subtitle"] = Html(T("formula_card.subtitle", "Formula cards for learning, PWS and export")),
             ["tags"] = tags,
             ["overview"] = overview,
@@ -1330,7 +1330,7 @@ internal sealed class FormulaCardForm : Form
             ["nod_math"] = nodMath,
             ["visual"] = visual,
             ["section_explanation"] = Html(T("formula_card.section_explanation", "Uitleg")),
-            ["description"] = Html(card.Description),
+            ["description"] = Html(CardDescription(card)),
             ["latex"] = Html(card.Latex),
             ["mathml_pre"] = Html(card.MathMl),
             ["section_example_nod"] = Html(T("formula_card.section_example_nod", "Example NOD")),
@@ -1363,7 +1363,7 @@ internal sealed class FormulaCardForm : Form
             "Onderwerp");
     }
 
-    private static string BuildStudyStepsHtml(FormulaCard card)
+    private string BuildStudyStepsHtml(FormulaCard card)
     {
         var step = GetFormulaStudyStep(card);
         var (nodRule, _) = GetStudyNodRule(card);
@@ -1502,7 +1502,7 @@ internal sealed class FormulaCardForm : Form
         return $$"""<div class="mathml-card"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">{{mathBody}}</math></div>""";
     }
 
-    private static (string Rule, string Note) GetStudyNodRule(FormulaCard card)
+    private (string Rule, string Note) GetStudyNodRule(FormulaCard card)
     {
         return card.Id switch
         {
@@ -1539,7 +1539,7 @@ internal sealed class FormulaCardForm : Form
             "integral-constant-factor" => ("math integral 0,1 3*ans^2", "Het vaste getal blijft buiten de primitieve-regel staan."),
             "integral-definite-area" => ("math integral 0,1 ans^2", "Bepaalde integraal als numerieke oppervlakte tussen twee grenzen."),
             "vector-2d-arrow" => ("math vec 3 4\r\nmath length(vec(3,4))\r\nmath dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
-            "vector-length-3d" => ("mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)", "Graph 3D toont de volledige XYZ-pijl. Graph 2D gebruikt (x/z,y/z), en valt bij z = 0 terug op (x,y)."),
+            "vector-length-3d" => ("mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)", Vector3DProjectionNote()),
             "vector-dot-angle" => ("math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "dot geeft het inproduct. angled geeft de hoek in graden."),
             "vector-cross-z" => ("math z(cross(vec(1,0,0), vec(0,1,0)))", "cross geeft een vector; met z(...) kies je de z-component als eindgetal."),
             "point-line-distance" => ("math |ans(a)*ans(xp) + ans(b)*ans(yp) - ans(c)| / sqrt(ans(a)^2 + ans(b)^2)", "2D analytische meetkunde met named inputs."),
@@ -1794,7 +1794,7 @@ internal sealed class FormulaCardForm : Form
         };
     }
 
-    private static string GetStudentTitle(FormulaCard card)
+    private string GetStudentTitle(FormulaCard card)
     {
         return card.Id switch
         {
@@ -1811,7 +1811,7 @@ internal sealed class FormulaCardForm : Form
             "integral-constant-factor" => "Getal voor de integraal",
             "integral-definite-area" => "Oppervlakte met grenzen",
             "circle-integral" => "Kringintegraal",
-            _ => card.Title
+            _ => CardTitle(card)
         };
     }
 
@@ -1870,7 +1870,7 @@ internal sealed class FormulaCardForm : Form
         return $"""<div>{mathMl}</div><div class="formula-caption">{Html(caption)}</div>""";
     }
 
-    private static string GetStudentUse(FormulaCard card)
+    private string GetStudentUse(FormulaCard card)
     {
         return card.Id switch
         {
@@ -1887,8 +1887,25 @@ internal sealed class FormulaCardForm : Form
             "integral-constant-factor" => "Als er een vast getal voor staat, zoals 4x².",
             "integral-definite-area" => "Als je oppervlakte tussen twee grenzen zoekt.",
             "circle-integral" => "Voor PWS, Wiskunde D of propedeuse; niet basis.",
-            _ => card.Description
+            _ => CardDescription(card)
         };
+    }
+
+    private string CardTitle(FormulaCard card)
+    {
+        return T($"formula_card.card.{card.Id}.title", card.Title);
+    }
+
+    private string CardDescription(FormulaCard card)
+    {
+        return T($"formula_card.card.{card.Id}.description", card.Description);
+    }
+
+    private string Vector3DProjectionNote()
+    {
+        return T(
+            "formula_card.vector3d_projection_note",
+            "Graph 3D shows the full XYZ arrow. Graph 2D uses (x/z,y/z), and falls back to (x,y) when z = 0.");
     }
 
     private static string GetSubtopic(FormulaCard card)
@@ -1973,7 +1990,7 @@ internal sealed class FormulaCardForm : Form
         return separator < 0 ? subtopic : subtopic[(separator + 1)..].Trim();
     }
 
-    private static string BuildNodMathHtml(FormulaCard card)
+    private string BuildNodMathHtml(FormulaCard card)
     {
         var (rule, note) = card.Id switch
         {
@@ -2078,7 +2095,7 @@ internal sealed class FormulaCardForm : Form
                 "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
             "vector-length-3d" => (
                 "mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)",
-                "Graph 3D toont de volledige XYZ-pijl. Graph 2D gebruikt (x/z,y/z), en valt bij z = 0 terug op (x,y)."),
+                Vector3DProjectionNote()),
             "vector-dot-angle" => (
                 "math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))",
                 "dot geeft het inproduct. angled geeft de hoek in graden."),

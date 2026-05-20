@@ -446,6 +446,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D mostra a seta XYZ completa. Graph 2D usa (x/z,y/z) e volta para (x,y) quando z = 0.
+formula_card.card.vector-length-3d.title=Comprimento do vetor 3D
+formula_card.card.vector-length-3d.description=O comprimento do vetor 3D e o comprimento da seta da origem ate (x,y,z). Graph 3D mostra a seta XYZ completa; Graph 2D pode mostrar o mesmo vetor como projecao em perspectiva com (x/z,y/z), ou como uma seta X/Y simples quando z e zero.
 
 common.yes=Sim
 common.no=Nao

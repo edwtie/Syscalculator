@@ -447,6 +447,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D zeigt den vollstaendigen XYZ-Pfeil. Graph 2D verwendet (x/z,y/z) und faellt bei z = 0 auf (x,y) zurueck.
+formula_card.card.vector-length-3d.title=3D-Vektorlaenge
+formula_card.card.vector-length-3d.description=Die 3D-Vektorlaenge ist die Laenge des Pfeils vom Ursprung nach (x,y,z). Graph 3D zeigt den vollstaendigen XYZ-Pfeil; Graph 2D kann denselben Vektor als Perspektivprojektion mit (x/z,y/z) anzeigen oder als einfachen X/Y-Pfeil, wenn z null ist.
 
 common.yes=Ja
 common.no=Nein

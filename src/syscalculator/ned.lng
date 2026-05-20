@@ -557,6 +557,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. Numerieke integralen horen bij de rekenvoorbeelden; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D toont de volledige XYZ-pijl. Graph 2D gebruikt (x/z,y/z), en valt bij z = 0 terug op (x,y).
+formula_card.card.vector-length-3d.title=3D vectorlengte
+formula_card.card.vector-length-3d.description=3D vectorlengte is de lengte van de pijl vanaf de oorsprong naar (x,y,z). Graph 3D toont de volledige XYZ-pijl; Graph 2D kan dezelfde vector als perspectiefprojectie tonen met (x/z,y/z), of als gewone X/Y-pijl wanneer z nul is.
 
 common.yes=Ja
 common.no=Nee

@@ -374,13 +374,10 @@ public static class GraphSurfaceApi
         var x = vector[0];
         var y = vector[1];
 
-        if (vector.Count == 2)
+        if (vector.Count == 2 || vector[2] == 0d)
             return new PointF((float)x, (float)y);
 
         var z = vector[2];
-        if (z == 0d)
-            return new PointF((float)x, (float)y);
-
         return new PointF((float)(x / z), (float)(y / z));
     }
 
