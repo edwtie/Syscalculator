@@ -8,6 +8,9 @@ namespace Syscalculator.UI.WinForms;
 
 internal sealed class Graph3DRotationDial : Control
 {
+    private static readonly string[] CardinalLabels = { "N", "E", "S", "W" };
+    private static readonly string[] IntercardinalLabels = { "NE", "SE", "SW", "NW" };
+
     private readonly ToolTip _toolTip = new();
     private bool _dragging;
     private bool _hover;
@@ -21,12 +24,12 @@ internal sealed class Graph3DRotationDial : Control
                  ControlStyles.OptimizedDoubleBuffer |
                  ControlStyles.ResizeRedraw, true);
 
-        Width = 56;
-        Height = 56;
+        Width = 72;
+        Height = 72;
         BackColor = Color.White;
         Cursor = Cursors.SizeAll;
         TabStop = false;
-        _toolTip.SetToolTip(this, "Drag to rotate. Double-click to reset.");
+        _toolTip.SetToolTip(this, "Drag to rotate like a compass. Double-click to reset.");
     }
 
     public event Action<double, double>? RotationDeltaRequested;
@@ -112,8 +115,10 @@ internal sealed class Graph3DRotationDial : Control
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        var rect = new RectangleF(4, 4, Width - 8, Height - 8);
+        var inset = Math.Max(4f, Math.Min(Width, Height) * 0.06f);
+        var rect = new RectangleF(inset, inset, Width - inset * 2f, Height - inset * 2f);
         using var shadow = new SolidBrush(Color.FromArgb(28, 15, 23, 42));
         g.FillEllipse(shadow, rect.X + 1.5f, rect.Y + 2f, rect.Width, rect.Height);
 
@@ -127,20 +132,90 @@ internal sealed class Graph3DRotationDial : Control
 
         var cx = Width / 2f;
         var cy = Height / 2f;
-        DrawCompassNeedle(g, cx, cy);
+        var radius = Math.Min(rect.Width, rect.Height) / 2f;
+        DrawCompassRose(g, cx, cy, radius);
+        DrawCompassNeedle(g, cx, cy, radius);
 
-        using var centerFill = new SolidBrush(Color.FromArgb(219, 234, 254));
+        var hubRadius = Math.Max(5f, radius * 0.16f);
+        using var centerFill = new SolidBrush(Color.FromArgb(236, 244, 255));
         using var centerBorder = new Pen(Color.FromArgb(59, 130, 246), 1f);
-        g.FillEllipse(centerFill, cx - 10f, cy - 10f, 20f, 20f);
-        g.DrawEllipse(centerBorder, cx - 10f, cy - 10f, 20f, 20f);
+        g.FillEllipse(centerFill, cx - hubRadius, cy - hubRadius, hubRadius * 2f, hubRadius * 2f);
+        g.DrawEllipse(centerBorder, cx - hubRadius, cy - hubRadius, hubRadius * 2f, hubRadius * 2f);
 
         using var textBrush = new SolidBrush(Color.FromArgb(15, 63, 143));
-        using var smallFont = new Font("Segoe UI", 7f, FontStyle.Bold);
+        using var smallFont = new Font("Segoe UI", Math.Max(6.5f, radius * 0.18f), FontStyle.Bold);
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-        g.DrawString($"{Math.Round(_camera.YawDegrees) % 360:0} deg", smallFont, textBrush, new RectangleF(cx - 22f, cy + 15f, 44f, 14f), format);
+        var yaw = NormalizeDegrees(_camera.YawDegrees);
+        g.DrawString($"{yaw:0} deg", smallFont, textBrush, new RectangleF(cx - radius * 0.58f, cy + radius * 0.40f, radius * 1.16f, radius * 0.34f), format);
     }
 
-    private void DrawCompassNeedle(Graphics g, float cx, float cy)
+    private static void DrawCompassRose(Graphics g, float cx, float cy, float radius)
+    {
+        using var outer = new Pen(Color.FromArgb(191, 219, 254), Math.Max(1f, radius * 0.035f));
+        using var inner = new Pen(Color.FromArgb(226, 232, 240), 1f);
+        g.DrawEllipse(outer, cx - radius, cy - radius, radius * 2f, radius * 2f);
+        g.DrawEllipse(inner, cx - radius * 0.74f, cy - radius * 0.74f, radius * 1.48f, radius * 1.48f);
+
+        for (var degrees = 0; degrees < 360; degrees += 5)
+        {
+            var major = degrees % 30 == 0;
+            var cardinal = degrees % 90 == 0;
+            var tickOuter = radius * 0.94f;
+            var tickInner = radius * (cardinal ? 0.68f : major ? 0.76f : 0.84f);
+            using var tickPen = new Pen(
+                cardinal ? Color.FromArgb(51, 65, 85) : major ? Color.FromArgb(100, 116, 139) : Color.FromArgb(148, 163, 184),
+                cardinal ? Math.Max(1.6f, radius * 0.045f) : major ? Math.Max(1.1f, radius * 0.032f) : 1f);
+
+            var angle = (degrees - 90d) * Math.PI / 180d;
+            var ux = (float)Math.Cos(angle);
+            var uy = (float)Math.Sin(angle);
+            g.DrawLine(tickPen, cx + ux * tickInner, cy + uy * tickInner, cx + ux * tickOuter, cy + uy * tickOuter);
+        }
+
+        DrawDirectionLabels(g, cx, cy, radius);
+
+        if (radius >= 38f)
+            DrawDegreeLabels(g, cx, cy, radius);
+    }
+
+    private static void DrawDirectionLabels(Graphics g, float cx, float cy, float radius)
+    {
+        using var cardinalFont = new Font("Segoe UI", Math.Max(7f, radius * 0.24f), FontStyle.Bold);
+        using var interFont = new Font("Segoe UI", Math.Max(5.5f, radius * 0.16f), FontStyle.Bold);
+        using var cardinalBrush = new SolidBrush(Color.FromArgb(15, 23, 42));
+        using var interBrush = new SolidBrush(Color.FromArgb(71, 85, 105));
+        using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+
+        for (var i = 0; i < CardinalLabels.Length; i++)
+            DrawPolarText(g, CardinalLabels[i], cardinalFont, cardinalBrush, format, cx, cy, radius * 0.48f, i * 90d);
+
+        if (radius < 32f)
+            return;
+
+        for (var i = 0; i < IntercardinalLabels.Length; i++)
+            DrawPolarText(g, IntercardinalLabels[i], interFont, interBrush, format, cx, cy, radius * 0.50f, 45d + i * 90d);
+    }
+
+    private static void DrawDegreeLabels(Graphics g, float cx, float cy, float radius)
+    {
+        using var degreeFont = new Font("Segoe UI", Math.Max(5.5f, radius * 0.14f), FontStyle.Regular);
+        using var degreeBrush = new SolidBrush(Color.FromArgb(71, 85, 105));
+        using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+
+        for (var degrees = 0; degrees < 360; degrees += 60)
+            DrawPolarText(g, degrees.ToString("0"), degreeFont, degreeBrush, format, cx, cy, radius * 0.78f, degrees);
+    }
+
+    private static void DrawPolarText(Graphics g, string text, Font font, Brush brush, StringFormat format, float cx, float cy, float distance, double degrees)
+    {
+        var angle = (degrees - 90d) * Math.PI / 180d;
+        var x = cx + (float)Math.Cos(angle) * distance;
+        var y = cy + (float)Math.Sin(angle) * distance;
+        var size = Math.Max(14f, font.Size * 3f);
+        g.DrawString(text, font, brush, new RectangleF(x - size / 2f, y - size / 2f, size, size), format);
+    }
+
+    private void DrawCompassNeedle(Graphics g, float cx, float cy, float radius)
     {
         var angle = (_camera.YawDegrees - 90d) * Math.PI / 180d;
         var ux = (float)Math.Cos(angle);
@@ -149,15 +224,25 @@ internal sealed class Graph3DRotationDial : Control
         var py = ux;
 
         PointF P(float along, float side) => new(cx + ux * along + px * side, cy + uy * along + py * side);
-        var north = new[] { P(-3f, -5f), P(23f, 0f), P(-3f, 5f) };
-        var south = new[] { P(3f, -5f), P(-20f, 0f), P(3f, 5f) };
+        var tip = radius * 0.76f;
+        var tail = radius * 0.62f;
+        var waist = radius * 0.10f;
+        var halfWidth = Math.Max(3.6f, radius * 0.12f);
+        var north = new[] { P(-waist, -halfWidth), P(tip, 0f), P(-waist, halfWidth) };
+        var south = new[] { P(waist, -halfWidth), P(-tail, 0f), P(waist, halfWidth) };
 
         using var red = new SolidBrush(Color.FromArgb(220, 38, 38));
-        using var blue = new SolidBrush(Color.FromArgb(59, 130, 246));
+        using var blue = new SolidBrush(Color.FromArgb(37, 99, 235));
         using var outline = new Pen(Color.White, 1.1f);
         g.FillPolygon(red, north);
         g.DrawPolygon(outline, north);
         g.FillPolygon(blue, south);
         g.DrawPolygon(outline, south);
+    }
+
+    private static double NormalizeDegrees(double degrees)
+    {
+        var normalized = degrees % 360d;
+        return normalized < 0d ? normalized + 360d : normalized;
     }
 }
