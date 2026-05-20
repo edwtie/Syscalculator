@@ -1,7 +1,7 @@
 <h2>When do you use mode?</h2>
 <p><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> tells what kind of NOD file you are making. For normal conversion tools, <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> is usually not needed; without mode it works as a normal converter.</p>
 <div class="notice"><b>Rule of thumb:</b> use <a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a> only when the file has a special type, such as data processing or equation solving.</div>
-<details open><summary>Common modes</summary><table><tr><th>Mode</th><th>Use</th><th>Important commands</th></tr><tr><td><code>mode calculator</code></td><td>Normal converter or calculation helper.</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr><tr><td><code>mode data</code></td><td>Process rows or fields in a table.</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a>, <a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td></tr><tr><td><code>mode equation</code></td><td>Solve an equation.</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td></tr></table></details>
+<details open><summary>Common modes</summary><table><tr><th>Mode</th><th>Use</th><th>Important commands</th></tr><tr><td><code>mode calculator</code></td><td>Normal converter or calculation helper.</td><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a>, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td></tr><tr><td><code>mode geometry</code></td><td>Coordinate geometry with X/Y/Z inputs, vector arrows, distances, circle equations and Graph 2D/Graph 3D visualization.</td><td><a class="cmd-link" href="nodpage:cmd:input"><code>input x/y/z</code></a>, <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <code>vec</code>, <code>distance</code>, <code>mat3</code></td></tr><tr><td><code>mode matrix3x3</code></td><td>3x3 matrix calculations that end in a number.</td><td><code>mat3</code>, <code>det</code>, <code>trace</code>, <code>mget</code>, <code>x/y/z</code></td></tr><tr><td><code>mode data</code></td><td>Process rows or fields in a table.</td><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a>, <a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a>, <a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a>, <a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td></tr><tr><td><code>mode equation</code></td><td>Solve an equation.</td><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a>, <a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a>, <a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a>, <a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td></tr></table></details>
 <details><summary>Example: normal converter</summary><pre>Name Celsius to Fahrenheit
 input1 Celsius
 input2 Fahrenheit
@@ -25,3 +25,22 @@ equation y = x * 2
 solve x
 constraint x >= 0
 end</pre><p>Use <code>mode equation</code> when you want to solve an unknown variable.</p></details>
+<details open><summary>Geometry introduction</summary>
+<p><code>mode geometry</code> is the starting point for coordinate geometry in NOD. It is meant for calculations that describe points, vectors, arrows and simple shapes, while Graph 2D and Graph 3D show the same idea visually.</p>
+<ul>
+  <li><code>input x</code>, <code>input y</code> and <code>input z</code> describe coordinates.</li>
+  <li><code>vec(x,y)</code> is a 2D vector arrow from the origin to <code>(x,y)</code>.</li>
+  <li><code>vec(x,y,z)</code> is a 3D vector arrow from the origin to <code>(x,y,z)</code>.</li>
+  <li><code>length(vec(...))</code> gives the length of that arrow.</li>
+  <li><code>distance(vec(a,b), vec(x,y))</code> gives the distance between two points.</li>
+  <li>Graph 2D shows X/Y. Graph 3D shows X/Y/Z, camera rotation and depth.</li>
+</ul>
+<pre>Name Geometry 3D vector
+mode geometry
+input x X coordinate
+input y Y coordinate
+input z Z coordinate
+math length(vec(3,4,12))
+end</pre>
+<p>The result is <code>13</code>. Visually, this is the length of the arrow from <code>(0,0,0)</code> to <code>(3,4,12)</code>.</p>
+</details>
