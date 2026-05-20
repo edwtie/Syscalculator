@@ -111,7 +111,7 @@ internal sealed class Graph3DRotationDial : Control
         var dialX = (Width - dialSize) / 2;
         using var path = new GraphicsPath();
         path.AddEllipse(new Rectangle(dialX, 0, dialSize, dialSize));
-        path.AddRectangle(new Rectangle(0, Height - readoutHeight - 1, Math.Max(1, Width), readoutHeight + 1));
+        path.AddRectangle(new Rectangle(dialX + dialSize / 5, Height - readoutHeight - 1, Math.Max(1, dialSize * 3 / 5), readoutHeight + 1));
         Region = new Region(path);
     }
 
@@ -160,12 +160,7 @@ internal sealed class Graph3DRotationDial : Control
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
         var yaw = NormalizeDegrees(_camera.YawDegrees);
         using var readoutBrush = new SolidBrush(Color.FromArgb(15, 63, 143));
-        var readoutRect = Rectangle.Round(new RectangleF(cx - radius * 0.50f, Height - readoutHeight + 1f, radius, readoutHeight - 2f));
-        var readoutRadius = new Size(Math.Max(3, (int)Math.Round(readoutHeight * 0.25f)), Math.Max(3, (int)Math.Round(readoutHeight * 0.25f)));
-        using var readoutFill = new SolidBrush(Color.FromArgb(235, 248, 251, 255));
-        using var readoutBorder = new Pen(Color.FromArgb(180, 191, 219, 254), 1f);
-        g.FillRoundedRectangle(readoutFill, readoutRect, readoutRadius);
-        g.DrawRoundedRectangle(readoutBorder, readoutRect, readoutRadius);
+        var readoutRect = new RectangleF(cx - radius * 0.42f, Height - readoutHeight + 1f, radius * 0.84f, readoutHeight - 2f);
         g.DrawString($"{yaw:0} deg", smallFont, readoutBrush, readoutRect, format);
     }
 
