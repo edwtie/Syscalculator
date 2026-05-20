@@ -175,6 +175,10 @@ Test("graph2d treats vector length as arrow from origin", () =>
     AssertNear(0.25m, (decimal)projectedVector3D.X, 0.0001m);
     AssertNear(0.333333m, (decimal)projectedVector3D.Y, 0.0001m);
 
+    var zeroDepthVector3D = GraphSurfaceApi.ProjectFormulaVectorTo2D(new[] { 3d, 4d, 0d });
+    AssertNear(3m, (decimal)zeroDepthVector3D.X, 0.0001m);
+    AssertNear(4m, (decimal)zeroDepthVector3D.Y, 0.0001m);
+
     var plot = new Rectangle(0, 0, 400, 300);
     var view = GraphSurfaceApi.CreateFitView(new[] { new PointF(0f, 0f), projectedVector3D }, -1d, 4d, plot.Size);
     var projectedOrigin = GraphSurfaceApi.GraphToScreen(new PointF(0f, 0f), plot, view);

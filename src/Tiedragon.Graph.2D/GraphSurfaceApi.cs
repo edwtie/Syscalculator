@@ -364,6 +364,7 @@ public static class GraphSurfaceApi
     /// <summary>
     /// Projects a formula vector to the Graph2D plane.
     /// 2D vectors already live in the plane; 3D vectors use the basic perspective projection (x/z, y/z).
+    /// If z is zero, Graph2D falls back to the plain X/Y plane so the vector remains drawable.
     /// </summary>
     public static PointF ProjectFormulaVectorTo2D(IReadOnlyList<double> vector)
     {
@@ -374,7 +375,7 @@ public static class GraphSurfaceApi
             return new PointF((float)vector[0], (float)vector[1]);
 
         if (Math.Abs(vector[2]) < double.Epsilon)
-            throw new ArgumentException("Graph2D cannot perspective-project a 3D vector with z = 0.", nameof(vector));
+            return new PointF((float)vector[0], (float)vector[1]);
 
         return new PointF((float)(vector[0] / vector[2]), (float)(vector[1] / vector[2]));
     }

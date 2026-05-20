@@ -1539,7 +1539,7 @@ internal sealed class FormulaCardForm : Form
             "integral-constant-factor" => ("math integral 0,1 3*ans^2", "Het vaste getal blijft buiten de primitieve-regel staan."),
             "integral-definite-area" => ("math integral 0,1 ans^2", "Bepaalde integraal als numerieke oppervlakte tussen twee grenzen."),
             "vector-2d-arrow" => ("math vec 3 4\r\nmath length(vec(3,4))\r\nmath dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
-            "vector-length-3d" => ("mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)", "Graph 3D toont de volledige XYZ-pijl. Graph 2D kan dezelfde 3D-vector als perspectiefprojectie tonen met (x/z,y/z)."),
+            "vector-length-3d" => ("mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)", "Graph 3D toont de volledige XYZ-pijl. Graph 2D gebruikt (x/z,y/z), en valt bij z = 0 terug op (x,y)."),
             "vector-dot-angle" => ("math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "dot geeft het inproduct. angled geeft de hoek in graden."),
             "vector-cross-z" => ("math z(cross(vec(1,0,0), vec(0,1,0)))", "cross geeft een vector; met z(...) kies je de z-component als eindgetal."),
             "point-line-distance" => ("math |ans(a)*ans(xp) + ans(b)*ans(yp) - ans(c)| / sqrt(ans(a)^2 + ans(b)^2)", "2D analytische meetkunde met named inputs."),
@@ -2078,7 +2078,7 @@ internal sealed class FormulaCardForm : Form
                 "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
             "vector-length-3d" => (
                 "mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)",
-                "Graph 3D toont de volledige XYZ-pijl. Graph 2D kan dezelfde 3D-vector als perspectiefprojectie tonen met (x/z,y/z)."),
+                "Graph 3D toont de volledige XYZ-pijl. Graph 2D gebruikt (x/z,y/z), en valt bij z = 0 terug op (x,y)."),
             "vector-dot-angle" => (
                 "math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))",
                 "dot geeft het inproduct. angled geeft de hoek in graden."),
