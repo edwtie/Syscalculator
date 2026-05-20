@@ -1063,14 +1063,19 @@ Test("parser rejects geometry mode in nod 2 beta", () =>
     """));
 });
 
-Test("parser rejects matrix 3x3 mode in nod 2 beta", () =>
+Test("parser supports matrix 3x3 mode", () =>
 {
-    AssertThrows("Line 2: mode matrix3x3 is not supported in NOD 2.0 beta. Limited matrix support is 2x2 formula-card education only.", () => NodParser.Parse("""
-    Name Matrix future
+    var doc = NodParser.Parse("""
+    Name Matrix 3x3
     mode matrix3x3
     input text Matrix values
+    math det(mat3(1,2,3,0,1,4,5,6,0))
     end
-    """));
+    """);
+
+    AssertText("matrix3x3", doc.Mode ?? "");
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(1m, result.NumericValue ?? 0);
 });
 
 Test("parser supports text input for trans chg tools", () =>

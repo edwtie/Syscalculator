@@ -245,11 +245,6 @@ public static class NodParser
         if (mode.Equals("geometry", StringComparison.OrdinalIgnoreCase) ||
             mode.Equals("geomary", StringComparison.OrdinalIgnoreCase))
             throw new FormatException($"Line {lineNumber}: mode geometry is not supported in NOD 2.0 beta. Use formula cards for educational geometry, or wait for the future 3D graph/geometry engine.");
-
-        if (mode.Equals("matrix3x3", StringComparison.OrdinalIgnoreCase) ||
-            mode.Equals("matrix-3x3", StringComparison.OrdinalIgnoreCase) ||
-            mode.Equals("matrix 3x3", StringComparison.OrdinalIgnoreCase))
-            throw new FormatException($"Line {lineNumber}: mode matrix3x3 is not supported in NOD 2.0 beta. Limited matrix support is 2x2 formula-card education only.");
     }
 
     private static void FinalizeLegacyInputDefinitions(NodDocument doc)

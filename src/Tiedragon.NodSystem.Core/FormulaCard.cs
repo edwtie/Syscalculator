@@ -638,7 +638,7 @@ public static class FormulaCardCatalog
                 @"\det\begin{pmatrix}a&b\\c&d\end{pmatrix}=ad-bc",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>det</mi><mo>(</mo><mfenced><mtable><mtr><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mi>d</mi></mtd></mtr></mtable></mfenced><mo>)</mo><mo>=</mo><mi>a</mi><mi>d</mi><mo>-</mo><mi>b</mi><mi>c</mi></mrow></math>""",
                 new[] { "VWO D", "PWS", "Lineaire algebra", "Limited matrix" },
-                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices en volledige 3D-geometry blijven toekomstwerk; Graph 3D is bedoeld voor visualisatie.",
+                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices werken in NOD math met mat3(...), det(...), trace(...) en mget(...); Graph 3D is beschikbaar voor visualisatie.",
                 """
                 Name 2x2 matrix determinant notitie
                 input text Matrixwaarden a,b,c,d
