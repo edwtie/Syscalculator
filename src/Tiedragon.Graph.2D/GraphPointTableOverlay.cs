@@ -1,12 +1,18 @@
 #nullable enable
 using System.Drawing.Drawing2D;
+using Tiedragon.Graph;
 
-namespace Tiedragon.Graph2D;
+namespace Tiedragon.Graph.G2D;
 
 /// <summary>
 /// Parts returned by the graph point-table overlay factory.
 /// </summary>
 public readonly record struct GraphPointTableOverlayParts(Panel Overlay, Panel TitleBar, DataGridView Table);
+
+/// <summary>
+/// Describes one column in a graph point-table overlay.
+/// </summary>
+public readonly record struct GraphPointTableColumn(string Name, string Header, int Width);
 
 /// <summary>
 /// Shared factory/API for graph point table overlays.
@@ -23,16 +29,20 @@ public static class GraphPointTableOverlay
         Action close,
         MouseEventHandler dragMouseDown,
         MouseEventHandler dragMouseMove,
-        MouseEventHandler dragMouseUp)
+        MouseEventHandler dragMouseUp,
+        IReadOnlyList<GraphPointTableColumn>? columns = null,
+        int? tableWidthOverride = null,
+        int? tableHeightOverride = null,
+        Func<string>? titleProvider = null)
     {
         var compact = density == GraphOverlayButtonDensity.Compact;
-        var tableWidth = compact ? 132 : 188;
-        var tableHeight = compact ? 64 : 99;
+        var tableWidth = tableWidthOverride ?? (compact ? 132 : 188);
+        var tableHeight = tableHeightOverride ?? (compact ? 64 : 99);
         var padding = compact ? 5 : 6;
         var titleHeight = compact ? 18 : 21;
 
-        var table = CreateTable(density);
-        var overlay = new Panel
+        var table = CreateTable(density, columns);
+        var overlay = new GraphPointOverlayPanel
         {
             Width = tableWidth + padding * 2,
             Height = titleHeight + tableHeight + padding * 2,
@@ -51,7 +61,7 @@ public static class GraphPointTableOverlay
             BackColor = Color.FromArgb(239, 246, 255),
             Cursor = Cursors.SizeAll
         };
-        titleBar.Paint += (_, e) => DrawTitleBar(e.Graphics, titleBar.ClientRectangle, title, detailProvider(), density);
+        titleBar.Paint += (_, e) => DrawTitleBar(e.Graphics, titleBar.ClientRectangle, titleProvider?.Invoke() ?? title, detailProvider(), density);
         titleBar.MouseDown += (_, e) =>
         {
             if (GetCloseRect(titleBar.ClientRectangle, density).Contains(e.Location))
@@ -77,7 +87,7 @@ public static class GraphPointTableOverlay
         return new GraphPointTableOverlayParts(overlay, titleBar, table);
     }
 
-    private static DataGridView CreateTable(GraphOverlayButtonDensity density)
+    private static DataGridView CreateTable(GraphOverlayButtonDensity density, IReadOnlyList<GraphPointTableColumn>? columns)
     {
         var compact = density == GraphOverlayButtonDensity.Compact;
         var table = new DataGridView
@@ -112,10 +122,20 @@ public static class GraphPointTableOverlay
         if (compact)
             table.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 251, 255);
 
-        table.Columns.Add("x", "x");
-        table.Columns.Add("y", "y");
-        table.Columns[0].Width = compact ? 50 : 74;
-        table.Columns[1].Width = compact ? 62 : 96;
+        var tableColumns = columns is { Count: > 0 }
+            ? columns
+            : new[]
+            {
+                new GraphPointTableColumn("x", "x", compact ? 50 : 74),
+                new GraphPointTableColumn("y", "y", compact ? 62 : 96)
+            };
+
+        foreach (var column in tableColumns)
+        {
+            table.Columns.Add(column.Name, column.Header);
+            table.Columns[^1].Width = column.Width;
+        }
+
         return table;
     }
 
@@ -127,10 +147,24 @@ public static class GraphPointTableOverlay
         using var detailBrush = new SolidBrush(Color.FromArgb(71, 85, 105));
         using var font = new Font("Segoe UI", compact ? 7.5f : 8f, FontStyle.Bold);
         using var detailFont = new Font("Segoe UI", 7f);
-        using var format = new StringFormat { LineAlignment = StringAlignment.Center };
-        graphics.DrawString(title, font, titleBrush, new Rectangle(rect.Left + (compact ? 4 : 5), rect.Top, rect.Width - 24, rect.Height), format);
+        using var format = new StringFormat
+        {
+            LineAlignment = StringAlignment.Center,
+            Trimming = StringTrimming.EllipsisCharacter,
+            FormatFlags = StringFormatFlags.NoWrap
+        };
+
+        var left = rect.Left + (compact ? 4 : 5);
+        var right = rect.Right - GetCloseRect(rect, density).Width - 2;
+        var titleWidth = Math.Min(graphics.MeasureString(title, font).Width + 2f, Math.Max(0f, right - left));
+        graphics.DrawString(title, font, titleBrush, new RectangleF(left, rect.Top, titleWidth, rect.Height), format);
         if (!string.IsNullOrWhiteSpace(detail))
-            graphics.DrawString(detail, detailFont, detailBrush, new Rectangle(rect.Left + (compact ? 45 : 62), rect.Top, rect.Width - (compact ? 65 : 86), rect.Height), format);
+        {
+            var detailLeft = left + titleWidth + (compact ? 5f : 7f);
+            var detailWidth = right - detailLeft;
+            if (detailWidth > 10f)
+                graphics.DrawString(detail, detailFont, detailBrush, new RectangleF(detailLeft, rect.Top, detailWidth, rect.Height), format);
+        }
 
         var closeRect = GetCloseRect(rect, density);
         using var closePen = new Pen(Color.FromArgb(15, 63, 143), compact ? 1.7f : 1.8f)
@@ -158,22 +192,29 @@ public static class GraphPointTableOverlay
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var rect = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
-        using var path = RoundedRect(rect, 9);
-        using var fill = new SolidBrush(Color.FromArgb(253, 254, 255));
-        using var border = new Pen(Color.FromArgb(225, 234, 247), 1);
-        e.Graphics.FillPath(fill, path);
-        e.Graphics.DrawPath(border, path);
+        GraphOverlayStyle.PaintPanelChrome(e.Graphics, rect, 9f, translucent: false);
     }
 
-    private static GraphicsPath RoundedRect(Rectangle rect, int radius)
+    private sealed class GraphPointOverlayPanel : Panel
     {
-        var path = new GraphicsPath();
-        var diameter = radius * 2;
-        path.AddArc(rect.Left, rect.Top, diameter, diameter, 180, 90);
-        path.AddArc(rect.Right - diameter, rect.Top, diameter, diameter, 270, 90);
-        path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(rect.Left, rect.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-        return path;
+        public GraphPointOverlayPanel()
+        {
+            DoubleBuffered = true;
+            SetStyle(
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.ResizeRedraw |
+                ControlStyles.UserPaint,
+                true);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            using var path = GraphOverlayStyle.RoundedRect(
+                new Rectangle(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+                9);
+            Region = new Region(path);
+        }
     }
 }

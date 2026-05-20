@@ -1,15 +1,17 @@
-<p>De <b>Graph Preview</b> hoort bij de NOD Editor. Hij laat zien hoe een wiskundige converter zich gedraagt over een bereik van X-waarden. De grafiek is een hulpmiddel om een formule te controleren; de NOD-code blijft de bron.</p>
+<p><b>Graph 2D</b> en <b>Graph 3D</b> horen bij de NOD Editor. Ze laten zien hoe een wiskundige converter zich gedraagt over een bereik van X-waarden. De grafiek is een hulpmiddel om een formule te controleren; de NOD-code blijft de bron.</p>
 
-<h2>Graph Preview openen</h2>
+<h2>Graph openen</h2>
 <ol>
   <li>Open een converter in de NOD Editor.</li>
   <li>Schrijf een berekening met bijvoorbeeld <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>.</li>
-  <li>Gebruik de Graph Preview-tab of open het grote Graph Preview-venster.</li>
+  <li>Gebruik de tab <b>Graph 2D</b> voor de vlakke grafiek.</li>
+  <li>Gebruik de tab <b>Graph 3D</b> voor de ruimtelijke grafiek of voor dezelfde grafiek in 2D-modus.</li>
+  <li>Open het grote <b>Graph 2D</b>- of <b>Graph 3D</b>-venster als u meer ruimte nodig hebt.</li>
   <li>Wijzig de formule in de editor; de grafiek wordt daarna opnieuw berekend.</li>
 </ol>
 
 <h2>Screenshot</h2>
-<div class="screenshot-frame graph-help-shot" role="img" aria-label="Graph Preview met punten, tabel, lijnen en locator.">
+<div class="screenshot-frame graph-help-shot" role="img" aria-label="Graph 2D met punten, tabel, lijnen en locator.">
   <div class="graph-help-toolbar">
     <span>X min <b>-240,6</b></span>
     <span>X max <b>240,6</b></span>
@@ -108,7 +110,7 @@
     </g>
   </svg>
 </div>
-<p class="shot-caption">Voorbeeld: de blauwe lijn is de berekende grafiek, rode punten horen bij de tabel en de kleine locator rechtsonder laat zien waar u bent ingezoomd.</p>
+<p class="shot-caption">Voorbeeld Graph 2D: de blauwe lijn is de berekende grafiek, rode punten horen bij de tabel en de kleine locator rechtsonder laat zien waar u bent ingezoomd.</p>
 
 <h2>Berekening en display</h2>
 <ul>
@@ -131,6 +133,31 @@
 
 <h2>Lijnen</h2>
 <p><b>Lijnen</b> gaat over de blauwe bereiklijnen en groene markeringen. De normale X/Y-assen, het rooster, de berekende grafieklijn, rode Step-punten en tabel horen daar niet bij.</p>
+
+<h2>Graph 3D</h2>
+<p><b>Graph 3D</b> gebruikt dezelfde berekende punten als Graph 2D, maar tekent ze in een X/Y/Z-ruimte. Omdat een gewone formule vaak alleen X en Y oplevert, staat Z standaard op 0. Daardoor kunt u dezelfde converter toch ruimtelijk bekijken.</p>
+<ul>
+  <li><b>2D</b> zet Graph 3D in vlakke modus. Deze modus gedraagt zich zoveel mogelijk hetzelfde als Graph 2D.</li>
+  <li><b>3D</b> zet de ruimtelijke/isometrische weergave aan.</li>
+  <li><b>Top</b> toont de grafiek van bovenaf.</li>
+  <li>Sleep met de muis in 3D-modus om de camera te draaien.</li>
+  <li>Gebruik de plus/min-knoppen of het muiswiel om in en uit te zoomen.</li>
+</ul>
+
+<h2>X/Y/Z bereik</h2>
+<p>Graph 3D heeft X min, X max, Y min, Y max, Z min en Z max. In 2D-modus zijn Z min en Z max uitgeschakeld en staan ze op 0, omdat Graph 2D geen diepte gebruikt.</p>
+<ul>
+  <li><b>Step</b> bepaalt de rode punten en de tabelregels, net als bij Graph 2D.</li>
+  <li><b>Grid step</b> bepaalt de afstand van het 3D-rooster. Standaard is dit 10.</li>
+  <li><b>Grid</b> toont of verbergt het ruimtelijke rooster.</li>
+  <li><b>Lijnen</b> toont de gekleurde bereikvlakken en marker-lijnen bij X/Y/Z min en max.</li>
+</ul>
+
+<h2>Graph 3D tabel</h2>
+<p>De puntentabel toont in 3D-modus <b>x</b>, <b>y</b> en <b>z</b>. In 2D-modus toont de tabel alleen <b>x</b> en <b>y</b>, zodat hij overeenkomt met Graph 2D.</p>
+
+<h2>Graph 2D en Graph 3D samen</h2>
+<p>Graph 3D is bedoeld als uitbreiding op Graph 2D. Als de knop <b>2D</b> actief is, moet Graph 3D zich gedragen als Graph 2D. Als <b>3D</b> actief is, worden Z-bereik, rooster, rotatie en camera gebruikt.</p>
 
 <h2>Locator en zoomrechthoek</h2>
 <p>De locator rechtsonder is een kleine kaart van het grotere gebied. De rode rechthoek of stip laat zien waar u in de grote grafiek zit. Als u extreem ver inzoomt, wordt de rechthoek steeds kleiner, tot ongeveer een pixel.</p>

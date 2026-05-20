@@ -1,6 +1,8 @@
 #nullable enable
 
-namespace Tiedragon.Graph2D;
+using Tiedragon.Graph;
+
+namespace Tiedragon.Graph.G2D;
 
 /// <summary>
 /// UI parts created for a graph surface.
@@ -30,7 +32,7 @@ public readonly record struct GraphRangeControls(
 /// </remarks>
 public static class GraphSurfaceApi
 {
-    public const double MinimumViewSpan = 1.616255e-35;
+    public const double MinimumViewSpan = GraphGeometry2D.MinimumViewSpan;
 
     /// <summary>
     /// Creates the standard graph UI chrome: navigation controls and point-table overlay.
@@ -108,6 +110,88 @@ public static class GraphSurfaceApi
     }
 
     /// <summary>
+    /// Draws a graph into an explicit rectangle instead of the full canvas.
+    /// </summary>
+    public static void DrawInRectangle(
+        Graphics graphics,
+        Font font,
+        Rectangle bounds,
+        IReadOnlyList<PointF> linePoints,
+        IReadOnlyList<PointF> highlightPoints,
+        GraphPlotView view,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
+        string disabledMessage,
+        string emptyMessage,
+        GraphPlotDensity density,
+        float? requestedMinY = null,
+        float? requestedMaxY = null,
+        bool showRangeMarkers = true)
+    {
+        GraphPlotRenderer.DrawInRectangle(
+            graphics,
+            font,
+            bounds,
+            linePoints,
+            highlightPoints,
+            view,
+            requestedMinX,
+            requestedMaxX,
+            requestedStep,
+            disabledMessage,
+            emptyMessage,
+            density,
+            requestedMinY,
+            requestedMaxY,
+            showRangeMarkers);
+    }
+
+    /// <summary>
+    /// Draws multiple graph lines through the shared renderer.
+    /// </summary>
+    public static void DrawMulti(
+        Graphics graphics,
+        Control canvas,
+        IReadOnlyList<GraphLineSeries> series,
+        IReadOnlyList<PointF> highlightPoints,
+        GraphPlotView view,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
+        string disabledMessage,
+        string emptyMessage,
+        GraphPlotDensity density,
+        float? requestedMinY = null,
+        float? requestedMaxY = null,
+        bool showRangeMarkers = true)
+    {
+        GraphPlotRenderer.DrawMulti(
+            graphics,
+            canvas,
+            series,
+            highlightPoints,
+            view,
+            requestedMinX,
+            requestedMaxX,
+            requestedStep,
+            disabledMessage,
+            emptyMessage,
+            density,
+            requestedMinY,
+            requestedMaxY,
+            showRangeMarkers);
+    }
+
+    /// <summary>
+    /// Formats a graph value with the same readable SI-aware rules used by axis labels.
+    /// </summary>
+    public static string FormatDisplayNumber(double value)
+    {
+        return GraphNumberFormatter.FormatDisplayNumber(value);
+    }
+
+    /// <summary>
     /// Returns the drawable graph rectangle inside a canvas control.
     /// </summary>
     public static Rectangle GetPlotRectangle(Control canvas)
@@ -125,7 +209,23 @@ public static class GraphSurfaceApi
         Size canvasSize,
         float fallbackHalfYRange = 5f)
     {
-        return GraphPlotRenderer.CreateFitView(points, requestedMinX, requestedMaxX, canvasSize, fallbackHalfYRange);
+        return GraphGeometry2D.CreateFitView(points, requestedMinX, requestedMaxX, canvasSize, fallbackHalfYRange);
+    }
+
+    /// <summary>
+    /// Returns true when a graph view can be projected and rendered safely.
+    /// </summary>
+    public static bool IsValidView(GraphPlotView view)
+    {
+        return GraphGeometry2D.IsValidView(view);
+    }
+
+    /// <summary>
+    /// Expands a data range into a graph-friendly view range.
+    /// </summary>
+    public static void NormalizeRange(ref float minX, ref float maxX, ref float minY, ref float maxY, bool padX = true)
+    {
+        GraphGeometry2D.NormalizeRange(ref minX, ref maxX, ref minY, ref maxY, padX);
     }
 
     /// <summary>
@@ -150,25 +250,15 @@ public static class GraphSurfaceApi
     public static GraphPlotView MatchViewToCanvasAspect(GraphPlotView view, Control canvas)
     {
         var plot = GetPlotRectangle(canvas);
-        if (plot.Width <= 0 || plot.Height <= 0)
-            return view;
+        return GraphGeometry2D.MatchViewToPlotAspect(view, plot);
+    }
 
-        var targetAspect = plot.Width / (double)plot.Height;
-        var centerX = (view.MinX + view.MaxX) / 2d;
-        var centerY = (view.MinY + view.MaxY) / 2d;
-        var halfX = Math.Max(MinimumHalfSpan(centerX), (view.MaxX - view.MinX) / 2d);
-        var halfY = Math.Max(MinimumHalfSpan(centerY), (view.MaxY - view.MinY) / 2d);
-
-        if (halfX / halfY < targetAspect)
-            halfX = halfY * targetAspect;
-        else
-            halfY = halfX / targetAspect;
-
-        return new GraphPlotView(
-            centerX - halfX,
-            centerX + halfX,
-            centerY - halfY,
-            centerY + halfY);
+    /// <summary>
+    /// Expands the shorter axis of a view so graph units match a raw canvas size.
+    /// </summary>
+    public static GraphPlotView MatchViewToAspect(GraphPlotView view, Size canvasSize)
+    {
+        return GraphGeometry2D.MatchViewToAspect(view, canvasSize);
     }
 
     /// <summary>
@@ -238,7 +328,15 @@ public static class GraphSurfaceApi
     /// </summary>
     public static PointF ScreenToGraph(PointF screenPoint, Rectangle plot, GraphPlotView view)
     {
-        return GraphPlotRenderer.ScreenToGraph(screenPoint, plot, view);
+        return GraphGeometry2D.ScreenToGraph(screenPoint, plot, view);
+    }
+
+    /// <summary>
+    /// Converts graph coordinates into screen/canvas coordinates.
+    /// </summary>
+    public static PointF GraphToScreen(PointF graphPoint, Rectangle plot, GraphPlotView view)
+    {
+        return GraphGeometry2D.GraphToScreen(graphPoint, plot, view);
     }
 
     public static double GetNumberBoxValue(NumericUpDown box)
@@ -289,9 +387,4 @@ public static class GraphSurfaceApi
         return Math.Clamp((int)(-exponent + 1), 1, 12);
     }
 
-    private static double MinimumHalfSpan(double center)
-    {
-        var relativeSpan = Math.Abs(center) * 1e-14;
-        return Math.Max(MinimumViewSpan / 2d, relativeSpan);
-    }
 }

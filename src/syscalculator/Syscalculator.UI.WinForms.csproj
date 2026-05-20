@@ -63,7 +63,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" />
     <ProjectReference Include="../Tiedragon.ClipboardConvert/Tiedragon.ClipboardConvert.csproj" />
-    <ProjectReference Include="../Tiedragon.Graph2D/Tiedragon.Graph2D.csproj" />
+    <ProjectReference Include="../Tiedragon.Graph/Tiedragon.Graph.csproj" />
+    <ProjectReference Include="../Tiedragon.Graph.2D/Tiedragon.Graph.2D.csproj" />
+    <ProjectReference Include="../Tiedragon.Graph.3D/Tiedragon.Graph.3D.csproj" />
     <ProjectReference Include="../Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj" />
     <ProjectReference Include="../Tiedragon.ToolEditor/Tiedragon.ToolEditor.csproj" />
     <ProjectReference Include="../Tiedragon.Help/Tiedragon.Help.csproj" />

@@ -1,7 +1,8 @@
 #nullable enable
 using System.Drawing.Drawing2D;
+using Tiedragon.Graph;
 
-namespace Tiedragon.Graph2D;
+namespace Tiedragon.Graph.G2D;
 
 /// <summary>
 /// Icon set for small graph overlay controls.
@@ -167,18 +168,25 @@ public sealed class GraphOverlayButton : Control
         base.OnMouseUp(e);
     }
 
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        using var path = GraphOverlayStyle.RoundedRect(
+            new Rectangle(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+            Density == GraphOverlayButtonDensity.Compact ? 8 : 10);
+        Region = new Region(path);
+    }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var rect = new Rectangle(1, 1, Width - 3, Height - 3);
-        using var path = RoundedRect(rect, Density == GraphOverlayButtonDensity.Compact ? 8 : 10);
-        var fillColor = _down
-            ? Color.FromArgb(219, 234, 254)
-            : _hover ? Color.FromArgb(239, 246, 255) : Color.White;
-        using var fill = new SolidBrush(fillColor);
-        using var border = new Pen(Color.FromArgb(203, 216, 234), 1);
-        e.Graphics.FillPath(fill, path);
-        e.Graphics.DrawPath(border, path);
+        var state = !Enabled
+            ? GraphOverlayVisualState.Disabled
+            : _down
+                ? GraphOverlayVisualState.Pressed
+                : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
+        GraphOverlayStyle.PaintButtonChrome(e.Graphics, rect, Density == GraphOverlayButtonDensity.Compact ? 8 : 10, state, translucent: false);
 
         var cx = rect.Left + rect.Width / 2f;
         var cy = rect.Top + rect.Height / 2f;
@@ -238,18 +246,6 @@ public sealed class GraphOverlayButton : Control
             graphics.DrawLine(pen, cx, cy - half, cx, cy + half);
     }
 
-    private static GraphicsPath RoundedRect(Rectangle rect, int radius)
-    {
-        var path = new GraphicsPath();
-        var diameter = radius * 2;
-        path.AddArc(rect.Left, rect.Top, diameter, diameter, 180, 90);
-        path.AddArc(rect.Right - diameter, rect.Top, diameter, diameter, 270, 90);
-        path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(rect.Left, rect.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-        return path;
-    }
-
     private sealed class GraphOverlayButtonGroupPanel : Panel
     {
         private readonly GraphOverlayButtonDensity _density;
@@ -263,16 +259,22 @@ public sealed class GraphOverlayButton : Control
                      ControlStyles.ResizeRedraw, true);
         }
 
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            var compact = _density == GraphOverlayButtonDensity.Compact;
+            using var path = GraphOverlayStyle.RoundedRect(
+                new Rectangle(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
+                compact ? 12 : 9);
+            Region = new Region(path);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             var compact = _density == GraphOverlayButtonDensity.Compact;
             var rect = new Rectangle(0, 0, Width - 1, Height - 1);
-            using var path = RoundedRect(rect, compact ? 12 : 9);
-            using var fill = new SolidBrush(compact ? Color.White : Color.FromArgb(253, 254, 255));
-            using var border = new Pen(compact ? Color.FromArgb(203, 216, 234) : Color.FromArgb(225, 234, 247), 1);
-            e.Graphics.FillPath(fill, path);
-            e.Graphics.DrawPath(border, path);
+            GraphOverlayStyle.PaintPanelChrome(e.Graphics, rect, compact ? 12 : 9, translucent: false);
         }
     }
 }

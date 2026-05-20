@@ -2,37 +2,9 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Globalization;
+using Tiedragon.Graph;
 
-namespace Tiedragon.Graph2D;
-
-/// <summary>
-/// Visual density preset for graph rendering.
-/// </summary>
-public enum GraphPlotDensity
-{
-    /// <summary>Reduced detail for the embedded Graph Preview tab.</summary>
-    Compact,
-
-    /// <summary>Full detail for the standalone Graph Preview window and solver graph.</summary>
-    Normal
-}
-
-/// <summary>
-/// Visible graph-coordinate range.
-/// </summary>
-/// <param name="MinX">Left graph-coordinate boundary.</param>
-/// <param name="MaxX">Right graph-coordinate boundary.</param>
-/// <param name="MinY">Bottom graph-coordinate boundary.</param>
-/// <param name="MaxY">Top graph-coordinate boundary.</param>
-public readonly record struct GraphPlotView(double MinX, double MaxX, double MinY, double MaxY);
-
-/// <summary>
-/// A polyline series drawn in graph coordinates.
-/// </summary>
-/// <param name="Points">Points in graph coordinates.</param>
-/// <param name="Color">Line color.</param>
-/// <param name="Width">Line width in pixels.</param>
-public readonly record struct GraphLineSeries(IReadOnlyList<PointF> Points, Color Color, float Width);
+namespace Tiedragon.Graph.G2D;
 
 /// <summary>
 /// Shared renderer for all Syscalculator graph surfaces.
@@ -54,7 +26,7 @@ public static class GraphPlotRenderer
     /// </summary>
     public static Rectangle GetPlotRectangle(Control canvas)
     {
-        return Rectangle.Inflate(canvas.ClientRectangle, -1, -1);
+        return GraphGeometry2D.GetPlotRectangle(canvas.ClientRectangle);
     }
 
     /// <summary>
@@ -62,9 +34,7 @@ public static class GraphPlotRenderer
     /// </summary>
     public static PointF ScreenToGraph(PointF screenPoint, Rectangle plot, GraphPlotView view)
     {
-        var x = view.MinX + ((screenPoint.X - plot.Left) / plot.Width) * (view.MaxX - view.MinX);
-        var y = view.MaxY - ((screenPoint.Y - plot.Top) / plot.Height) * (view.MaxY - view.MinY);
-        return new PointF((float)x, (float)y);
+        return GraphGeometry2D.ScreenToGraph(screenPoint, plot, view);
     }
 
     /// <summary>
@@ -76,21 +46,7 @@ public static class GraphPlotRenderer
     /// <param name="padX">When true, adds horizontal padding around the X range.</param>
     public static void NormalizeRange(ref float minX, ref float maxX, ref float minY, ref float maxY, bool padX = true)
     {
-        if (padX)
-        {
-            var xPad = Math.Max(0.5f, (maxX - minX) * 0.04f);
-            minX -= xPad;
-            maxX += xPad;
-        }
-
-        if (minY >= 0)
-            minY = 0;
-        else if (maxY <= 0)
-            maxY = 0;
-
-        var yPad = Math.Max(0.5f, (maxY - minY) * 0.08f);
-        minY -= yPad;
-        maxY += yPad;
+        GraphGeometry2D.NormalizeRange(ref minX, ref maxX, ref minY, ref maxY, padX);
     }
 
     /// <summary>
@@ -103,44 +59,7 @@ public static class GraphPlotRenderer
         Size canvasSize,
         float fallbackHalfYRange = 5f)
     {
-        var finitePoints = points
-            .Where(point => float.IsFinite(point.X) && float.IsFinite(point.Y))
-            .ToArray();
-
-        if (finitePoints.Length == 0)
-        {
-            var fallbackMinX = Math.Min(requestedMinX, requestedMaxX);
-            var fallbackMaxX = Math.Max(requestedMinX, requestedMaxX);
-            if (!double.IsFinite(fallbackMinX) || !double.IsFinite(fallbackMaxX))
-            {
-                fallbackMinX = -fallbackHalfYRange;
-                fallbackMaxX = fallbackHalfYRange;
-            }
-
-            ExpandFlatRange(ref fallbackMinX, ref fallbackMaxX);
-            return new GraphPlotView(fallbackMinX, fallbackMaxX, -fallbackHalfYRange, fallbackHalfYRange);
-        }
-
-        var minX = Math.Min(requestedMinX, finitePoints.Min(point => point.X));
-        var maxX = Math.Max(requestedMaxX, finitePoints.Max(point => point.X));
-        var minY = (double)finitePoints.Min(point => point.Y);
-        var maxY = (double)finitePoints.Max(point => point.Y);
-
-        if (minX > maxX)
-            (minX, maxX) = (maxX, minX);
-
-        ExpandFlatRange(ref minX, ref maxX);
-        ExpandFlatRange(ref minY, ref maxY);
-        IncludeZeroWhenClose(ref minY, ref maxY);
-
-        var xPad = Math.Max(0.25f, (maxX - minX) * 0.04f);
-        var yPad = Math.Max(0.25f, (maxY - minY) * 0.08f);
-        minX -= xPad;
-        maxX += xPad;
-        minY -= yPad;
-        maxY += yPad;
-
-        return new GraphPlotView(minX, maxX, minY, maxY);
+        return GraphGeometry2D.CreateFitView(points, requestedMinX, requestedMaxX, canvasSize, fallbackHalfYRange);
     }
 
     /// <summary>
@@ -206,39 +125,104 @@ public static class GraphPlotRenderer
         float? requestedMaxY = null,
         bool showRangeMarkers = true)
     {
+        DrawMultiInRectangle(
+            g,
+            canvas.Font,
+            canvas.ClientRectangle,
+            series,
+            highlightPoints,
+            view,
+            requestedMinX,
+            requestedMaxX,
+            requestedStep,
+            disabledMessage,
+            emptyMessage,
+            density,
+            requestedMinY,
+            requestedMaxY,
+            showRangeMarkers);
+    }
+
+    public static void DrawInRectangle(
+        Graphics g,
+        Font font,
+        Rectangle bounds,
+        IReadOnlyList<PointF> linePoints,
+        IReadOnlyList<PointF> highlightPoints,
+        GraphPlotView view,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
+        string disabledMessage,
+        string emptyMessage,
+        GraphPlotDensity density,
+        float? requestedMinY = null,
+        float? requestedMaxY = null,
+        bool showRangeMarkers = true)
+    {
+        DrawMultiInRectangle(
+            g,
+            font,
+            bounds,
+            [new GraphLineSeries(linePoints, Color.FromArgb(15, 63, 143), density == GraphPlotDensity.Compact ? 2.2f : 2.4f)],
+            highlightPoints,
+            view,
+            requestedMinX,
+            requestedMaxX,
+            requestedStep,
+            disabledMessage,
+            emptyMessage,
+            density,
+            requestedMinY,
+            requestedMaxY,
+            showRangeMarkers);
+    }
+
+    private static void DrawMultiInRectangle(
+        Graphics g,
+        Font font,
+        Rectangle bounds,
+        IReadOnlyList<GraphLineSeries> series,
+        IReadOnlyList<PointF> highlightPoints,
+        GraphPlotView view,
+        double requestedMinX,
+        double requestedMaxX,
+        double requestedStep,
+        string disabledMessage,
+        string emptyMessage,
+        GraphPlotDensity density,
+        float? requestedMinY = null,
+        float? requestedMaxY = null,
+        bool showRangeMarkers = true)
+    {
         g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        var rect = canvas.ClientRectangle;
+        var rect = bounds;
         if (rect.Width <= 20 || rect.Height <= 20)
             return;
 
-        if (!IsValidView(view))
+        if (!GraphGeometry2D.IsValidView(view))
             return;
 
-        var plot = GetPlotRectangle(canvas);
+        var plot = GraphGeometry2D.GetPlotRectangle(rect);
         using var background = new SolidBrush(Color.White);
         g.FillRectangle(background, rect);
 
         if (!string.IsNullOrWhiteSpace(disabledMessage))
         {
             using var brush = new SolidBrush(Color.DimGray);
-            g.DrawString(disabledMessage, canvas.Font, brush, plot.Left + 12, plot.Top + 12);
+            g.DrawString(disabledMessage, font, brush, plot.Left + 12, plot.Top + 12);
             return;
         }
 
         if (series.Count == 0 || series.All(line => line.Points.Count == 0))
         {
             using var brush = new SolidBrush(Color.DimGray);
-            g.DrawString(emptyMessage, canvas.Font, brush, plot.Left + 12, plot.Top + 12);
+            g.DrawString(emptyMessage, font, brush, plot.Left + 12, plot.Top + 12);
             return;
         }
 
-        PointF Map(PointF point)
-        {
-            var px = plot.Left + ((point.X - view.MinX) / (view.MaxX - view.MinX)) * plot.Width;
-            var py = plot.Bottom - ((point.Y - view.MinY) / (view.MaxY - view.MinY)) * plot.Height;
-            return new PointF((float)px, (float)py);
-        }
+        PointF Map(PointF point) => GraphGeometry2D.GraphToScreen(point, plot, view);
 
         var finiteLinePoints = series
             .SelectMany(line => line.Points)
@@ -248,7 +232,7 @@ public static class GraphPlotRenderer
         double? dataMaxY = finiteLinePoints.Length > 0 ? finiteLinePoints.Max(point => point.Y) : null;
 
         var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
-        DrawAxes(g, canvas.Font, plot, view, requestedMinX, requestedMaxX, requestedStep, requestedMinY, requestedMaxY, dataMinY, dataMaxY, density, Map, showRangeMarkers);
+        DrawAxes(g, font, plot, view, requestedMinX, requestedMaxX, requestedStep, requestedMinY, requestedMaxY, dataMinY, dataMaxY, density, Map, showRangeMarkers);
 
         foreach (var line in series)
         {
@@ -275,16 +259,6 @@ public static class GraphPlotRenderer
             g.FillEllipse(pointBrush, point.X - radius, point.Y - radius, radius * 2, radius * 2);
             lastHighlight = point;
         }
-    }
-
-    private static bool IsValidView(GraphPlotView view)
-    {
-        return double.IsFinite(view.MinX) &&
-               double.IsFinite(view.MaxX) &&
-               double.IsFinite(view.MinY) &&
-               double.IsFinite(view.MaxY) &&
-               view.MaxX > view.MinX &&
-               view.MaxY > view.MinY;
     }
 
     private static void DrawSafePolyline(Graphics g, Pen pen, IReadOnlyList<PointF> points, Func<PointF, PointF> map, Rectangle plot)
@@ -927,55 +901,19 @@ public static class GraphPlotRenderer
         return Math.Pow(10, Math.Ceiling(Math.Log10(value)));
     }
 
-    private static void ExpandFlatRange(ref double min, ref double max)
-    {
-        if (Math.Abs(max - min) >= 0.0001f)
-            return;
-
-        var pad = Math.Max(1f, Math.Abs(min) * 0.1f);
-        min -= pad;
-        max += pad;
-    }
-
-    private static void IncludeZeroWhenClose(ref double minY, ref double maxY)
-    {
-        var range = Math.Max(1f, maxY - minY);
-        if (minY > 0 && minY <= range * 3f)
-            minY = 0;
-        else if (maxY < 0 && Math.Abs(maxY) <= range * 3f)
-            maxY = 0;
-    }
-
     public static string FormatDisplayNumber(double value)
     {
-        return FormatTick(value, 0d);
+        return GraphNumberFormatter.FormatDisplayNumber(value);
     }
 
     private static string FormatTick(double value)
     {
-        return FormatTick(value, 0d);
+        return GraphNumberFormatter.FormatDisplayNumber(value);
     }
 
     private static string FormatTick(double value, double step)
     {
-        var abs = Math.Abs(value);
-        var absStep = Math.Abs(step);
-        if (abs < 1e-300 && absStep >= 1e-30d)
-            return "0";
-
-        if (TryFormatPlanckTick(value, step, absStep > 0f ? absStep : abs, out var planckTick))
-            return planckTick;
-
-        if (TryFormatSmallSiTick(value, step, Math.Max(abs, absStep), out var smallTick))
-            return smallTick;
-
-        if (TryFormatLightYearTick(value, step, Math.Max(abs, absStep), out var lightYearTick))
-            return lightYearTick;
-
-        if (TryFormatLargeSiTick(value, step, Math.Max(abs, absStep), out var largeTick))
-            return largeTick;
-
-        return value.ToString(FormatForStep(step, abs), CultureInfo.CurrentCulture);
+        return GraphNumberFormatter.FormatTick(value, step);
     }
 
     private static bool TryFormatPlanckTick(double value, double step, double scaleValue, out string text)

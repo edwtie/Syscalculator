@@ -1,7 +1,8 @@
 ﻿#nullable enable
 using System.ComponentModel;
 using Tiedragon.NodSystem.Core;
-using Tiedragon.Graph2D;
+using Tiedragon.Graph;
+using Tiedragon.Graph.G2D;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -39,7 +40,7 @@ internal sealed class SolverStepsForm : Form
             var rect = Rectangle.Inflate(ClientRectangle, -1, -1);
             using var background = new SolidBrush(Color.FromArgb(239, 246, 255));
             using var border = new Pen(Color.FromArgb(169, 202, 245));
-            using var path = RoundedRect(rect, 8);
+            using var path = UiGeometry.CreateRoundedRectangle(rect, 8);
             e.Graphics.FillPath(background, path);
             e.Graphics.DrawPath(border, path);
 
@@ -73,17 +74,6 @@ internal sealed class SolverStepsForm : Form
             e.Graphics.DrawString(StepText, textFont, textBrush, textRect);
         }
 
-        private static System.Drawing.Drawing2D.GraphicsPath RoundedRect(Rectangle rect, int radius)
-        {
-            var path = new System.Drawing.Drawing2D.GraphicsPath();
-            var d = radius * 2;
-            path.AddArc(rect.Left, rect.Top, d, d, 180, 90);
-            path.AddArc(rect.Right - d, rect.Top, d, d, 270, 90);
-            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
-            path.AddArc(rect.Left, rect.Bottom - d, d, d, 90, 90);
-            path.CloseFigure();
-            return path;
-        }
     }
 
     private sealed class GraphDrawingPanel : Panel
@@ -696,7 +686,7 @@ internal sealed class SolverStepsForm : Form
             _resumePlaybackAfterGraphReveal = false;
             _graphRevealTimer.Stop();
             _graphRevealProgress = 1f;
-            GraphPlotRenderer.DrawMulti(
+            GraphSurfaceApi.DrawMulti(
                 e.Graphics,
                 _graphPanel,
                 [],
@@ -713,7 +703,7 @@ internal sealed class SolverStepsForm : Form
 
         if (!_hasGraphView)
         {
-            GraphPlotRenderer.DrawMulti(
+            GraphSurfaceApi.DrawMulti(
                 e.Graphics,
                 _graphPanel,
                 [],
@@ -730,7 +720,7 @@ internal sealed class SolverStepsForm : Form
 
         var graphLines = GetRevealedGraphLines();
 
-        GraphPlotRenderer.DrawMulti(
+        GraphSurfaceApi.DrawMulti(
             e.Graphics,
             _graphPanel,
             graphLines,
@@ -772,7 +762,7 @@ internal sealed class SolverStepsForm : Form
         if (!_hasGraphView || _graphHighlights.Count == 0)
             return;
 
-        var plot = GraphPlotRenderer.GetPlotRectangle(_graphPanel);
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graphPanel);
         if (plot.Width <= 0 || plot.Height <= 0)
             return;
 
@@ -926,7 +916,7 @@ internal sealed class SolverStepsForm : Form
         var maxY = points.Max(point => point.Y);
         if (Math.Abs(maxX - minX) < 0.0001f) { minX -= 1; maxX += 1; }
         if (Math.Abs(maxY - minY) < 0.0001f) { minY -= 1; maxY += 1; }
-        GraphPlotRenderer.NormalizeRange(ref minX, ref maxX, ref minY, ref maxY, padX: false);
+        GraphSurfaceApi.NormalizeRange(ref minX, ref maxX, ref minY, ref maxY, padX: false);
         _graphView = new GraphPlotView(minX, maxX, minY, maxY);
         _requestedMinX = minX;
         _requestedMaxX = maxX;
@@ -967,12 +957,12 @@ internal sealed class SolverStepsForm : Form
         if (!_hasGraphView || !_graphPanning)
             return;
 
-        var plot = GraphPlotRenderer.GetPlotRectangle(_graphPanel);
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graphPanel);
         if (plot.Width <= 0 || plot.Height <= 0)
             return;
 
-        var start = GraphPlotRenderer.ScreenToGraph(_graphPanStart, plot, _graphPanStartView);
-        var current = GraphPlotRenderer.ScreenToGraph(e.Location, plot, _graphPanStartView);
+        var start = GraphSurfaceApi.ScreenToGraph(_graphPanStart, plot, _graphPanStartView);
+        var current = GraphSurfaceApi.ScreenToGraph(e.Location, plot, _graphPanStartView);
         var dx = start.X - current.X;
         var dy = start.Y - current.Y;
         _graphView = new GraphPlotView(
@@ -991,11 +981,11 @@ internal sealed class SolverStepsForm : Form
 
     private void ZoomGraph(float factor, Point screenPoint)
     {
-        var plot = GraphPlotRenderer.GetPlotRectangle(_graphPanel);
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graphPanel);
         if (plot.Width <= 0 || plot.Height <= 0)
             return;
 
-        var anchor = GraphPlotRenderer.ScreenToGraph(screenPoint, plot, _graphView);
+        var anchor = GraphSurfaceApi.ScreenToGraph(screenPoint, plot, _graphView);
         var newWidth = (_graphView.MaxX - _graphView.MinX) * factor;
         var newHeight = (_graphView.MaxY - _graphView.MinY) * factor;
         if (newWidth < GraphSurfaceApi.MinimumViewSpan || newHeight < GraphSurfaceApi.MinimumViewSpan)

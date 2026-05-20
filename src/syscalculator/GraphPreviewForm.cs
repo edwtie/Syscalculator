@@ -3,7 +3,8 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Tiedragon.NodSystem.Core;
-using Tiedragon.Graph2D;
+using Tiedragon.Graph;
+using Tiedragon.Graph.G2D;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -78,7 +79,7 @@ public sealed class GraphPreviewForm : Form
         _getNodText = getNodText;
         _language = language;
 
-        Text = T("editor.graph.title", "Graph Preview");
+        Text = T("editor.graph.title", "Graph 2D");
         AppWindowIcon.ApplyTo(this);
         Width = 920;
         Height = 560;
@@ -643,23 +644,11 @@ public sealed class GraphPreviewForm : Form
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var rect = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
-        using var path = RoundedRect(rect, 9);
+        using var path = UiGeometry.CreateRoundedRectangle(rect, 9);
         using var fill = new SolidBrush(Color.FromArgb(253, 254, 255));
         using var border = new Pen(Color.FromArgb(225, 234, 247), 1);
         e.Graphics.FillPath(fill, path);
         e.Graphics.DrawPath(border, path);
-    }
-
-    private static GraphicsPath RoundedRect(Rectangle rect, int radius)
-    {
-        var path = new GraphicsPath();
-        var diameter = radius * 2;
-        path.AddArc(rect.Left, rect.Top, diameter, diameter, 180, 90);
-        path.AddArc(rect.Right - diameter, rect.Top, diameter, diameter, 270, 90);
-        path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(rect.Left, rect.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-        return path;
     }
 
     private void Generate()
@@ -693,7 +682,7 @@ public sealed class GraphPreviewForm : Form
                 FillPointsGrid([]);
                 SetPointTableVisible(false);
                 _hasView = false;
-                _status.Text = T("editor.graph.disabled", "Graph Preview disabled");
+                _status.Text = T("editor.graph.disabled", "Graph 2D disabled");
                 _canvas.Invalidate();
                 return;
             }
@@ -1317,13 +1306,13 @@ public sealed class GraphPreviewForm : Form
     {
         if (document.ChangeRules.Count > 0)
         {
-            reason = T("editor.graph.disabled_chg", "Graph Preview is disabled for chg converters.");
+            reason = T("editor.graph.disabled_chg", "Graph 2D is disabled for chg converters.");
             return false;
         }
 
         if (document.TranslateRules.Count > 0)
         {
-            reason = T("editor.graph.disabled_trans", "Graph Preview is disabled for trans converters.");
+            reason = T("editor.graph.disabled_trans", "Graph 2D is disabled for trans converters.");
             return false;
         }
 
@@ -1332,7 +1321,7 @@ public sealed class GraphPreviewForm : Form
             document.CalculusSteps.Count == 0 &&
             document.Equation is null)
         {
-            reason = T("editor.graph.disabled_math", "Graph Preview is only available for numeric math converters.");
+            reason = T("editor.graph.disabled_math", "Graph 2D is only available for numeric math converters.");
             return false;
         }
 
@@ -1715,7 +1704,7 @@ public sealed class GraphPreviewForm : Form
 
     private static string FormatGraphDisplayNumber(double value)
     {
-        return GraphPlotRenderer.FormatDisplayNumber(value);
+        return GraphSurfaceApi.FormatDisplayNumber(value);
     }
 
 }

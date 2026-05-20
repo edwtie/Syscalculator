@@ -553,7 +553,7 @@ public static class FormulaCardCatalog
                 @"\vec{v}=(x,y),\quad |\vec{v}|=\sqrt{x^2+y^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
                 new[] { "VWO D", "PWS", "Vectoren", "2D graph", "Limited vector" },
-                "Een 2D vector kun je veilig tonen als pijl in een grafiek. Volledige 3D-vectorweergave en geometry mode blijven toekomstwerk.",
+                "Een 2D vector kun je veilig tonen als pijl in een grafiek. Voor 3D-visualisatie gebruik je Graph 3D; volledige geometry mode blijft toekomstwerk.",
                 """
                 Name 2D vectorpijl notitie
                 input x X component
@@ -570,7 +570,7 @@ public static class FormulaCardCatalog
                 @"\vec{v}=(x,y,z),\quad |\vec{v}|=\sqrt{x^2+y^2+z^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>z</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
                 new[] { "VWO D", "PWS", "Vectoren", "3D", "Limited vector" },
-                "3D vectorlengte werkt numeriek in NOD math. Echte graph3D/rotatie is toekomstwerk.",
+                "3D vectorlengte werkt numeriek in NOD math. Graph 3D kan X/Y/Z-punten en grafiekruimte visualiseren; volledige 3D-geometry blijft toekomstwerk.",
                 """
                 Name 3D vectorlengte
                 input text Vectorcomponenten
@@ -638,7 +638,7 @@ public static class FormulaCardCatalog
                 @"\det\begin{pmatrix}a&b\\c&d\end{pmatrix}=ad-bc",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>det</mi><mo>(</mo><mfenced><mtable><mtr><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mi>d</mi></mtd></mtr></mtable></mfenced><mo>)</mo><mo>=</mo><mi>a</mi><mi>d</mi><mo>-</mo><mi>b</mi><mi>c</mi></mrow></math>""",
                 new[] { "VWO D", "PWS", "Lineaire algebra", "Limited matrix" },
-                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices en echte 3D graph/geometry blijven toekomstwerk.",
+                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices en volledige 3D-geometry blijven toekomstwerk; Graph 3D is bedoeld voor visualisatie.",
                 """
                 Name 2x2 matrix determinant notitie
                 input text Matrixwaarden a,b,c,d
