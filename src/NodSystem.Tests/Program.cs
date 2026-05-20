@@ -158,6 +158,12 @@ Test("graph3d treats vector length as arrow from origin", () =>
     AssertTrue(float.IsFinite(projectedOrigin.Screen.X), "Graph3D origin projection should be finite.");
     AssertTrue(float.IsFinite(projectedTip.Screen.X), "Graph3D vector tip projection should be finite.");
     AssertTrue(projectedOrigin.Screen != projectedTip.Screen, "Graph3D vector arrow should project to a visible segment.");
+
+    using var bitmap = new Bitmap(400, 300);
+    using var graphics = Graphics.FromImage(bitmap);
+    graphics.Clear(Color.White);
+    Graph3DApi.DrawVectorArrow(graphics, new GraphPoint3D(0d, 0d, 0d), arrow3D, plot, view, Graph3DApi.DefaultCamera, Color.FromArgb(15, 63, 143));
+    AssertTrue(HasNonWhitePixel(bitmap), "Graph3D vector arrow should draw pixels.");
 });
 
 Test("graph2d treats vector length as arrow from origin", () =>
@@ -175,6 +181,12 @@ Test("graph2d treats vector length as arrow from origin", () =>
     AssertTrue(projectedOrigin != projectedTip, "Graph2D vector arrow should project to a visible segment.");
     AssertNear(3m, (decimal)roundTripTip.X, 0.0001m);
     AssertNear(4m, (decimal)roundTripTip.Y, 0.0001m);
+
+    using var bitmap = new Bitmap(400, 300);
+    using var graphics = Graphics.FromImage(bitmap);
+    graphics.Clear(Color.White);
+    GraphSurfaceApi.DrawVectorArrow(graphics, new PointF(0f, 0f), new PointF(3f, 4f), plot, view, Color.FromArgb(15, 63, 143));
+    AssertTrue(HasNonWhitePixel(bitmap), "Graph2D vector arrow should draw pixels.");
 });
 
 Test("expression vector arithmetic keeps z component", () =>
@@ -1657,6 +1669,20 @@ static void AssertTrue(bool condition, string message)
 {
     if (!condition)
         throw new Exception(message);
+}
+
+static bool HasNonWhitePixel(Bitmap bitmap)
+{
+    for (var y = 0; y < bitmap.Height; y += 3)
+    {
+        for (var x = 0; x < bitmap.Width; x += 3)
+        {
+            if (bitmap.GetPixel(x, y).ToArgb() != Color.White.ToArgb())
+                return true;
+        }
+    }
+
+    return false;
 }
 
 static void AssertThrows(string expectedMessage, Action action)

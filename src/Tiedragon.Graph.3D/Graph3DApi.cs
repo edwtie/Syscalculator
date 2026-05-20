@@ -191,6 +191,27 @@ public static class Graph3DApi
     }
 
     /// <summary>
+    /// Draws a vector arrow in Graph3D coordinates after projecting it with the current camera.
+    /// </summary>
+    public static void DrawVectorArrow(
+        Graphics graphics,
+        GraphPoint3D start,
+        GraphPoint3D end,
+        Rectangle plot,
+        GraphPlotView3D view,
+        GraphCamera3D camera,
+        Color color,
+        float width = 2.2f)
+    {
+        GraphArrowRenderer.DrawArrow(
+            graphics,
+            ProjectToScreen(start, plot, view, camera).Screen,
+            ProjectToScreen(end, plot, view, camera).Screen,
+            color,
+            width);
+    }
+
+    /// <summary>
     /// Calculates the center point of a 3D graph view.
     /// </summary>
     public static GraphPoint3D Center(GraphPlotView3D view)

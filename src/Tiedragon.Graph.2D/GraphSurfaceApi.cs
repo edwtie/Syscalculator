@@ -341,6 +341,26 @@ public static class GraphSurfaceApi
         return GraphGeometry2D.GraphToScreen(graphPoint, plot, view);
     }
 
+    /// <summary>
+    /// Draws a vector arrow in Graph2D coordinates.
+    /// </summary>
+    public static void DrawVectorArrow(
+        Graphics graphics,
+        PointF start,
+        PointF end,
+        Rectangle plot,
+        GraphPlotView view,
+        Color color,
+        float width = 2.2f)
+    {
+        GraphArrowRenderer.DrawArrow(
+            graphics,
+            GraphToScreen(start, plot, view),
+            GraphToScreen(end, plot, view),
+            color,
+            width);
+    }
+
     public static double GetNumberBoxValue(NumericUpDown box)
     {
         return box.Tag is double exact && double.IsFinite(exact)
