@@ -25,7 +25,7 @@ internal sealed class Graph3DRotationDial : Control
                  ControlStyles.ResizeRedraw, true);
 
         Width = 82;
-        Height = 98;
+        Height = 82;
         BackColor = Color.White;
         Cursor = Cursors.SizeAll;
         TabStop = false;
@@ -106,12 +106,11 @@ internal sealed class Graph3DRotationDial : Control
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
-        var readoutHeight = Math.Max(14, (int)Math.Round(Height * 0.18d));
-        var dialSize = Math.Max(1, Math.Min(Width, Height - readoutHeight));
+        var dialSize = Math.Max(1, Math.Min(Width, Height));
         var dialX = (Width - dialSize) / 2;
+        var dialY = (Height - dialSize) / 2;
         using var path = new GraphicsPath();
-        path.AddEllipse(new Rectangle(dialX, 0, dialSize, dialSize));
-        path.AddRectangle(new Rectangle(dialX + dialSize / 5, Height - readoutHeight - 1, Math.Max(1, dialSize * 3 / 5), readoutHeight + 1));
+        path.AddEllipse(new Rectangle(dialX, dialY, dialSize, dialSize));
         Region = new Region(path);
     }
 
@@ -126,10 +125,9 @@ internal sealed class Graph3DRotationDial : Control
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        var readoutHeight = Math.Max(14f, Height * 0.18f);
-        var dialSize = Math.Min(Width, Height - readoutHeight);
+        var dialSize = Math.Min(Width, Height);
         var inset = Math.Max(4f, dialSize * 0.06f);
-        var rect = new RectangleF((Width - dialSize) / 2f + inset, inset, dialSize - inset * 2f, dialSize - inset * 2f);
+        var rect = new RectangleF((Width - dialSize) / 2f + inset, (Height - dialSize) / 2f + inset, dialSize - inset * 2f, dialSize - inset * 2f);
         using var shadow = new SolidBrush(Color.FromArgb(28, 15, 23, 42));
         g.FillEllipse(shadow, rect.X + 1.5f, rect.Y + 2f, rect.Width, rect.Height);
 
@@ -155,13 +153,6 @@ internal sealed class Graph3DRotationDial : Control
         g.FillEllipse(centerFill, cx - hubRadius, cy - hubRadius, hubRadius * 2f, hubRadius * 2f);
         g.DrawEllipse(centerBorder, cx - hubRadius, cy - hubRadius, hubRadius * 2f, hubRadius * 2f);
 
-        using var textBrush = new SolidBrush(Color.FromArgb(226, 232, 240));
-        using var smallFont = new Font("Segoe UI", Math.Max(5.8f, radius * 0.15f), FontStyle.Bold);
-        using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-        var yaw = NormalizeDegrees(_camera.YawDegrees);
-        using var readoutBrush = new SolidBrush(Color.FromArgb(15, 63, 143));
-        var readoutRect = new RectangleF(cx - radius * 0.42f, Height - readoutHeight + 1f, radius * 0.84f, readoutHeight - 2f);
-        g.DrawString($"{yaw:0} deg", smallFont, readoutBrush, readoutRect, format);
     }
 
     private static void DrawCompassRose(Graphics g, float cx, float cy, float radius)
@@ -256,9 +247,4 @@ internal sealed class Graph3DRotationDial : Control
         g.DrawPolygon(outline, south);
     }
 
-    private static double NormalizeDegrees(double degrees)
-    {
-        var normalized = degrees % 360d;
-        return normalized < 0d ? normalized + 360d : normalized;
-    }
 }
