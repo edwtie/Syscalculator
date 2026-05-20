@@ -261,119 +261,6 @@ public sealed class NodEditorForm : Form
         }
     }
 
-    private sealed class Graph3DTextOverlayButton : Control
-    {
-        private readonly Action _action;
-        private readonly ToolTip _toolTip = new();
-        private bool _hover;
-        private bool _pressed;
-        private bool _active;
-
-        public Graph3DTextOverlayButton(string text, string tooltip, Action action)
-        {
-            _action = action;
-            Text = text;
-            Width = 34;
-            Height = 22;
-            Margin = new Padding(0, 1, 2, 0);
-            ForeColor = Color.FromArgb(15, 63, 143);
-            Cursor = Cursors.Hand;
-            TabStop = false;
-            Font = new Font("Segoe UI", 7f, FontStyle.Bold);
-            _toolTip.SetToolTip(this, tooltip);
-            SetStyle(
-                ControlStyles.AllPaintingInWmPaint |
-                ControlStyles.OptimizedDoubleBuffer |
-                ControlStyles.ResizeRedraw |
-                ControlStyles.UserPaint,
-                true);
-            BackColor = Color.White;
-        }
-
-        [Browsable(false)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool Active
-        {
-            get => _active;
-            set
-            {
-                if (_active == value)
-                    return;
-
-                _active = value;
-                Invalidate();
-            }
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            var rect = new RectangleF(0.5f, 0.5f, Width - 1f, Height - 1f);
-            var state = !Enabled
-                ? GraphOverlayVisualState.Disabled
-                : _pressed
-                    ? GraphOverlayVisualState.Pressed
-                    : _active
-                        ? GraphOverlayVisualState.Pressed
-                        : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
-            GraphOverlayStyle.PaintButtonChrome(e.Graphics, rect, 6f, state, translucent: false);
-
-            TextRenderer.DrawText(
-                e.Graphics,
-                Text,
-                Font,
-                ClientRectangle,
-                GraphOverlayStyle.TextColor(state),
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-        }
-
-        protected override void OnMouseEnter(EventArgs e)
-        {
-            _hover = true;
-            Invalidate();
-            base.OnMouseEnter(e);
-        }
-
-        protected override void OnMouseLeave(EventArgs e)
-        {
-            _hover = false;
-            _pressed = false;
-            Invalidate();
-            base.OnMouseLeave(e);
-        }
-
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                _pressed = true;
-                Invalidate();
-            }
-
-            base.OnMouseDown(e);
-        }
-
-        protected override void OnMouseUp(MouseEventArgs e)
-        {
-            var fireClick = _pressed && ClientRectangle.Contains(e.Location);
-            _pressed = false;
-            Invalidate();
-            if (fireClick)
-                _action();
-            base.OnMouseUp(e);
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            using var path = GraphOverlayStyle.RoundedRect(
-                new RectangleF(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
-                6f);
-            Region = new Region(path);
-        }
-    }
-
     private static GraphicsPath RoundedTopRect(Rectangle rectangle, int radius)
     {
         var path = new GraphicsPath();
@@ -464,9 +351,9 @@ public sealed class NodEditorForm : Form
     private Panel _graph3DNavigationPanel = null!;
     private Panel _graph3DCommandPanel = null!;
     private Panel _graph3DRangePanel = null!;
-    private Graph3DTextOverlayButton _graph3DFlat2DButton = null!;
-    private Graph3DTextOverlayButton _graph3DIsoButton = null!;
-    private Graph3DTextOverlayButton _graph3DTopButton = null!;
+    private GraphTextOverlayButton _graph3DFlat2DButton = null!;
+    private GraphTextOverlayButton _graph3DIsoButton = null!;
+    private GraphTextOverlayButton _graph3DTopButton = null!;
     private Panel _graphPointPanel = null!;
     private Panel _graph3DPointPanel = null!;
     private DataGridView _graphPointTable = null!;
@@ -1775,9 +1662,9 @@ public sealed class NodEditorForm : Form
         return panel;
     }
 
-    private Graph3DTextOverlayButton MakeGraph3DButton(string text, string tooltip, Action action)
+    private GraphTextOverlayButton MakeGraph3DButton(string text, string tooltip, Action action)
     {
-        return new Graph3DTextOverlayButton(text, tooltip, action);
+        return new GraphTextOverlayButton(text, tooltip, action);
     }
 
     private void PlaceGraph3DOverlays()
