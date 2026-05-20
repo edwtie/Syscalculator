@@ -1,11 +1,10 @@
 #nullable enable
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
-using Tiedragon.Graph;
 
-namespace Syscalculator.UI.WinForms;
+namespace Tiedragon.Graph;
 
-internal enum GraphToolbarIcon
+public enum GraphToolbarIcon
 {
     Copy,
     Open,
@@ -13,7 +12,7 @@ internal enum GraphToolbarIcon
     TableHidden
 }
 
-internal sealed class GraphToolbarIconButton : Button
+public sealed class GraphToolbarIconButton : Button
 {
     private GraphToolbarIcon _icon;
     private readonly ToolTip _toolTip = new();
@@ -186,5 +185,4 @@ internal sealed class GraphToolbarIconButton : Button
             g.DrawLine(pen, markCenter.X - 4, markCenter.Y, markCenter.X + 4, markCenter.Y);
         }
     }
-
 }
