@@ -8,7 +8,7 @@ namespace Syscalculator.UI.WinForms;
 
 internal sealed class Graph3DRotationDial : Control
 {
-    private static readonly string[] IntercardinalLabels = { "NE", "SE", "SW", "NW" };
+    private static readonly string[] IntercardinalLabels = { "ne", "se", "sw", "nw" };
 
     private readonly ToolTip _toolTip = new();
     private bool _dragging;
@@ -192,7 +192,7 @@ internal sealed class Graph3DRotationDial : Control
     private static void DrawDirectionLabels(Graphics g, float cx, float cy, float radius)
     {
         using var cardinalFont = new Font("Segoe UI", Math.Max(6.5f, radius * 0.18f), FontStyle.Bold);
-        using var interFont = new Font("Segoe UI", Math.Max(5f, radius * 0.12f), FontStyle.Bold);
+        using var interFont = new Font("Segoe UI", Math.Max(4.5f, radius * 0.10f), FontStyle.Regular);
         using var cardinalBrush = new SolidBrush(Color.FromArgb(248, 250, 252));
         using var interBrush = new SolidBrush(Color.FromArgb(203, 213, 225));
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
@@ -202,11 +202,11 @@ internal sealed class Graph3DRotationDial : Control
         DrawPolarText(g, "S", cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, 180d);
         DrawPolarText(g, "W", cardinalFont, cardinalBrush, format, cx, cy, radius * 0.56f, 270d);
 
-        if (radius < 48f)
+        if (radius < 28f)
             return;
 
         for (var i = 0; i < IntercardinalLabels.Length; i++)
-            DrawPolarText(g, IntercardinalLabels[i], interFont, interBrush, format, cx, cy, radius * 0.52f, 45d + i * 90d);
+            DrawPolarText(g, IntercardinalLabels[i], interFont, interBrush, format, cx, cy, radius * 0.47f, 45d + i * 90d);
     }
 
     private static void DrawDegreeLabels(Graphics g, float cx, float cy, float radius)
