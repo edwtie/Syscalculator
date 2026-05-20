@@ -115,6 +115,11 @@ internal sealed class Graph3DRotationDial : Control
         Region = new Region(path);
     }
 
+    protected override void OnPaintBackground(PaintEventArgs pevent)
+    {
+        // Keep the overlay from painting a rectangular block over the graph grid.
+    }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
@@ -155,7 +160,13 @@ internal sealed class Graph3DRotationDial : Control
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
         var yaw = NormalizeDegrees(_camera.YawDegrees);
         using var readoutBrush = new SolidBrush(Color.FromArgb(15, 63, 143));
-        g.DrawString($"{yaw:0} deg", smallFont, readoutBrush, new RectangleF(0, Height - readoutHeight, Width, readoutHeight), format);
+        var readoutRect = Rectangle.Round(new RectangleF(cx - radius * 0.50f, Height - readoutHeight + 1f, radius, readoutHeight - 2f));
+        var readoutRadius = new Size(Math.Max(3, (int)Math.Round(readoutHeight * 0.25f)), Math.Max(3, (int)Math.Round(readoutHeight * 0.25f)));
+        using var readoutFill = new SolidBrush(Color.FromArgb(235, 248, 251, 255));
+        using var readoutBorder = new Pen(Color.FromArgb(180, 191, 219, 254), 1f);
+        g.FillRoundedRectangle(readoutFill, readoutRect, readoutRadius);
+        g.DrawRoundedRectangle(readoutBorder, readoutRect, readoutRadius);
+        g.DrawString($"{yaw:0} deg", smallFont, readoutBrush, readoutRect, format);
     }
 
     private static void DrawCompassRose(Graphics g, float cx, float cy, float radius)
