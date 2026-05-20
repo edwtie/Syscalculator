@@ -2692,18 +2692,22 @@ public sealed class NodEditorForm : Form
             _language,
             LanguageCatalog.ListAvailable(AppContext.BaseDirectory),
             _language.FileName,
-            AppVersionInfo.ReleaseChannel)
+            AppVersionInfo.ReleaseChannel,
+            _language.PackageId)
         {
             TopMost = TopMost
         };
 
-        if (form.ShowDialog(this) == DialogResult.OK && form.SelectedLanguageFile is not null)
+        if (form.ShowDialog(this) == DialogResult.OK && form.SelectedLanguage is not null)
         {
-            if (_language.FileName.Equals(form.SelectedLanguageFile, StringComparison.OrdinalIgnoreCase))
+            if (form.SelectedLanguage.Matches(_language.FileName, _language.PackageId))
                 return;
 
-            LanguageCatalog.SaveConfigured(AppContext.BaseDirectory, form.SelectedLanguageFile);
-            _language = LanguageCatalog.Load(AppContext.BaseDirectory, form.SelectedLanguageFile);
+            LanguageCatalog.SaveConfigured(AppContext.BaseDirectory, form.SelectedLanguage);
+            _language = LanguageCatalog.Load(
+                AppContext.BaseDirectory,
+                form.SelectedLanguage.FileName,
+                form.SelectedLanguage.PackageId);
             ApplyLanguageImmediately();
         }
     }

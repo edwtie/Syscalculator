@@ -12,11 +12,14 @@ internal sealed class LanguageSelectionForm : Form
     private readonly Button _okButton = new();
 
     public string? SelectedLanguageFile { get; private set; }
+    public string? SelectedLanguagePackageId { get; private set; }
+    public LanguageCatalog.LanguageInfo? SelectedLanguage { get; private set; }
 
     // Zoek/commentaar: Constructor: maakt en initialiseert LanguageSelectionForm.
     public LanguageSelectionForm(
         IReadOnlyList<LanguageCatalog.LanguageInfo> languages,
         string currentLanguageFile,
+        string? currentLanguagePackageId,
         LanguageCatalog language)
     {
         _languages = languages;
@@ -59,7 +62,7 @@ internal sealed class LanguageSelectionForm : Form
         _searchBox.Dock = DockStyle.Fill;
         _searchBox.Margin = new Padding(0, 0, 0, 8);
         _searchBox.PlaceholderText = T("dialog.language.search", "Search language...");
-        _searchBox.TextChanged += (_, _) => RefreshLanguageList(_searchBox.Text, currentLanguageFile);
+        _searchBox.TextChanged += (_, _) => RefreshLanguageList(_searchBox.Text, currentLanguageFile, currentLanguagePackageId);
         root.Controls.Add(_searchBox, 0, 1);
 
         _languageList.Dock = DockStyle.Fill;
@@ -106,7 +109,7 @@ internal sealed class LanguageSelectionForm : Form
         CancelButton = cancelButton;
         Controls.Add(root);
 
-        RefreshLanguageList("", currentLanguageFile);
+        RefreshLanguageList("", currentLanguageFile, currentLanguagePackageId);
     }
 
     // Zoek/commentaar: Methode LanguageList_DrawItem: centrale logica voor deze stap.
@@ -132,47 +135,50 @@ internal sealed class LanguageSelectionForm : Form
 
         var x = bounds.Left + 14;
         e.Graphics.DrawString(language.DisplayName, nameFont, nameBrush, x, bounds.Top + 5);
-        e.Graphics.DrawString(language.FileName, fileFont, fileBrush, x, bounds.Top + 23);
+        e.Graphics.DrawString(language.SourceLabel, fileFont, fileBrush, x, bounds.Top + 23);
 
         using var border = new Pen(Color.FromArgb(232, 236, 244));
         e.Graphics.DrawLine(border, bounds.Left + 8, bounds.Bottom - 1, bounds.Right - 8, bounds.Bottom - 1);
     }
 
     // Zoek/commentaar: Ververst de getoonde data of UI voor RefreshLanguageList.
-    private void RefreshLanguageList(string filter, string currentLanguageFile)
+    private void RefreshLanguageList(string filter, string currentLanguageFile, string? currentLanguagePackageId)
     {
         _languageList.BeginUpdate();
         _languageList.Items.Clear();
 
-        foreach (var language in GetDisplayLanguages(filter, currentLanguageFile))
+        foreach (var language in GetDisplayLanguages(filter, currentLanguageFile, currentLanguagePackageId))
             _languageList.Items.Add(language);
 
         _languageList.EndUpdate();
 
-        SelectCurrentLanguage(currentLanguageFile);
+        SelectCurrentLanguage(currentLanguageFile, currentLanguagePackageId);
         _countLabel.Text = string.Format(T("dialog.language.count", "{0} languages"), _languageList.Items.Count);
         _okButton.Enabled = _languageList.SelectedItem is not null;
     }
 
     // Zoek/commentaar: Zet de huidige taal bovenaan en laat de rest alfabetisch staan.
-    private IEnumerable<LanguageCatalog.LanguageInfo> GetDisplayLanguages(string filter, string currentLanguageFile)
+    private IEnumerable<LanguageCatalog.LanguageInfo> GetDisplayLanguages(
+        string filter,
+        string currentLanguageFile,
+        string? currentLanguagePackageId)
     {
         var matchingLanguages = _languages
             .Where(language => MatchesFilter(language, filter))
             .ToList();
 
         return matchingLanguages
-            .OrderByDescending(language => language.FileName.Equals(currentLanguageFile, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(language => language.Matches(currentLanguageFile, currentLanguagePackageId))
             .ThenBy(language => language.DisplayName, StringComparer.CurrentCultureIgnoreCase);
     }
 
     // Zoek/commentaar: Selecteert het juiste item voor SelectCurrentLanguage.
-    private void SelectCurrentLanguage(string currentLanguageFile)
+    private void SelectCurrentLanguage(string currentLanguageFile, string? currentLanguagePackageId)
     {
         for (var i = 0; i < _languageList.Items.Count; i++)
         {
             if (_languageList.Items[i] is LanguageCatalog.LanguageInfo language &&
-                language.FileName.Equals(currentLanguageFile, StringComparison.OrdinalIgnoreCase))
+                language.Matches(currentLanguageFile, currentLanguagePackageId))
             {
                 _languageList.SelectedIndex = i;
                 return;
@@ -190,7 +196,7 @@ internal sealed class LanguageSelectionForm : Form
             return true;
 
         return language.DisplayName.Contains(filter, StringComparison.CurrentCultureIgnoreCase) ||
-            language.FileName.Contains(filter, StringComparison.OrdinalIgnoreCase);
+            language.SourceLabel.Contains(filter, StringComparison.OrdinalIgnoreCase);
     }
 
     // Zoek/commentaar: Bevestigt de huidige keuze voor AcceptSelectedLanguage.
@@ -199,7 +205,9 @@ internal sealed class LanguageSelectionForm : Form
         if (_languageList.SelectedItem is not LanguageCatalog.LanguageInfo language)
             return;
 
+        SelectedLanguage = language;
         SelectedLanguageFile = language.FileName;
+        SelectedLanguagePackageId = language.PackageId;
         DialogResult = DialogResult.OK;
         Close();
     }

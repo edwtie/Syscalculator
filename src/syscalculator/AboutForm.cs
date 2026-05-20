@@ -19,20 +19,25 @@ internal sealed class AboutForm : Form
     private bool _initializingLanguage;
     private bool _languageRefreshPending;
     private string _currentLanguageFile;
+    private string? _currentLanguagePackageId;
     private readonly string _updateChannel;
 
     public string? SelectedLanguageFile { get; private set; }
+    public string? SelectedLanguagePackageId { get; private set; }
+    public LanguageCatalog.LanguageInfo? SelectedLanguage { get; private set; }
 
     // Zoek/commentaar: Constructor: maakt en initialiseert AboutForm.
     public AboutForm(
         LanguageCatalog language,
         IReadOnlyList<LanguageCatalog.LanguageInfo> languages,
         string currentLanguageFile,
-        string updateChannel)
+        string updateChannel,
+        string? currentLanguagePackageId = null)
     {
         _language = language;
         _languages = languages;
         _currentLanguageFile = currentLanguageFile;
+        _currentLanguagePackageId = currentLanguagePackageId;
         _updateChannel = UpdateChecker.NormalizeChannel(updateChannel);
 
         ClientSize = new Size(1320, 700);
@@ -259,7 +264,7 @@ internal sealed class AboutForm : Form
                 return;
 
             if (_languageCombo.SelectedItem is LanguageCatalog.LanguageInfo language)
-                ApplySelectedLanguage(language.FileName);
+                ApplySelectedLanguage(language);
         };
 
         _initializingLanguage = true;
@@ -269,7 +274,7 @@ internal sealed class AboutForm : Form
         for (var i = 0; i < _languageCombo.Items.Count; i++)
         {
             if (_languageCombo.Items[i] is LanguageCatalog.LanguageInfo language &&
-                language.FileName.Equals(currentLanguageFile, StringComparison.OrdinalIgnoreCase))
+                language.Matches(currentLanguageFile, _currentLanguagePackageId))
             {
                 _languageCombo.SelectedIndex = i;
                 break;
@@ -291,12 +296,20 @@ internal sealed class AboutForm : Form
     // Zoek/commentaar: Past een regel, instelling of bewerking toe voor ApplySelectedLanguage.
     private void ApplySelectedLanguage(string fileName)
     {
-        if (fileName.Equals(_currentLanguageFile, StringComparison.OrdinalIgnoreCase))
+        ApplySelectedLanguage(new LanguageCatalog.LanguageInfo(Path.GetFileNameWithoutExtension(fileName), fileName));
+    }
+
+    private void ApplySelectedLanguage(LanguageCatalog.LanguageInfo languageInfo)
+    {
+        if (languageInfo.Matches(_currentLanguageFile, _currentLanguagePackageId))
             return;
 
-        SelectedLanguageFile = fileName;
-        _currentLanguageFile = fileName;
-        _language = LanguageCatalog.Load(AppContext.BaseDirectory, fileName);
+        SelectedLanguage = languageInfo;
+        SelectedLanguageFile = languageInfo.FileName;
+        SelectedLanguagePackageId = languageInfo.PackageId;
+        _currentLanguageFile = languageInfo.FileName;
+        _currentLanguagePackageId = languageInfo.PackageId;
+        _language = LanguageCatalog.Load(AppContext.BaseDirectory, languageInfo.FileName, languageInfo.PackageId);
         RefreshContentAfterComboEvent();
     }
 

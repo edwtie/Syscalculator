@@ -210,13 +210,14 @@ No new NuGet package is needed for the first implementation.
 This matches the existing updater direction, which already extracts ZIP update
 packages.
 
-## New Components
+## Implemented Components
 
-Suggested new code:
+Current code:
 
 ```text
-src/syscalculator/LanguagePackageManifest.cs
 src/syscalculator/LanguagePackageService.cs
+src/syscalculator/LanguageCatalog.cs
+src/syscalculator/LanguageSelectionForm.cs
 ```
 
 Responsibilities:
@@ -224,9 +225,16 @@ Responsibilities:
 - discover installed packages;
 - read `manifest.json`;
 - validate package paths;
-- extract or remove language packages;
-- return the active `.lng` stream/path;
-- return help/manual content overrides.
+- extract language packages;
+- block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
+- return the active `.lng` file path;
+- keep loose `.lng` files compatible.
+
+Not implemented yet:
+
+- help/manual content overrides;
+- package removal UI;
+- package install button in the language dialog.
 
 Later, if this grows, it can move to:
 
@@ -280,7 +288,7 @@ production can later download or install language packages through the updater.
 - Keep all current `.lng` files.
 - Add this design document.
 - Add package manifest format.
-- Do not change runtime behavior yet.
+- Status: done.
 
 ### Phase 2: Package reader
 
@@ -288,6 +296,7 @@ production can later download or install language packages through the updater.
 - Read installed package manifests.
 - List packages in the language dialog.
 - Load `language/<code>.lng` from package when selected.
+- Status: implemented for UI language text.
 
 ### Phase 3: Help/manual override
 
@@ -301,6 +310,7 @@ production can later download or install language packages through the updater.
 - Validate ZIP.
 - Extract into `LanguagePackages`.
 - Save `languagePackage=...` in `language.cfg`.
+- Status: ZIP validation/extraction service exists; UI button is still roadmap.
 
 ### Phase 5: Release/update integration
 

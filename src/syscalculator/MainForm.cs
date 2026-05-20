@@ -477,11 +477,16 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
     // Zoek/commentaar: Methode ChangeLanguage: centrale logica voor deze stap.
     private void ChangeLanguage(string fileName)
     {
-        if (_language.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
+        ChangeLanguage(new LanguageCatalog.LanguageInfo(Path.GetFileNameWithoutExtension(fileName), fileName));
+    }
+
+    private void ChangeLanguage(LanguageCatalog.LanguageInfo language)
+    {
+        if (language.Matches(_language.FileName, _language.PackageId))
             return;
 
-        LanguageCatalog.SaveConfigured(AppContext.BaseDirectory, fileName);
-        _language = LanguageCatalog.Load(AppContext.BaseDirectory, fileName);
+        LanguageCatalog.SaveConfigured(AppContext.BaseDirectory, language);
+        _language = LanguageCatalog.Load(AppContext.BaseDirectory, language.FileName, language.PackageId);
 
         ApplyLanguageImmediately();
     }
@@ -492,10 +497,11 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         using var dialog = new LanguageSelectionForm(
             LanguageCatalog.ListAvailable(AppContext.BaseDirectory),
             _language.FileName,
+            _language.PackageId,
             _language);
 
-        if (ShowOwnedDialog(dialog) == DialogResult.OK && dialog.SelectedLanguageFile is not null)
-            ChangeLanguage(dialog.SelectedLanguageFile);
+        if (ShowOwnedDialog(dialog) == DialogResult.OK && dialog.SelectedLanguage is not null)
+            ChangeLanguage(dialog.SelectedLanguage);
     }
 
     // Zoek/commentaar: Toont een venster, melding of detailweergave voor ShowOwnedDialog.
@@ -1936,10 +1942,11 @@ private void LoadNodFilePath(string nodPath)
             _language,
             LanguageCatalog.ListAvailable(AppContext.BaseDirectory),
             _language.FileName,
-            _updateChannel);
+            _updateChannel,
+            _language.PackageId);
 
-        if (ShowOwnedDialog(form) == DialogResult.OK && form.SelectedLanguageFile is not null)
-            ChangeLanguage(form.SelectedLanguageFile);
+        if (ShowOwnedDialog(form) == DialogResult.OK && form.SelectedLanguage is not null)
+            ChangeLanguage(form.SelectedLanguage);
     }
 
     private void UserHelp_Click(object? sender, EventArgs e)
