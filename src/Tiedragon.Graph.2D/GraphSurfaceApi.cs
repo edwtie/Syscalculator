@@ -374,11 +374,13 @@ public static class GraphSurfaceApi
         var x = vector[0];
         var y = vector[1];
 
-        if (vector.Count == 2 || vector[2] == 0d)
-            return new PointF((float)x, (float)y);
+        if (vector.Count == 3 && vector[2] != 0d)
+        {
+            var z = vector[2];
+            return new PointF((float)(x / z), (float)(y / z));
+        }
 
-        var z = vector[2];
-        return new PointF((float)(x / z), (float)(y / z));
+        return new PointF((float)x, (float)y);
     }
 
     public static double GetNumberBoxValue(NumericUpDown box)
