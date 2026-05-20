@@ -131,11 +131,11 @@ internal sealed class Graph3DRotationDial : Control
         var state = _dragging
             ? GraphOverlayVisualState.Pressed
             : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
-        using var rimFill = new SolidBrush(GraphOverlayStyle.ButtonFill(state, translucent: false));
-        using var faceFill = new LinearGradientBrush(rect, Color.FromArgb(15, 23, 42), Color.FromArgb(30, 41, 59), LinearGradientMode.ForwardDiagonal);
+        var faceStart = state == GraphOverlayVisualState.Pressed ? Color.FromArgb(8, 13, 26) : Color.FromArgb(15, 23, 42);
+        var faceEnd = state == GraphOverlayVisualState.Hover ? Color.FromArgb(42, 56, 79) : Color.FromArgb(30, 41, 59);
+        using var faceFill = new LinearGradientBrush(rect, faceStart, faceEnd, LinearGradientMode.ForwardDiagonal);
         using var border = new Pen(Color.FromArgb(191, 219, 254), 1f);
-        g.FillEllipse(rimFill, rect);
-        g.FillEllipse(faceFill, RectangleF.Inflate(rect, -3f, -3f));
+        g.FillEllipse(faceFill, rect);
         g.DrawEllipse(border, rect);
 
         var cx = Width / 2f;
