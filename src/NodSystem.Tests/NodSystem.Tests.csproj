@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Tiedragon.Graph/Tiedragon.Graph.csproj" />
+    <ProjectReference Include="../Tiedragon.Graph.2D/Tiedragon.Graph.2D.csproj" />
     <ProjectReference Include="../Tiedragon.Graph.3D/Tiedragon.Graph.3D.csproj" />
     <ProjectReference Include="../Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj" />
   </ItemGroup>

@@ -17,6 +17,7 @@ De tests controleren:
 */
 
 using Tiedragon.Graph;
+using Tiedragon.Graph.G2D;
 using Tiedragon.Graph.G3D;
 using Tiedragon.NodSystem.Core;
 
@@ -119,6 +120,23 @@ Test("graph3d treats vector length as arrow from origin", () =>
     AssertTrue(float.IsFinite(projectedOrigin.Screen.X), "Graph3D origin projection should be finite.");
     AssertTrue(float.IsFinite(projectedTip.Screen.X), "Graph3D vector tip projection should be finite.");
     AssertTrue(projectedOrigin.Screen != projectedTip.Screen, "Graph3D vector arrow should project to a visible segment.");
+});
+
+Test("graph2d treats vector length as arrow from origin", () =>
+{
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4))", 0));
+
+    var plot = new Rectangle(0, 0, 400, 300);
+    var view = GraphSurfaceApi.CreateFitView(new[] { new PointF(0f, 0f), new PointF(3f, 4f) }, -1d, 4d, plot.Size);
+    var projectedOrigin = GraphSurfaceApi.GraphToScreen(new PointF(0f, 0f), plot, view);
+    var projectedTip = GraphSurfaceApi.GraphToScreen(new PointF(3f, 4f), plot, view);
+    var roundTripTip = GraphSurfaceApi.ScreenToGraph(projectedTip, plot, view);
+
+    AssertTrue(float.IsFinite(projectedOrigin.X), "Graph2D origin projection should be finite.");
+    AssertTrue(float.IsFinite(projectedTip.X), "Graph2D vector tip projection should be finite.");
+    AssertTrue(projectedOrigin != projectedTip, "Graph2D vector arrow should project to a visible segment.");
+    AssertNear(3m, (decimal)roundTripTip.X, 0.0001m);
+    AssertNear(4m, (decimal)roundTripTip.Y, 0.0001m);
 });
 
 Test("expression vector arithmetic keeps z component", () =>
