@@ -169,11 +169,16 @@ Test("graph3d treats vector length as arrow from origin", () =>
 Test("graph2d treats vector length as arrow from origin", () =>
 {
     AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4))", 0));
+    AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
+
+    var projectedVector3D = GraphSurfaceApi.ProjectFormulaVectorTo2D(new[] { 3d, 4d, 12d });
+    AssertNear(3m, (decimal)projectedVector3D.X, 0.0001m);
+    AssertNear(4m, (decimal)projectedVector3D.Y, 0.0001m);
 
     var plot = new Rectangle(0, 0, 400, 300);
-    var view = GraphSurfaceApi.CreateFitView(new[] { new PointF(0f, 0f), new PointF(3f, 4f) }, -1d, 4d, plot.Size);
+    var view = GraphSurfaceApi.CreateFitView(new[] { new PointF(0f, 0f), projectedVector3D }, -1d, 4d, plot.Size);
     var projectedOrigin = GraphSurfaceApi.GraphToScreen(new PointF(0f, 0f), plot, view);
-    var projectedTip = GraphSurfaceApi.GraphToScreen(new PointF(3f, 4f), plot, view);
+    var projectedTip = GraphSurfaceApi.GraphToScreen(projectedVector3D, plot, view);
     var roundTripTip = GraphSurfaceApi.ScreenToGraph(projectedTip, plot, view);
 
     AssertTrue(float.IsFinite(projectedOrigin.X), "Graph2D origin projection should be finite.");

@@ -361,6 +361,17 @@ public static class GraphSurfaceApi
             width);
     }
 
+    /// <summary>
+    /// Projects a 2D or 3D formula vector to the Graph2D plane by keeping X/Y and ignoring Z.
+    /// </summary>
+    public static PointF ProjectFormulaVectorTo2D(IReadOnlyList<double> vector)
+    {
+        if (vector.Count is not 2 and not 3)
+            throw new ArgumentException("Graph2D formula vectors must have 2 or 3 components.", nameof(vector));
+
+        return new PointF((float)vector[0], (float)vector[1]);
+    }
+
     public static double GetNumberBoxValue(NumericUpDown box)
     {
         return box.Tag is double exact && double.IsFinite(exact)

@@ -1476,7 +1476,7 @@ internal sealed class FormulaCardForm : Form
             "vector-length-3d" => new(
                 "<p>Vector <code>v = (3, 4, 12)</code>.</p>",
                 MathBlock("<mrow><mo stretchy=\"false\">&#x2016;</mo><mi mathvariant=\"bold-italic\">v</mi><mo stretchy=\"false\">&#x2016;</mo><mo>=</mo><msqrt><mrow><msup><mn>3</mn><mn>2</mn></msup><mo>+</mo><msup><mn>4</mn><mn>2</mn></msup><mo>+</mo><msup><mn>12</mn><mn>2</mn></msup></mrow></msqrt><mo>=</mo><msqrt><mn>169</mn></msqrt><mo>=</mo><mn>13</mn></mrow>"),
-                "<p>De 3D-vectorlengte is <code>13</code>.</p>"),
+                "<p>De 3D-vectorlengte is <code>13</code>. In Graph 3D zie je de volledige pijl naar <code>(3,4,12)</code>; in Graph 2D zie je de XY-projectie naar <code>(3,4)</code>.</p>"),
             "vector-dot-angle" => new(
                 "<p>Vectoren <code>a = (1,0)</code> en <code>b = (0,1)</code>.</p>",
                 MathBlock("<mrow><mi>a</mi><mo>&#x22C5;</mo><mi>b</mi><mo>=</mo><mn>1</mn><mo>&#x00D7;</mo><mn>0</mn><mo>+</mo><mn>0</mn><mo>&#x00D7;</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow>") +
@@ -1539,7 +1539,7 @@ internal sealed class FormulaCardForm : Form
             "integral-constant-factor" => ("math integral 0,1 3*ans^2", "Het vaste getal blijft buiten de primitieve-regel staan."),
             "integral-definite-area" => ("math integral 0,1 ans^2", "Bepaalde integraal als numerieke oppervlakte tussen twee grenzen."),
             "vector-2d-arrow" => ("math vec 3 4\r\nmath length(vec(3,4))\r\nmath dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
-            "vector-length-3d" => ("math length(vec(3,4,12))\r\nmath vec (3,4,12)", "Beide schrijven de lengte van de 3D-vector uit als getal."),
+            "vector-length-3d" => ("mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)", "Graph 3D toont de volledige XYZ-pijl. Graph 2D toont dezelfde 3D-vector als XY-projectie via de formule."),
             "vector-dot-angle" => ("math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))", "dot geeft het inproduct. angled geeft de hoek in graden."),
             "vector-cross-z" => ("math z(cross(vec(1,0,0), vec(0,1,0)))", "cross geeft een vector; met z(...) kies je de z-component als eindgetal."),
             "point-line-distance" => ("math |ans(a)*ans(xp) + ans(b)*ans(yp) - ans(c)| / sqrt(ans(a)^2 + ans(b)^2)", "2D analytische meetkunde met named inputs."),
@@ -2077,8 +2077,8 @@ internal sealed class FormulaCardForm : Form
                 "math vec 3 4\r\nmath length(vec(3,4))\r\nmath dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))",
                 "Gebruik math vec 3 4 of length(vec(3,4)) voor vectorlengte. dot en angled zijn verwante vectorbewerkingen."),
             "vector-length-3d" => (
-                "math length(vec(3,4,12))\r\nmath vec (3,4,12)",
-                "Beide schrijven de lengte van de 3D-vector uit als getal."),
+                "mode geometry\r\ninput x X component\r\ninput y Y component\r\ninput z Z component\r\nmath length(vec(x,y,z))\r\nmath vec (3,4,12)",
+                "Graph 3D toont de volledige XYZ-pijl. Graph 2D toont dezelfde 3D-vector als XY-projectie via de formule."),
             "vector-dot-angle" => (
                 "math dot(vec(1,2), vec(3,4))\r\nmath angled(vec(1,0), vec(0,1))",
                 "dot geeft het inproduct. angled geeft de hoek in graden."),

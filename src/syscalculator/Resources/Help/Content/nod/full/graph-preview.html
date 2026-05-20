@@ -165,6 +165,7 @@
   <li><code>distance(vec(a,b), vec(x,y))</code> meet de afstand tussen twee punten.</li>
   <li>Graph 2D projecteert deze pijlen in het vlak. Graph 3D projecteert ze met camera, rotatie en Z-diepte.</li>
 </ul>
+<p>Gebruik je een 3D-vector in Graph 2D, dan wordt hij als <b>XY-projectie</b> getoond. De formule <code>length(vec(x,y,z))</code> rekent dus met X, Y en Z, maar Graph 2D tekent alleen de pijl van <code>(0,0)</code> naar <code>(x,y)</code>. Graph 3D tekent dezelfde vector naar <code>(x,y,z)</code>.</p>
 <pre>Name Geometry 3D vector
 mode geometry
 input x X coordinate
