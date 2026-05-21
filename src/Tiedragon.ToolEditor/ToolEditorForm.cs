@@ -505,7 +505,7 @@ public sealed class ToolEditorForm : Form
         var cards = FormulaCardCatalog.GetDefaultCards();
         AddDocument("formula/index.html", BuildFormulaIndexHtml(cards), null);
         foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
-            AddDocument("formula/" + card.Id + ".html", BuildFormulaCardHtml(card), null);
+            AddDocument(BuildFormulaCardPackagePath(card), BuildFormulaCardHtml(card), null);
     }
 
     private static string BuildNodHelpFallback()
@@ -523,10 +523,12 @@ public sealed class ToolEditorForm : Form
         foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
         {
             rows.Append("<tr><td><a href=\"")
-                .Append(WebUtility.HtmlEncode(card.Id))
-                .Append(".html\">")
+                .Append(WebUtility.HtmlEncode(BuildFormulaCardRelativeLink(card)))
+                .Append("\">")
                 .Append(WebUtility.HtmlEncode(card.Title))
                 .Append("</a></td><td>")
+                .Append(WebUtility.HtmlEncode(FriendlyFormulaCategory(BuildFormulaCardCategory(card))))
+                .Append("</td><td>")
                 .Append(WebUtility.HtmlEncode(string.Join(", ", card.LevelTags)))
                 .Append("</td><td>")
                 .Append(WebUtility.HtmlEncode(card.Description))
@@ -537,12 +539,41 @@ public sealed class ToolEditorForm : Form
         <h1>Formulekaart</h1>
         <p>De formulekaart bundelt wiskundige basisregels, MathML, LaTeX en voorbeeld-NOD voor gebruik in Syscalculator.</p>
         <table>
-          <thead><tr><th>Formule</th><th>Tags</th><th>Uitleg</th></tr></thead>
+          <thead><tr><th>Formule</th><th>Categorie</th><th>Tags</th><th>Uitleg</th></tr></thead>
           <tbody>
         """ + rows + """
           </tbody>
         </table>
         """;
+    }
+
+    private static string BuildFormulaCardPackagePath(FormulaCard card)
+    {
+        return "formula/" + BuildFormulaCardCategory(card) + "/" + card.Id + ".html";
+    }
+
+    private static string BuildFormulaCardRelativeLink(FormulaCard card)
+    {
+        return BuildFormulaCardCategory(card) + "/" + card.Id + ".html";
+    }
+
+    private static string BuildFormulaCardCategory(FormulaCard card)
+    {
+        var tags = card.LevelTags;
+        if (tags.Any(tag => tag.Equals("Statistiek", StringComparison.OrdinalIgnoreCase)))
+            return "statistiek";
+        if (tags.Any(tag => tag.Equals("Kansrekening", StringComparison.OrdinalIgnoreCase)))
+            return "kansrekening";
+        if (tags.Any(tag => tag.Equals("Goniometrie", StringComparison.OrdinalIgnoreCase)))
+            return "goniometrie";
+        if (tags.Any(tag => tag.Contains("Meetkunde", StringComparison.OrdinalIgnoreCase) || tag.Equals("2D", StringComparison.OrdinalIgnoreCase) || tag.Equals("3D", StringComparison.OrdinalIgnoreCase)))
+            return "meetkunde";
+        if (tags.Any(tag => tag.Contains("Analyse", StringComparison.OrdinalIgnoreCase) || tag.Contains("Different", StringComparison.OrdinalIgnoreCase) || tag.Contains("Integra", StringComparison.OrdinalIgnoreCase)))
+            return "analyse";
+        if (tags.Any(tag => tag.Equals("Algebra", StringComparison.OrdinalIgnoreCase)))
+            return "algebra";
+
+        return "basis";
     }
 
     private static string BuildFormulaCardHtml(FormulaCard card)
@@ -1750,6 +1781,12 @@ public sealed class ToolEditorForm : Form
         if (path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("formula", StringComparison.OrdinalIgnoreCase))
         {
+            var formulaParts = path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase)
+                ? path["formula/".Length..].Split('/', StringSplitOptions.RemoveEmptyEntries)
+                : [];
+            if (formulaParts.Length >= 2)
+                return ["Formulekaart", FriendlyFormulaCategory(formulaParts[0]), FriendlyTopicName(formulaParts[^1])];
+
             return ["Formulekaart", topic];
         }
 
@@ -1795,6 +1832,21 @@ public sealed class ToolEditorForm : Form
             "command" => "Command extra",
             "popup" => "Popup help",
             "snippet" => "Snippets",
+            _ => FriendlyTopicName(category)
+        };
+    }
+
+    private static string FriendlyFormulaCategory(string category)
+    {
+        return category.ToLowerInvariant() switch
+        {
+            "algebra" => "Algebra",
+            "analyse" => "Analyse",
+            "basis" => "Basis",
+            "goniometrie" => "Goniometrie",
+            "kansrekening" => "Kansrekening",
+            "meetkunde" => "Meetkunde",
+            "statistiek" => "Statistiek",
             _ => FriendlyTopicName(category)
         };
     }
