@@ -117,19 +117,35 @@ Rules:
 
 ## Install Location
 
-Recommended runtime location:
+Recommended runtime location for packages that remain compressed:
+
+```text
+<app>\LanguagePackages\<package-id>.zip
+<app>\LanguagePackages\Cache\<package-id>.zip
+```
+
+Extracted folders are still supported for compatibility and manual editing:
 
 ```text
 <app>\LanguagePackages\<package-id>\
 ```
 
-The ZIP itself may be stored in:
+The ZIP cache location is:
 
 ```text
 <app>\LanguagePackages\Cache\
 ```
 
-Extracted example:
+Compressed package example:
+
+```text
+LanguagePackages/
+|-- syscalculator.language.ned.zip
+`-- Cache/
+    `-- syscalculator.language.ned.zip
+```
+
+Extracted compatibility example:
 
 ```text
 LanguagePackages/
@@ -150,12 +166,13 @@ extend the lookup order instead of replacing it.
 Recommended lookup order for UI text:
 
 ```text
-1. selected language package: language/<code>.lng
+1. selected language package ZIP: language/<code>.lng
 2. <app>\Languages\<code>.lng
 3. <app>\<code>.lng
-4. selected package fallback: language/eng.lng if included
-5. <app>\eng.lng
-6. built-in fallback string from code
+4. selected extracted language package: language/<code>.lng
+5. selected package fallback: language/eng.lng if included
+6. <app>\eng.lng
+7. built-in fallback string from code
 ```
 
 Recommended lookup order for help/manual content:
@@ -191,9 +208,9 @@ Blocked:
 - `.ps1`
 - absolute paths
 - `..` path traversal
-- files extracted outside `LanguagePackages`
+- files that would escape `LanguagePackages` if extracted later
 
-ZIP extraction must validate every entry path before writing.
+ZIP reading and optional extraction must validate every entry path before use.
 
 ## Zip Library
 
@@ -224,9 +241,10 @@ Responsibilities:
 - discover installed packages;
 - read `manifest.json`;
 - validate package paths;
-- extract language packages;
+- read language packages directly from ZIP archives;
+- keep extracted language package folders compatible;
 - block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
-- return the active `.lng` file path;
+- return the active `.lng` content;
 - keep loose `.lng` files compatible.
 
 Not implemented yet:
@@ -307,9 +325,9 @@ production can later download or install language packages through the updater.
 
 - Add “Install language package...” button.
 - Validate ZIP.
-- Extract into `LanguagePackages`.
+- Copy the ZIP into `LanguagePackages\Cache` without requiring extraction.
 - Save `languagePackage=...` in `language.cfg`.
-- Status: ZIP validation/extraction service exists; UI button is still roadmap.
+- Status: ZIP validation and direct ZIP reading exist; UI button is still roadmap.
 
 ### Phase 5: Release/update integration
 
@@ -318,7 +336,7 @@ production can later download or install language packages through the updater.
 
 ## Open Questions
 
-- Should official packages be signed or checksum-verified before extraction?
+- Should official packages be signed or checksum-verified before loading?
 - Should user-installed packages allow JavaScript, or should JS only be allowed
   in built-in trusted packages?
 - Should manuals be HTML-only, Markdown-only, or both?

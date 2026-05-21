@@ -43,9 +43,14 @@ internal sealed class LanguageCatalog
         };
 
         if (!string.IsNullOrWhiteSpace(packageId) &&
-            LanguagePackageService.TryGetLanguageFile(baseDirectory, packageId, fileName, out var packagePath))
+            LanguagePackageService.TryReadLanguageFile(
+                baseDirectory,
+                packageId,
+                fileName,
+                out var packageContent,
+                out var packageFileName))
         {
-            return new LanguageCatalog(ReadLanguageFile(packagePath), Path.GetFileName(packagePath), packageId);
+            return new LanguageCatalog(ReadLanguageText(packageContent), packageFileName, packageId);
         }
 
         foreach (var path in paths)
@@ -141,7 +146,14 @@ internal sealed class LanguageCatalog
 
         foreach (var package in LanguagePackageService.ListInstalled(baseDirectory))
         {
-            var texts = ReadLanguageFile(package.LanguageFilePath);
+            var texts = LanguagePackageService.TryReadLanguageFile(
+                baseDirectory,
+                package.Manifest.Id,
+                package.LanguageFileName,
+                out var packageContent,
+                out _)
+                ? ReadLanguageText(packageContent)
+                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var displayName = !string.IsNullOrWhiteSpace(package.Manifest.NativeName)
                 ? package.Manifest.NativeName
                 : package.Manifest.DisplayName;
@@ -197,9 +209,19 @@ internal sealed class LanguageCatalog
 
     private static Dictionary<string, string> ReadLanguageFile(string path)
     {
+        return ReadLanguageLines(File.ReadAllLines(path));
+    }
+
+    private static Dictionary<string, string> ReadLanguageText(string content)
+    {
+        return ReadLanguageLines(content.Split(["\r\n", "\n"], StringSplitOptions.None));
+    }
+
+    private static Dictionary<string, string> ReadLanguageLines(IEnumerable<string> lines)
+    {
         var texts = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var rawLine in File.ReadAllLines(path))
+        foreach (var rawLine in lines)
         {
             var line = rawLine.Trim();
             if (line.Length == 0 || line.StartsWith("#") || line.StartsWith(";"))

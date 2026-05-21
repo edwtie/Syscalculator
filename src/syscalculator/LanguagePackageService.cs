@@ -40,6 +40,12 @@ internal static class LanguagePackageService
             return [];
 
         var packages = new List<LanguagePackageInfo>();
+        foreach (var zipPath in EnumeratePackageZipFiles(root))
+        {
+            if (TryReadZipPackage(zipPath, out var package))
+                packages.Add(package);
+        }
+
         foreach (var directory in Directory.GetDirectories(root))
         {
             if (Path.GetFileName(directory).Equals(CacheDirectoryName, StringComparison.OrdinalIgnoreCase))
@@ -49,7 +55,10 @@ internal static class LanguagePackageService
             if (manifest is null || !TryResolveLanguageFile(directory, manifest.LanguageCode, out var languagePath))
                 continue;
 
-            packages.Add(new LanguagePackageInfo(manifest, directory, languagePath));
+            if (packages.Any(package => package.Manifest.Id.Equals(manifest.Id, StringComparison.OrdinalIgnoreCase)))
+                continue;
+
+            packages.Add(LanguagePackageInfo.FromDirectory(manifest, directory, languagePath));
         }
 
         return packages
@@ -67,29 +76,75 @@ internal static class LanguagePackageService
         if (!IsSafePackageId(packageId))
             return false;
 
+        var root = GetPackageRoot(baseDirectory);
+        foreach (var zipPath in EnumeratePackageZipFiles(root))
+        {
+            if (TryReadZipPackage(zipPath, out var zipPackage) &&
+                zipPackage.Manifest.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+            {
+                package = zipPackage;
+                return true;
+            }
+        }
+
         var directory = Path.Combine(GetPackageRoot(baseDirectory), packageId);
         var manifest = ReadManifest(directory);
         if (manifest is null || !TryResolveLanguageFile(directory, manifest.LanguageCode, out var languagePath))
             return false;
 
-        package = new LanguagePackageInfo(manifest, directory, languagePath);
+        package = LanguagePackageInfo.FromDirectory(manifest, directory, languagePath);
         return true;
     }
 
-    public static bool TryGetLanguageFile(
+    public static bool TryReadLanguageFile(
         string baseDirectory,
         string packageId,
         string fileName,
-        out string path)
+        out string content,
+        out string resolvedFileName)
     {
-        path = "";
+        content = "";
+        resolvedFileName = fileName;
         if (!TryFindPackage(baseDirectory, packageId, out var package))
             return false;
 
         var requestedCode = Path.GetFileNameWithoutExtension(fileName);
-        if (!TryResolveLanguageFile(package.DirectoryPath, requestedCode, out path))
+        if (package.IsArchive)
+            return TryReadZipEntry(package.PackagePath, "language/" + requestedCode + ".lng", out content);
+
+        if (!TryResolveLanguageFile(package.PackagePath, requestedCode, out var path))
             return false;
 
+        resolvedFileName = Path.GetFileName(path);
+        content = File.ReadAllText(path);
+        return true;
+    }
+
+    public static bool TryReadContentFile(
+        string baseDirectory,
+        string packageId,
+        string relativePath,
+        out string content)
+    {
+        content = "";
+        if (!TryFindPackage(baseDirectory, packageId, out var package))
+            return false;
+
+        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        ValidateEntryName(normalized);
+
+        if (package.IsArchive)
+            return TryReadZipEntry(package.PackagePath, normalized, out content);
+
+        var packageRoot = Path.GetFullPath(package.PackagePath);
+        var path = Path.GetFullPath(Path.Combine(packageRoot, normalized));
+        if (!path.StartsWith(packageRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+            !File.Exists(path))
+        {
+            return false;
+        }
+
+        content = File.ReadAllText(path);
         return true;
     }
 
@@ -104,32 +159,17 @@ internal static class LanguagePackageService
         var root = GetPackageRoot(baseDirectory);
         Directory.CreateDirectory(root);
 
-        var destination = Path.Combine(root, manifest.Id);
-        var temporaryDestination = destination + ".tmp-" + Guid.NewGuid().ToString("N");
-        Directory.CreateDirectory(temporaryDestination);
-
-        try
+        foreach (var entry in archive.Entries)
         {
-            foreach (var entry in archive.Entries)
-                ExtractEntry(entry, temporaryDestination);
-
-            if (!TryResolveLanguageFile(temporaryDestination, manifest.LanguageCode, out _))
-                throw new InvalidDataException($"Language package does not contain language/{manifest.LanguageCode}.lng.");
-
-            if (Directory.Exists(destination))
-                Directory.Delete(destination, recursive: true);
-
-            Directory.Move(temporaryDestination, destination);
-            CopyToCache(root, zipPath, manifest.Id);
-            return manifest;
+            if (!string.IsNullOrWhiteSpace(entry.FullName) && !entry.FullName.EndsWith('/'))
+                ValidateEntryName(entry.FullName);
         }
-        catch
-        {
-            if (Directory.Exists(temporaryDestination))
-                Directory.Delete(temporaryDestination, recursive: true);
 
-            throw;
-        }
+        if (!ContainsEntry(archive, "language/" + manifest.LanguageCode + ".lng"))
+            throw new InvalidDataException($"Language package does not contain language/{manifest.LanguageCode}.lng.");
+
+        CopyToCache(root, zipPath, manifest.Id);
+        return manifest;
     }
 
     private static string GetPackageRoot(string baseDirectory)
@@ -169,6 +209,76 @@ internal static class LanguagePackageService
         return JsonSerializer.Deserialize<LanguagePackageManifest>(stream, JsonOptions);
     }
 
+    private static IEnumerable<string> EnumeratePackageZipFiles(string root)
+    {
+        foreach (var path in Directory.GetFiles(root, "*.zip"))
+            yield return path;
+
+        var cache = Path.Combine(root, CacheDirectoryName);
+        if (!Directory.Exists(cache))
+            yield break;
+
+        foreach (var path in Directory.GetFiles(cache, "*.zip"))
+            yield return path;
+    }
+
+    private static bool TryReadZipPackage(string zipPath, out LanguagePackageInfo package)
+    {
+        package = null!;
+        try
+        {
+            using var archive = ZipFile.OpenRead(zipPath);
+            var manifest = ReadManifest(archive);
+            if (manifest is null)
+                return false;
+
+            ValidateManifest(manifest);
+            foreach (var entry in archive.Entries)
+            {
+                if (!string.IsNullOrWhiteSpace(entry.FullName) && !entry.FullName.EndsWith('/'))
+                    ValidateEntryName(entry.FullName);
+            }
+
+            if (!ContainsEntry(archive, "language/" + manifest.LanguageCode + ".lng"))
+                return false;
+
+            package = LanguagePackageInfo.FromArchive(manifest, zipPath);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryReadZipEntry(string zipPath, string entryName, out string content)
+    {
+        content = "";
+        try
+        {
+            using var archive = ZipFile.OpenRead(zipPath);
+            var entry = archive.Entries.FirstOrDefault(entry =>
+                entry.FullName.Equals(entryName, StringComparison.OrdinalIgnoreCase));
+            if (entry is null)
+                return false;
+
+            using var stream = entry.Open();
+            using var reader = new StreamReader(stream);
+            content = reader.ReadToEnd();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool ContainsEntry(ZipArchive archive, string entryName)
+    {
+        return archive.Entries.Any(entry =>
+            entry.FullName.Equals(entryName, StringComparison.OrdinalIgnoreCase));
+    }
+
     private static void ValidateManifest(LanguagePackageManifest manifest)
     {
         if (manifest.Format != CurrentFormat)
@@ -185,22 +295,6 @@ internal static class LanguagePackageService
     {
         path = Path.Combine(packageDirectory, "language", languageCode + ".lng");
         return File.Exists(path);
-    }
-
-    private static void ExtractEntry(ZipArchiveEntry entry, string destinationRoot)
-    {
-        if (string.IsNullOrWhiteSpace(entry.FullName) || entry.FullName.EndsWith('/'))
-            return;
-
-        ValidateEntryName(entry.FullName);
-
-        var destinationRootFull = Path.GetFullPath(destinationRoot);
-        var destinationPath = Path.GetFullPath(Path.Combine(destinationRootFull, entry.FullName));
-        if (!destinationPath.StartsWith(destinationRootFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Language package contains a path outside the package folder.");
-
-        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-        entry.ExtractToFile(destinationPath, overwrite: true);
     }
 
     private static void ValidateEntryName(string entryName)
@@ -240,10 +334,22 @@ internal static class LanguagePackageService
 
 internal sealed record LanguagePackageInfo(
     LanguagePackageManifest Manifest,
-    string DirectoryPath,
-    string LanguageFilePath)
+    string PackagePath,
+    string LanguageFileName,
+    bool IsArchive)
 {
-    public string LanguageFileName => Path.GetFileName(LanguageFilePath);
+    public static LanguagePackageInfo FromDirectory(
+        LanguagePackageManifest manifest,
+        string directoryPath,
+        string languageFilePath)
+    {
+        return new LanguagePackageInfo(manifest, directoryPath, Path.GetFileName(languageFilePath), IsArchive: false);
+    }
+
+    public static LanguagePackageInfo FromArchive(LanguagePackageManifest manifest, string archivePath)
+    {
+        return new LanguagePackageInfo(manifest, archivePath, manifest.LanguageCode + ".lng", IsArchive: true);
+    }
 }
 
 internal sealed class LanguagePackageManifest
