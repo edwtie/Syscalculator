@@ -371,9 +371,9 @@ public sealed class ToolEditorForm : Form
 
     private static void AddDocumentNode(TreeNode root, ToolEditorDocument document)
     {
-        var parts = document.PackagePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var parts = BuildTreePath(document);
         var parent = root;
-        for (var i = 0; i < parts.Length; i++)
+        for (var i = 0; i < parts.Count; i++)
         {
             var part = parts[i];
             var existing = FindChild(parent, part);
@@ -387,6 +387,81 @@ public sealed class ToolEditorForm : Form
         }
 
         parent.Tag = document;
+    }
+
+    private static IReadOnlyList<string> BuildTreePath(ToolEditorDocument document)
+    {
+        var path = document.PackagePath.Replace('\\', '/').Trim('/');
+        var fileName = Path.GetFileName(path);
+        var topic = FriendlyTopicName(fileName);
+
+        if (path.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+            return ["Taal: Nederlands", "Interne pakketgegevens"];
+
+        if (path.StartsWith("language/", StringComparison.OrdinalIgnoreCase))
+            return ["Taal: " + FriendlyLanguageName(Path.GetFileNameWithoutExtension(fileName)), "Vertalingen"];
+
+        if (path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase))
+            return ["Help voor gebruikers", topic];
+
+        if (path.StartsWith("help/content/main/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/main/", StringComparison.OrdinalIgnoreCase))
+        {
+            return ["Help voor gebruikers", topic];
+        }
+
+        if (path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase))
+        {
+            return ["NOD voor ontwikkelaars", topic];
+        }
+
+        if (path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase) ||
+            path.Contains("formula", StringComparison.OrdinalIgnoreCase))
+        {
+            return ["Formulekaart", topic];
+        }
+
+        if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
+            return ["Media en afbeeldingen", topic];
+
+        return ["Overige inhoud", topic];
+    }
+
+    private static string FriendlyLanguageName(string code)
+    {
+        return code.ToLowerInvariant() switch
+        {
+            "ned" or "nl" or "nl-nl" => "Nederlands",
+            "eng" or "en" or "en-us" or "en-gb" => "English",
+            "deu" or "de" => "Deutsch",
+            "fra" or "fr" => "Francais",
+            "spa" or "es" => "Espanol",
+            "ita" or "it" => "Italiano",
+            "por" or "pt" => "Portugues",
+            "ind" or "id" => "Indonesia",
+            "zho" or "zh" => "Chinese",
+            _ => code.ToUpperInvariant()
+        };
+    }
+
+    private static string FriendlyTopicName(string fileName)
+    {
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        if (string.IsNullOrWhiteSpace(name))
+            return "Onderwerp";
+
+        if (name.Equals("index", StringComparison.OrdinalIgnoreCase))
+            return "Startpagina";
+        if (name.Equals("readme", StringComparison.OrdinalIgnoreCase))
+            return "Overzicht";
+
+        return string.Join(
+            ' ',
+            name.Replace('_', '-')
+                .Split('-', StringSplitOptions.RemoveEmptyEntries)
+                .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
     }
 
     private static TreeNode? FindChild(TreeNode parent, string text)
