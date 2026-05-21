@@ -37,6 +37,7 @@ public sealed class ToolEditorForm : Form
     private readonly ToolStripButton _validateButton;
     private readonly ToolStripButton _previewButton;
     private readonly List<ToolEditorDocument> _documents = [];
+    private string _manifestText = "";
     private string? _pendingHtml;
     private bool _browserFailed;
     private ToolEditorDocument? _current;
@@ -282,7 +283,8 @@ public sealed class ToolEditorForm : Form
         view.DropDownItems.Add("Valideren", null, (_, _) => ValidateCurrent(showMessage: true));
 
         var package = new ToolStripMenuItem("Pakket");
-        package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateCurrent(showMessage: true));
+        package.DropDownItems.Add("Manifest tonen", null, (_, _) => ShowManifestDialog());
+        package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateManifest(showMessage: true));
         package.DropDownItems.Add("Media toevoegen...", null, (_, _) => OpenMediaDocument());
         package.DropDownItems.Add("Media vervangen...", null, (_, _) => ReplaceCurrentMedia());
         package.DropDownItems.Add("Geselecteerd bestand verwijderen", null, (_, _) => DeleteCurrentDocument());
@@ -352,7 +354,7 @@ public sealed class ToolEditorForm : Form
 
     private void NewLanguagePackageTemplate()
     {
-        AddDocument("manifest.json", BuildManifestTemplate(), null);
+        _manifestText = BuildManifestTemplate();
         AddDocument("language/ned.lng", "app.title=Syscalculator\r\n", null);
         AddDocument("manual/index.html", BuildHtmlTemplate(), null);
     }
@@ -396,12 +398,62 @@ public sealed class ToolEditorForm : Form
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
 
-        if (IsImagePath(dialog.FileName))
+        if (Path.GetFileName(dialog.FileName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+        {
+            _manifestText = File.ReadAllText(dialog.FileName);
+            SetStatus("Manifest geladen als pakketinfo.", isError: false);
+            ShowManifestDialog();
+        }
+        else if (IsImagePath(dialog.FileName))
             AddOrReplaceImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName, markDirty: false);
         else if (TryBuildImportPackagePath(dialog.FileName, out var packagePath))
             AddDocument(packagePath, File.ReadAllText(dialog.FileName), dialog.FileName);
         else
             RejectUnsupportedPackageFile(dialog.FileName);
+    }
+
+    private void ShowManifestDialog()
+    {
+        using var dialog = new Form
+        {
+            Text = "Manifest",
+            Width = 620,
+            Height = 520,
+            StartPosition = FormStartPosition.CenterParent,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowIcon = false
+        };
+
+        var editor = new RichTextBox
+        {
+            Dock = DockStyle.Fill,
+            ReadOnly = true,
+            BorderStyle = BorderStyle.FixedSingle,
+            Font = new Font("Consolas", 10),
+            BackColor = Color.FromArgb(248, 250, 252),
+            Text = _manifestText
+        };
+
+        var close = new Button
+        {
+            Text = "Sluiten",
+            Dock = DockStyle.Right,
+            Width = 96
+        };
+        close.Click += (_, _) => dialog.Close();
+
+        var buttons = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 42,
+            Padding = new Padding(8)
+        };
+        buttons.Controls.Add(close);
+
+        dialog.Controls.Add(editor);
+        dialog.Controls.Add(buttons);
+        dialog.ShowDialog(this);
     }
 
     private void OpenMediaDocument()
@@ -938,11 +990,8 @@ public sealed class ToolEditorForm : Form
         var fileName = Path.GetFileName(path);
         var topic = FriendlyTopicName(fileName);
 
-        if (path.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
-            return ["Taal: Nederlands", "Interne pakketgegevens"];
-
         if (path.StartsWith("language/", StringComparison.OrdinalIgnoreCase))
-            return ["Taal: " + FriendlyLanguageName(Path.GetFileNameWithoutExtension(fileName)), "Vertalingen"];
+            return ["Taal: " + FriendlyLanguageName(Path.GetFileNameWithoutExtension(fileName)), "Vertaling"];
 
         if (path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase))
             return ["Help voor gebruikers", topic];
@@ -1088,6 +1137,23 @@ public sealed class ToolEditorForm : Form
         SetStatus("Validation failed: " + errors[0], isError: true);
         if (showMessage)
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "ToolEditor validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+
+    private void ValidateManifest(bool showMessage)
+    {
+        var errors = new List<string>();
+        ValidateJson(_manifestText, errors);
+        if (errors.Count == 0)
+        {
+            SetStatus("Manifest is geldig.", isError: false);
+            if (showMessage)
+                MessageBox.Show(this, "Manifest is geldig.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        SetStatus("Manifest ongeldig: " + errors[0], isError: true);
+        if (showMessage)
+            MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Manifest", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     private void ValidatePackageMediaLinks(bool showMessage)
@@ -1599,11 +1665,21 @@ public sealed class ToolEditorForm : Form
     {
         foreach (var document in _documents)
         {
-            var title = document.DisplayName + (document.Dirty ? " *" : "");
+            var title = BuildTabTitle(document) + (document.Dirty ? " *" : "");
             ToolEditorTabsApi.SetHeaderState(document.HeaderPanel, document.HeaderTitle, title, ReferenceEquals(document, _current), document.Dirty, Font);
         }
 
         _tabStrip.Invalidate();
+    }
+
+    private static string BuildTabTitle(ToolEditorDocument document)
+    {
+        if (document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase))
+            return "Vertaling";
+
+        return string.IsNullOrWhiteSpace(document.TreeTopic)
+            ? FriendlyTopicName(Path.GetFileName(document.PackagePath))
+            : document.TreeTopic;
     }
 
     private void UpdateUiState()
