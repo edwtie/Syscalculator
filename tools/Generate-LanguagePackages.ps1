@@ -1,5 +1,6 @@
 param(
     [string]$LanguageDirectory = "src/syscalculator",
+    [string]$HelpDirectory = "src/syscalculator/Resources/Help",
     [string]$HelpContentDirectory = "src/syscalculator/Resources/Help/Content",
     [string]$OutputDirectory = "web/packages/languages",
     [string]$ConceptDirectory = "artifacts/language-package-concepts",
@@ -11,6 +12,7 @@ $ErrorActionPreference = "Stop"
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptRoot
 $languageRoot = Join-Path $repoRoot $LanguageDirectory
+$helpRoot = Join-Path $repoRoot $HelpDirectory
 $helpContentRoot = Join-Path $repoRoot $HelpContentDirectory
 $outputRoot = Join-Path $repoRoot $OutputDirectory
 $conceptRoot = Join-Path $repoRoot $ConceptDirectory
@@ -22,6 +24,10 @@ if (-not (Test-Path $languageRoot)) {
 
 if (-not (Test-Path $helpContentRoot)) {
     throw "Help content directory not found: $helpContentRoot"
+}
+
+if (-not (Test-Path $helpRoot)) {
+    throw "Help directory not found: $helpRoot"
 }
 
 $displayNames = @{
@@ -65,8 +71,11 @@ foreach ($languageFile in $languageFiles) {
         Remove-Item $concept -Recurse -Force
     }
 
-    New-Item -ItemType Directory -Path (Join-Path $concept "language"), (Join-Path $concept "help/Content") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $concept "language"), (Join-Path $concept "help"), (Join-Path $concept "help/Content") -Force | Out-Null
     Copy-Item $languageFile.FullName (Join-Path $concept ("language/" + $code + ".lng")) -Force
+    Get-ChildItem $helpRoot -File | Where-Object { $_.Extension -in @(".css", ".html", ".js") } | ForEach-Object {
+        Copy-Item $_.FullName (Join-Path $concept ("help/" + $_.Name)) -Force
+    }
     Copy-DirectoryContent -Source $helpContentRoot -Target (Join-Path $concept "help/Content")
 
     $manifest = [ordered]@{

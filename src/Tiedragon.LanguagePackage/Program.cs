@@ -40,6 +40,7 @@ internal static class Program
         ".html",
         ".jpg",
         ".jpeg",
+        ".js",
         ".json",
         ".lng",
         ".png",

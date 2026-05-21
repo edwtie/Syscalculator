@@ -40,6 +40,7 @@ public sealed class ToolEditorForm : Form
         ".html",
         ".jpg",
         ".jpeg",
+        ".js",
         ".json",
         ".lng",
         ".png",
@@ -825,7 +826,7 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Open ToolEditor document",
-            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1426,7 +1427,8 @@ public sealed class ToolEditorForm : Form
         }
 
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".js", StringComparison.OrdinalIgnoreCase))
         {
             packagePath = "manual/" + name;
             return true;
@@ -1440,7 +1442,7 @@ public sealed class ToolEditorForm : Form
     {
         var message = "Dit bestand hoort niet in de language package-structuur:\r\n\r\n" +
             Path.GetFileName(fileName) +
-            "\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS, en media png/jpg/jpeg/svg.";
+            "\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS/JS, en media png/jpg/jpeg/svg.";
         SetStatus("Bestand geweigerd: " + Path.GetFileName(fileName), isError: true);
         MessageBox.Show(this, message, "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
@@ -1471,7 +1473,7 @@ public sealed class ToolEditorForm : Form
             {
                 Title = "Save ToolEditor document",
                 FileName = document.DisplayName.Replace('/', Path.DirectorySeparatorChar),
-                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
             };
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -2913,7 +2915,8 @@ public sealed class ToolEditorForm : Form
     {
         var extension = Path.GetExtension(path);
         return extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".css", StringComparison.OrdinalIgnoreCase);
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".js", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsHtmlDocument(ToolEditorDocument document)
