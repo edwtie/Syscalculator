@@ -2619,6 +2619,10 @@ public sealed class ToolEditorForm : Form
 
         var errors = new List<string>();
         ValidatePackageForCompile(errors);
+        errors = errors
+            .Where(error => !string.IsNullOrWhiteSpace(error))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         if (errors.Count > 0)
         {
             SetStatus("Package niet gecompileerd: " + errors[0], isError: true);
