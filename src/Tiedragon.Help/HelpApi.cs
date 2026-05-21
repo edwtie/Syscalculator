@@ -3,6 +3,7 @@
 namespace Tiedragon.Help;
 
 public delegate string? HelpTextResolver(string key);
+public delegate string? HelpContentResolver(string fileName);
 
 // Zoek/commentaar: Bundelt labels voor de helpnavigatie.
 public sealed record HelpNavigationLabels(string Home, string Previous, string Next);
@@ -65,9 +66,10 @@ public static class HelpApi
         HelpTextResolver resolveText,
         string key,
         string fileName,
-        string fallback = "")
+        string fallback = "",
+        HelpContentResolver? resolveContent = null)
     {
-        var template = HelpHtml.Content(fileName, fallback);
+        var template = resolveContent?.Invoke(fileName) ?? HelpHtml.Content(fileName, fallback);
         var content = HelpHtml.ContainsLanguagePlaceholders(template) ||
                       languageCode.Equals("eng", StringComparison.OrdinalIgnoreCase)
             ? template
@@ -82,10 +84,11 @@ public static class HelpApi
         string key,
         string fileName,
         IReadOnlyDictionary<string, string?> placeholders,
-        string fallback = "")
+        string fallback = "",
+        HelpContentResolver? resolveContent = null)
     {
         return HelpHtml.ApplyContentPlaceholders(
-            Content(languageCode, resolveText, key, fileName, fallback),
+            Content(languageCode, resolveText, key, fileName, fallback, resolveContent),
             placeholders);
     }
 

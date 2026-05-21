@@ -457,6 +457,9 @@ updater.
 - Allow `HelpApi.Content` to ask the package service for content override.
 - Keep `Resources/Help/Content` as fallback.
 - Add package manual pages.
+- Status: first runtime override is implemented for main help, NOD help and
+  legal/help pages. The active language package is checked first, then the
+  built-in help content remains the fallback.
 
 ### Phase 4: Package installer
 

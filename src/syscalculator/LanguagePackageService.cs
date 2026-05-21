@@ -175,6 +175,33 @@ internal static class LanguagePackageService
         return true;
     }
 
+    public static bool TryReadHelpContentFile(
+        string baseDirectory,
+        string packageId,
+        string fileName,
+        out string content)
+    {
+        content = "";
+        foreach (var candidate in EnumerateHelpContentCandidates(fileName))
+        {
+            try
+            {
+                if (TryReadContentFile(baseDirectory, packageId, candidate, out content))
+                    return true;
+            }
+            catch (InvalidDataException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     public static LanguagePackageManifest Install(string baseDirectory, string zipPath)
     {
         var manifest = ReadArchiveManifest(zipPath) ??
@@ -248,6 +275,27 @@ internal static class LanguagePackageService
 
         foreach (var path in Directory.GetFiles(directory, "*" + LegacyZipExtension))
             yield return path;
+    }
+
+    private static IEnumerable<string> EnumerateHelpContentCandidates(string fileName)
+    {
+        var normalized = NormalizeArchiveEntryName(fileName);
+        if (normalized.Length == 0)
+            yield break;
+
+        if (normalized.StartsWith("help/", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("manual/", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return normalized;
+        }
+
+        yield return "help/Content/" + normalized;
+        yield return "Content/" + normalized;
+        yield return "manual/" + normalized;
+
+        var shortName = Path.GetFileName(normalized);
+        if (!string.IsNullOrWhiteSpace(shortName))
+            yield return "manual/" + shortName;
     }
 
     private static bool TryReadZipPackage(string zipPath, out LanguagePackageInfo package)
