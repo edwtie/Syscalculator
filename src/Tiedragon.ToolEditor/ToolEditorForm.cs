@@ -514,6 +514,18 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        if (IsProtectedPackageDocument(_current.PackagePath))
+        {
+            SetStatus("Taalpakket-onderdeel kan niet worden verwijderd: " + BuildTabTitle(_current), isError: true);
+            MessageBox.Show(
+                this,
+                "Dit onderdeel hoort bij de vaste taalpakket-structuur en kan niet worden verwijderd.\r\n\r\nGebruik het kruisje op de tab om alleen de tab te sluiten.",
+                "ToolEditor",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
+
         var result = MessageBox.Show(
             this,
             "Verwijder dit bestand uit het language package?\r\n\r\nHet bronbestand op schijf wordt niet verwijderd.",
@@ -1280,6 +1292,19 @@ public sealed class ToolEditorForm : Form
         }
 
         return false;
+    }
+
+    private static bool IsProtectedPackageDocument(string packagePath)
+    {
+        var path = NormalizePackagePath(packagePath);
+        return path.StartsWith("language/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/content/main/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/main/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizePackagePath(string value)
