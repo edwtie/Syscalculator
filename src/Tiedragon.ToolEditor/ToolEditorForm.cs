@@ -24,7 +24,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
-    private static readonly Regex HtmlMediaLinkRegex = new("(?:src|href)\\s*=\\s*[\"'](?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
@@ -2149,13 +2149,15 @@ public sealed class ToolEditorForm : Form
     {
         return HtmlMediaLinkRegex.Replace(html, match =>
         {
+            var attribute = match.Groups["attr"].Value;
+            var quote = match.Groups["quote"].Value;
             var link = match.Groups["path"].Value;
             var media = FindMediaDocument(link);
             if (media?.ImageBytes is null)
                 return match.Value;
 
             var dataUri = "data:" + ImageMimeType(media.PackagePath) + ";base64," + Convert.ToBase64String(media.ImageBytes);
-            return match.Value.Replace(link, dataUri);
+            return attribute + "=" + quote + dataUri + quote;
         });
     }
 
