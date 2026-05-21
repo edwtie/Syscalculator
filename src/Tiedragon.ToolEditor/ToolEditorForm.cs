@@ -28,6 +28,8 @@ public sealed class ToolEditorForm : Form
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
     private readonly FlowLayoutPanel _tabStrip;
+    private readonly ToolStrip _htmlToolbar;
+    private readonly RowStyle _htmlToolbarRow;
     private readonly Panel _editorContent;
     private readonly WebView2 _preview;
     private readonly Label _statusLabel;
@@ -126,6 +128,9 @@ public sealed class ToolEditorForm : Form
         _tabStrip.Padding = new Padding(0, 2, 0, 0);
         _tabStrip.Margin = Padding.Empty;
 
+        _htmlToolbar = CreateHtmlToolbar();
+        _htmlToolbar.Visible = false;
+
         _editorContent = new Panel
         {
             Dock = DockStyle.Fill,
@@ -137,15 +142,18 @@ public sealed class ToolEditorForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 2,
+            RowCount = 3,
             BackColor = Color.White,
             Padding = new Padding(4, 4, 4, 0)
         };
+        _htmlToolbarRow = new RowStyle(SizeType.Absolute, 0);
         editorHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         editorHost.RowStyles.Add(new RowStyle(SizeType.Absolute, 27));
+        editorHost.RowStyles.Add(_htmlToolbarRow);
         editorHost.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         editorHost.Controls.Add(_tabStrip, 0, 0);
-        editorHost.Controls.Add(_editorContent, 0, 1);
+        editorHost.Controls.Add(_htmlToolbar, 0, 1);
+        editorHost.Controls.Add(_editorContent, 0, 2);
 
         _preview = new WebView2
         {
@@ -301,6 +309,45 @@ public sealed class ToolEditorForm : Form
         };
         item.Click += click;
         return item;
+    }
+
+    private ToolStrip CreateHtmlToolbar()
+    {
+        var toolbar = new ToolStrip
+        {
+            GripStyle = ToolStripGripStyle.Hidden,
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(248, 250, 252),
+            Padding = new Padding(2, 2, 2, 2),
+            RenderMode = ToolStripRenderMode.System
+        };
+
+        toolbar.Items.Add(CreateHtmlButton("H1", "Kop 1 invoegen", (_, _) => WrapHtmlSelection("h1", "Kop")));
+        toolbar.Items.Add(CreateHtmlButton("H2", "Kop 2 invoegen", (_, _) => WrapHtmlSelection("h2", "Kop")));
+        toolbar.Items.Add(CreateHtmlButton("P", "Paragraaf invoegen", (_, _) => WrapHtmlSelection("p", "Tekst")));
+        toolbar.Items.Add(new ToolStripSeparator());
+        toolbar.Items.Add(CreateHtmlButton("B", "Vet", (_, _) => WrapHtmlSelection("strong", "tekst")));
+        toolbar.Items.Add(CreateHtmlButton("I", "Cursief", (_, _) => WrapHtmlSelection("em", "tekst")));
+        toolbar.Items.Add(CreateHtmlButton("Link", "Link invoegen", (_, _) => InsertHtmlLink()));
+        toolbar.Items.Add(CreateHtmlButton("Img", "Afbeelding uit media invoegen", (_, _) => InsertHtmlImage()));
+        toolbar.Items.Add(new ToolStripSeparator());
+        toolbar.Items.Add(CreateHtmlButton("UL", "Lijst invoegen", (_, _) => InsertHtmlSnippet("<ul>\r\n  <li>Item</li>\r\n</ul>")));
+        toolbar.Items.Add(CreateHtmlButton("Notice", "Infoblok invoegen", (_, _) => InsertHtmlSnippet("<div class=\"notice\">Tekst</div>")));
+        toolbar.Items.Add(CreateHtmlButton("BR", "Regeleinde invoegen", (_, _) => InsertHtmlSnippet("<br>")));
+        return toolbar;
+    }
+
+    private static ToolStripButton CreateHtmlButton(string text, string tooltip, EventHandler click)
+    {
+        var button = new ToolStripButton(text)
+        {
+            DisplayStyle = ToolStripItemDisplayStyle.Text,
+            AutoSize = true,
+            ToolTipText = tooltip,
+            Padding = new Padding(4, 1, 4, 1)
+        };
+        button.Click += click;
+        return button;
     }
 
     private void NewLanguagePackageTemplate()
@@ -550,6 +597,62 @@ public sealed class ToolEditorForm : Form
             "Grootte: " + bytes.ToString("N0") + " bytes\r\n";
     }
 
+    private void WrapHtmlSelection(string tag, string fallbackText)
+    {
+        if (!CanEditCurrentHtml())
+            return;
+
+        var editor = _current!.Editor;
+        var selected = editor.SelectedText;
+        if (string.IsNullOrEmpty(selected))
+            selected = fallbackText;
+
+        editor.SelectedText = "<" + tag + ">" + selected + "</" + tag + ">";
+        editor.Focus();
+        UpdatePreview();
+    }
+
+    private void InsertHtmlLink()
+    {
+        if (!CanEditCurrentHtml())
+            return;
+
+        var editor = _current!.Editor;
+        var selected = string.IsNullOrWhiteSpace(editor.SelectedText) ? "linktekst" : editor.SelectedText;
+        editor.SelectedText = "<a href=\"#\">" + selected + "</a>";
+        editor.Focus();
+        UpdatePreview();
+    }
+
+    private void InsertHtmlImage()
+    {
+        if (!CanEditCurrentHtml())
+            return;
+
+        var media = _documents.FirstOrDefault(document => document.ImageBytes is not null);
+        var path = media?.PackagePath ?? "assets/afbeelding.png";
+        InsertHtmlSnippet("<img src=\"" + path + "\" alt=\"\">");
+    }
+
+    private void InsertHtmlSnippet(string snippet)
+    {
+        if (!CanEditCurrentHtml())
+            return;
+
+        _current!.Editor.SelectedText = snippet;
+        _current.Editor.Focus();
+        UpdatePreview();
+    }
+
+    private bool CanEditCurrentHtml()
+    {
+        if (_current is not null && _current.ImageBytes is null && IsHtmlDocument(_current))
+            return true;
+
+        SetStatus("Selecteer eerst een HTML-document.", isError: true);
+        return false;
+    }
+
     private RichTextBox CreateTextEditor(string text, ToolEditorDocument document)
     {
         var lineNumbers = new LineNumberPanel();
@@ -584,6 +687,7 @@ public sealed class ToolEditorForm : Form
         _current = document;
         SelectDocumentInTree(document);
         SelectDocumentInList(document);
+        UpdateHtmlToolbarState(document);
         _editorContent.SuspendLayout();
         _editorContent.Controls.Clear();
         if (document.LineNumbers is not null && document.ImageBytes is null)
@@ -606,6 +710,13 @@ public sealed class ToolEditorForm : Form
         RefreshTabStrip();
         UpdatePreview();
         UpdateUiState();
+    }
+
+    private void UpdateHtmlToolbarState(ToolEditorDocument? document)
+    {
+        var visible = document is not null && document.ImageBytes is null && IsHtmlDocument(document);
+        _htmlToolbar.Visible = visible;
+        _htmlToolbarRow.Height = visible ? 32 : 0;
     }
 
     private void CloseDocument(ToolEditorDocument document)
@@ -1408,6 +1519,7 @@ public sealed class ToolEditorForm : Form
         _saveButton.Enabled = hasDocument;
         _validateButton.Enabled = hasDocument;
         _previewButton.Enabled = hasDocument;
+        UpdateHtmlToolbarState(_current);
     }
 
     private void SetStatus(string text, bool isError)
