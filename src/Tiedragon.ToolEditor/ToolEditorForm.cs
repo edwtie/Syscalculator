@@ -257,7 +257,7 @@ public sealed class ToolEditorForm : Form
         view.DropDownItems.Add("Valideren", null, (_, _) => ValidateCurrent(showMessage: true));
 
         var package = new ToolStripMenuItem("Pakket");
-        package.DropDownItems.Add("Bestandenlijst tonen", null, (_, _) => ShowPackageFileListDialog());
+        package.DropDownItems.Add("Mediabestanden tonen", null, (_, _) => ShowMediaFileListDialog());
         package.DropDownItems.Add(new ToolStripSeparator());
         package.DropDownItems.Add("Manifest tonen", null, (_, _) => ShowManifestDialog());
         package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateManifest(showMessage: true));
@@ -432,11 +432,11 @@ public sealed class ToolEditorForm : Form
         dialog.ShowDialog(this);
     }
 
-    private void ShowPackageFileListDialog()
+    private void ShowMediaFileListDialog()
     {
         using var dialog = new Form
         {
-            Text = "Pakketbestanden",
+            Text = "Mediabestanden",
             Width = 760,
             Height = 420,
             StartPosition = FormStartPosition.CenterParent,
@@ -445,7 +445,7 @@ public sealed class ToolEditorForm : Form
             ShowIcon = false
         };
 
-        var list = CreatePackageFileList();
+        var list = CreateMediaFileList();
         list.Dock = DockStyle.Fill;
         list.DoubleClick += (_, _) =>
         {
@@ -499,7 +499,7 @@ public sealed class ToolEditorForm : Form
         dialog.ShowDialog(this);
     }
 
-    private ListView CreatePackageFileList()
+    private ListView CreateMediaFileList()
     {
         var list = new ListView
         {
@@ -512,15 +512,17 @@ public sealed class ToolEditorForm : Form
             BackColor = Color.White,
             ForeColor = Color.FromArgb(31, 41, 55)
         };
-        list.Columns.Add("Soort", 170);
-        list.Columns.Add("Onderwerp", 230);
-        list.Columns.Add("Pakketpad", 320);
+        list.Columns.Add("Bestand", 220);
+        list.Columns.Add("Type", 90);
+        list.Columns.Add("Grootte", 110);
+        list.Columns.Add("Pakketpad", 300);
 
-        foreach (var document in _documents.OrderBy(document => document.TreeGroup, StringComparer.CurrentCultureIgnoreCase)
-                     .ThenBy(document => document.TreeTopic, StringComparer.CurrentCultureIgnoreCase))
+        foreach (var document in _documents.Where(document => document.ImageBytes is not null)
+                     .OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
         {
-            var item = new ListViewItem(document.TreeGroup);
-            item.SubItems.Add(document.TreeTopic);
+            var item = new ListViewItem(Path.GetFileName(document.PackagePath));
+            item.SubItems.Add(Path.GetExtension(document.PackagePath).TrimStart('.').ToUpperInvariant());
+            item.SubItems.Add((document.ImageBytes?.Length ?? 0).ToString("N0") + " bytes");
             item.SubItems.Add(document.PackagePath);
             item.Tag = document;
             list.Items.Add(item);
