@@ -275,13 +275,16 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Open ToolEditor document",
-            Filter = "Tool documents (*.html;*.json;*.lng;*.css;*.txt)|*.html;*.json;*.lng;*.css;*.txt|All files (*.*)|*.*"
+            Filter = "Tool documents (*.html;*.json;*.lng;*.css;*.txt;*.png;*.jpg;*.jpeg;*.webp;*.svg)|*.html;*.json;*.lng;*.css;*.txt;*.png;*.jpg;*.jpeg;*.webp;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
 
-        AddDocument(Path.GetFileName(dialog.FileName), File.ReadAllText(dialog.FileName), dialog.FileName);
+        if (IsImagePath(dialog.FileName))
+            AddImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName);
+        else
+            AddDocument(Path.GetFileName(dialog.FileName), File.ReadAllText(dialog.FileName), dialog.FileName);
     }
 
     private void SaveCurrent()
@@ -312,7 +315,10 @@ public sealed class ToolEditorForm : Form
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, _current.Editor.Text, Encoding.UTF8);
+        if (_current.ImageBytes is not null)
+            File.WriteAllBytes(path, _current.ImageBytes);
+        else
+            File.WriteAllText(path, _current.Editor.Text, Encoding.UTF8);
         SetDirty(_current, false);
         SetStatus("Saved: " + path, isError: false);
     }
@@ -336,6 +342,41 @@ public sealed class ToolEditorForm : Form
         RefreshFileTree();
         RefreshDocumentList();
         SelectDocument(document);
+    }
+
+    private void AddImageDocument(string displayName, byte[] bytes, string? filePath)
+    {
+        var page = new TabPage(displayName);
+        var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath)
+        {
+            ImageBytes = bytes
+        };
+        var editor = CreateTextEditor(BuildImageInfoText(document), document);
+        editor.ReadOnly = true;
+        editor.BackColor = Color.FromArgb(248, 250, 252);
+        document.Editor = editor;
+        ApplyDocumentLabels(document);
+        var header = ToolEditorTabsApi.CreateHeader(
+            page,
+            (_, _) => SelectDocument(document),
+            (_, _) => CloseDocument(document));
+
+        document.HeaderPanel = header.Panel;
+        document.HeaderTitle = header.Title;
+        _documents.Add(document);
+        _tabStrip.Controls.Add(header.Panel);
+        RefreshFileTree();
+        RefreshDocumentList();
+        SelectDocument(document);
+    }
+
+    private static string BuildImageInfoText(ToolEditorDocument document)
+    {
+        var bytes = document.ImageBytes?.Length ?? 0;
+        return "Media preview\r\n\r\n" +
+            "Bestand: " + Path.GetFileName(document.PackagePath) + "\r\n" +
+            "Pakketpad: " + document.PackagePath + "\r\n" +
+            "Grootte: " + bytes.ToString("N0") + " bytes\r\n";
     }
 
     private RichTextBox CreateTextEditor(string text, ToolEditorDocument document)
@@ -545,8 +586,8 @@ public sealed class ToolEditorForm : Form
             return ["Formulekaart", topic];
         }
 
-        if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
-            return ["Media en afbeeldingen", topic];
+        if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || IsImagePath(path))
+            return ["Media en afbeeldingen", fileName];
 
         return ["Overige inhoud", topic];
     }
@@ -671,6 +712,9 @@ public sealed class ToolEditorForm : Form
     private static List<string> ValidateDocument(ToolEditorDocument document)
     {
         var errors = new List<string>();
+        if (document.ImageBytes is not null)
+            return errors;
+
         var name = document.DisplayName;
         var extension = Path.GetExtension(name);
         var text = document.Editor.Text;
@@ -691,6 +735,16 @@ public sealed class ToolEditorForm : Form
     private static string NormalizePackagePath(string value)
     {
         return value.Replace('\\', '/').Trim('/');
+    }
+
+    private static bool IsImagePath(string path)
+    {
+        var extension = Path.GetExtension(path);
+        return extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".webp", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".svg", StringComparison.OrdinalIgnoreCase);
     }
 
     private void ScheduleSyntaxHighlight(ToolEditorDocument document)
@@ -722,7 +776,7 @@ public sealed class ToolEditorForm : Form
     private static void ApplySyntaxHighlight(ToolEditorDocument document)
     {
         var editor = document.Editor;
-        if (editor.IsDisposed || document.Highlighting)
+        if (editor.IsDisposed || document.Highlighting || document.ImageBytes is not null)
             return;
 
         document.Highlighting = true;
@@ -855,6 +909,9 @@ public sealed class ToolEditorForm : Form
     private static string BuildPreviewHtml(ToolEditorDocument document)
     {
         var extension = Path.GetExtension(document.DisplayName);
+        if (document.ImageBytes is not null)
+            return WrapHtml(document.DisplayName, BuildImagePreview(document));
+
         var text = document.Editor.Text;
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
             return WrapHtml(document.DisplayName, text);
@@ -864,6 +921,39 @@ public sealed class ToolEditorForm : Form
             return WrapHtml(document.DisplayName, BuildJsonPreview(text));
 
         return WrapHtml(document.DisplayName, "<pre>" + WebUtility.HtmlEncode(text) + "</pre>");
+    }
+
+    private static string BuildImagePreview(ToolEditorDocument document)
+    {
+        if (document.ImageBytes is null)
+            return "<p>No image loaded.</p>";
+
+        var mime = ImageMimeType(document.PackagePath);
+        var base64 = Convert.ToBase64String(document.ImageBytes);
+        var fileName = WebUtility.HtmlEncode(Path.GetFileName(document.PackagePath));
+        var packagePath = WebUtility.HtmlEncode(document.PackagePath);
+        return $$"""
+        <div class="media-meta">
+          <b>{{fileName}}</b><br>
+          <span>{{packagePath}}</span><br>
+          <span>{{document.ImageBytes.Length:N0}} bytes</span>
+        </div>
+        <div class="image-preview">
+          <img src="data:{{mime}};base64,{{base64}}" alt="{{fileName}}">
+        </div>
+        """;
+    }
+
+    private static string ImageMimeType(string path)
+    {
+        var extension = Path.GetExtension(path).ToLowerInvariant();
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".webp" => "image/webp",
+            ".svg" => "image/svg+xml",
+            _ => "image/png"
+        };
     }
 
     private static string BuildJsonPreview(string text)
@@ -928,6 +1018,9 @@ public sealed class ToolEditorForm : Form
             th { width: 220px; text-align: left; background: #f3f7fc; color: #173b70; }
             pre { white-space: pre-wrap; font-family: Consolas, monospace; background: #f8fafc; border: 1px solid #d7e0ec; padding: 12px; }
             .notice { border-left: 4px solid #1d70d8; background: #eff6ff; padding: 10px 12px; margin: 10px 0; }
+            .media-meta { color: #334155; margin-bottom: 14px; }
+            .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
+            .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
           </style>
         </head>
         <body>
@@ -1079,6 +1172,7 @@ public sealed class ToolEditorForm : Form
         public string TreeTopic { get; set; } = "";
         public string? FilePath { get; set; } = filePath;
         public RichTextBox Editor { get; set; } = null!;
+        public byte[]? ImageBytes { get; set; }
         public Panel HeaderPanel { get; set; } = null!;
         public Label HeaderTitle { get; set; } = null!;
         public System.Windows.Forms.Timer? HighlightTimer { get; set; }
