@@ -9,6 +9,8 @@ namespace Tiedragon.LanguagePackage;
 
 internal static class Program
 {
+    private const string ToolName = "Language Package";
+    private const string ToolVersion = "1.0";
     private const string MagicText = "SYSCALC-LNGPDK";
     private const int ContainerFormat = 1;
     private const string ProducerName = "Tiedragon";
@@ -86,6 +88,7 @@ internal static class Program
 
     private static int Usage()
     {
+        Console.WriteLine(ToolName + " " + ToolVersion);
         Console.WriteLine("Tiedragon.LanguagePackage");
         Console.WriteLine();
         Console.WriteLine("Commands:");

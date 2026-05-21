@@ -1,7 +1,8 @@
-# Tiedragon LanguagePackage Tool
+# Language Package 1.0
 
-`Tiedragon.LanguagePackage` builds and checks Syscalculator `.lngpdk` language
-packages.
+`Language Package 1.0` is the small agent-friendly compiler in
+`Tiedragon.LanguagePackage`. It builds and checks Syscalculator `.lngpdk`
+language packages.
 
 The graphical editor is `Tiedragon.ToolEditor`. It is a standalone WinForms app
 for editing concept language packages, HTML help, formula cards and media. It

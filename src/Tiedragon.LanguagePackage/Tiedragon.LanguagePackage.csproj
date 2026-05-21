@@ -5,6 +5,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Tiedragon.LanguagePackage</AssemblyName>
     <RootNamespace>Tiedragon.LanguagePackage</RootNamespace>
+    <Title>Language Package 1.0</Title>
+    <Product>Language Package</Product>
+    <Company>Tiedragon</Company>
+    <Version>1.0.0</Version>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
