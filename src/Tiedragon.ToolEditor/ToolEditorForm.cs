@@ -455,6 +455,12 @@ public sealed class ToolEditorForm : Form
         if (_current is null)
             return;
 
+        if (_current.ReadOnly)
+        {
+            SetStatus("Alleen tonen: " + _current.DisplayName, isError: true);
+            return;
+        }
+
         var result = MessageBox.Show(
             this,
             "Verwijder dit bestand uit het language package?\r\n\r\nHet bronbestand op schijf wordt niet verwijderd.",
@@ -525,6 +531,12 @@ public sealed class ToolEditorForm : Form
         if (_current is null)
             return;
 
+        if (_current.ReadOnly)
+        {
+            SetStatus("Alleen tonen: " + _current.DisplayName, isError: true);
+            return;
+        }
+
         var path = _current.FilePath;
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -561,6 +573,13 @@ public sealed class ToolEditorForm : Form
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
         var editor = CreateTextEditor(text, document);
+        if (IsManifestPath(document.PackagePath))
+        {
+            document.ReadOnly = true;
+            editor.ReadOnly = true;
+            editor.BackColor = Color.FromArgb(248, 250, 252);
+        }
+
         document.Editor = editor;
         ApplyDocumentLabels(document);
         var header = ToolEditorTabsApi.CreateHeader(
@@ -709,7 +728,7 @@ public sealed class ToolEditorForm : Form
         lineNumbers.Attach(editor);
         editor.TextChanged += (_, _) =>
         {
-            if (_current?.Editor == editor)
+            if (_current?.Editor == editor && !document.ReadOnly)
                 SetDirty(_current, true);
             document.LineNumbers?.Invalidate();
             ScheduleSyntaxHighlight(document);
@@ -1132,7 +1151,7 @@ public sealed class ToolEditorForm : Form
     private static bool IsAllowedPackageDocumentPath(string packagePath)
     {
         var path = NormalizePackagePath(packagePath);
-        if (path.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+        if (IsManifestPath(path))
             return true;
         if (path.StartsWith("language/", StringComparison.OrdinalIgnoreCase) &&
             Path.GetExtension(path).Equals(".lng", StringComparison.OrdinalIgnoreCase))
@@ -1155,6 +1174,11 @@ public sealed class ToolEditorForm : Form
     private static string NormalizePackagePath(string value)
     {
         return value.Replace('\\', '/').Trim('/');
+    }
+
+    private static bool IsManifestPath(string packagePath)
+    {
+        return NormalizePackagePath(packagePath).Equals("manifest.json", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsImagePath(string path)
@@ -1585,7 +1609,7 @@ public sealed class ToolEditorForm : Form
     private void UpdateUiState()
     {
         var hasDocument = _current is not null;
-        _saveButton.Enabled = hasDocument;
+        _saveButton.Enabled = hasDocument && _current?.ReadOnly != true;
         _validateButton.Enabled = hasDocument;
         _previewButton.Enabled = hasDocument;
         UpdateHtmlToolbarState(_current);
@@ -1679,6 +1703,7 @@ public sealed class ToolEditorForm : Form
         public System.Windows.Forms.Timer? HighlightTimer { get; set; }
         public bool Highlighting { get; set; }
         public bool Dirty { get; set; }
+        public bool ReadOnly { get; set; }
     }
 
     private sealed class LineNumberPanel : Panel
