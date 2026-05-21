@@ -4915,6 +4915,7 @@ public sealed class NodEditorForm : Form
         layout.Controls.Add(editor, 1, 0);
 
         _tabs[page] = tab;
+        AttachEditorTabContextMenu(tab);
         _editorTabStrip.Controls.Add(tab.HeaderPanel);
         _tabControl.TabPages.Add(page);
         SelectEditorTab(page);
@@ -5385,6 +5386,76 @@ public sealed class NodEditorForm : Form
         var tab = CurrentTab;
         if (tab is not null)
             CloseTab(tab);
+    }
+
+    private void AttachEditorTabContextMenu(EditorTab tab)
+    {
+        var menu = CreateEditorTabContextMenu(tab);
+        tab.HeaderPanel.ContextMenuStrip = menu;
+        tab.HeaderTitle.ContextMenuStrip = menu;
+        tab.HeaderCloseButton.ContextMenuStrip = menu;
+    }
+
+    private ContextMenuStrip CreateEditorTabContextMenu(EditorTab tab)
+    {
+        var menu = new ContextMenuStrip();
+        var closeAll = menu.Items.Add(T("editor.tabs.close_all", "Close all tabs"));
+        var closeRight = menu.Items.Add(T("editor.tabs.close_right", "Close tabs to the right"));
+        var closeLeft = menu.Items.Add(T("editor.tabs.close_left", "Close tabs to the left"));
+
+        menu.Opening += (_, _) =>
+        {
+            if (_tabs.ContainsKey(tab.Page))
+                SelectEditorTab(tab.Page);
+
+            var tabs = GetEditorTabsInHeaderOrder();
+            var index = tabs.IndexOf(tab);
+            closeAll.Enabled = tabs.Count > 0;
+            closeLeft.Enabled = index > 0;
+            closeRight.Enabled = index >= 0 && index < tabs.Count - 1;
+        };
+
+        closeAll.Click += (_, _) => CloseEditorTabs(GetEditorTabsInHeaderOrder());
+        closeRight.Click += (_, _) =>
+        {
+            var tabs = GetEditorTabsInHeaderOrder();
+            var index = tabs.IndexOf(tab);
+            if (index >= 0)
+                CloseEditorTabs(tabs.Skip(index + 1));
+        };
+        closeLeft.Click += (_, _) =>
+        {
+            var tabs = GetEditorTabsInHeaderOrder();
+            var index = tabs.IndexOf(tab);
+            if (index > 0)
+                CloseEditorTabs(tabs.Take(index));
+        };
+
+        return menu;
+    }
+
+    private List<EditorTab> GetEditorTabsInHeaderOrder()
+    {
+        var result = new List<EditorTab>();
+        foreach (Control control in _editorTabStrip.Controls)
+        {
+            var tab = _tabs.Values.FirstOrDefault(item => ReferenceEquals(item.HeaderPanel, control));
+            if (tab is not null)
+                result.Add(tab);
+        }
+
+        return result;
+    }
+
+    private bool CloseEditorTabs(IEnumerable<EditorTab> tabs)
+    {
+        foreach (var tab in tabs.ToList())
+        {
+            if (_tabs.ContainsKey(tab.Page) && !CloseTab(tab))
+                return false;
+        }
+
+        return true;
     }
 
     // Sluit een specifieke tab en vraagt eerst om opslaan bij wijzigingen.
