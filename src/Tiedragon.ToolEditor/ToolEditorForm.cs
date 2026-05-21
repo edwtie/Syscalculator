@@ -113,8 +113,8 @@ public sealed class ToolEditorForm : Form
             BorderStyle = BorderStyle.None,
             SplitterWidth = 5,
             BackColor = Color.FromArgb(226, 232, 240),
-            Panel1MinSize = 280,
-            Panel2MinSize = 280
+            Panel1MinSize = 1,
+            Panel2MinSize = 1
         };
         split.Panel1.Controls.Add(editorHost);
         split.Panel2.Padding = new Padding(0, 4, 4, 0);
@@ -576,13 +576,24 @@ public sealed class ToolEditorForm : Form
 
     private static void ClampSplitter(SplitContainer split)
     {
-        var max = split.Width - split.Panel2MinSize - split.SplitterWidth;
-        if (max <= split.Panel1MinSize)
+        if (split.Width <= split.SplitterWidth + 2)
             return;
 
-        var target = Math.Clamp(split.Width / 2, split.Panel1MinSize, max);
-        if (split.SplitterDistance != target)
-            split.SplitterDistance = target;
+        var min = Math.Max(1, split.Panel1MinSize);
+        var max = split.Width - split.SplitterWidth - Math.Max(1, split.Panel2MinSize);
+        if (max < min)
+            return;
+
+        var target = Math.Clamp(split.Width / 2, min, max);
+        try
+        {
+            if (split.SplitterDistance != target)
+                split.SplitterDistance = target;
+        }
+        catch (InvalidOperationException)
+        {
+            // WinForms can resize split containers before the final client size is stable.
+        }
     }
 
     private void ToolEditorForm_KeyDown(object? sender, KeyEventArgs e)
