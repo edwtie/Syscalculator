@@ -48,6 +48,7 @@ public sealed class ToolEditorForm : Form
         KeyPreview = true;
         KeyDown += ToolEditorForm_KeyDown;
 
+        var menu = BuildMenu();
         var toolbar = ToolEditorApi.CreateToolbar();
         toolbar.Items.Add(ToolEditorApi.CreateButton("New", ToolEditorIcon.New, (_, _) => NewLanguagePackageTemplate(), "New language package template"));
         toolbar.Items.Add(ToolEditorApi.CreateButton("Open", ToolEditorIcon.Open, (_, _) => OpenDocument(), "Open text, HTML, JSON or .lng file"));
@@ -228,11 +229,63 @@ public sealed class ToolEditorForm : Form
         Controls.Add(split);
         Controls.Add(_statusLabel);
         Controls.Add(toolbar);
+        Controls.Add(menu);
+        MainMenuStrip = menu;
 
         NewLanguagePackageTemplate();
         RefreshFileTree();
         RefreshDocumentList();
         UpdateUiState();
+    }
+
+    private MenuStrip BuildMenu()
+    {
+        var menu = new MenuStrip
+        {
+            Dock = DockStyle.Top
+        };
+
+        var file = new ToolStripMenuItem("Bestand");
+        file.DropDownItems.Add("Nieuw taalpakket", null, (_, _) => NewLanguagePackageTemplate());
+        file.DropDownItems.Add(CreateMenuItem("Openen...", Keys.Control | Keys.O, (_, _) => OpenDocument()));
+        file.DropDownItems.Add(CreateMenuItem("Opslaan", Keys.Control | Keys.S, (_, _) => SaveCurrent()));
+        file.DropDownItems.Add(new ToolStripSeparator());
+        file.DropDownItems.Add("Sluiten", null, (_, _) => Close());
+
+        var edit = new ToolStripMenuItem("Bewerken");
+        edit.DropDownItems.Add(CreateMenuItem("Ongedaan maken", Keys.Control | Keys.Z, (_, _) => _current?.Editor.Undo()));
+        edit.DropDownItems.Add(CreateMenuItem("Knippen", Keys.Control | Keys.X, (_, _) => _current?.Editor.Cut()));
+        edit.DropDownItems.Add(CreateMenuItem("Kopieren", Keys.Control | Keys.C, (_, _) => _current?.Editor.Copy()));
+        edit.DropDownItems.Add(CreateMenuItem("Plakken", Keys.Control | Keys.V, (_, _) => _current?.Editor.Paste()));
+        edit.DropDownItems.Add(CreateMenuItem("Alles selecteren", Keys.Control | Keys.A, (_, _) => _current?.Editor.SelectAll()));
+
+        var view = new ToolStripMenuItem("Beeld");
+        view.DropDownItems.Add(CreateMenuItem("Preview verversen", Keys.F5, (_, _) => UpdatePreview()));
+        view.DropDownItems.Add("Valideren", null, (_, _) => ValidateCurrent(showMessage: true));
+
+        var package = new ToolStripMenuItem("Pakket");
+        package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateCurrent(showMessage: true));
+        package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
+
+        var help = new ToolStripMenuItem("Help");
+        help.DropDownItems.Add("ToolEditor", null, (_, _) => MessageBox.Show(this, "ToolEditor bewerkt taalpakketten, help-HTML, NOD-onderwerpen, formulekaarten en media.", "ToolEditor"));
+
+        menu.Items.Add(file);
+        menu.Items.Add(edit);
+        menu.Items.Add(view);
+        menu.Items.Add(package);
+        menu.Items.Add(help);
+        return menu;
+    }
+
+    private static ToolStripMenuItem CreateMenuItem(string text, Keys shortcutKeys, EventHandler click)
+    {
+        var item = new ToolStripMenuItem(text)
+        {
+            ShortcutKeys = shortcutKeys
+        };
+        item.Click += click;
+        return item;
     }
 
     private void NewLanguagePackageTemplate()
@@ -381,6 +434,7 @@ public sealed class ToolEditorForm : Form
 
     private RichTextBox CreateTextEditor(string text, ToolEditorDocument document)
     {
+        var lineNumbers = new LineNumberPanel();
         var editor = new RichTextBox
         {
             Dock = DockStyle.Fill,
@@ -392,12 +446,17 @@ public sealed class ToolEditorForm : Form
             Text = text
         };
         document.Editor = editor;
+        document.LineNumbers = lineNumbers;
+        lineNumbers.Attach(editor);
         editor.TextChanged += (_, _) =>
         {
             if (_current?.Editor == editor)
                 SetDirty(_current, true);
+            document.LineNumbers?.Invalidate();
             ScheduleSyntaxHighlight(document);
         };
+        editor.VScroll += (_, _) => document.LineNumbers?.Invalidate();
+        editor.Resize += (_, _) => document.LineNumbers?.Invalidate();
         ScheduleSyntaxHighlight(document);
         return editor;
     }
@@ -409,7 +468,22 @@ public sealed class ToolEditorForm : Form
         SelectDocumentInList(document);
         _editorContent.SuspendLayout();
         _editorContent.Controls.Clear();
-        _editorContent.Controls.Add(document.Editor);
+        if (document.LineNumbers is not null && document.ImageBytes is null)
+        {
+            var host = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            host.Controls.Add(document.Editor);
+            host.Controls.Add(document.LineNumbers);
+            _editorContent.Controls.Add(host);
+        }
+        else
+        {
+            _editorContent.Controls.Add(document.Editor);
+        }
+
         _editorContent.ResumeLayout();
         RefreshTabStrip();
         UpdatePreview();
@@ -436,6 +510,7 @@ public sealed class ToolEditorForm : Form
         RemoveDocumentFromList(document);
         document.HighlightTimer?.Dispose();
         document.Editor.Dispose();
+        document.LineNumbers?.Dispose();
         document.Page.Dispose();
 
         if (_current == document)
@@ -508,6 +583,20 @@ public sealed class ToolEditorForm : Form
 
         if (_documentList.SelectedItems[0].Tag is ToolEditorDocument document && !ReferenceEquals(document, _current))
             SelectDocument(document);
+    }
+
+    private void SelectFirstGroup(string group)
+    {
+        foreach (ListViewItem item in _documentList.Items)
+        {
+            if (!item.Text.Equals(group, StringComparison.CurrentCultureIgnoreCase))
+                continue;
+
+            item.Selected = true;
+            item.EnsureVisible();
+            _documentList.Focus();
+            return;
+        }
     }
 
     private void RefreshFileTree()
@@ -1173,10 +1262,59 @@ public sealed class ToolEditorForm : Form
         public string? FilePath { get; set; } = filePath;
         public RichTextBox Editor { get; set; } = null!;
         public byte[]? ImageBytes { get; set; }
+        public LineNumberPanel? LineNumbers { get; set; }
         public Panel HeaderPanel { get; set; } = null!;
         public Label HeaderTitle { get; set; } = null!;
         public System.Windows.Forms.Timer? HighlightTimer { get; set; }
         public bool Highlighting { get; set; }
         public bool Dirty { get; set; }
+    }
+
+    private sealed class LineNumberPanel : Panel
+    {
+        private RichTextBox? _editor;
+
+        public LineNumberPanel()
+        {
+            Dock = DockStyle.Left;
+            Width = 52;
+            BackColor = Color.FromArgb(248, 250, 252);
+            ForeColor = Color.FromArgb(100, 116, 139);
+            DoubleBuffered = true;
+        }
+
+        public void Attach(RichTextBox editor)
+        {
+            _editor = editor;
+            Invalidate();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            if (_editor is null || _editor.IsDisposed)
+                return;
+
+            using var border = new Pen(Color.FromArgb(226, 232, 240));
+            e.Graphics.DrawLine(border, Width - 1, 0, Width - 1, Height);
+
+            using var brush = new SolidBrush(ForeColor);
+            var firstIndex = _editor.GetCharIndexFromPosition(new Point(0, 0));
+            var firstLine = _editor.GetLineFromCharIndex(firstIndex);
+            var lastIndex = _editor.GetCharIndexFromPosition(new Point(0, _editor.ClientSize.Height));
+            var lastLine = Math.Min(_editor.Lines.Length - 1, _editor.GetLineFromCharIndex(lastIndex) + 1);
+
+            for (var line = firstLine; line <= lastLine; line++)
+            {
+                var charIndex = _editor.GetFirstCharIndexFromLine(line);
+                if (charIndex < 0)
+                    continue;
+
+                var position = _editor.GetPositionFromCharIndex(charIndex);
+                var text = (line + 1).ToString();
+                var size = e.Graphics.MeasureString(text, Font);
+                e.Graphics.DrawString(text, Font, brush, Width - size.Width - 7, position.Y);
+            }
+        }
     }
 }
