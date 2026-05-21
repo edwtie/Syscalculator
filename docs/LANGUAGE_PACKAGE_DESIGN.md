@@ -46,9 +46,14 @@ Language packages use a Syscalculator-specific extension:
 Syscalculator.Language.<code>.lngpdk
 ```
 
-The first implementation supports ZIP and 7z-compatible archive reading through
-the same `.lngpdk` extension. Legacy `.zip` files remain readable for
-compatibility, but new packages should use:
+The current reader supports two `.lngpdk` forms:
+
+- wrapped Syscalculator packages with a `SYSCALC-LNGPDK` header;
+- legacy direct archives, where the file itself is a ZIP or 7z-compatible
+  archive.
+
+Legacy `.zip` files remain readable for compatibility, but new packages should
+use:
 
 ```text
 *.lngpdk
@@ -63,6 +68,34 @@ help/Content/...
 manual/...
 assets/...
 ```
+
+For wrapped packages, the outer file has a Syscalculator header and the payload
+is the archive that contains these files:
+
+```text
+SYSCALC-LNGPDK
+format: int32
+headerLength: int32
+header JSON
+payload archive bytes
+```
+
+Header JSON:
+
+```json
+{
+  "format": 1,
+  "softwareId": "tiedragon.syscalculator",
+  "packageType": "language",
+  "payloadFormat": "zip",
+  "payloadSha256": "64 lowercase or uppercase hex characters",
+  "encrypted": false,
+  "signed": false
+}
+```
+
+The reader verifies `softwareId`, `packageType`, payload size and
+`payloadSha256` before reading content from the payload archive.
 
 Example:
 
@@ -220,6 +253,14 @@ Blocked:
 Package reading and optional extraction must validate every entry path before
 use.
 
+Current limits:
+
+- maximum header size: 64 KiB;
+- maximum payload size: 192 MiB;
+- maximum files per package: 2048;
+- maximum single file size: 16 MiB;
+- maximum total uncompressed file size: 128 MiB.
+
 ## Zip Library
 
 `.lngpdk` can be a ZIP container or a 7z-style archive internally. ZIP support
@@ -250,9 +291,12 @@ Responsibilities:
 
 - discover installed packages;
 - read `manifest.json`;
+- read and validate the optional `SYSCALC-LNGPDK` wrapper header;
+- verify the payload SHA-256 hash when present;
 - validate package paths;
 - read language packages directly from `.lngpdk` archives, including ZIP and
   7z-compatible containers;
+- enforce package size, file count and per-file limits;
 - keep extracted language package folders compatible;
 - block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
 - return the active `.lng` content;
@@ -260,6 +304,8 @@ Responsibilities:
 
 Not implemented yet:
 
+- signing verification;
+- encrypted package payloads;
 - help/manual content overrides;
 - package removal UI;
 - package install button in the language dialog.

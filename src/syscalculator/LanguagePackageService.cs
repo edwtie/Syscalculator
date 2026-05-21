@@ -1,4 +1,6 @@
 #nullable enable
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using SharpCompress.Archives;
 
@@ -15,6 +17,16 @@ internal static class LanguagePackageService
     private const string CacheDirectoryName = "Cache";
     private const string PackageExtension = ".lngpdk";
     private const string LegacyZipExtension = ".zip";
+    private const string SoftwareId = "tiedragon.syscalculator";
+    private const string PackageType = "language";
+    private const int ContainerFormat = 1;
+    private const int MaxHeaderBytes = 64 * 1024;
+    private const int MaxEntryCount = 2048;
+    private const long MaxEntryBytes = 16L * 1024 * 1024;
+    private const long MaxTotalEntryBytes = 128L * 1024 * 1024;
+    private const long MaxPayloadBytes = 192L * 1024 * 1024;
+
+    private static readonly byte[] PackageMagic = Encoding.ASCII.GetBytes("SYSCALC-LNGPDK");
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -276,12 +288,15 @@ internal static class LanguagePackageService
     private static bool TryReadArchiveEntry(string packagePath, string entryName, out string content)
     {
         content = "";
-        using var archive = ArchiveFactory.OpenArchive(packagePath);
+        using var packageStream = OpenArchivePayloadStream(packagePath);
+        using var archive = ArchiveFactory.OpenArchive(packageStream);
         var entry = archive.Entries.FirstOrDefault(entry =>
             !entry.IsDirectory &&
             NormalizeArchiveEntryName(entry.Key).Equals(entryName, StringComparison.OrdinalIgnoreCase));
         if (entry is null)
             return false;
+        if (entry.Size > MaxEntryBytes)
+            throw new InvalidDataException("Language package entry is too large.");
 
         using var stream = entry.OpenEntryStream();
         using var reader = new StreamReader(stream);
@@ -291,7 +306,8 @@ internal static class LanguagePackageService
 
     private static bool ContainsEntry(string packagePath, string entryName)
     {
-        using var archive = ArchiveFactory.OpenArchive(packagePath);
+        using var packageStream = OpenArchivePayloadStream(packagePath);
+        using var archive = ArchiveFactory.OpenArchive(packageStream);
         return archive.Entries.Any(entry =>
             !entry.IsDirectory &&
             NormalizeArchiveEntryName(entry.Key).Equals(entryName, StringComparison.OrdinalIgnoreCase));
@@ -299,12 +315,116 @@ internal static class LanguagePackageService
 
     private static void ValidatePackageEntries(string packagePath)
     {
-        using var archive = ArchiveFactory.OpenArchive(packagePath);
+        using var packageStream = OpenArchivePayloadStream(packagePath);
+        using var archive = ArchiveFactory.OpenArchive(packageStream);
+        var count = 0;
+        long totalBytes = 0;
         foreach (var entry in archive.Entries)
         {
-            if (!entry.IsDirectory)
-                ValidateEntryName(NormalizeArchiveEntryName(entry.Key));
+            if (entry.IsDirectory)
+                continue;
+
+            count++;
+            if (count > MaxEntryCount)
+                throw new InvalidDataException("Language package contains too many files.");
+            if (entry.Size > MaxEntryBytes)
+                throw new InvalidDataException("Language package contains a file that is too large.");
+
+            totalBytes += Math.Max(0L, entry.Size);
+            if (totalBytes > MaxTotalEntryBytes)
+                throw new InvalidDataException("Language package is too large after decompression.");
+
+            ValidateEntryName(NormalizeArchiveEntryName(entry.Key));
         }
+    }
+
+    private static Stream OpenArchivePayloadStream(string packagePath)
+    {
+        var source = File.OpenRead(packagePath);
+        if (!TryReadWrappedPayload(source, out var payload))
+            return source;
+
+        source.Dispose();
+        return new MemoryStream(payload, writable: false);
+    }
+
+    private static bool TryReadWrappedPayload(Stream source, out byte[] payload)
+    {
+        payload = [];
+        if (!source.CanSeek || source.Length < PackageMagic.Length + sizeof(int) + sizeof(int))
+            return false;
+
+        var magic = new byte[PackageMagic.Length];
+        var read = source.Read(magic, 0, magic.Length);
+        if (read != PackageMagic.Length || !magic.SequenceEqual(PackageMagic))
+        {
+            source.Position = 0;
+            return false;
+        }
+
+        using var reader = new BinaryReader(source, Encoding.UTF8, leaveOpen: true);
+        var version = reader.ReadInt32();
+        if (version != ContainerFormat)
+            throw new InvalidDataException($"Unsupported language package container format: {version}.");
+
+        var headerLength = reader.ReadInt32();
+        if (headerLength <= 0 || headerLength > MaxHeaderBytes)
+            throw new InvalidDataException("Language package header length is invalid.");
+
+        var headerBytes = reader.ReadBytes(headerLength);
+        if (headerBytes.Length != headerLength)
+            throw new InvalidDataException("Language package header is incomplete.");
+
+        var header = JsonSerializer.Deserialize<LanguagePackageContainerHeader>(
+            Encoding.UTF8.GetString(headerBytes),
+            JsonOptions) ?? throw new InvalidDataException("Language package header is invalid.");
+        ValidateContainerHeader(header);
+
+        var payloadLength = source.Length - source.Position;
+        if (payloadLength <= 0 || payloadLength > MaxPayloadBytes)
+            throw new InvalidDataException("Language package payload size is invalid.");
+
+        payload = reader.ReadBytes((int)payloadLength);
+        if (payload.Length != payloadLength)
+            throw new InvalidDataException("Language package payload is incomplete.");
+
+        if (!string.IsNullOrWhiteSpace(header.PayloadSha256))
+        {
+            var hash = Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+            if (!hash.Equals(header.PayloadSha256.Trim().ToLowerInvariant(), StringComparison.Ordinal))
+                throw new InvalidDataException("Language package payload hash does not match the header.");
+        }
+
+        return true;
+    }
+
+    private static void ValidateContainerHeader(LanguagePackageContainerHeader header)
+    {
+        if (header.Format != ContainerFormat)
+            throw new InvalidDataException($"Unsupported language package header format: {header.Format}.");
+        if (!SoftwareId.Equals(header.SoftwareId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Language package is not intended for Syscalculator.");
+        if (!PackageType.Equals(header.PackageType, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Language package has an unsupported package type.");
+        if (header.Encrypted)
+            throw new InvalidDataException("Encrypted language packages are not supported yet.");
+        if (!string.IsNullOrWhiteSpace(header.PayloadSha256) && !IsSha256Hex(header.PayloadSha256))
+            throw new InvalidDataException("Language package payload hash is invalid.");
+        if (!string.IsNullOrWhiteSpace(header.PayloadFormat) &&
+            !header.PayloadFormat.Equals("zip", StringComparison.OrdinalIgnoreCase) &&
+            !header.PayloadFormat.Equals("7z", StringComparison.OrdinalIgnoreCase) &&
+            !header.PayloadFormat.Equals("archive", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Language package payload format is unsupported.");
+        }
+    }
+
+    private static bool IsSha256Hex(string value)
+    {
+        return value.Trim().Length == 64 &&
+            value.Trim().All(character => char.IsDigit(character) ||
+                character is >= 'a' and <= 'f' ||
+                character is >= 'A' and <= 'F');
     }
 
     private static string NormalizeArchiveEntryName(string? entryName)
@@ -398,4 +518,15 @@ internal sealed class LanguagePackageManifest
     public string FallbackLanguage { get; set; } = "eng";
 
     public string PackageKey => string.IsNullOrWhiteSpace(Key) ? Id : Key;
+}
+
+internal sealed class LanguagePackageContainerHeader
+{
+    public int Format { get; set; }
+    public string SoftwareId { get; set; } = "";
+    public string PackageType { get; set; } = "";
+    public string PayloadFormat { get; set; } = "";
+    public string PayloadSha256 { get; set; } = "";
+    public bool Encrypted { get; set; }
+    public bool Signed { get; set; }
 }
