@@ -407,12 +407,8 @@ public sealed class ToolEditorForm : Form
 
     private void ShowAboutSyscalculator()
     {
-        MessageBox.Show(
-            this,
-            "Syscalculator 2.0\r\n\r\nToolEditor is onderdeel van de Syscalculator language-package workflow.",
-            "About Syscalculator",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        using var form = new ToolEditorAboutForm();
+        form.ShowDialog(this);
     }
 
     private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages()
