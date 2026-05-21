@@ -2966,7 +2966,7 @@ public sealed class ToolEditorForm : Form
         else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             ValidateLanguageFile(text, errors);
         else if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) && !text.Contains('<'))
-            errors.Add("HTML document does not contain markup.");
+            errors.Add(document.PackagePath + ": HTML document does not contain markup.");
 
         if (string.IsNullOrWhiteSpace(text))
             errors.Add("Document is empty.");
