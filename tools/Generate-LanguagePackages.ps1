@@ -51,6 +51,37 @@ $allowedHelpScripts = @(
     "nod-popup-height.js"
 )
 
+function Test-Mojibake {
+    param([string]$Text)
+
+    $markers = @(
+        [string][char]0x00C3,
+        [string][char]0x00C2,
+        [string][char]0x00E2,
+        ([string][char]0x00E4 + [string][char]0x00B8),
+        ([string][char]0x00E6 + [string][char]0x2013)
+    )
+
+    foreach ($marker in $markers) {
+        if ($Text.Contains($marker)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Assert-NoMojibake {
+    param(
+        [string]$Value,
+        [string]$Label
+    )
+
+    if (Test-Mojibake -Text $Value) {
+        throw "Encoding/accent check failed for $Label`: $Value"
+    }
+}
+
 function Copy-DirectoryContent {
     param(
         [string]$Source,
@@ -75,6 +106,9 @@ foreach ($languageFile in $languageFiles) {
     $names = $displayNames[$code]
     $displayName = if ($names) { $names.display } else { $code }
     $nativeName = if ($names) { $names.native } else { $displayName }
+    Assert-NoMojibake -Value $displayName -Label "$code displayName"
+    Assert-NoMojibake -Value $nativeName -Label "$code nativeName"
+
     $concept = Join-Path $conceptRoot $code
     if (Test-Path $concept) {
         Remove-Item $concept -Recurse -Force
@@ -111,6 +145,8 @@ foreach ($languageFile in $languageFiles) {
     if (-not $result.success) {
         throw "Language package compile failed for $code`: $json"
     }
+
+    Assert-NoMojibake -Value ([string]$result.displayName) -Label "$code compiled displayName"
 
     dotnet run --project $project --no-restore -- validate $outputPackage | Out-Host
     $results += $result
