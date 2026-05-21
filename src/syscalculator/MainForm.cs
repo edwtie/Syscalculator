@@ -395,6 +395,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         };
         userHelpItem.Click += UserHelp_Click;
         about.DropDownItems.Add(userHelpItem);
+        about.DropDownItems.Add(T("menu.about.language_manager", "Language manager..."), null, ToolEditor_Click);
         about.DropDownItems.Add(T("menu.about.check_updates", "Check for updates..."), null, CheckUpdates_Click);
         about.DropDownItems.Add(T("menu.about.feedback", "Feedback..."), null, Feedback_Click);
         about.DropDownItems.Add(new ToolStripSeparator());
