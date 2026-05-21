@@ -77,6 +77,7 @@ public sealed class ToolEditorForm : Form
             ShowLines = true,
             ShowPlusMinus = true,
             ShowRootLines = true,
+            ShowNodeToolTips = true,
             Font = new Font("Segoe UI", 9),
             BackColor = Color.White,
             ForeColor = Color.FromArgb(31, 41, 55)
@@ -113,14 +114,6 @@ public sealed class ToolEditorForm : Form
         _documentList.AllowDrop = true;
         _documentList.DragEnter += ToolEditorForm_DragEnter;
         _documentList.DragDrop += ToolEditorForm_DragDrop;
-
-        var listHost = new Panel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(203, 213, 225),
-            Padding = new Padding(1)
-        };
-        listHost.Controls.Add(_documentList);
 
         _tabStrip = ToolEditorTabsApi.CreateStrip();
         _tabStrip.Dock = DockStyle.Fill;
@@ -202,23 +195,6 @@ public sealed class ToolEditorForm : Form
         contentSplit.SizeChanged += (_, _) => ClampSplitter(contentSplit);
         Shown += (_, _) => ClampSplitter(contentSplit);
 
-        var workspaceSplit = new SplitContainer
-        {
-            Dock = DockStyle.Fill,
-            Orientation = Orientation.Horizontal,
-            BorderStyle = BorderStyle.None,
-            SplitterWidth = 5,
-            FixedPanel = FixedPanel.Panel1,
-            BackColor = Color.FromArgb(226, 232, 240),
-            Panel1MinSize = 1,
-            Panel2MinSize = 1
-        };
-        workspaceSplit.Panel1.Padding = new Padding(0, 4, 4, 0);
-        workspaceSplit.Panel1.Controls.Add(listHost);
-        workspaceSplit.Panel2.Controls.Add(contentSplit);
-        workspaceSplit.SizeChanged += (_, _) => ClampSplitter(workspaceSplit, 155);
-        Shown += (_, _) => ClampSplitter(workspaceSplit, 155);
-
         var split = new SplitContainer
         {
             Dock = DockStyle.Fill,
@@ -231,7 +207,7 @@ public sealed class ToolEditorForm : Form
         };
         split.Panel1.Padding = new Padding(4, 4, 0, 0);
         split.Panel1.Controls.Add(fileTreeHost);
-        split.Panel2.Controls.Add(workspaceSplit);
+        split.Panel2.Controls.Add(contentSplit);
         split.SizeChanged += (_, _) => ClampSplitter(split, 270);
         Shown += (_, _) => ClampSplitter(split, 270);
 
@@ -975,16 +951,10 @@ public sealed class ToolEditorForm : Form
 
     private void SelectFirstGroup(string group)
     {
-        foreach (ListViewItem item in _documentList.Items)
-        {
-            if (!item.Text.Equals(group, StringComparison.CurrentCultureIgnoreCase))
-                continue;
-
-            item.Selected = true;
-            item.EnsureVisible();
-            _documentList.Focus();
-            return;
-        }
+        var document = _documents.FirstOrDefault(document =>
+            document.TreeGroup.Equals(group, StringComparison.CurrentCultureIgnoreCase));
+        if (document is not null)
+            SelectDocument(document);
     }
 
     private void RefreshFileTree()
@@ -1036,6 +1006,14 @@ public sealed class ToolEditorForm : Form
         }
 
         parent.Tag = document;
+        parent.ToolTipText = BuildDocumentTooltip(document);
+    }
+
+    private static string BuildDocumentTooltip(ToolEditorDocument document)
+    {
+        return document.TreeGroup + Environment.NewLine +
+            document.TreeTopic + Environment.NewLine +
+            document.PackagePath;
     }
 
     private static IReadOnlyList<string> BuildTreePath(string packagePath)
