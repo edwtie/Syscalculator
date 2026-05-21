@@ -1364,9 +1364,9 @@ public sealed class ToolEditorForm : Form
     private ContextMenuStrip CreateTabContextMenu(ToolEditorDocument document)
     {
         var menu = new ContextMenuStrip();
-        var closeAll = menu.Items.Add("Sluit alle tabs");
-        var closeRight = menu.Items.Add("Sluit tabs rechts");
-        var closeLeft = menu.Items.Add("Sluit tabs links");
+        var closeAll = menu.Items.Add("Sluit alle tabbladen");
+        var closeRight = menu.Items.Add("Sluit tabbladen rechts");
+        var closeLeft = menu.Items.Add("Sluit tabbladen links");
 
         menu.Opening += (_, _) =>
         {

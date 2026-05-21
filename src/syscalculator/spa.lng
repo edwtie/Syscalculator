@@ -238,6 +238,7 @@ editor.menu.file.open=Abrir...
 editor.menu.file.save=Guardar
 editor.menu.file.save_as=Guardar como...
 editor.menu.file.close_tab=Cerrar pestana
+editor.tabs.new_right=Nueva pestana a la derecha
 editor.tabs.close_all=Cerrar todas las pestanas
 editor.tabs.close_right=Cerrar pestanas a la derecha
 editor.tabs.close_left=Cerrar pestanas a la izquierda

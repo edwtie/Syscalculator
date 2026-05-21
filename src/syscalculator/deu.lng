@@ -238,6 +238,7 @@ editor.menu.file.open=Oeffnen...
 editor.menu.file.save=Speichern
 editor.menu.file.save_as=Speichern unter...
 editor.menu.file.close_tab=Tab schliessen
+editor.tabs.new_right=Neuer Tab rechts
 editor.tabs.close_all=Alle Tabs schliessen
 editor.tabs.close_right=Tabs rechts schliessen
 editor.tabs.close_left=Tabs links schliessen

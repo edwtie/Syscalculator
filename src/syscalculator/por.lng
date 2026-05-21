@@ -238,6 +238,7 @@ editor.menu.file.open=Abrir...
 editor.menu.file.save=Salvar
 editor.menu.file.save_as=Salvar como...
 editor.menu.file.close_tab=Fechar aba
+editor.tabs.new_right=Nova aba a direita
 editor.tabs.close_all=Fechar todas as abas
 editor.tabs.close_right=Fechar abas a direita
 editor.tabs.close_left=Fechar abas a esquerda

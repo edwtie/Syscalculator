@@ -4787,13 +4787,13 @@ public sealed class NodEditorForm : Form
         }
     }
 
-    private void AddBlankNewTab()
+    private void AddBlankNewTab(EditorTab? afterTab = null)
     {
-        AddNewTab(T("editor.tab.new", "new"), "", null, dirty: false);
+        AddNewTab(T("editor.tab.new", "new"), "", null, dirty: false, afterTab);
     }
 
     // Maakt een nieuwe editor-tab met regelnummers, syntax highlighting en preview-updates.
-    private void AddNewTab(string title, string text, string? path, bool dirty)
+    private void AddNewTab(string title, string text, string? path, bool dirty, EditorTab? afterTab = null)
     {
         var page = new TabPage(title);
         var layout = new TableLayoutPanel
@@ -4917,7 +4917,18 @@ public sealed class NodEditorForm : Form
         _tabs[page] = tab;
         AttachEditorTabContextMenu(tab);
         _editorTabStrip.Controls.Add(tab.HeaderPanel);
-        _tabControl.TabPages.Add(page);
+        if (afterTab is not null && _tabs.ContainsKey(afterTab.Page))
+        {
+            var tabIndex = _tabControl.TabPages.IndexOf(afterTab.Page);
+            var headerIndex = _editorTabStrip.Controls.IndexOf(afterTab.HeaderPanel);
+            _tabControl.TabPages.Insert(Math.Min(tabIndex + 1, _tabControl.TabPages.Count), page);
+            _editorTabStrip.Controls.SetChildIndex(tab.HeaderPanel, Math.Min(headerIndex + 1, _editorTabStrip.Controls.Count - 1));
+        }
+        else
+        {
+            _tabControl.TabPages.Add(page);
+        }
+
         SelectEditorTab(page);
 
         editor.Text = normalizedText;
@@ -5399,6 +5410,8 @@ public sealed class NodEditorForm : Form
     private ContextMenuStrip CreateEditorTabContextMenu(EditorTab tab)
     {
         var menu = new ContextMenuStrip();
+        var newRight = menu.Items.Add(T("editor.tabs.new_right", "New tab to the right"));
+        menu.Items.Add(new ToolStripSeparator());
         var closeAll = menu.Items.Add(T("editor.tabs.close_all", "Close all tabs"));
         var closeRight = menu.Items.Add(T("editor.tabs.close_right", "Close tabs to the right"));
         var closeLeft = menu.Items.Add(T("editor.tabs.close_left", "Close tabs to the left"));
@@ -5415,6 +5428,7 @@ public sealed class NodEditorForm : Form
             closeRight.Enabled = index >= 0 && index < tabs.Count - 1;
         };
 
+        newRight.Click += (_, _) => AddBlankNewTab(tab);
         closeAll.Click += (_, _) => CloseEditorTabs(GetEditorTabsInHeaderOrder());
         closeRight.Click += (_, _) =>
         {

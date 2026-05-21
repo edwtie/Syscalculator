@@ -232,6 +232,7 @@ editor.menu.file.open=Open...
 editor.menu.file.save=Save
 editor.menu.file.save_as=Save as...
 editor.menu.file.close_tab=Close tab
+editor.tabs.new_right=New tab to the right
 editor.tabs.close_all=Close all tabs
 editor.tabs.close_right=Close tabs to the right
 editor.tabs.close_left=Close tabs to the left

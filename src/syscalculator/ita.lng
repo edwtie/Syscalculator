@@ -238,6 +238,7 @@ editor.menu.file.open=Apri...
 editor.menu.file.save=Salva
 editor.menu.file.save_as=Salva come...
 editor.menu.file.close_tab=Chiudi scheda
+editor.tabs.new_right=Nuova scheda a destra
 editor.tabs.close_all=Chiudi tutte le schede
 editor.tabs.close_right=Chiudi schede a destra
 editor.tabs.close_left=Chiudi schede a sinistra

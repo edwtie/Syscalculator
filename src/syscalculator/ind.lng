@@ -238,6 +238,7 @@ editor.menu.file.open=Buka...
 editor.menu.file.save=Simpan
 editor.menu.file.save_as=Simpan sebagai...
 editor.menu.file.close_tab=Tutup tab
+editor.tabs.new_right=Tab baru di kanan
 editor.tabs.close_all=Tutup semua tab
 editor.tabs.close_right=Tutup tab di kanan
 editor.tabs.close_left=Tutup tab di kiri

@@ -238,6 +238,7 @@ editor.menu.file.open=Ouvrir...
 editor.menu.file.save=Enregistrer
 editor.menu.file.save_as=Enregistrer sous...
 editor.menu.file.close_tab=Fermer l'onglet
+editor.tabs.new_right=Nouvel onglet a droite
 editor.tabs.close_all=Fermer tous les onglets
 editor.tabs.close_right=Fermer les onglets a droite
 editor.tabs.close_left=Fermer les onglets a gauche
