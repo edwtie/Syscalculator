@@ -26,6 +26,7 @@ public sealed class ToolEditorForm : Form
     private const string LanguagePackageType = "language";
     private const int MaxPackageHeaderBytes = 64 * 1024;
     private const long MaxPackagePayloadBytes = 192L * 1024 * 1024;
+    private const int WmSetRedraw = 0x000B;
 
     private static readonly byte[] LanguagePackageMagic = Encoding.ASCII.GetBytes(LanguagePackageMagicText);
     private static readonly JsonSerializerOptions LanguagePackageJsonOptions = new()
@@ -75,6 +76,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex LanguageCommentRegex = new(@"^[ \t]*[#;].*$", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex HtmlHrefLinkRegex = new("href\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+)\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex ConceptBannerRegex = new("<div\\s+class=\"concept-banner\"[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -104,6 +106,9 @@ public sealed class ToolEditorForm : Form
     private bool _updatingNavigation;
     private bool _conceptBannerDismissed;
     private ToolEditorDocument? _current;
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
     public ToolEditorForm()
     {
@@ -1845,7 +1850,6 @@ public sealed class ToolEditorForm : Form
         };
         editor.VScroll += (_, _) => document.LineNumbers?.Invalidate();
         editor.Resize += (_, _) => document.LineNumbers?.Invalidate();
-        ScheduleSyntaxHighlight(document);
         return editor;
     }
 
@@ -1884,6 +1888,7 @@ public sealed class ToolEditorForm : Form
         UpdatePreview();
         UpdateUiState();
         UpdateDocumentStatus(document);
+        ScheduleSyntaxHighlight(document);
         QueueFocusActiveEditor();
     }
 
@@ -3146,23 +3151,31 @@ public sealed class ToolEditorForm : Form
             var selectionLength = editor.SelectionLength;
             var text = editor.Text;
 
-            editor.SuspendLayout();
-            editor.SelectAll();
-            editor.SelectionColor = Color.FromArgb(31, 41, 55);
+            SetControlRedraw(editor, enabled: false);
+            try
+            {
+                editor.SuspendLayout();
+                editor.SelectAll();
+                editor.SelectionColor = Color.FromArgb(31, 41, 55);
 
-            var extension = Path.GetExtension(document.PackagePath);
-            if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
-                HighlightHtml(editor, text);
-            else if (extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
-                HighlightCss(editor, text);
-            else if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
-                HighlightJson(editor, text);
-            else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
-                HighlightLanguage(editor, text);
+                var extension = Path.GetExtension(document.PackagePath);
+                if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
+                    HighlightHtml(editor, text);
+                else if (extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
+                    HighlightCss(editor, text);
+                else if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                    HighlightJson(editor, text);
+                else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
+                    HighlightLanguage(editor, text);
 
-            editor.Select(Math.Min(selectionStart, editor.TextLength), Math.Min(selectionLength, Math.Max(0, editor.TextLength - selectionStart)));
-            editor.SelectionColor = Color.FromArgb(31, 41, 55);
-            editor.ResumeLayout();
+                editor.Select(Math.Min(selectionStart, editor.TextLength), Math.Min(selectionLength, Math.Max(0, editor.TextLength - selectionStart)));
+                editor.SelectionColor = Color.FromArgb(31, 41, 55);
+            }
+            finally
+            {
+                editor.ResumeLayout();
+                SetControlRedraw(editor, enabled: true);
+            }
         }
         finally
         {
@@ -3195,7 +3208,17 @@ public sealed class ToolEditorForm : Form
     private static void HighlightLanguage(RichTextBox editor, string text)
     {
         ApplyMatches(editor, text, LanguageKeyRegex, Color.FromArgb(0, 74, 173));
-        ApplyMatches(editor, text, new Regex(@"^[ \t]*[#;].*$", RegexOptions.Multiline), Color.FromArgb(47, 128, 67));
+        ApplyMatches(editor, text, LanguageCommentRegex, Color.FromArgb(47, 128, 67));
+    }
+
+    private static void SetControlRedraw(Control control, bool enabled)
+    {
+        if (!control.IsHandleCreated)
+            return;
+
+        SendMessage(control.Handle, WmSetRedraw, enabled ? 1 : 0, 0);
+        if (enabled)
+            control.Invalidate();
     }
 
     private static void ApplyMatches(RichTextBox editor, string text, Regex regex, Color color, int groupIndex = 0)
