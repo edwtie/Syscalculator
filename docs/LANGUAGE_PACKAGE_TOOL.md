@@ -80,3 +80,21 @@ The tool checks:
 - maximum file count and file sizes;
 - wrapper payload SHA-256;
 - whole-package SHA-256 checksum reporting.
+
+## Failure Policy
+
+Validation is fail-closed. If any required identity field, checksum, manifest
+field, path rule, file type rule or size limit fails, the package must be
+rejected. Syscalculator should not load partial content from a failed package;
+it should continue with the previous valid package, loose `.lng` files or the
+English fallback.
+
+Common failures:
+
+- wrong `producer`, `product`, `softwareId` or `packageType`;
+- mismatching `payloadSha256` or external `packageSha256`;
+- missing `manifest.json` or `language/<code>.lng`;
+- blocked executable/script files;
+- absolute paths or `..` path traversal;
+- too many files or files that exceed package limits;
+- encrypted packages before encryption support is implemented.

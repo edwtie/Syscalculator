@@ -269,6 +269,37 @@ Current limits:
 - maximum single file size: 16 MiB;
 - maximum total uncompressed file size: 128 MiB.
 
+## Failure Policy
+
+Syscalculator uses a fail-closed policy for language packages. If a package does
+not pass validation, the package is rejected and its content is not loaded. The
+app should keep using the current loose `.lng` files, another valid selected
+language package, or the built-in English fallback.
+
+The package is rejected when:
+
+- the wrapper header is incomplete, malformed or uses an unsupported format;
+- `softwareId`, `packageType`, `producer` or `product` do not match the trusted
+  Tiedragon Syscalculator values;
+- `payloadSha256` does not match the payload archive;
+- release/update metadata supplies a `packageSha256` that does not match the
+  downloaded `.lngpdk` file;
+- `manifest.json` is missing, malformed or contains an unsafe package key or
+  language code;
+- `language/<code>.lng` is missing;
+- the package contains blocked file types such as `.exe`, `.dll`, `.bat`,
+  `.cmd` or `.ps1`;
+- an entry uses an absolute path, `..` traversal or another path that could
+  escape the package boundary;
+- the package exceeds file count, entry size, payload size or total
+  decompressed-size limits;
+- the package declares encryption while encrypted language packages are not yet
+  supported.
+
+On failure, package content must not be partially trusted. A failed package is a
+data problem or a security problem, so the correct behavior is to skip it and use
+a known-good fallback.
+
 ## Zip Library
 
 `.lngpdk` can be a ZIP container or a 7z-style archive internally. ZIP support
