@@ -33,6 +33,7 @@ public sealed class ToolEditorForm : Form
     private readonly Panel _editorContent;
     private readonly WebView2 _htmlEditor;
     private readonly WebView2 _preview;
+    private readonly SplitContainer _contentSplit;
     private readonly Label _statusLabel;
     private readonly ToolStripButton _saveButton;
     private readonly ToolStripButton _validateButton;
@@ -210,7 +211,7 @@ public sealed class ToolEditorForm : Form
         };
         previewHost.Controls.Add(_preview);
 
-        var contentSplit = new SplitContainer
+        _contentSplit = new SplitContainer
         {
             Dock = DockStyle.Fill,
             Orientation = Orientation.Horizontal,
@@ -220,11 +221,11 @@ public sealed class ToolEditorForm : Form
             Panel1MinSize = 1,
             Panel2MinSize = 1
         };
-        contentSplit.Panel1.Controls.Add(editorHost);
-        contentSplit.Panel2.Padding = new Padding(0, 4, 0, 0);
-        contentSplit.Panel2.Controls.Add(previewHost);
-        contentSplit.SizeChanged += (_, _) => ClampSplitter(contentSplit, 390);
-        Shown += (_, _) => ClampSplitter(contentSplit, 390);
+        _contentSplit.Panel1.Controls.Add(editorHost);
+        _contentSplit.Panel2.Padding = new Padding(0, 4, 0, 0);
+        _contentSplit.Panel2.Controls.Add(previewHost);
+        _contentSplit.SizeChanged += (_, _) => ClampSplitter(_contentSplit, 390);
+        Shown += (_, _) => ClampSplitter(_contentSplit, 390);
 
         var split = new SplitContainer
         {
@@ -238,7 +239,7 @@ public sealed class ToolEditorForm : Form
         };
         split.Panel1.Padding = new Padding(4, 4, 0, 0);
         split.Panel1.Controls.Add(fileTreeHost);
-        split.Panel2.Controls.Add(contentSplit);
+        split.Panel2.Controls.Add(_contentSplit);
         split.SizeChanged += (_, _) => ClampSplitter(split, 270);
         Shown += (_, _) => ClampSplitter(split, 270);
 
@@ -1015,6 +1016,16 @@ public sealed class ToolEditorForm : Form
         var visible = document is not null && document.ImageBytes is null && IsHtmlDocument(document);
         _htmlToolbar.Visible = visible;
         _htmlToolbarRow.Height = visible ? 32 : 0;
+        UpdatePreviewPaneState(document);
+    }
+
+    private void UpdatePreviewPaneState(ToolEditorDocument? document)
+    {
+        var showPreview = document is not null && !document.HtmlEditMode;
+        _contentSplit.Panel2Collapsed = !showPreview;
+        _previewButton.Enabled = showPreview;
+        if (showPreview)
+            ClampSplitter(_contentSplit, 390);
     }
 
     private void CloseDocument(ToolEditorDocument document)
@@ -1698,6 +1709,9 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        if (_current.HtmlEditMode)
+            return;
+
         await SyncHtmlEditorToSourceAsync();
         SetHtml(BuildPreviewHtml(_current));
     }
@@ -2046,7 +2060,6 @@ public sealed class ToolEditorForm : Form
         var hasDocument = _current is not null;
         _saveButton.Enabled = hasDocument && _current?.ReadOnly != true;
         _validateButton.Enabled = hasDocument;
-        _previewButton.Enabled = hasDocument;
         UpdateHtmlToolbarState(_current);
     }
 
