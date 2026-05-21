@@ -25,6 +25,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex HtmlHrefLinkRegex = new("href\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+)\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
@@ -300,7 +301,7 @@ public sealed class ToolEditorForm : Form
         package.DropDownItems.Add("Media toevoegen...", null, (_, _) => OpenMediaDocument());
         package.DropDownItems.Add("Media vervangen...", null, (_, _) => ReplaceCurrentMedia());
         package.DropDownItems.Add("Geselecteerd bestand verwijderen", null, (_, _) => DeleteCurrentDocument());
-        package.DropDownItems.Add("HTML-media links controleren", null, (_, _) => ValidatePackageMediaLinks(showMessage: true));
+        package.DropDownItems.Add("HTML-links controleren", null, (_, _) => ValidatePackageLinks(showMessage: true));
         package.DropDownItems.Add(new ToolStripSeparator());
         package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
 
@@ -2052,6 +2053,7 @@ public sealed class ToolEditorForm : Form
 
         var errors = ValidateDocument(_current);
         AddMissingMediaLinkErrors(_current, errors);
+        AddMissingInternalLinkErrors(_current, errors);
         if (errors.Count == 0)
         {
             SetStatus("Validation passed: " + _current.DisplayName, isError: false);
@@ -2082,23 +2084,26 @@ public sealed class ToolEditorForm : Form
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Manifest", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
-    private void ValidatePackageMediaLinks(bool showMessage)
+    private void ValidatePackageLinks(bool showMessage)
     {
         var errors = new List<string>();
         foreach (var document in _documents)
+        {
             AddMissingMediaLinkErrors(document, errors);
+            AddMissingInternalLinkErrors(document, errors);
+        }
 
         if (errors.Count == 0)
         {
-            SetStatus("Alle HTML-media links verwijzen naar bestaande package-media.", isError: false);
+            SetStatus("Alle HTML-links verwijzen naar bestaande package-documenten en media.", isError: false);
             if (showMessage)
-                MessageBox.Show(this, "Alle HTML-media links zijn gevonden in het package.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Alle HTML-links zijn gevonden in het package.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
-        SetStatus("HTML-media link ontbreekt: " + errors[0], isError: true);
+        SetStatus("HTML-link ontbreekt: " + errors[0], isError: true);
         if (showMessage)
-            MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Ontbrekende media", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Ontbrekende links", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     private void AddMissingMediaLinkErrors(ToolEditorDocument document, List<string> errors)
@@ -2112,6 +2117,41 @@ public sealed class ToolEditorForm : Form
             if (!MediaExists(link))
                 errors.Add(document.PackagePath + " verwijst naar ontbrekende media: " + link);
         }
+    }
+
+    private void AddMissingInternalLinkErrors(ToolEditorDocument document, List<string> errors)
+    {
+        if (document.ImageBytes is not null || !IsHtmlDocument(document))
+            return;
+
+        foreach (Match match in HtmlHrefLinkRegex.Matches(document.Editor.Text))
+        {
+            var link = match.Groups["path"].Value;
+            if (!ShouldValidateInternalLink(link))
+                continue;
+
+            if (!TryResolvePackageLink(link, document, out _))
+                errors.Add(document.PackagePath + " verwijst naar ontbrekend document: " + link);
+        }
+    }
+
+    private static bool ShouldValidateInternalLink(string link)
+    {
+        var cleaned = WebUtility.HtmlDecode(link).Trim();
+        if (string.IsNullOrWhiteSpace(cleaned) || cleaned.StartsWith("#", StringComparison.Ordinal))
+            return false;
+        if (cleaned.StartsWith("http:", StringComparison.OrdinalIgnoreCase) ||
+            cleaned.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ||
+            cleaned.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) ||
+            cleaned.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+        if (IsImagePath(cleaned))
+            return false;
+
+        return cleaned.StartsWith("nodpage:", StringComparison.OrdinalIgnoreCase) ||
+            cleaned.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
     }
 
     private static List<string> ValidateDocument(ToolEditorDocument document)
