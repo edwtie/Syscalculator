@@ -3,8 +3,8 @@
         "packageKey":  "deu",
         "languageCode":  "deu",
         "displayName":  "Deutsch",
-        "packageSha256":  "323beacb43bd260cc980b7d3de35c5e6da8450e678ff8580659a6a014e139463",
-        "payloadSha256":  "31f2252bfb5251d5386ba7a7633f42db14e9224df6b26f8a3d5795a0ebc6ac90",
+        "packageSha256":  "13f6847c53f3865880cef6b77a27d2fa20e561b6c6658b1502379bbbde1af1df",
+        "payloadSha256":  "6387ad24a118ec699770ac0c723f83917dddaaca1d0003dbae4f3b1e25b88feb",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.deu.lngpdk"
     },
@@ -12,8 +12,8 @@
         "packageKey":  "eng",
         "languageCode":  "eng",
         "displayName":  "English",
-        "packageSha256":  "c06fc0dd0e5e30edf0ddad7dec2ca5bd67e5fbd8b6b0156b254276558c9563a2",
-        "payloadSha256":  "b8a530394570ecd37580daf5a249ea9f1d262d526a145557e14bb01c72e6c7e2",
+        "packageSha256":  "c3e1b189edfac2a6c9c9b19d7b9afc5761662841ca2a4a0e01a36f5a7dd1704e",
+        "payloadSha256":  "696565aab44ac35ef754acb88ba4313ef2a5d983625fa52f5108115151ceceaa",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.eng.lngpdk"
     },
@@ -21,8 +21,8 @@
         "packageKey":  "fra",
         "languageCode":  "fra",
         "displayName":  "Français",
-        "packageSha256":  "39ffa944b17bf0ebf6daebb0154e2a3bac5bb1b16444eca45007693ed9821988",
-        "payloadSha256":  "4a8731d466b29a0eedf6eaf04cabe458bba901a3a4206b02248bf5fd388a48cd",
+        "packageSha256":  "5c81239a71d8513c2de3758769b54f393f23a7d961805acabe0537e5de2cbd9c",
+        "payloadSha256":  "0d014038fbea216ebd81d0da78e9f17f419cea6c76bf0b2aae0a30028d568741",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.fra.lngpdk"
     },
@@ -30,8 +30,8 @@
         "packageKey":  "ind",
         "languageCode":  "ind",
         "displayName":  "Indonesia",
-        "packageSha256":  "ed2b0a2224ab8491bb3d533a788a8909f93f0ea7e6ef7797aa5231ad13206ab3",
-        "payloadSha256":  "9f2396f6e98253b4d5ad85b7104dd2362aacf297507971f37e73a8034ee577b9",
+        "packageSha256":  "029e31141b51ad7a12e1cc9da220be0f12195bad1db6fbc71f6f49e062f510db",
+        "payloadSha256":  "fbcce43803b73306931ca350a87ba23c1cdcf042f9dfed37e1a7887c40dce1dc",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.ind.lngpdk"
     },
@@ -39,8 +39,8 @@
         "packageKey":  "ita",
         "languageCode":  "ita",
         "displayName":  "Italiano",
-        "packageSha256":  "caab9ff931a4e1cd2dd98b13df525c421c1e3ef37bc4a6813e028abda1b6b680",
-        "payloadSha256":  "b881d0de545fb26ef0cdccc736abbb7b85829694fe387acb5a0afc434f069d7d",
+        "packageSha256":  "5dcbb46d78acca1e70f531a461eb771b57161f3e378093d4d95410aeb7249873",
+        "payloadSha256":  "f913343bfe88aeb4f2e77ef1b98f0cd73643ba8e29c816c1adf7b70e74d67f2d",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.ita.lngpdk"
     },
@@ -48,8 +48,8 @@
         "packageKey":  "ned",
         "languageCode":  "ned",
         "displayName":  "Nederlands",
-        "packageSha256":  "3ce2284f49d091ad5f38d8ffb3fdfca25c04b0427bd52ce1e5520060e18d34ff",
-        "payloadSha256":  "98019539e615e28c2097ac70a9445663adaffcafec1283b7368f5baea3ea94cb",
+        "packageSha256":  "777074d2e645bc0b87f208291943cba8deb166238c930b9aed3928baee686564",
+        "payloadSha256":  "39a5dc9f72993aa2ed40d6fbabdb0898de986ffeaebedb6d89826f537b6e9e47",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.ned.lngpdk"
     },
@@ -57,8 +57,8 @@
         "packageKey":  "por",
         "languageCode":  "por",
         "displayName":  "Português",
-        "packageSha256":  "42402cb858763706d7dc7c55fb213863cd5e83ef10b50d2d3fd198d286f2f4b2",
-        "payloadSha256":  "39878c629d16ea50f04ec22251f4cc06b4e80c6930ee6fa6f144fe92c6f6439b",
+        "packageSha256":  "ff21826dd138d2a29ed7056449760670e9e7c7cef92af17173bb7a4065f97d22",
+        "payloadSha256":  "e128540cb83135dc0f8712b66bd4d14f61d9d3281d344719b8f900ce4e5abbf6",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.por.lngpdk"
     },
@@ -66,8 +66,8 @@
         "packageKey":  "spa",
         "languageCode":  "spa",
         "displayName":  "Español",
-        "packageSha256":  "f9b5697b255d1835020ce4c308cab3020055bf5293641d3606f607439d335603",
-        "payloadSha256":  "55ae3be2a631bc6c6040b8ca0f450e557940c465d1e57bc991e7dbaf5dea9c6a",
+        "packageSha256":  "ec7736c39ee8ed23fa946e7cfc9a00e73dbc091a207f96e1e057d13fa49159b2",
+        "payloadSha256":  "f3ec1fd88859e2656fb31852aa0d4df6afffcbe2ef51dc0e00b9520ef851c632",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.spa.lngpdk"
     },
@@ -75,8 +75,8 @@
         "packageKey":  "zho",
         "languageCode":  "zho",
         "displayName":  "中文",
-        "packageSha256":  "6881c84ea4aa0497ff8104e26e007db2be9edbb35174c302ff8c9d445a14777e",
-        "payloadSha256":  "79a1b24c3a0c47c4fe5d2ae4353f5d633ca718b1b43846842665229d6afc8f48",
+        "packageSha256":  "614aaf0a8dbcdb8fbebdbc6644d849e06e42eff71f7fa5b1985c5183506de96a",
+        "payloadSha256":  "c8202937210d781ab36c886ded3d3b2535fd5b574453708a296b208231e02f0e",
         "entryCount":  117,
         "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.zho.lngpdk"
     }

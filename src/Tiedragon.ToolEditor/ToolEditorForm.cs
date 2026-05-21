@@ -77,6 +77,8 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex HtmlHrefLinkRegex = new("href\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+)\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex ConceptBannerRegex = new("<div\\s+class=\"concept-banner\"[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex LegacyConceptWarningRegex = new("<div\\s+class=\"help-warning\"><b>Concept:</b>[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
@@ -100,6 +102,7 @@ public sealed class ToolEditorForm : Form
     private bool _htmlEditorFailed;
     private bool _loadingHtmlEditor;
     private bool _updatingNavigation;
+    private bool _conceptBannerDismissed;
     private ToolEditorDocument? _current;
 
     public ToolEditorForm()
@@ -550,7 +553,7 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildHtmlTemplate()
     {
-        return BuildConceptHelpBanner("nl") + """
+        return """
         <h1>Syscalculator Help</h1>
         <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
         <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
@@ -599,7 +602,6 @@ public sealed class ToolEditorForm : Form
             var packageName = pageNameMap[Path.GetFileName(file)];
             var html = File.ReadAllText(file, Encoding.Latin1);
             html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
-            html = BuildConceptHelpBanner(languagePrefix) + html;
             AddDocument("manual/" + packageName, html, file);
         }
     }
@@ -617,7 +619,7 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildEnglishHtmlTemplate()
     {
-        return BuildConceptHelpBanner("en") + """
+        return """
         <h1>Syscalculator Help</h1>
         <p>This starter language package contains the editable package structure for Syscalculator help, NOD help, formula cards, translations and media.</p>
         <div class="help-info">Use this English base package as the source for a new translation package.</div>
@@ -1128,6 +1130,7 @@ public sealed class ToolEditorForm : Form
         _pendingHtml = null;
         _pendingHtmlEditor = null;
         _manifestText = "";
+        _conceptBannerDismissed = false;
         _contentSplit.Panel2Collapsed = true;
         _previewButton.Enabled = false;
         RefreshTabStrip();
@@ -1590,6 +1593,9 @@ public sealed class ToolEditorForm : Form
     {
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
+        if (Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase))
+            text = StripToolEditorConceptBanners(text);
+
         var editor = CreateTextEditor(text, document);
         if (IsManifestPath(document.PackagePath))
         {
@@ -1612,6 +1618,11 @@ public sealed class ToolEditorForm : Form
         RefreshFileTree();
         RefreshDocumentList();
         return document;
+    }
+
+    private static string StripToolEditorConceptBanners(string html)
+    {
+        return LegacyConceptWarningRegex.Replace(ConceptBannerRegex.Replace(html, ""), "");
     }
 
     private ToolEditorDocument AddImageDocument(string displayName, byte[] bytes, string? filePath)
@@ -3243,7 +3254,7 @@ public sealed class ToolEditorForm : Form
 
         var text = document.Editor.Text;
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
-            return WrapContentHtml(ResolveMediaLinksForPreview(text));
+            return WrapContentHtml(ResolveMediaLinksForPreview(StripToolEditorConceptBanners(text)), ShouldShowConceptBanner(), CurrentConceptBannerLanguagePrefix());
         if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             return WrapHtml(document.DisplayName, BuildLanguagePreview(text));
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
@@ -3270,7 +3281,7 @@ public sealed class ToolEditorForm : Form
 
     private void SetHtmlEditor(string html)
     {
-        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(html)));
+        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(StripToolEditorConceptBanners(html)), ShouldShowConceptBanner(), CurrentConceptBannerLanguagePrefix()));
     }
 
     private void SetHtmlEditorHtml(string html)
@@ -3301,11 +3312,14 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string BuildEditableHtml(string body)
+    private static string BuildEditableHtml(string body, bool showConceptBanner, string conceptLanguagePrefix)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine +
             ToolEditorConceptBannerCss() + Environment.NewLine +
             "body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }";
+        if (showConceptBanner)
+            body = BuildConceptHelpBanner(conceptLanguagePrefix) + body;
+
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHtmlEditScript()));
     }
 
@@ -3327,7 +3341,7 @@ public sealed class ToolEditorForm : Form
             if (html is null)
                 return;
 
-            var cleaned = Regex.Replace(html, @"\s*<script>[\s\S]*?</script>\s*$", "", RegexOptions.IgnoreCase).Trim();
+            var cleaned = StripToolEditorConceptBanners(Regex.Replace(html, @"\s*<script>[\s\S]*?</script>\s*$", "", RegexOptions.IgnoreCase).Trim());
             _current.Editor.Text = cleaned;
         }
         catch (COMException)
@@ -3447,10 +3461,38 @@ public sealed class ToolEditorForm : Form
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapTopicPage(title, body, css, ToolEditorHelpPreviewScript()));
     }
 
-    private static string WrapContentHtml(string body)
+    private static string WrapContentHtml(string body, bool showConceptBanner, string conceptLanguagePrefix)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine + ToolEditorConceptBannerCss();
+        if (showConceptBanner)
+            body = BuildConceptHelpBanner(conceptLanguagePrefix) + body;
+
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHelpPreviewScript()));
+    }
+
+    private bool ShouldShowConceptBanner()
+    {
+        return !_conceptBannerDismissed;
+    }
+
+    private string CurrentConceptBannerLanguagePrefix()
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(_manifestText);
+            if (json.RootElement.TryGetProperty("languageCode", out var languageCode))
+            {
+                var value = languageCode.GetString();
+                if (value is not null && (value.Equals("ned", StringComparison.OrdinalIgnoreCase) || value.Equals("nl", StringComparison.OrdinalIgnoreCase)))
+                    return "nl";
+            }
+        }
+        catch (JsonException)
+        {
+            // Invalid concept manifests still get the default English draft warning.
+        }
+
+        return "en";
     }
 
     private static string ToolEditorConceptBannerCss()
@@ -3473,7 +3515,7 @@ public sealed class ToolEditorForm : Form
           if (!close) return;
           event.preventDefault();
           close.closest('.concept-banner')?.remove();
-          window.chrome.webview.postMessage('changed');
+          window.chrome.webview.postMessage('tooleditor:concept-dismissed');
         });
         document.body.addEventListener('click', event => {
           const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
@@ -3500,6 +3542,7 @@ public sealed class ToolEditorForm : Form
           if (!close) return;
           event.preventDefault();
           close.closest('.concept-banner')?.remove();
+          window.chrome.webview.postMessage('tooleditor:concept-dismissed');
         });
         document.addEventListener('click', event => {
           const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
@@ -3687,6 +3730,12 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        if (message.Equals("tooleditor:concept-dismissed", StringComparison.Ordinal))
+        {
+            DismissConceptBanner();
+            return;
+        }
+
         if (message.Equals("changed", StringComparison.Ordinal) && _current is not null && _current.HtmlEditMode)
             SetDirty(_current, true);
     }
@@ -3703,7 +3752,26 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        if (message.Equals("tooleditor:concept-dismissed", StringComparison.Ordinal))
+        {
+            DismissConceptBanner();
+            return;
+        }
+
         CopyHelpMessageToClipboard(message);
+    }
+
+    private void DismissConceptBanner()
+    {
+        _conceptBannerDismissed = true;
+        RemoveConceptBannersFromBrowsers();
+    }
+
+    private void RemoveConceptBannersFromBrowsers()
+    {
+        const string script = "document.querySelectorAll('.concept-banner').forEach(element => element.remove());";
+        _ = _preview.CoreWebView2?.ExecuteScriptAsync(script);
+        _ = _htmlEditor.CoreWebView2?.ExecuteScriptAsync(script);
     }
 
     private static string? GetWebMessage(CoreWebView2WebMessageReceivedEventArgs args)
