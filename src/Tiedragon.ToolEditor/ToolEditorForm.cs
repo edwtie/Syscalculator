@@ -155,7 +155,11 @@ public sealed class ToolEditorForm : Form
             };
             ShowPendingHtmlEditorIfReady();
         };
-        _htmlEditor.NavigationCompleted += (_, _) => _loadingHtmlEditor = false;
+        _htmlEditor.NavigationCompleted += (_, _) =>
+        {
+            _loadingHtmlEditor = false;
+            FocusActiveEditor();
+        };
         _ = InitializeHtmlEditorAsync();
 
         _editorContent = new Panel
@@ -1153,6 +1157,7 @@ public sealed class ToolEditorForm : Form
 
         _current.HtmlEditMode = editMode;
         SelectDocument(_current);
+        BeginInvoke(FocusActiveEditor);
     }
 
     private void WrapHtmlSelection(string tag, string fallbackText)
@@ -1319,6 +1324,27 @@ public sealed class ToolEditorForm : Form
         UpdatePreview();
         UpdateUiState();
         UpdateDocumentStatus(document);
+        BeginInvoke(FocusActiveEditor);
+    }
+
+    private void FocusActiveEditor()
+    {
+        if (_current is null || IsDisposed)
+            return;
+
+        if (_current.HtmlEditMode && _current.ImageBytes is null && IsHtmlDocument(_current))
+        {
+            if (!_htmlEditor.IsDisposed)
+            {
+                _htmlEditor.Focus();
+                _ = _htmlEditor.CoreWebView2?.ExecuteScriptAsync("document.body && document.body.focus();");
+            }
+
+            return;
+        }
+
+        if (!_current.Editor.IsDisposed)
+            _current.Editor.Focus();
     }
 
     private void UpdateDocumentStatus(ToolEditorDocument document)
@@ -2260,7 +2286,7 @@ public sealed class ToolEditorForm : Form
 
     private void SetHtmlEditor(string html)
     {
-        SetHtmlEditorHtml(BuildEditableHtml(html));
+        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(html)));
     }
 
     private void SetHtmlEditorHtml(string html)
@@ -2331,6 +2357,12 @@ public sealed class ToolEditorForm : Form
 
         try
         {
+            await _htmlEditor.CoreWebView2.ExecuteScriptAsync("""
+                for (const image of document.querySelectorAll('img[data-tool-src]')) {
+                  image.setAttribute('src', image.getAttribute('data-tool-src'));
+                  image.removeAttribute('data-tool-src');
+                }
+                """);
             var json = await _htmlEditor.CoreWebView2.ExecuteScriptAsync("document.body.innerHTML");
             var html = JsonSerializer.Deserialize<string>(json);
             if (html is null)
@@ -2347,6 +2379,25 @@ public sealed class ToolEditorForm : Form
         {
             _htmlEditorFailed = true;
         }
+    }
+
+    private string ResolveMediaLinksForEditor(string html)
+    {
+        return HtmlMediaLinkRegex.Replace(html, match =>
+        {
+            var attribute = match.Groups["attr"].Value;
+            if (!attribute.Equals("src", StringComparison.OrdinalIgnoreCase))
+                return match.Value;
+
+            var quote = match.Groups["quote"].Value;
+            var link = match.Groups["path"].Value;
+            var media = FindMediaDocument(link);
+            if (media?.ImageBytes is null)
+                return match.Value;
+
+            var dataUri = "data:" + ImageMimeType(media.PackagePath) + ";base64," + Convert.ToBase64String(media.ImageBytes);
+            return attribute + "=" + quote + dataUri + quote + " data-tool-src=" + quote + WebUtility.HtmlEncode(link) + quote;
+        });
     }
 
     private static string BuildImagePreview(ToolEditorDocument document)
