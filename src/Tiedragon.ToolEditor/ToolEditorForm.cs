@@ -15,6 +15,7 @@ namespace Tiedragon.ToolEditor;
 // document tabs, source editor and HTML preview.
 public sealed class ToolEditorForm : Form
 {
+    private readonly TreeView _fileTree;
     private readonly FlowLayoutPanel _tabStrip;
     private readonly Panel _editorContent;
     private readonly WebView2 _preview;
@@ -47,6 +48,29 @@ public sealed class ToolEditorForm : Form
         toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(_validateButton);
         toolbar.Items.Add(_previewButton);
+
+        _fileTree = new TreeView
+        {
+            Dock = DockStyle.Fill,
+            BorderStyle = BorderStyle.None,
+            FullRowSelect = true,
+            HideSelection = false,
+            ShowLines = true,
+            ShowPlusMinus = true,
+            ShowRootLines = true,
+            Font = new Font("Segoe UI", 9),
+            BackColor = Color.White,
+            ForeColor = Color.FromArgb(31, 41, 55)
+        };
+        _fileTree.AfterSelect += FileTree_AfterSelect;
+
+        var fileTreeHost = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(203, 213, 225),
+            Padding = new Padding(1)
+        };
+        fileTreeHost.Controls.Add(_fileTree);
 
         _tabStrip = ToolEditorTabsApi.CreateStrip();
         _tabStrip.Dock = DockStyle.Fill;
@@ -107,6 +131,22 @@ public sealed class ToolEditorForm : Form
         };
         previewHost.Controls.Add(_preview);
 
+        var editorSplit = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            BorderStyle = BorderStyle.None,
+            SplitterWidth = 5,
+            BackColor = Color.FromArgb(226, 232, 240),
+            FixedPanel = FixedPanel.Panel1,
+            Panel1MinSize = 1,
+            Panel2MinSize = 1
+        };
+        editorSplit.Panel1.Padding = new Padding(4, 4, 0, 0);
+        editorSplit.Panel1.Controls.Add(fileTreeHost);
+        editorSplit.Panel2.Controls.Add(editorHost);
+        editorSplit.SizeChanged += (_, _) => ClampSplitter(editorSplit, 220);
+        Shown += (_, _) => ClampSplitter(editorSplit, 220);
+
         var split = new SplitContainer
         {
             Dock = DockStyle.Fill,
@@ -116,7 +156,7 @@ public sealed class ToolEditorForm : Form
             Panel1MinSize = 1,
             Panel2MinSize = 1
         };
-        split.Panel1.Controls.Add(editorHost);
+        split.Panel1.Controls.Add(editorSplit);
         split.Panel2.Padding = new Padding(0, 4, 4, 0);
         split.Panel2.Controls.Add(previewHost);
         split.SizeChanged += (_, _) => ClampSplitter(split);
@@ -138,6 +178,7 @@ public sealed class ToolEditorForm : Form
         Controls.Add(toolbar);
 
         NewLanguagePackageTemplate();
+        RefreshFileTree();
         UpdateUiState();
     }
 
@@ -211,6 +252,8 @@ public sealed class ToolEditorForm : Form
             path = dialog.FileName;
             _current.FilePath = path;
             _current.DisplayName = Path.GetFileName(path);
+            _current.PackagePath = NormalizePackagePath(_current.DisplayName);
+            RefreshFileTree();
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -223,7 +266,7 @@ public sealed class ToolEditorForm : Form
     {
         var page = new TabPage(displayName);
         var editor = CreateTextEditor(text);
-        var document = new ToolEditorDocument(page, displayName, filePath, editor);
+        var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath, editor);
         var header = ToolEditorTabsApi.CreateHeader(
             page,
             (_, _) => SelectDocument(document),
@@ -233,6 +276,7 @@ public sealed class ToolEditorForm : Form
         document.HeaderTitle = header.Title;
         _documents.Add(document);
         _tabStrip.Controls.Add(header.Panel);
+        RefreshFileTree();
         SelectDocument(document);
     }
 
@@ -259,6 +303,7 @@ public sealed class ToolEditorForm : Form
     private void SelectDocument(ToolEditorDocument document)
     {
         _current = document;
+        SelectDocumentInTree(document);
         _editorContent.SuspendLayout();
         _editorContent.Controls.Clear();
         _editorContent.Controls.Add(document.Editor);
@@ -284,6 +329,7 @@ public sealed class ToolEditorForm : Form
 
         _tabStrip.Controls.Remove(document.HeaderPanel);
         _documents.Remove(document);
+        RemoveDocumentFromTree(document);
         document.Editor.Dispose();
         document.Page.Dispose();
 
@@ -298,6 +344,97 @@ public sealed class ToolEditorForm : Form
         }
 
         RefreshTabStrip();
+        RefreshFileTree();
+    }
+
+    private void RefreshFileTree()
+    {
+        if (_fileTree.IsDisposed)
+            return;
+
+        _fileTree.BeginUpdate();
+        _fileTree.Nodes.Clear();
+        var root = new TreeNode("Language package")
+        {
+            NodeFont = new Font(_fileTree.Font, FontStyle.Bold)
+        };
+        _fileTree.Nodes.Add(root);
+
+        foreach (var document in _documents.OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
+            AddDocumentNode(root, document);
+
+        root.ExpandAll();
+        _fileTree.EndUpdate();
+        if (_current is not null)
+            SelectDocumentInTree(_current);
+    }
+
+    private static void AddDocumentNode(TreeNode root, ToolEditorDocument document)
+    {
+        var parts = document.PackagePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var parent = root;
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var part = parts[i];
+            var existing = FindChild(parent, part);
+            if (existing is null)
+            {
+                existing = new TreeNode(part);
+                parent.Nodes.Add(existing);
+            }
+
+            parent = existing;
+        }
+
+        parent.Tag = document;
+    }
+
+    private static TreeNode? FindChild(TreeNode parent, string text)
+    {
+        foreach (TreeNode node in parent.Nodes)
+        {
+            if (node.Text.Equals(text, StringComparison.OrdinalIgnoreCase))
+                return node;
+        }
+
+        return null;
+    }
+
+    private void SelectDocumentInTree(ToolEditorDocument document)
+    {
+        var node = FindDocumentNode(_fileTree.Nodes, document);
+        if (node is null || _fileTree.SelectedNode == node)
+            return;
+
+        _fileTree.SelectedNode = node;
+        node.EnsureVisible();
+    }
+
+    private static TreeNode? FindDocumentNode(TreeNodeCollection nodes, ToolEditorDocument document)
+    {
+        foreach (TreeNode node in nodes)
+        {
+            if (ReferenceEquals(node.Tag, document))
+                return node;
+
+            var child = FindDocumentNode(node.Nodes, document);
+            if (child is not null)
+                return child;
+        }
+
+        return null;
+    }
+
+    private void RemoveDocumentFromTree(ToolEditorDocument document)
+    {
+        var node = FindDocumentNode(_fileTree.Nodes, document);
+        node?.Remove();
+    }
+
+    private void FileTree_AfterSelect(object? sender, TreeViewEventArgs e)
+    {
+        if (e.Node?.Tag is ToolEditorDocument document && !ReferenceEquals(document, _current))
+            SelectDocument(document);
     }
 
     private void ValidateCurrent(bool showMessage)
@@ -337,6 +474,11 @@ public sealed class ToolEditorForm : Form
             errors.Add("Document is empty.");
 
         return errors;
+    }
+
+    private static string NormalizePackagePath(string value)
+    {
+        return value.Replace('\\', '/').Trim('/');
     }
 
     private static void ValidateJson(string text, List<string> errors)
@@ -574,7 +716,7 @@ public sealed class ToolEditorForm : Form
         _statusLabel.ForeColor = isError ? Color.FromArgb(170, 35, 35) : Color.FromArgb(31, 41, 55);
     }
 
-    private static void ClampSplitter(SplitContainer split)
+    private static void ClampSplitter(SplitContainer split, int? preferredDistance = null)
     {
         if (split.Width <= split.SplitterWidth + 2)
             return;
@@ -584,7 +726,7 @@ public sealed class ToolEditorForm : Form
         if (max < min)
             return;
 
-        var target = Math.Clamp(split.Width / 2, min, max);
+        var target = Math.Clamp(preferredDistance ?? split.Width / 2, min, max);
         try
         {
             if (split.SplitterDistance != target)
@@ -612,10 +754,11 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private sealed class ToolEditorDocument(TabPage page, string displayName, string? filePath, RichTextBox editor)
+    private sealed class ToolEditorDocument(TabPage page, string displayName, string packagePath, string? filePath, RichTextBox editor)
     {
         public TabPage Page { get; } = page;
         public string DisplayName { get; set; } = displayName;
+        public string PackagePath { get; set; } = packagePath;
         public string? FilePath { get; set; } = filePath;
         public RichTextBox Editor { get; } = editor;
         public Panel HeaderPanel { get; set; } = null!;
