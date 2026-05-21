@@ -2405,8 +2405,9 @@ public sealed class ToolEditorForm : Form
           <style>
             html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
             body { box-sizing: border-box; display: flex; font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1f2937; background: #fff; }
-            .image-preview { position: relative; flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 0; overflow: auto; }
-            .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center center; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
+            .image-preview { position: relative; flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 0; overflow: hidden; cursor: grab; user-select: none; }
+            .image-preview.dragging { cursor: grabbing; }
+            .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center center; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; pointer-events: none; }
             .image-tools { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; padding: 6px; border: 1px solid #cfe0f5; border-radius: 18px; background: rgba(255, 255, 255, .92); box-shadow: 0 8px 18px rgba(15, 23, 42, .14); }
             .image-tools button { width: 38px; height: 34px; border: 1px solid #cfe0f5; border-radius: 14px; background: #fff; color: #123f73; font: 700 15px "Segoe UI", Arial, sans-serif; cursor: pointer; }
             .image-tools button:hover { background: #edf6ff; border-color: #8abcf4; }
@@ -2416,9 +2417,15 @@ public sealed class ToolEditorForm : Form
           {{body}}
           <script>
             let zoom = 1;
+            let panX = 0;
+            let panY = 0;
+            let dragging = false;
+            let dragX = 0;
+            let dragY = 0;
+            const preview = document.querySelector('.image-preview');
             const image = document.getElementById('media-image');
             const applyZoom = () => {
-              image.style.transform = `scale(${zoom})`;
+              image.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
               image.style.maxWidth = zoom === 1 ? '100%' : 'none';
               image.style.maxHeight = zoom === 1 ? '100%' : 'none';
             };
@@ -2426,9 +2433,35 @@ public sealed class ToolEditorForm : Form
               const action = event.target && event.target.dataset ? event.target.dataset.zoom : '';
               if (action === 'in') zoom = Math.min(zoom * 1.2, 8);
               if (action === 'out') zoom = Math.max(zoom / 1.2, .2);
-              if (action === 'reset') zoom = 1;
+              if (action === 'reset') {
+                zoom = 1;
+                panX = 0;
+                panY = 0;
+              }
               applyZoom();
             });
+            preview.addEventListener('pointerdown', event => {
+              if (event.target.closest('.image-tools')) return;
+              dragging = true;
+              dragX = event.clientX - panX;
+              dragY = event.clientY - panY;
+              preview.classList.add('dragging');
+              preview.setPointerCapture(event.pointerId);
+            });
+            preview.addEventListener('pointermove', event => {
+              if (!dragging) return;
+              panX = event.clientX - dragX;
+              panY = event.clientY - dragY;
+              applyZoom();
+            });
+            const stopDrag = event => {
+              dragging = false;
+              preview.classList.remove('dragging');
+              if (preview.hasPointerCapture(event.pointerId))
+                preview.releasePointerCapture(event.pointerId);
+            };
+            preview.addEventListener('pointerup', stopDrag);
+            preview.addEventListener('pointercancel', stopDrag);
           </script>
         </body>
         </html>
