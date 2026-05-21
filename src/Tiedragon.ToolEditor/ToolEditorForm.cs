@@ -2266,7 +2266,7 @@ public sealed class ToolEditorForm : Form
           <div class="image-tools" aria-label="Afbeelding zoom">
             <button type="button" data-zoom="in" title="Inzoomen">+</button>
             <button type="button" data-zoom="out" title="Uitzoomen">-</button>
-            <button type="button" data-zoom="reset" title="100%">100%</button>
+            <button type="button" data-zoom="reset" title="Canvas 100%" aria-label="Canvas 100%"><span class="fit-icon"></span></button>
           </div>
         </div>
         """;
@@ -2411,6 +2411,7 @@ public sealed class ToolEditorForm : Form
             .image-tools { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; padding: 6px; border: 1px solid #cfe0f5; border-radius: 18px; background: rgba(255, 255, 255, .92); box-shadow: 0 8px 18px rgba(15, 23, 42, .14); }
             .image-tools button { width: 38px; height: 34px; border: 1px solid #cfe0f5; border-radius: 14px; background: #fff; color: #123f73; font: 700 15px "Segoe UI", Arial, sans-serif; cursor: pointer; }
             .image-tools button:hover { background: #edf6ff; border-color: #8abcf4; }
+            .fit-icon { display: inline-block; width: 15px; height: 15px; border: 2px solid currentColor; border-radius: 3px; box-sizing: border-box; vertical-align: middle; }
           </style>
         </head>
         <body>
