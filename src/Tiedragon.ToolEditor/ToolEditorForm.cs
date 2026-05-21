@@ -257,6 +257,8 @@ public sealed class ToolEditorForm : Form
         view.DropDownItems.Add("Valideren", null, (_, _) => ValidateCurrent(showMessage: true));
 
         var package = new ToolStripMenuItem("Pakket");
+        package.DropDownItems.Add("Bestandenlijst tonen", null, (_, _) => ShowPackageFileListDialog());
+        package.DropDownItems.Add(new ToolStripSeparator());
         package.DropDownItems.Add("Manifest tonen", null, (_, _) => ShowManifestDialog());
         package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateManifest(showMessage: true));
         package.DropDownItems.Add("Media toevoegen...", null, (_, _) => OpenMediaDocument());
@@ -428,6 +430,103 @@ public sealed class ToolEditorForm : Form
         dialog.Controls.Add(editor);
         dialog.Controls.Add(buttons);
         dialog.ShowDialog(this);
+    }
+
+    private void ShowPackageFileListDialog()
+    {
+        using var dialog = new Form
+        {
+            Text = "Pakketbestanden",
+            Width = 760,
+            Height = 420,
+            StartPosition = FormStartPosition.CenterParent,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowIcon = false
+        };
+
+        var list = CreatePackageFileList();
+        list.Dock = DockStyle.Fill;
+        list.DoubleClick += (_, _) =>
+        {
+            if (list.SelectedItems.Count == 0)
+                return;
+
+            if (list.SelectedItems[0].Tag is ToolEditorDocument document)
+            {
+                SelectDocument(document);
+                dialog.Close();
+            }
+        };
+
+        var open = new Button
+        {
+            Text = "Openen",
+            Dock = DockStyle.Right,
+            Width = 96
+        };
+        open.Click += (_, _) =>
+        {
+            if (list.SelectedItems.Count == 0)
+                return;
+
+            if (list.SelectedItems[0].Tag is ToolEditorDocument document)
+            {
+                SelectDocument(document);
+                dialog.Close();
+            }
+        };
+
+        var close = new Button
+        {
+            Text = "Sluiten",
+            Dock = DockStyle.Right,
+            Width = 96
+        };
+        close.Click += (_, _) => dialog.Close();
+
+        var buttons = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 42,
+            Padding = new Padding(8)
+        };
+        buttons.Controls.Add(open);
+        buttons.Controls.Add(close);
+
+        dialog.Controls.Add(list);
+        dialog.Controls.Add(buttons);
+        dialog.ShowDialog(this);
+    }
+
+    private ListView CreatePackageFileList()
+    {
+        var list = new ListView
+        {
+            BorderStyle = BorderStyle.FixedSingle,
+            FullRowSelect = true,
+            HideSelection = false,
+            MultiSelect = false,
+            View = View.Details,
+            Font = new Font("Segoe UI", 9),
+            BackColor = Color.White,
+            ForeColor = Color.FromArgb(31, 41, 55)
+        };
+        list.Columns.Add("Soort", 170);
+        list.Columns.Add("Onderwerp", 230);
+        list.Columns.Add("Pakketpad", 320);
+
+        foreach (var document in _documents.OrderBy(document => document.TreeGroup, StringComparer.CurrentCultureIgnoreCase)
+                     .ThenBy(document => document.TreeTopic, StringComparer.CurrentCultureIgnoreCase))
+        {
+            var item = new ListViewItem(document.TreeGroup);
+            item.SubItems.Add(document.TreeTopic);
+            item.SubItems.Add(document.PackagePath);
+            item.Tag = document;
+            list.Items.Add(item);
+        }
+
+        return list;
     }
 
     private void OpenMediaDocument()
