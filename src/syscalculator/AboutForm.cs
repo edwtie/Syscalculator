@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32;
+using Tiedragon.Help;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -15,6 +16,7 @@ internal sealed class AboutForm : Form
     private LanguageCatalog _language;
     private ComboBox? _languageCombo;
     private readonly IReadOnlyList<LanguageCatalog.LanguageInfo> _languages;
+    private readonly LanguageCatalog _englishLanguage;
     private readonly Image? _aboutImage;
     private bool _initializingLanguage;
     private bool _languageRefreshPending;
@@ -35,6 +37,7 @@ internal sealed class AboutForm : Form
         string? currentLanguagePackageId = null)
     {
         _language = language;
+        _englishLanguage = LanguageCatalog.Load(AppContext.BaseDirectory, "eng.lng");
         _languages = languages;
         _currentLanguageFile = currentLanguageFile;
         _currentLanguagePackageId = currentLanguagePackageId;
@@ -201,17 +204,6 @@ internal sealed class AboutForm : Form
             : T("menu.config.update_channel.daily", "Daily");
     }
 
-    private string GetLicenseText()
-    {
-        if (AppVersionInfo.ReleaseChannel.Equals("Beta", StringComparison.OrdinalIgnoreCase))
-            return T("about.license_text.beta", "Syscalculator 2.0 beta build. Internal evaluation license.");
-
-        if (AppVersionInfo.ReleaseChannel.Equals("Stable", StringComparison.OrdinalIgnoreCase))
-            return T("about.license_text.stable", "Syscalculator 2.0. Licensed software.");
-
-        return T("about.license_text.daily", "Syscalculator 2.0 daily build. Internal evaluation license.");
-    }
-
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildCopyrightSection.
     private Control BuildCopyrightSection()
     {
@@ -238,13 +230,6 @@ internal sealed class AboutForm : Form
         AddIconFullRow(grid, "\u2709", T("about.email_title", "E-mail"), 28, FontStyle.Bold);
         AddLinkRow(grid, AppVersionInfo.Email, "mailto:" + AppVersionInfo.Email);
         return grid;
-    }
-
-    private string GetPrivacyUrl()
-    {
-        return _currentLanguageFile.Equals("ned.lng", StringComparison.OrdinalIgnoreCase)
-            ? AppVersionInfo.PrivacyUrlDutch
-            : AppVersionInfo.PrivacyUrl;
     }
 
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildLanguageSection.
@@ -357,12 +342,10 @@ internal sealed class AboutForm : Form
             Height = 34,
             Anchor = AnchorStyles.None,
         };
-        licenseButton.Click += (_, _) => MessageBox.Show(
-            this,
-            GetLicenseText(),
-            T("about.license", "License..."),
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        licenseButton.Click += (_, _) => ShowLegalDocument(
+            T("legal.license.title", "License Agreement"),
+            "legal/license-agreement.html",
+            "legal-license");
 
         var privacyButton = new Button
         {
@@ -371,7 +354,10 @@ internal sealed class AboutForm : Form
             Height = 34,
             Anchor = AnchorStyles.None,
         };
-        privacyButton.Click += (_, _) => OpenLink(GetPrivacyUrl());
+        privacyButton.Click += (_, _) => ShowLegalDocument(
+            T("legal.privacy.title", "Privacy Statement"),
+            "legal/privacy-statement.html",
+            "legal-privacy");
 
         var okButton = new Button
         {
@@ -397,6 +383,37 @@ internal sealed class AboutForm : Form
 
         AcceptButton = okButton;
         return bar;
+    }
+
+    private void ShowLegalDocument(string title, string fileName, string pageId)
+    {
+        var body = HelpApi.Content(HelpLanguageCode(), ResolveHelpLanguageText, pageId, fileName);
+        var html = HelpHtml.WrapTopicPage(title, body, HelpApi.MainHelpCss());
+        HelpApi.ShowDialog(this, new HelpDialogOptions(
+            title,
+            [new NodHelpPage(pageId, title, html)],
+            SelectedPageId: pageId,
+            Navigation: GetHelpNavigationLabels()));
+    }
+
+    private HelpNavigationLabels GetHelpNavigationLabels()
+    {
+        return new HelpNavigationLabels(
+            T("help.nav.home", "Home"),
+            T("help.nav.previous", "Previous"),
+            T("help.nav.next", "Next"));
+    }
+
+    private string HelpLanguageCode() => HelpApi.LanguageCodeFromFileName(_language.FileName);
+
+    private string? ResolveHelpLanguageText(string key)
+    {
+        if (_language.TryText(key, out var value))
+            return value;
+
+        return _englishLanguage.TryText(key, out var englishValue)
+            ? englishValue
+            : null;
     }
 
     // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateSection.
