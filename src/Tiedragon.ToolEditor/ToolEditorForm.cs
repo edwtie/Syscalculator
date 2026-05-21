@@ -23,6 +23,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex HtmlMediaLinkRegex = new("(?:src|href)\\s*=\\s*[\"'](?<path>[^\"']+\\.(?:png|jpg|jpeg|webp|svg))[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
@@ -47,6 +48,9 @@ public sealed class ToolEditorForm : Form
         StartPosition = FormStartPosition.CenterParent;
         KeyPreview = true;
         KeyDown += ToolEditorForm_KeyDown;
+        AllowDrop = true;
+        DragEnter += ToolEditorForm_DragEnter;
+        DragDrop += ToolEditorForm_DragDrop;
 
         var menu = BuildMenu();
         var toolbar = ToolEditorApi.CreateToolbar();
@@ -74,6 +78,9 @@ public sealed class ToolEditorForm : Form
             ForeColor = Color.FromArgb(31, 41, 55)
         };
         _fileTree.AfterSelect += FileTree_AfterSelect;
+        _fileTree.AllowDrop = true;
+        _fileTree.DragEnter += ToolEditorForm_DragEnter;
+        _fileTree.DragDrop += ToolEditorForm_DragDrop;
 
         var fileTreeHost = new Panel
         {
@@ -99,6 +106,9 @@ public sealed class ToolEditorForm : Form
         _documentList.Columns.Add("Onderwerp", 240);
         _documentList.Columns.Add("Pakketpad", 360);
         _documentList.SelectedIndexChanged += DocumentList_SelectedIndexChanged;
+        _documentList.AllowDrop = true;
+        _documentList.DragEnter += ToolEditorForm_DragEnter;
+        _documentList.DragDrop += ToolEditorForm_DragDrop;
 
         var listHost = new Panel
         {
@@ -265,6 +275,11 @@ public sealed class ToolEditorForm : Form
 
         var package = new ToolStripMenuItem("Pakket");
         package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateCurrent(showMessage: true));
+        package.DropDownItems.Add("Media toevoegen...", null, (_, _) => OpenMediaDocument());
+        package.DropDownItems.Add("Media vervangen...", null, (_, _) => ReplaceCurrentMedia());
+        package.DropDownItems.Add("Geselecteerd bestand verwijderen", null, (_, _) => DeleteCurrentDocument());
+        package.DropDownItems.Add("HTML-media links controleren", null, (_, _) => ValidatePackageMediaLinks(showMessage: true));
+        package.DropDownItems.Add(new ToolStripSeparator());
         package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
 
         var help = new ToolStripMenuItem("Help");
@@ -335,9 +350,89 @@ public sealed class ToolEditorForm : Form
             return;
 
         if (IsImagePath(dialog.FileName))
-            AddImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName);
+            AddOrReplaceImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName, markDirty: false);
         else
             AddDocument(Path.GetFileName(dialog.FileName), File.ReadAllText(dialog.FileName), dialog.FileName);
+    }
+
+    private void OpenMediaDocument()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Media toevoegen aan language package",
+            Multiselect = true,
+            Filter = "Media (*.png;*.jpg;*.jpeg;*.webp;*.svg)|*.png;*.jpg;*.jpeg;*.webp;*.svg|All files (*.*)|*.*"
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        ImportMediaFiles(dialog.FileNames);
+    }
+
+    private void ReplaceCurrentMedia()
+    {
+        if (_current?.ImageBytes is null)
+        {
+            SetStatus("Selecteer eerst een media-bestand.", isError: true);
+            return;
+        }
+
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Media vervangen",
+            Filter = "Media (*.png;*.jpg;*.jpeg;*.webp;*.svg)|*.png;*.jpg;*.jpeg;*.webp;*.svg|All files (*.*)|*.*"
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        var packagePath = "assets/" + Path.GetFileName(dialog.FileName);
+        _current.ImageBytes = File.ReadAllBytes(dialog.FileName);
+        _current.FilePath = dialog.FileName;
+        _current.DisplayName = packagePath;
+        _current.PackagePath = NormalizePackagePath(packagePath);
+        _current.Editor.Text = BuildImageInfoText(_current);
+        ApplyDocumentLabels(_current);
+        SetDirty(_current, true);
+        RefreshFileTree();
+        RefreshDocumentList();
+        UpdatePreview();
+        SetStatus("Media vervangen: " + _current.PackagePath, isError: false);
+    }
+
+    private void DeleteCurrentDocument()
+    {
+        if (_current is null)
+            return;
+
+        var result = MessageBox.Show(
+            this,
+            "Verwijder dit bestand uit het language package?\r\n\r\nHet bronbestand op schijf wordt niet verwijderd.",
+            "ToolEditor",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning);
+        if (result != DialogResult.Yes)
+            return;
+
+        var removedPath = _current.PackagePath;
+        RemoveDocument(_current);
+        SetStatus("Uit pakket verwijderd: " + removedPath, isError: false);
+    }
+
+    private void ImportMediaFiles(IEnumerable<string> fileNames)
+    {
+        var imported = 0;
+        foreach (var fileName in fileNames.Where(IsImagePath))
+        {
+            AddOrReplaceImageDocument("assets/" + Path.GetFileName(fileName), File.ReadAllBytes(fileName), fileName, markDirty: true);
+            imported++;
+        }
+
+        if (imported == 0)
+            SetStatus("Geen ondersteunde media gevonden.", isError: true);
+        else
+            SetStatus(imported.ToString("N0") + " media-bestand(en) toegevoegd.", isError: false);
     }
 
     private void SaveCurrent()
@@ -418,6 +513,29 @@ public sealed class ToolEditorForm : Form
         document.HeaderTitle = header.Title;
         _documents.Add(document);
         _tabStrip.Controls.Add(header.Panel);
+        RefreshFileTree();
+        RefreshDocumentList();
+        SelectDocument(document);
+    }
+
+    private void AddOrReplaceImageDocument(string displayName, byte[] bytes, string? filePath, bool markDirty)
+    {
+        var packagePath = NormalizePackagePath(displayName);
+        var document = _documents.FirstOrDefault(document => document.ImageBytes is not null &&
+            document.PackagePath.Equals(packagePath, StringComparison.OrdinalIgnoreCase));
+        if (document is null)
+        {
+            AddImageDocument(displayName, bytes, filePath);
+            if (_current is not null && markDirty)
+                SetDirty(_current, true);
+            return;
+        }
+
+        document.ImageBytes = bytes;
+        document.FilePath = filePath;
+        document.Editor.Text = BuildImageInfoText(document);
+        ApplyDocumentLabels(document);
+        SetDirty(document, markDirty);
         RefreshFileTree();
         RefreshDocumentList();
         SelectDocument(document);
@@ -504,6 +622,11 @@ public sealed class ToolEditorForm : Form
                 return;
         }
 
+        RemoveDocument(document);
+    }
+
+    private void RemoveDocument(ToolEditorDocument document)
+    {
         _tabStrip.Controls.Remove(document.HeaderPanel);
         _documents.Remove(document);
         RemoveDocumentFromTree(document);
@@ -785,6 +908,7 @@ public sealed class ToolEditorForm : Form
             return;
 
         var errors = ValidateDocument(_current);
+        AddMissingMediaLinkErrors(_current, errors);
         if (errors.Count == 0)
         {
             SetStatus("Validation passed: " + _current.DisplayName, isError: false);
@@ -796,6 +920,38 @@ public sealed class ToolEditorForm : Form
         SetStatus("Validation failed: " + errors[0], isError: true);
         if (showMessage)
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "ToolEditor validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+
+    private void ValidatePackageMediaLinks(bool showMessage)
+    {
+        var errors = new List<string>();
+        foreach (var document in _documents)
+            AddMissingMediaLinkErrors(document, errors);
+
+        if (errors.Count == 0)
+        {
+            SetStatus("Alle HTML-media links verwijzen naar bestaande package-media.", isError: false);
+            if (showMessage)
+                MessageBox.Show(this, "Alle HTML-media links zijn gevonden in het package.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        SetStatus("HTML-media link ontbreekt: " + errors[0], isError: true);
+        if (showMessage)
+            MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Ontbrekende media", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+
+    private void AddMissingMediaLinkErrors(ToolEditorDocument document, List<string> errors)
+    {
+        if (document.ImageBytes is not null || !IsHtmlDocument(document))
+            return;
+
+        foreach (Match match in HtmlMediaLinkRegex.Matches(document.Editor.Text))
+        {
+            var link = match.Groups["path"].Value;
+            if (!MediaExists(link))
+                errors.Add(document.PackagePath + " verwijst naar ontbrekende media: " + link);
+        }
     }
 
     private static List<string> ValidateDocument(ToolEditorDocument document)
@@ -834,6 +990,38 @@ public sealed class ToolEditorForm : Form
             extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".webp", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".svg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsHtmlDocument(ToolEditorDocument document)
+    {
+        return Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+            document.Editor.Text.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
+            document.Editor.Text.Contains("<img", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool MediaExists(string link)
+    {
+        return FindMediaDocument(link) is not null;
+    }
+
+    private ToolEditorDocument? FindMediaDocument(string link)
+    {
+        var normalized = NormalizeMediaLink(link);
+        var fileName = Path.GetFileName(normalized);
+        return _documents.FirstOrDefault(document =>
+            document.ImageBytes is not null &&
+            (document.PackagePath.Equals(normalized, StringComparison.OrdinalIgnoreCase) ||
+             Path.GetFileName(document.PackagePath).Equals(fileName, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static string NormalizeMediaLink(string link)
+    {
+        var cleaned = link.Split(['?', '#'], 2)[0].Replace('\\', '/').Trim();
+        while (cleaned.StartsWith("./", StringComparison.Ordinal))
+            cleaned = cleaned[2..];
+        while (cleaned.StartsWith("../", StringComparison.Ordinal))
+            cleaned = cleaned[3..];
+        return cleaned.Trim('/');
     }
 
     private void ScheduleSyntaxHighlight(ToolEditorDocument document)
@@ -995,7 +1183,7 @@ public sealed class ToolEditorForm : Form
         SetHtml(BuildPreviewHtml(_current));
     }
 
-    private static string BuildPreviewHtml(ToolEditorDocument document)
+    private string BuildPreviewHtml(ToolEditorDocument document)
     {
         var extension = Path.GetExtension(document.DisplayName);
         if (document.ImageBytes is not null)
@@ -1003,13 +1191,27 @@ public sealed class ToolEditorForm : Form
 
         var text = document.Editor.Text;
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
-            return WrapHtml(document.DisplayName, text);
+            return WrapHtml(document.DisplayName, ResolveMediaLinksForPreview(text));
         if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             return WrapHtml(document.DisplayName, BuildLanguagePreview(text));
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             return WrapHtml(document.DisplayName, BuildJsonPreview(text));
 
         return WrapHtml(document.DisplayName, "<pre>" + WebUtility.HtmlEncode(text) + "</pre>");
+    }
+
+    private string ResolveMediaLinksForPreview(string html)
+    {
+        return HtmlMediaLinkRegex.Replace(html, match =>
+        {
+            var link = match.Groups["path"].Value;
+            var media = FindMediaDocument(link);
+            if (media?.ImageBytes is null)
+                return match.Value;
+
+            var dataUri = "data:" + ImageMimeType(media.PackagePath) + ";base64," + Convert.ToBase64String(media.ImageBytes);
+            return match.Value.Replace(link, dataUri);
+        });
     }
 
     private static string BuildImagePreview(ToolEditorDocument document)
@@ -1214,6 +1416,22 @@ public sealed class ToolEditorForm : Form
         _statusLabel.ForeColor = isError ? Color.FromArgb(170, 35, 35) : Color.FromArgb(31, 41, 55);
     }
 
+    private static string[] GetDroppedFiles(DragEventArgs e)
+    {
+        return e.Data?.GetData(DataFormats.FileDrop) as string[] ?? [];
+    }
+
+    private void ToolEditorForm_DragEnter(object? sender, DragEventArgs e)
+    {
+        var files = GetDroppedFiles(e);
+        e.Effect = files.Any(IsImagePath) ? DragDropEffects.Copy : DragDropEffects.None;
+    }
+
+    private void ToolEditorForm_DragDrop(object? sender, DragEventArgs e)
+    {
+        ImportMediaFiles(GetDroppedFiles(e));
+    }
+
     private static void ClampSplitter(SplitContainer split, int? preferredDistance = null)
     {
         if (split.Width <= split.SplitterWidth + 2)
@@ -1249,7 +1467,19 @@ public sealed class ToolEditorForm : Form
         {
             UpdatePreview();
             e.SuppressKeyPress = true;
+            return;
         }
+
+        if (e.KeyCode == Keys.Delete && !IsEditorEditingText())
+        {
+            DeleteCurrentDocument();
+            e.SuppressKeyPress = true;
+        }
+    }
+
+    private bool IsEditorEditingText()
+    {
+        return _current?.Editor.Focused == true && _current.ImageBytes is null;
     }
 
     private sealed class ToolEditorDocument(TabPage page, string displayName, string packagePath, string? filePath)
