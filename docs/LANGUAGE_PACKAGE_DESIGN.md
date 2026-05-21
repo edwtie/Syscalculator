@@ -290,6 +290,17 @@ Blocked:
 Package reading and optional extraction must validate every entry path before
 use.
 
+Release quality gates:
+
+- no mojibake or encoding damage in `.lng`, HTML, JSON, CSS or JS text;
+- no unknown package paths outside `manifest.json`, `language/`, `help/`,
+  `manual/`, `nod/`, `formula/` or `assets/`;
+- no stored concept warning/banner markup in help documents;
+- internal HTML links must resolve inside the package;
+- image references must point to existing previewable images;
+- JavaScript is restricted to `basis.js`, `nod.js` and `formula.js`;
+- compile fails on any warning that can break distribution.
+
 Current limits:
 
 - maximum header size: 64 KiB;

@@ -137,6 +137,7 @@ E_REQUIRED_FILE
 E_PATH_UNSAFE
 E_FILE_BLOCKED
 E_FILE_UNSUPPORTED
+E_QUALITY_GATE
 E_LIMIT_FILE_COUNT
 E_LIMIT_SIZE
 E_CHECKSUM
@@ -207,6 +208,11 @@ The tool checks:
 - allowed file extensions;
 - blocked executable/script extensions;
 - restricted JavaScript names: only `basis.js`, `nod.js` and `formula.js`;
+- strict package paths for language, help/manual/NOD/formula content and media;
+- mojibake/encoding damage in `.lng`, HTML, JSON, CSS or JS;
+- stored concept warning/banner markup inside help documents;
+- broken internal HTML links;
+- missing or non-image media references;
 - unsafe paths such as absolute paths or `..`;
 - maximum file count and file sizes;
 - wrapper payload SHA-256;
