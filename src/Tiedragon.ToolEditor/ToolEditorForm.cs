@@ -23,7 +23,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
-    private static readonly Regex HtmlMediaLinkRegex = new("(?:src|href)\\s*=\\s*[\"'](?<path>[^\"']+\\.(?:png|svg))[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex HtmlMediaLinkRegex = new("(?:src|href)\\s*=\\s*[\"'](?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
@@ -57,7 +57,7 @@ public sealed class ToolEditorForm : Form
         var menu = BuildMenu();
         var toolbar = ToolEditorApi.CreateToolbar();
         toolbar.Items.Add(ToolEditorApi.CreateButton("New", ToolEditorIcon.New, (_, _) => NewLanguagePackageTemplate(), "New language package template"));
-        toolbar.Items.Add(ToolEditorApi.CreateButton("Open", ToolEditorIcon.Open, (_, _) => OpenDocument(), "Open text, HTML, JSON or .lng file"));
+        toolbar.Items.Add(ToolEditorApi.CreateButton("Open", ToolEditorIcon.Open, (_, _) => OpenDocument(), "Open language package document"));
         _saveButton = ToolEditorApi.CreateButton("Save", ToolEditorIcon.Save, (_, _) => SaveCurrent(), "Save current document");
         _validateButton = ToolEditorApi.CreateButton("Validate", ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), "Validate current document");
         _previewButton = ToolEditorApi.CreateButton("Preview", ToolEditorIcon.Test, (_, _) => UpdatePreview(), "Refresh HTML preview");
@@ -390,7 +390,7 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Open ToolEditor document",
-            Filter = "Tool documents (*.html;*.json;*.lng;*.css;*.txt;*.png;*.svg)|*.html;*.json;*.lng;*.css;*.txt;*.png;*.svg|All files (*.*)|*.*"
+            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -398,8 +398,10 @@ public sealed class ToolEditorForm : Form
 
         if (IsImagePath(dialog.FileName))
             AddOrReplaceImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName, markDirty: false);
+        else if (TryBuildImportPackagePath(dialog.FileName, out var packagePath))
+            AddDocument(packagePath, File.ReadAllText(dialog.FileName), dialog.FileName);
         else
-            AddDocument(Path.GetFileName(dialog.FileName), File.ReadAllText(dialog.FileName), dialog.FileName);
+            RejectUnsupportedPackageFile(dialog.FileName);
     }
 
     private void OpenMediaDocument()
@@ -408,7 +410,7 @@ public sealed class ToolEditorForm : Form
         {
             Title = "Media toevoegen aan language package",
             Multiselect = true,
-            Filter = "Media (*.png;*.svg)|*.png;*.svg|All files (*.*)|*.*"
+            Filter = "Media (*.png;*.jpg;*.jpeg;*.svg)|*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -428,7 +430,7 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Media vervangen",
-            Filter = "Media (*.png;*.svg)|*.png;*.svg|All files (*.*)|*.*"
+            Filter = "Media (*.png;*.jpg;*.jpeg;*.svg)|*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -482,6 +484,42 @@ public sealed class ToolEditorForm : Form
             SetStatus(imported.ToString("N0") + " media-bestand(en) toegevoegd.", isError: false);
     }
 
+    private static bool TryBuildImportPackagePath(string fileName, out string packagePath)
+    {
+        var name = Path.GetFileName(fileName);
+        var extension = Path.GetExtension(name);
+        if (name.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+        {
+            packagePath = "manifest.json";
+            return true;
+        }
+
+        if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
+        {
+            packagePath = "language/" + name;
+            return true;
+        }
+
+        if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
+        {
+            packagePath = "manual/" + name;
+            return true;
+        }
+
+        packagePath = "";
+        return false;
+    }
+
+    private void RejectUnsupportedPackageFile(string fileName)
+    {
+        var message = "Dit bestand hoort niet in de language package-structuur:\r\n\r\n" +
+            Path.GetFileName(fileName) +
+            "\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS, en media png/jpg/jpeg/svg.";
+        SetStatus("Bestand geweigerd: " + Path.GetFileName(fileName), isError: true);
+        MessageBox.Show(this, message, "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+    }
+
     private void SaveCurrent()
     {
         if (_current is null)
@@ -494,7 +532,7 @@ public sealed class ToolEditorForm : Form
             {
                 Title = "Save ToolEditor document",
                 FileName = _current.DisplayName.Replace('/', Path.DirectorySeparatorChar),
-                Filter = "Tool documents (*.html;*.json;*.lng;*.css;*.txt)|*.html;*.json;*.lng;*.css;*.txt|All files (*.*)|*.*"
+                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
             };
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -912,7 +950,7 @@ public sealed class ToolEditorForm : Form
         if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || IsImagePath(path))
             return ["Media en afbeeldingen", fileName];
 
-        return ["Pakketbeheer", topic];
+        return ["Ongeldig pakketbestand", topic];
     }
 
     private static (string Group, string Topic) BuildListLabels(string packagePath)
@@ -920,7 +958,7 @@ public sealed class ToolEditorForm : Form
         var path = BuildTreePath(packagePath);
         return path.Count >= 2
             ? (path[0], path[^1])
-            : ("Pakketbeheer", path[0]);
+            : ("Ongeldig pakketbestand", path[0]);
     }
 
     private static void ApplyDocumentLabels(ToolEditorDocument document)
@@ -1075,6 +1113,9 @@ public sealed class ToolEditorForm : Form
         var extension = Path.GetExtension(name);
         var text = document.Editor.Text;
 
+        if (!IsAllowedPackageDocumentPath(document.PackagePath))
+            errors.Add("Package path is not allowed: " + document.PackagePath);
+
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             ValidateJson(text, errors);
         else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
@@ -1088,6 +1129,29 @@ public sealed class ToolEditorForm : Form
         return errors;
     }
 
+    private static bool IsAllowedPackageDocumentPath(string packagePath)
+    {
+        var path = NormalizePackagePath(packagePath);
+        if (path.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (path.StartsWith("language/", StringComparison.OrdinalIgnoreCase) &&
+            Path.GetExtension(path).Equals(".lng", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ((path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("help/content/main/", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("help/main/", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
+             path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase)) &&
+            IsHelpTextPath(path))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private static string NormalizePackagePath(string value)
     {
         return value.Replace('\\', '/').Trim('/');
@@ -1097,7 +1161,16 @@ public sealed class ToolEditorForm : Form
     {
         var extension = Path.GetExtension(path);
         return extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".svg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsHelpTextPath(string path)
+    {
+        var extension = Path.GetExtension(path);
+        return extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsHtmlDocument(ToolEditorDocument document)
@@ -1348,6 +1421,7 @@ public sealed class ToolEditorForm : Form
         var extension = Path.GetExtension(path).ToLowerInvariant();
         return extension switch
         {
+            ".jpg" or ".jpeg" => "image/jpeg",
             ".svg" => "image/svg+xml",
             _ => "image/png"
         };
