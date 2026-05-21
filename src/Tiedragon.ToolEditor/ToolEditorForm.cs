@@ -58,8 +58,6 @@ public sealed class ToolEditorForm : Form
 
         var menu = BuildMenu();
         var toolbar = ToolEditorApi.CreateToolbar();
-        toolbar.Items.Add(ToolEditorApi.CreateButton("New", ToolEditorIcon.New, (_, _) => NewLanguagePackageTemplate(), "New language package template"));
-        toolbar.Items.Add(ToolEditorApi.CreateButton("Open", ToolEditorIcon.Open, (_, _) => OpenDocument(), "Open language package document"));
         _saveButton = ToolEditorApi.CreateButton("Save", ToolEditorIcon.Save, (_, _) => SaveCurrent(), "Save current document");
         _validateButton = ToolEditorApi.CreateButton("Validate", ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), "Validate current document");
         _previewButton = ToolEditorApi.CreateButton("Preview", ToolEditorIcon.Test, (_, _) => UpdatePreview(), "Refresh HTML preview");
@@ -243,8 +241,6 @@ public sealed class ToolEditorForm : Form
         };
 
         var file = new ToolStripMenuItem("Bestand");
-        file.DropDownItems.Add("Nieuw taalpakket", null, (_, _) => NewLanguagePackageTemplate());
-        file.DropDownItems.Add(CreateMenuItem("Openen...", Keys.Control | Keys.O, (_, _) => OpenDocument()));
         file.DropDownItems.Add(CreateMenuItem("Opslaan", Keys.Control | Keys.S, (_, _) => SaveCurrent()));
         file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add("Sluiten", null, (_, _) => Close());
