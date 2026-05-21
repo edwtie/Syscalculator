@@ -2383,7 +2383,27 @@ private void LoadNodFilePath(string nodPath)
 
     private string HelpContent(string key, string fileName, string fallback = "")
     {
-        return HelpApi.Content(HelpLanguageCode(), ResolveHelpLanguageText, key, fileName, fallback);
+        return HelpApi.Content(
+            HelpLanguageCode(),
+            ResolveHelpLanguageText,
+            key,
+            fileName,
+            fallback,
+            ResolveHelpPackageContent);
+    }
+
+    private string? ResolveHelpPackageContent(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(_language.PackageId))
+            return null;
+
+        return LanguagePackageService.TryReadHelpContentFile(
+            AppContext.BaseDirectory,
+            _language.PackageId,
+            fileName,
+            out var content)
+            ? content
+            : null;
     }
 
     // [some.lng.key] in bewerkbare help-HTML komt uit de actieve taal, met eng.lng als default.

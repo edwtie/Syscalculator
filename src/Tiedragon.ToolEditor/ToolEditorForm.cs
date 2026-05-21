@@ -40,6 +40,7 @@ public sealed class ToolEditorForm : Form
         ".html",
         ".jpg",
         ".jpeg",
+        ".js",
         ".json",
         ".lng",
         ".png",
@@ -60,6 +61,13 @@ public sealed class ToolEditorForm : Form
         ".vbs",
     };
 
+    private static readonly HashSet<string> AllowedPackageScriptFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "basis.js",
+        "formula.js",
+        "nod.js",
+    };
+
     private static readonly Regex HtmlCommentRegex = new("<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HtmlTagRegex = new("</?[a-zA-Z][^>]*?>", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HtmlAttributeRegex = new(@"\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?=\s*=)", RegexOptions.Compiled);
@@ -69,6 +77,8 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex HtmlHrefLinkRegex = new("href\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+)\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex ConceptBannerRegex = new("<div\\s+class=\"concept-banner\"[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex LegacyConceptWarningRegex = new("<div\\s+class=\"help-warning\"><b>Concept:</b>[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
@@ -92,6 +102,7 @@ public sealed class ToolEditorForm : Form
     private bool _htmlEditorFailed;
     private bool _loadingHtmlEditor;
     private bool _updatingNavigation;
+    private bool _conceptBannerDismissed;
     private ToolEditorDocument? _current;
 
     public ToolEditorForm()
@@ -363,7 +374,7 @@ public sealed class ToolEditorForm : Form
         package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
 
         var help = new ToolStripMenuItem("Help");
-        help.DropDownItems.Add("ToolEditor", null, (_, _) => MessageBox.Show(this, "ToolEditor bewerkt taalpakketten, help-HTML, NOD-onderwerpen, formulekaarten en media.", "ToolEditor"));
+        help.DropDownItems.Add(CreateMenuItem("ToolEditor help", Keys.F1, (_, _) => ShowToolEditorHelp()));
 
         menu.Items.Add(file);
         menu.Items.Add(edit);
@@ -381,6 +392,74 @@ public sealed class ToolEditorForm : Form
         };
         item.Click += click;
         return item;
+    }
+
+    private void ShowToolEditorHelp()
+    {
+        HelpApi.ShowDialog(this, new HelpDialogOptions(
+            "ToolEditor help",
+            BuildToolEditorHelpPages(),
+            "overview",
+            new HelpNavigationLabels("Start", "Vorige", "Volgende")));
+    }
+
+    private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages()
+    {
+        return
+        [
+            BuildToolEditorHelpPage("overview", "ToolEditor gebruiken", "overview.html", BuildToolEditorOverviewFallback()),
+            BuildToolEditorHelpPage("package", "Taalpakket workflow", "package-workflow.html", BuildToolEditorPackageFallback()),
+            BuildToolEditorHelpPage("html", "HTML bewerken", "html-editor.html", BuildToolEditorHtmlFallback()),
+            BuildToolEditorHelpPage("media", "Media en afbeeldingen", "media.html", BuildToolEditorMediaFallback()),
+            BuildToolEditorHelpPage("compile", "Valideren en compileren", "compile.html", BuildToolEditorCompileFallback())
+        ];
+    }
+
+    private static NodHelpPage BuildToolEditorHelpPage(string id, string title, string fileName, string fallback)
+    {
+        var body = HelpHtml.Content("tool-editor/" + fileName, fallback);
+        return new NodHelpPage(id, title, HelpHtml.WrapTopicPage(title, body, HelpApi.NodHelpCss(), ToolEditorHelpPreviewScript()));
+    }
+
+    private static string BuildToolEditorOverviewFallback()
+    {
+        return """
+        <p>ToolEditor bewerkt Tiedragon language packages: vertaling, help, NOD-documentatie, formulekaart en media.</p>
+        <ul>
+          <li>Links staat de vaste pakketstructuur.</li>
+          <li>Boven werk je aan de actieve tab.</li>
+          <li>Bij source-weergave toont de rechterzijde of onderzijde de HTML-preview.</li>
+        </ul>
+        """;
+    }
+
+    private static string BuildToolEditorPackageFallback()
+    {
+        return """
+        <p>Gebruik <b>Nieuw package</b> voor een basispakket, <b>Save concept taalpackage</b> voor werkbestanden en <b>Compileer taalpackage</b> voor een gecontroleerd .lngpdk-bestand.</p>
+        """;
+    }
+
+    private static string BuildToolEditorHtmlFallback()
+    {
+        return """
+        <p>HTML-documenten hebben twee standen: <b>Source</b> voor broncode en <b>Edit</b> voor directe bewerking.</p>
+        <p>De knoppen H1, H2, P, Info, Tip, Warn, Code en Kbd voegen standaard helpblokken in.</p>
+        """;
+    }
+
+    private static string BuildToolEditorMediaFallback()
+    {
+        return """
+        <p>Media bevat alleen toegestane afbeeldingen zoals png, jpg en svg. Sleep en zoom in de afbeeldingpreview om details te controleren.</p>
+        """;
+    }
+
+    private static string BuildToolEditorCompileFallback()
+    {
+        return """
+        <p>Validate controleert structuur, links, media en scripts. Compile maakt een .lngpdk met checksum en strikte bestandslijst.</p>
+        """;
     }
 
     private ToolStrip CreateHtmlToolbar()
@@ -474,7 +553,7 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildHtmlTemplate()
     {
-        return BuildConceptHelpWarning("nl") + """
+        return """
         <h1>Syscalculator Help</h1>
         <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
         <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
@@ -523,7 +602,6 @@ public sealed class ToolEditorForm : Form
             var packageName = pageNameMap[Path.GetFileName(file)];
             var html = File.ReadAllText(file, Encoding.Latin1);
             html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
-            html = BuildConceptHelpWarning(languagePrefix) + html;
             AddDocument("manual/" + packageName, html, file);
         }
     }
@@ -541,25 +619,31 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildEnglishHtmlTemplate()
     {
-        return BuildConceptHelpWarning("en") + """
+        return """
         <h1>Syscalculator Help</h1>
         <p>This starter language package contains the editable package structure for Syscalculator help, NOD help, formula cards, translations and media.</p>
         <div class="help-info">Use this English base package as the source for a new translation package.</div>
         """;
     }
 
-    private static string BuildConceptHelpWarning(string languagePrefix)
+    private static string BuildConceptHelpBanner(string languagePrefix)
     {
         if (languagePrefix.Equals("nl", StringComparison.OrdinalIgnoreCase))
         {
             return """
-            <div class="help-warning"><b>Concept:</b> deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiële Syscalculator-help.</div>
+            <div class="concept-banner" role="note" aria-label="Conceptwaarschuwing">
+              <span><b>Concept:</b> deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiele Syscalculator-help.</span>
+              <button class="concept-banner-close" type="button" title="Sluiten" aria-label="Sluiten">x</button>
+            </div>
 
             """;
         }
 
         return """
-        <div class="help-warning"><b>Concept:</b> this help information is package draft material and is not official Syscalculator help yet.</div>
+        <div class="concept-banner" role="note" aria-label="Concept warning">
+          <span><b>Concept:</b> this help information is package draft material and is not official Syscalculator help yet.</span>
+          <button class="concept-banner-close" type="button" title="Close" aria-label="Close">x</button>
+        </div>
 
         """;
     }
@@ -825,7 +909,7 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Open ToolEditor document",
-            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1046,6 +1130,7 @@ public sealed class ToolEditorForm : Form
         _pendingHtml = null;
         _pendingHtmlEditor = null;
         _manifestText = "";
+        _conceptBannerDismissed = false;
         _contentSplit.Panel2Collapsed = true;
         _previewButton.Enabled = false;
         RefreshTabStrip();
@@ -1426,8 +1511,16 @@ public sealed class ToolEditorForm : Form
         }
 
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".js", StringComparison.OrdinalIgnoreCase))
         {
+            if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
+                !AllowedPackageScriptFiles.Contains(name))
+            {
+                packagePath = "";
+                return false;
+            }
+
             packagePath = "manual/" + name;
             return true;
         }
@@ -1440,7 +1533,7 @@ public sealed class ToolEditorForm : Form
     {
         var message = "Dit bestand hoort niet in de language package-structuur:\r\n\r\n" +
             Path.GetFileName(fileName) +
-            "\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS, en media png/jpg/jpeg/svg.";
+            "\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS/JS, en media png/jpg/jpeg/svg.";
         SetStatus("Bestand geweigerd: " + Path.GetFileName(fileName), isError: true);
         MessageBox.Show(this, message, "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
@@ -1471,7 +1564,7 @@ public sealed class ToolEditorForm : Form
             {
                 Title = "Save ToolEditor document",
                 FileName = document.DisplayName.Replace('/', Path.DirectorySeparatorChar),
-                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
             };
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1500,6 +1593,9 @@ public sealed class ToolEditorForm : Form
     {
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
+        if (Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase))
+            text = StripToolEditorConceptBanners(text);
+
         var editor = CreateTextEditor(text, document);
         if (IsManifestPath(document.PackagePath))
         {
@@ -1522,6 +1618,11 @@ public sealed class ToolEditorForm : Form
         RefreshFileTree();
         RefreshDocumentList();
         return document;
+    }
+
+    private static string StripToolEditorConceptBanners(string html)
+    {
+        return LegacyConceptWarningRegex.Replace(ConceptBannerRegex.Replace(html, ""), "");
     }
 
     private ToolEditorDocument AddImageDocument(string displayName, byte[] bytes, string? filePath)
@@ -2670,6 +2771,11 @@ public sealed class ToolEditorForm : Form
         var extension = Path.GetExtension(path);
         if (BlockedPackageExtensions.Contains(extension) || !AllowedPackageExtensions.Contains(extension))
             errors.Add("Bestandstype is niet toegestaan: " + packagePath);
+        if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
+            !AllowedPackageScriptFiles.Contains(Path.GetFileName(path)))
+        {
+            errors.Add("Scriptbestand is niet toegestaan: " + packagePath);
+        }
 
         if (isImage && !path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
             errors.Add("Media hoort onder assets/: " + packagePath);
@@ -2841,6 +2947,8 @@ public sealed class ToolEditorForm : Form
         if (!IsAllowedPackageDocumentPath(document.PackagePath))
             errors.Add("Package path is not allowed: " + document.PackagePath);
 
+        ValidateNoMojibake(text, errors);
+
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             ValidateJson(text, errors);
         else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
@@ -2852,6 +2960,26 @@ public sealed class ToolEditorForm : Form
             errors.Add("Document is empty.");
 
         return errors;
+    }
+
+    private static void ValidateNoMojibake(string text, List<string> errors)
+    {
+        var lineNumber = 0;
+        foreach (var line in text.Replace("\r\n", "\n").Split('\n'))
+        {
+            lineNumber++;
+            if (ContainsMojibakeMarker(line))
+                errors.Add("Line " + lineNumber + " contains possible encoding damage/mojibake.");
+        }
+    }
+
+    private static bool ContainsMojibakeMarker(string text)
+    {
+        return text.Contains('\u00c3') ||
+            text.Contains('\u00c2') ||
+            text.Contains('\u00e2') ||
+            text.Contains("\u00e4\u00b8", StringComparison.Ordinal) ||
+            text.Contains("\u00e6\u2013", StringComparison.Ordinal);
     }
 
     private static bool IsAllowedPackageDocumentPath(string packagePath)
@@ -2913,7 +3041,8 @@ public sealed class ToolEditorForm : Form
     {
         var extension = Path.GetExtension(path);
         return extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".css", StringComparison.OrdinalIgnoreCase);
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".js", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsHtmlDocument(ToolEditorDocument document)
@@ -3125,7 +3254,7 @@ public sealed class ToolEditorForm : Form
 
         var text = document.Editor.Text;
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
-            return WrapContentHtml(ResolveMediaLinksForPreview(text));
+            return WrapContentHtml(ResolveMediaLinksForPreview(StripToolEditorConceptBanners(text)), ShouldShowConceptBanner(), CurrentConceptBannerLanguagePrefix());
         if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             return WrapHtml(document.DisplayName, BuildLanguagePreview(text));
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
@@ -3152,7 +3281,7 @@ public sealed class ToolEditorForm : Form
 
     private void SetHtmlEditor(string html)
     {
-        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(html)));
+        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(StripToolEditorConceptBanners(html)), ShouldShowConceptBanner(), CurrentConceptBannerLanguagePrefix()));
     }
 
     private void SetHtmlEditorHtml(string html)
@@ -3183,10 +3312,14 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string BuildEditableHtml(string body)
+    private static string BuildEditableHtml(string body, bool showConceptBanner, string conceptLanguagePrefix)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine +
+            ToolEditorConceptBannerCss() + Environment.NewLine +
             "body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }";
+        if (showConceptBanner)
+            body = BuildConceptHelpBanner(conceptLanguagePrefix) + body;
+
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHtmlEditScript()));
     }
 
@@ -3208,7 +3341,7 @@ public sealed class ToolEditorForm : Form
             if (html is null)
                 return;
 
-            var cleaned = Regex.Replace(html, @"\s*<script>[\s\S]*?</script>\s*$", "", RegexOptions.IgnoreCase).Trim();
+            var cleaned = StripToolEditorConceptBanners(Regex.Replace(html, @"\s*<script>[\s\S]*?</script>\s*$", "", RegexOptions.IgnoreCase).Trim());
             _current.Editor.Text = cleaned;
         }
         catch (COMException)
@@ -3324,13 +3457,52 @@ public sealed class ToolEditorForm : Form
         .media-meta { color: #334155; margin-bottom: 14px; }
         .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
         .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
-        """;
+        """ + Environment.NewLine + ToolEditorConceptBannerCss();
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapTopicPage(title, body, css, ToolEditorHelpPreviewScript()));
     }
 
-    private static string WrapContentHtml(string body)
+    private static string WrapContentHtml(string body, bool showConceptBanner, string conceptLanguagePrefix)
     {
-        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, HelpApi.NodHelpCss(), bodyTail: ToolEditorHelpPreviewScript()));
+        var css = HelpApi.NodHelpCss() + Environment.NewLine + ToolEditorConceptBannerCss();
+        if (showConceptBanner)
+            body = BuildConceptHelpBanner(conceptLanguagePrefix) + body;
+
+        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHelpPreviewScript()));
+    }
+
+    private bool ShouldShowConceptBanner()
+    {
+        return !_conceptBannerDismissed;
+    }
+
+    private string CurrentConceptBannerLanguagePrefix()
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(_manifestText);
+            if (json.RootElement.TryGetProperty("languageCode", out var languageCode))
+            {
+                var value = languageCode.GetString();
+                if (value is not null && (value.Equals("ned", StringComparison.OrdinalIgnoreCase) || value.Equals("nl", StringComparison.OrdinalIgnoreCase)))
+                    return "nl";
+            }
+        }
+        catch (JsonException)
+        {
+            // Invalid concept manifests still get the default English draft warning.
+        }
+
+        return "en";
+    }
+
+    private static string ToolEditorConceptBannerCss()
+    {
+        return """
+        .concept-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 18px; padding: 10px 12px; border: 1px solid #f1c232; border-left: 5px solid #d69400; border-radius: 6px; background: #fff4bf; color: #3f2f12; box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
+        .concept-banner b { color: #7a4a00; }
+        .concept-banner-close { flex: 0 0 auto; width: 24px; height: 24px; border: 1px solid #d6a318; border-radius: 50%; background: #fff9dc; color: #6b4500; font: 700 14px/20px "Segoe UI", Arial, sans-serif; cursor: pointer; }
+        .concept-banner-close:hover { background: #ffe98f; border-color: #b77900; }
+        """;
     }
 
     private static string ToolEditorHtmlEditScript()
@@ -3338,6 +3510,13 @@ public sealed class ToolEditorForm : Form
         return """
         <script>
         document.body.contentEditable = 'true';
+        document.addEventListener('click', event => {
+          const close = event.target && event.target.closest ? event.target.closest('.concept-banner-close') : null;
+          if (!close) return;
+          event.preventDefault();
+          close.closest('.concept-banner')?.remove();
+          window.chrome.webview.postMessage('tooleditor:concept-dismissed');
+        });
         document.body.addEventListener('click', event => {
           const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
           if (link) event.preventDefault();
@@ -3358,6 +3537,13 @@ public sealed class ToolEditorForm : Form
     {
         return HelpHtml.NodCopyButtonsScript() + """
         <script>
+        document.addEventListener('click', event => {
+          const close = event.target && event.target.closest ? event.target.closest('.concept-banner-close') : null;
+          if (!close) return;
+          event.preventDefault();
+          close.closest('.concept-banner')?.remove();
+          window.chrome.webview.postMessage('tooleditor:concept-dismissed');
+        });
         document.addEventListener('click', event => {
           const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
           if (!link) return;
@@ -3544,6 +3730,12 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        if (message.Equals("tooleditor:concept-dismissed", StringComparison.Ordinal))
+        {
+            DismissConceptBanner();
+            return;
+        }
+
         if (message.Equals("changed", StringComparison.Ordinal) && _current is not null && _current.HtmlEditMode)
             SetDirty(_current, true);
     }
@@ -3560,7 +3752,26 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        if (message.Equals("tooleditor:concept-dismissed", StringComparison.Ordinal))
+        {
+            DismissConceptBanner();
+            return;
+        }
+
         CopyHelpMessageToClipboard(message);
+    }
+
+    private void DismissConceptBanner()
+    {
+        _conceptBannerDismissed = true;
+        RemoveConceptBannersFromBrowsers();
+    }
+
+    private void RemoveConceptBannersFromBrowsers()
+    {
+        const string script = "document.querySelectorAll('.concept-banner').forEach(element => element.remove());";
+        _ = _preview.CoreWebView2?.ExecuteScriptAsync(script);
+        _ = _htmlEditor.CoreWebView2?.ExecuteScriptAsync(script);
     }
 
     private static string? GetWebMessage(CoreWebView2WebMessageReceivedEventArgs args)

@@ -6,6 +6,9 @@ Localization is a Tiedragon domain, not only a Syscalculator feature.
 Syscalculator help and manuals are growing beyond a small set of loose `.lng`
 files, so a language package groups all language-dependent material in one
 installable `.lngpdk` file while keeping the current simple fallback behavior.
+The same technique is intended for developers who want to build their own app
+with a clean separation between program code and localized help, UI text,
+formula cards and media.
 
 The design must support:
 
@@ -17,6 +20,13 @@ The design must support:
 - fallback to English when a translation is incomplete;
 - manual installation by copying one `.lngpdk` file;
 - future update/download through the updater.
+
+For app developers, the model is:
+
+- define a stable app identity in `manifest.json`;
+- publish an official basispackage for the app;
+- let language packages inherit/check against that basispackage;
+- keep package validation in the app reader strict and fail-closed.
 
 ## Current State
 
@@ -261,7 +271,7 @@ Allowed:
 - `.lng`
 - `.html`
 - `.css`
-- `.js` from trusted Syscalculator package only
+- `.js` only for trusted basis scripts: `basis.js`, `nod.js`, `formula.js`
 - `.svg`
 - `.png`, `.jpg`, `.webp`
 - `.json`
@@ -279,6 +289,21 @@ Blocked:
 
 Package reading and optional extraction must validate every entry path before
 use.
+
+Release quality gates:
+
+- no mojibake or encoding damage in `.lng`, HTML, JSON, CSS or JS text;
+- no unknown package paths outside `manifest.json`, `language/`, `help/`,
+  `manual/`, `nod/`, `formula/` or `assets/`;
+- no stored concept warning/banner markup in help documents;
+- internal HTML links must resolve inside the package;
+- image references must point to existing previewable images;
+- JavaScript is restricted to `basis.js`, `nod.js` and `formula.js`;
+- compile fails on any warning that can break distribution.
+- release indexes mark a language package active only when it contains every
+  required language key from the English base file. Incomplete packages may be
+  built for inspection, but they must not be offered as active release packages
+  because that would allow visible fallback to English.
 
 Current limits:
 
@@ -447,6 +472,9 @@ updater.
 - Allow `HelpApi.Content` to ask the package service for content override.
 - Keep `Resources/Help/Content` as fallback.
 - Add package manual pages.
+- Status: first runtime override is implemented for main help, NOD help and
+  legal/help pages. The active language package is checked first, then the
+  built-in help content remains the fallback.
 
 ### Phase 4: Package installer
 
@@ -455,7 +483,8 @@ updater.
 - Copy the `.lngpdk` into `LanguagePackages\Cache` without requiring extraction.
 - Save `languagePackage=...` in `language.cfg`.
 - Status: package validation and direct `.lngpdk` reading exist; UI button is
-  still roadmap.
+  implemented in the language selection dialog. Selecting the installed package
+  uses the existing `languagePackage=...` configuration path.
 
 ### Phase 5: Release/update integration
 

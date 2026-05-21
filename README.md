@@ -15,6 +15,7 @@ Deze broncode werkt het NOD-systeem verder uit met:
 ```text
 Syscalculator 1.74 = VB6 onderhoudslijn voor NOD 1.0 legacy fixes
 Syscalculator 2.0 beta 1 (preview) = C#/.NET opvolger met NOD 1.0 compatibility en NOD 2.0 functies
+Syscalculator 2.0 beta 2 (coming soon) = New Language Pack workflow plus volledige Graph3D/geometry-basis
 ```
 
 Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels voor de oude VB6-lijn.
@@ -43,6 +44,28 @@ Zie ook `docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg` voor de actuele Tiedragon Graph 
 Zie `docs/LANGUAGE_PACKAGE_DESIGN.md` en `docs/LANGUAGE_PACKAGE_TOOL.md` voor
 het Localization-hoofdstuk rond `.lngpdk`, basispackages en de zelfstandige
 Language Package toolchain.
+
+## New Language Pack
+
+New Language Pack is in voorbereiding voor Syscalculator 2.0 Beta 2. De daily-lijn
+bevat alvast de basis: `.lngpdk` packages, de zelfstandige Language Package
+compiler, ToolEditor voor help-HTML/media en release-gates voor encoding, links,
+afbeeldingen, toegestane JavaScript en vertaalkwaliteit.
+
+Voor release worden alleen complete talen actief gezet. Op dit moment zijn
+English en Nederlands actief; andere talen blijven beschikbaar voor inspectie en
+vertaling totdat ze geen Engelse fallback meer nodig hebben.
+
+## Graph3D en geometry
+
+Syscalculator 2.0 Beta 2 ondersteunt de nieuwe Graph3D/geometry-basis volledig
+voor de huidige graph-workflow: X/Y/Z-ruimte, 2D- en 3D-modus, grids, assen,
+labels, puntentabel, rode punten, vectorpijlen, camera/navigator, zoom,
+rotatie en kompas. De API loopt via `Tiedragon.Graph.G3D`, met gedeelde basis in
+`Tiedragon.Graph`.
+
+Dit is de foundation voor 3D-geometrie in NOD en Syscalculator. Echte surface
+plots zoals `z = f(x,y)` blijven roadmapwerk voor de volgende 3D-stap.
 
 ## Run demo
 
@@ -176,7 +199,7 @@ NodUiMetadata
 
 Dit is de WinForms UI bovenop `Tiedragon.NodSystem.Core` en de gedeelde Tiedragon graph/help/tooling-libraries.
 
-Graph3D is beschikbaar in de daily-lijn als native foundation voor X/Y/Z-ruimte, camera, grids, vectorpijlen en puntvisualisatie. Echte surface sampling zoals `z = f(x,y)` is nog roadmapwerk en wordt gevolgd in GitHub issue #8: “Roadmap: continue 3D graph and surface visualization for advanced NOD math”.
+Graph3D is beschikbaar in de daily-lijn en wordt voor Beta 2 gepositioneerd als volledige Graph3D/geometry-basis voor X/Y/Z-ruimte, camera, grids, assen, labels, puntentabel, kompas, vectorpijlen en puntvisualisatie. Echte surface sampling zoals `z = f(x,y)` is nog roadmapwerk en wordt gevolgd in GitHub issue #8: "Roadmap: continue 3D graph and surface visualization for advanced NOD math".
 
 ## Installers
 

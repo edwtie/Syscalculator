@@ -5,6 +5,11 @@
 for Tiedragon apps. Syscalculator is the first supported app, but the package
 identity comes from `product` and `softwareId` in `manifest.json`.
 
+This is also a developer technique for people who want to build their own app
+with structured localization. A developer can define an app identity, create a
+basispackage with default language/help/media, and let translators or agents
+compile checked language packages without changing the app itself.
+
 This belongs to the `Tiedragon.Localization` domain. The compiler and
 `Tiedragon.ToolEditor` are standalone enough to move to their own git repository
 later; Syscalculator should only consume the compiled `.lngpdk` packages and
@@ -95,6 +100,17 @@ For another Tiedragon app, keep `producer` as `Tiedragon` and set `product` and
 package header. Each app reader remains responsible for accepting only its own
 trusted `softwareId`.
 
+For a new app, the recommended developer flow is:
+
+1. Choose a stable `softwareId`, for example `tiedragon.myapp`.
+2. Create an English basispackage with all required help topics, formula cards,
+   UI keys and media.
+3. Create translated concept packages from that basispackage.
+4. Compile with `agent-compile-with-base` so missing files and missing keys are
+   detected and added before release.
+5. In the app, load only packages with the expected `softwareId` and reject
+   packages that fail validation.
+
 Agent error JSON example:
 
 ```json
@@ -121,6 +137,7 @@ E_REQUIRED_FILE
 E_PATH_UNSAFE
 E_FILE_BLOCKED
 E_FILE_UNSUPPORTED
+E_QUALITY_GATE
 E_LIMIT_FILE_COUNT
 E_LIMIT_SIZE
 E_CHECKSUM
@@ -190,6 +207,13 @@ The tool checks:
 - required `language/<code>.lng`;
 - allowed file extensions;
 - blocked executable/script extensions;
+- restricted JavaScript names: only `basis.js`, `nod.js` and `formula.js`;
+- strict package paths for language, help/manual/NOD/formula content and media;
+- mojibake/encoding damage in `.lng`, HTML, JSON, CSS or JS;
+- stored concept warning/banner markup inside help documents;
+- broken internal HTML links;
+- missing or non-image media references;
+- release activation status based on required language-key coverage;
 - unsafe paths such as absolute paths or `..`;
 - maximum file count and file sizes;
 - wrapper payload SHA-256;
@@ -208,7 +232,7 @@ Common failures:
 - wrong `producer`, unsafe `product`, unsafe `softwareId` or wrong `packageType`;
 - mismatching `payloadSha256` or external `packageSha256`;
 - missing `manifest.json` or `language/<code>.lng`;
-- blocked executable/script files;
+- blocked executable/script files or unsupported script names;
 - absolute paths or `..` path traversal;
 - too many files or files that exceed package limits;
 - encrypted packages before encryption support is implemented.

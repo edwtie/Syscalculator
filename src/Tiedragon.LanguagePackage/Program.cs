@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using SharpCompress.Archives;
 
 namespace Tiedragon.LanguagePackage;
@@ -40,6 +41,7 @@ internal static class Program
         ".html",
         ".jpg",
         ".jpeg",
+        ".js",
         ".json",
         ".lng",
         ".png",
@@ -59,6 +61,21 @@ internal static class Program
         ".scr",
         ".vbs",
     };
+
+    private static readonly HashSet<string> AllowedScriptFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "basis.js",
+        "formula.js",
+        "nod.js",
+    };
+
+    private static readonly Regex HtmlLinkRegex = new(
+        "(?<attr>href|src)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+)\\k<quote>",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex ConceptHelpMarkupRegex = new(
+        "<div\\s+class\\s*=\\s*[\"'][^\"']*(concept-banner|help-warning)[^\"']*[\"'][\\s\\S]*?\\bConcept\\b[\\s\\S]*?</div>",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static int Main(string[] args)
     {
@@ -195,8 +212,20 @@ internal static class Program
         }
         if (message.Contains("blocked file type", StringComparison.OrdinalIgnoreCase))
             return "E_FILE_BLOCKED";
-        if (message.Contains("unsupported file type", StringComparison.OrdinalIgnoreCase))
+        if (message.Contains("unsupported file type", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("unsupported package path", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("unsupported script file", StringComparison.OrdinalIgnoreCase))
+        {
             return "E_FILE_UNSUPPORTED";
+        }
+        if (message.Contains("mojibake", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("broken internal link", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("missing image", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("concept warning markup", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("JavaScript links", StringComparison.OrdinalIgnoreCase))
+        {
+            return "E_QUALITY_GATE";
+        }
         if (message.Contains("too many files", StringComparison.OrdinalIgnoreCase))
             return "E_LIMIT_FILE_COUNT";
         if (message.Contains("too large", StringComparison.OrdinalIgnoreCase) ||
@@ -718,10 +747,12 @@ internal static class Program
             throw new InvalidDataException("Too many files.");
 
         long totalBytes = 0;
+        var entries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var file in files)
         {
             var relative = Path.GetRelativePath(inputFolder, file).Replace('\\', '/');
             ValidateEntryName(relative);
+            entries.Add(NormalizeEntryName(relative));
             var length = new FileInfo(file).Length;
             if (length > MaxEntryBytes)
                 throw new InvalidDataException("File is too large: " + relative);
@@ -732,6 +763,8 @@ internal static class Program
             throw new InvalidDataException("Input folder is too large.");
         if (!File.Exists(Path.Combine(inputFolder, "language", manifest.LanguageCode + ".lng")))
             throw new InvalidDataException($"language/{manifest.LanguageCode}.lng is required.");
+
+        ValidateSourceQuality(inputFolder, entries);
     }
 
     private static void ValidateArchiveEntries(byte[] payload)
@@ -800,8 +833,164 @@ internal static class Program
         var extension = Path.GetExtension(normalized);
         if (BlockedExtensions.Contains(extension))
             throw new InvalidDataException("Blocked file type: " + normalized);
+        if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
+            !AllowedScriptFiles.Contains(Path.GetFileName(normalized)))
+        {
+            throw new InvalidDataException("Unsupported script file: " + normalized);
+        }
+
         if (!AllowedExtensions.Contains(extension))
             throw new InvalidDataException("Unsupported file type: " + normalized);
+
+        if (!IsAllowedPackagePath(normalized, extension))
+            throw new InvalidDataException("Unsupported package path: " + normalized);
+    }
+
+    private static void ValidateSourceQuality(string inputFolder, HashSet<string> entries)
+    {
+        foreach (var entry in entries.Order(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!IsTextEntry(entry))
+                continue;
+
+            var path = Path.Combine(inputFolder, entry.Replace('/', Path.DirectorySeparatorChar));
+            var text = File.ReadAllText(path, Encoding.UTF8);
+            ValidateTextQuality(entry, text);
+            if (Path.GetExtension(entry).Equals(".html", StringComparison.OrdinalIgnoreCase))
+                ValidateHtmlReferences(entry, text, entries);
+        }
+    }
+
+    private static void ValidateTextQuality(string entryName, string text)
+    {
+        if (ContainsMojibakeMarker(text))
+            throw new InvalidDataException("Encoding/mojibake detected: " + entryName);
+        if (Path.GetExtension(entryName).Equals(".json", StringComparison.OrdinalIgnoreCase))
+            _ = JsonDocument.Parse(text);
+        if (ConceptHelpMarkupRegex.IsMatch(text))
+            throw new InvalidDataException("Concept warning markup must not be stored in help content: " + entryName);
+        if (string.IsNullOrWhiteSpace(text))
+            throw new InvalidDataException("Empty text file: " + entryName);
+    }
+
+    private static void ValidateHtmlReferences(string entryName, string text, HashSet<string> entries)
+    {
+        foreach (Match match in HtmlLinkRegex.Matches(text))
+        {
+            var attribute = match.Groups["attr"].Value;
+            var value = match.Groups["path"].Value.Trim();
+            if (value.Length == 0 || IsIgnoredLink(value))
+                continue;
+            if (value.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("JavaScript links are not allowed: " + entryName);
+
+            var target = ResolvePackageReference(entryName, value);
+            if (target.Length == 0)
+                continue;
+
+            if (!entries.Contains(target))
+            {
+                var kind = attribute.Equals("src", StringComparison.OrdinalIgnoreCase) || IsImagePath(target)
+                    ? "Missing image/media reference"
+                    : "Broken internal link";
+                throw new InvalidDataException(kind + ": " + entryName + " -> " + value);
+            }
+
+            if ((attribute.Equals("src", StringComparison.OrdinalIgnoreCase) || IsImagePath(target)) && !IsImagePath(target))
+                throw new InvalidDataException("HTML media reference is not an allowed image: " + entryName + " -> " + value);
+        }
+    }
+
+    private static string ResolvePackageReference(string sourceEntry, string reference)
+    {
+        var cleaned = reference.Split(['?', '#'], 2)[0].Replace('\\', '/').Trim();
+        if (cleaned.Length == 0)
+            return "";
+        while (cleaned.StartsWith("./", StringComparison.Ordinal))
+            cleaned = cleaned[2..];
+        if (cleaned.StartsWith("/", StringComparison.Ordinal))
+            return NormalizeEntryName(cleaned);
+
+        var sourceDirectory = Path.GetDirectoryName(sourceEntry)?.Replace('\\', '/') ?? "";
+        var parts = (sourceDirectory.Length == 0 ? cleaned : sourceDirectory + "/" + cleaned)
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var stack = new List<string>();
+        foreach (var part in parts)
+        {
+            if (part == ".")
+                continue;
+            if (part == "..")
+            {
+                if (stack.Count == 0)
+                    throw new InvalidDataException("Unsafe path: " + reference);
+                stack.RemoveAt(stack.Count - 1);
+                continue;
+            }
+
+            stack.Add(part);
+        }
+
+        return string.Join('/', stack);
+    }
+
+    private static bool IsIgnoredLink(string value)
+    {
+        return value.StartsWith("#", StringComparison.Ordinal) ||
+            value.StartsWith("http:", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("data:", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("nodpage:", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTextEntry(string entryName)
+    {
+        var extension = Path.GetExtension(entryName);
+        return extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".js", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".json", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".lng", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsImagePath(string entryName)
+    {
+        var extension = Path.GetExtension(entryName);
+        return extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".webp", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsAllowedPackagePath(string normalized, string extension)
+    {
+        if (normalized.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (normalized.StartsWith("language/", StringComparison.OrdinalIgnoreCase))
+            return extension.Equals(".lng", StringComparison.OrdinalIgnoreCase);
+        if (normalized.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
+            return IsImagePath(normalized);
+        if (normalized.StartsWith("help/", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("formula/", StringComparison.OrdinalIgnoreCase))
+        {
+            return extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".js", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private static bool ContainsMojibakeMarker(string text)
+    {
+        return text.Contains('\u00c3') ||
+            text.Contains('\u00c2') ||
+            text.Contains('\u00e2') ||
+            text.Contains("\u00e4\u00b8", StringComparison.Ordinal) ||
+            text.Contains("\u00e6\u2013", StringComparison.Ordinal);
     }
 
     private static string NormalizeEntryName(string? entryName)

@@ -387,7 +387,12 @@ internal sealed class AboutForm : Form
 
     private void ShowLegalDocument(string title, string fileName, string pageId)
     {
-        var body = HelpApi.Content(HelpLanguageCode(), ResolveHelpLanguageText, pageId, fileName);
+        var body = HelpApi.Content(
+            HelpLanguageCode(),
+            ResolveHelpLanguageText,
+            pageId,
+            fileName,
+            resolveContent: ResolveHelpPackageContent);
         var html = HelpHtml.WrapTopicPage(title, body, HelpApi.MainHelpCss());
         HelpApi.ShowDialog(this, new HelpDialogOptions(
             title,
@@ -413,6 +418,20 @@ internal sealed class AboutForm : Form
 
         return _englishLanguage.TryText(key, out var englishValue)
             ? englishValue
+            : null;
+    }
+
+    private string? ResolveHelpPackageContent(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(_language.PackageId))
+            return null;
+
+        return LanguagePackageService.TryReadHelpContentFile(
+            AppContext.BaseDirectory,
+            _language.PackageId,
+            fileName,
+            out var content)
+            ? content
             : null;
     }
 

@@ -7910,7 +7910,13 @@ public sealed class NodEditorForm : Form
 
     private string HelpContent(string key, string fileName, string fallback = "")
     {
-        return HelpApi.Content(HelpLanguageCode(), ResolveHelpLanguageText, key, fileName, fallback);
+        return HelpApi.Content(
+            HelpLanguageCode(),
+            ResolveHelpLanguageText,
+            key,
+            fileName,
+            fallback,
+            ResolveHelpPackageContent);
     }
 
     private string HelpContent(
@@ -7919,7 +7925,28 @@ public sealed class NodEditorForm : Form
         IReadOnlyDictionary<string, string?> placeholders,
         string fallback = "")
     {
-        return HelpApi.Content(HelpLanguageCode(), ResolveHelpLanguageText, key, fileName, placeholders, fallback);
+        return HelpApi.Content(
+            HelpLanguageCode(),
+            ResolveHelpLanguageText,
+            key,
+            fileName,
+            placeholders,
+            fallback,
+            ResolveHelpPackageContent);
+    }
+
+    private string? ResolveHelpPackageContent(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(_language.PackageId))
+            return null;
+
+        return LanguagePackageService.TryReadHelpContentFile(
+            AppContext.BaseDirectory,
+            _language.PackageId,
+            fileName,
+            out var content)
+            ? content
+            : null;
     }
 
     // [some.lng.key] in bewerkbare help-HTML/JS komt uit de actieve taal, met eng.lng als default.
