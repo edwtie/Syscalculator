@@ -1,4 +1,7 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Renders Graph3D grids, axes, boundary fields, line data, and highlight points.
 using System.Drawing.Drawing2D;
 using Tiedragon.Graph;
 

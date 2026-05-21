@@ -1,0 +1,116 @@
+<h1>Helptekst Bewerken Voor Schrijvers</h1>
+
+<p>Je hoeft geen programmeur te zijn om de helptekst te verbeteren. Denk aan Wikipedia-bron bewerken: je ziet blokken met kopjes, alinea's en lijstjes.</p>
+
+<p>Wil je waarschuwingen, tips, uitklapblokken of codevoorbeelden gebruiken? Zie dan <a href="WRITER_TOOLS.html">WRITER_TOOLS.html</a>.</p>
+
+<h2>Een Gewone Alinea</h2>
+
+<p>In een helpbestand zie je bijvoorbeeld:</p>
+
+<pre>&lt;p&gt;[help.main.nodeditor.intro]&lt;/p&gt;</pre>
+
+<p>Dat betekent:</p>
+
+<ul>
+  <li><code>&lt;p&gt;</code> en <code>&lt;/p&gt;</code> maken er een gewone alinea van.</li>
+  <li><code>[help.main.nodeditor.intro]</code> is de naam van de tekst.</li>
+  <li>De echte tekst staat in een taalbestand, bijvoorbeeld <code>ned.lng</code> of <code>eng.lng</code>.</li>
+</ul>
+
+<p>In <code>ned.lng</code> staat dan bijvoorbeeld:</p>
+
+<pre>help.main.nodeditor.intro=De NOD Editor is de werkruimte voor converters.</pre>
+
+<p>Wil je de woorden verbeteren? Verander alleen de tekst achter <code>=</code>.</p>
+
+<h2>Wat Laat Je Staan?</h2>
+
+<p>Laat deze dingen meestal staan:</p>
+
+<pre>&lt;p&gt;
+&lt;/p&gt;
+&lt;h2&gt;
+&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+class="shot-caption"</pre>
+
+<p>Dat is de vorm van de pagina: alinea, titel, lijst, onderschrift.</p>
+
+<p>Laat ook dit staan:</p>
+
+<pre>{NodEditorScreenshot}
+{WizardExpressScreenshot}</pre>
+
+<p>Daar vult het programma zelf iets in.</p>
+
+<h2>Commentaar Voor Schrijvers</h2>
+
+<p>Dit zie je in het bestand, maar niet op de help-pagina:</p>
+
+<pre>&lt;!-- Dit is alleen een notitie voor de schrijver. --&gt;</pre>
+
+<p>Voorbeeld:</p>
+
+<pre>&lt;!-- Screenshotdeel --&gt;
+&lt;h2&gt;[help.section.screenshot]&lt;/h2&gt;
+
+{NodEditorScreenshot}
+
+&lt;p class="shot-caption"&gt;[help.main.nodeditor.screenshot_caption]&lt;/p&gt;</pre>
+
+<h2>Nieuwe Tekst Toevoegen</h2>
+
+<p>Stap 1: zet in het HTML-bestand een nieuwe alinea:</p>
+
+<pre>&lt;p&gt;[help.main.nodeditor.extra_tip]&lt;/p&gt;</pre>
+
+<p>Stap 2: zet in <code>eng.lng</code> de Engelse standaardtekst:</p>
+
+<pre>help.main.nodeditor.extra_tip=Use short examples when explaining a command.</pre>
+
+<p>Stap 3: zet in <code>ned.lng</code> de Nederlandse tekst:</p>
+
+<pre>help.main.nodeditor.extra_tip=Gebruik korte voorbeelden wanneer je een command uitlegt.</pre>
+
+<p>Als een vertaling nog ontbreekt, gebruikt het programma tijdelijk Engels.</p>
+
+<h2>Handige Tags</h2>
+
+<p>Gewone alinea:</p>
+
+<pre>&lt;p&gt;[tekst.naam]&lt;/p&gt;</pre>
+
+<p>Kopje:</p>
+
+<pre>&lt;h2&gt;[tekst.naam]&lt;/h2&gt;</pre>
+
+<p>Lijst:</p>
+
+<pre>&lt;ul&gt;
+  &lt;li&gt;[tekst.naam]&lt;/li&gt;
+  &lt;li&gt;[tekst.naam]&lt;/li&gt;
+&lt;/ul&gt;</pre>
+
+<p>Vetgedrukt:</p>
+
+<pre>&lt;b&gt;[tekst.naam]&lt;/b&gt;</pre>
+
+<p>Command of codewoord:</p>
+
+<pre>&lt;code&gt;Name&lt;/code&gt;</pre>
+
+<p>Onderschrift bij screenshot:</p>
+
+<pre>&lt;p class="shot-caption"&gt;[tekst.naam]&lt;/p&gt;</pre>
+
+<h2>Simpele Regel</h2>
+
+<ul>
+  <li>Tekst verbeteren? Wijzig de zin achter <code>=</code> in <code>.lng</code>.</li>
+  <li>Tekst verplaatsen? Verplaats de hele regel in het HTML-bestand.</li>
+  <li>Nieuwe alinea? Voeg <code>&lt;p&gt;[nieuwe.tekst.naam]&lt;/p&gt;</code> toe en zet die naam in <code>eng.lng</code>.</li>
+  <li>Notitie voor schrijvers? Gebruik <code>&lt;!-- jouw notitie --&gt;</code>.</li>
+  <li>Niet zeker? Laat alles tussen <code>&lt;</code> en <code>&gt;</code> staan.</li>
+</ul>

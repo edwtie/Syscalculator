@@ -261,119 +261,6 @@ public sealed class NodEditorForm : Form
         }
     }
 
-    private sealed class Graph3DTextOverlayButton : Control
-    {
-        private readonly Action _action;
-        private readonly ToolTip _toolTip = new();
-        private bool _hover;
-        private bool _pressed;
-        private bool _active;
-
-        public Graph3DTextOverlayButton(string text, string tooltip, Action action)
-        {
-            _action = action;
-            Text = text;
-            Width = 34;
-            Height = 22;
-            Margin = new Padding(0, 1, 2, 0);
-            ForeColor = Color.FromArgb(15, 63, 143);
-            Cursor = Cursors.Hand;
-            TabStop = false;
-            Font = new Font("Segoe UI", 7f, FontStyle.Bold);
-            _toolTip.SetToolTip(this, tooltip);
-            SetStyle(
-                ControlStyles.AllPaintingInWmPaint |
-                ControlStyles.OptimizedDoubleBuffer |
-                ControlStyles.ResizeRedraw |
-                ControlStyles.UserPaint,
-                true);
-            BackColor = Color.White;
-        }
-
-        [Browsable(false)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool Active
-        {
-            get => _active;
-            set
-            {
-                if (_active == value)
-                    return;
-
-                _active = value;
-                Invalidate();
-            }
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            var rect = new RectangleF(0.5f, 0.5f, Width - 1f, Height - 1f);
-            var state = !Enabled
-                ? GraphOverlayVisualState.Disabled
-                : _pressed
-                    ? GraphOverlayVisualState.Pressed
-                    : _active
-                        ? GraphOverlayVisualState.Pressed
-                        : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
-            GraphOverlayStyle.PaintButtonChrome(e.Graphics, rect, 6f, state, translucent: false);
-
-            TextRenderer.DrawText(
-                e.Graphics,
-                Text,
-                Font,
-                ClientRectangle,
-                GraphOverlayStyle.TextColor(state),
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
-        }
-
-        protected override void OnMouseEnter(EventArgs e)
-        {
-            _hover = true;
-            Invalidate();
-            base.OnMouseEnter(e);
-        }
-
-        protected override void OnMouseLeave(EventArgs e)
-        {
-            _hover = false;
-            _pressed = false;
-            Invalidate();
-            base.OnMouseLeave(e);
-        }
-
-        protected override void OnMouseDown(MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                _pressed = true;
-                Invalidate();
-            }
-
-            base.OnMouseDown(e);
-        }
-
-        protected override void OnMouseUp(MouseEventArgs e)
-        {
-            var fireClick = _pressed && ClientRectangle.Contains(e.Location);
-            _pressed = false;
-            Invalidate();
-            if (fireClick)
-                _action();
-            base.OnMouseUp(e);
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            using var path = GraphOverlayStyle.RoundedRect(
-                new RectangleF(0, 0, Math.Max(1, Width), Math.Max(1, Height)),
-                6f);
-            Region = new Region(path);
-        }
-    }
-
     private static GraphicsPath RoundedTopRect(Rectangle rectangle, int radius)
     {
         var path = new GraphicsPath();
@@ -464,9 +351,9 @@ public sealed class NodEditorForm : Form
     private Panel _graph3DNavigationPanel = null!;
     private Panel _graph3DCommandPanel = null!;
     private Panel _graph3DRangePanel = null!;
-    private Graph3DTextOverlayButton _graph3DFlat2DButton = null!;
-    private Graph3DTextOverlayButton _graph3DIsoButton = null!;
-    private Graph3DTextOverlayButton _graph3DTopButton = null!;
+    private GraphTextOverlayButton _graph3DFlat2DButton = null!;
+    private GraphTextOverlayButton _graph3DIsoButton = null!;
+    private GraphTextOverlayButton _graph3DTopButton = null!;
     private Panel _graphPointPanel = null!;
     private Panel _graph3DPointPanel = null!;
     private DataGridView _graphPointTable = null!;
@@ -1571,8 +1458,6 @@ public sealed class NodEditorForm : Form
         _graph3DRotationDial = new Graph3DRotationDial { Camera = _graph3DCamera };
         _graph3DRotationDial.RotationDeltaRequested += (yaw, pitch) => RotateGraph3DCamera(yaw, pitch);
         _graph3DRotationDial.ResetRequested += () => SetGraph3DCamera(GraphCameraPreset3D.Isometric);
-        graphHost.Controls.Add(_graph3DRotationDial);
-        _graph3DRotationDial.BringToFront();
 
         _graph3DCommandPanel = new Graph3DOverlayFlowPanel
         {
@@ -1644,7 +1529,7 @@ public sealed class NodEditorForm : Form
         var graph3DRangePanel = new TableLayoutPanel
         {
             Dock = DockStyle.Left,
-            Width = 360,
+            Width = 382,
             Height = 75,
             ColumnCount = 6,
             RowCount = 3,
@@ -1714,11 +1599,11 @@ public sealed class NodEditorForm : Form
         graph3DRangePanel.Controls.Add(_graph3DShowRangeLines, 4, 2);
         graph3DRangePanel.SetColumnSpan(_graph3DShowRangeLines, 2);
         graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
         graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58));
-        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 72));
+        graph3DRangePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 76));
         graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         graph3DRangePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
@@ -1777,9 +1662,9 @@ public sealed class NodEditorForm : Form
         return panel;
     }
 
-    private Graph3DTextOverlayButton MakeGraph3DButton(string text, string tooltip, Action action)
+    private GraphTextOverlayButton MakeGraph3DButton(string text, string tooltip, Action action)
     {
-        return new Graph3DTextOverlayButton(text, tooltip, action);
+        return new GraphTextOverlayButton(text, tooltip, action);
     }
 
     private void PlaceGraph3DOverlays()
@@ -1806,27 +1691,24 @@ public sealed class NodEditorForm : Form
         if (_graph3DRotationDial is { Visible: true })
         {
             _graph3DRotationDial.Left = surface.Left + gap;
-            _graph3DRotationDial.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DRotationDial.Height - gap);
-            _graph3DRotationDial.BringToFront();
+            _graph3DRotationDial.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DRotationDial.Height - gap - 16);
         }
 
         if (_graph3DCommandPanel is not null)
         {
-            var left = _graph3DRotationDial is { Visible: true }
-                ? _graph3DRotationDial.Right + gap
-                : surface.Left + gap;
+            var left = surface.Left + gap;
             var navLeft = _graph3DNavigationPanel?.Left ?? surface.Right;
             var bottomControlsNeed = left + _graph3DCommandPanel.Width + gap + (_graph3DNavigationPanel?.Width ?? 0) + gap;
             if (bottomControlsNeed <= surface.Right)
             {
                 var maxLeft = Math.Max(surface.Left + gap, navLeft - _graph3DCommandPanel.Width - gap);
                 _graph3DCommandPanel.Left = Math.Min(left, maxLeft);
-                _graph3DCommandPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DCommandPanel.Height - gap);
+                _graph3DCommandPanel.Top = surface.Top + gap;
             }
             else
             {
                 _graph3DCommandPanel.Left = surface.Left + gap;
-                _graph3DCommandPanel.Top = Math.Max(surface.Top + gap, surface.Bottom - _graph3DCommandPanel.Height - (_graph3DRotationDial?.Height ?? 0) - gap * 2);
+                _graph3DCommandPanel.Top = surface.Top + gap;
             }
             _graph3DCommandPanel.BringToFront();
         }
@@ -2033,6 +1915,7 @@ public sealed class NodEditorForm : Form
 
     private void Graph3DCanvas_Paint(object? sender, PaintEventArgs e)
     {
+        e.Graphics.Clear(_graph3DCanvas.BackColor);
         var surface = GetGraph3DCompactSurfaceBounds(_graph3DCanvas);
         var state = e.Graphics.Save();
         e.Graphics.SetClip(surface);
@@ -2058,6 +1941,11 @@ public sealed class NodEditorForm : Form
             _graphDisabledMessage,
             "Generate graph",
             GraphPlotDensity.Compact);
+        if (_graph3DRotationDial is { Visible: true })
+        {
+            Graph3DApi.DrawCompass(e.Graphics, _graph3DRotationDial.Bounds, _graph3DCamera);
+            Graph3DApi.DrawCompassDegrees(e.Graphics, _graph3DRotationDial.Bounds, _graph3DCamera);
+        }
         e.Graphics.Restore(state);
     }
 
@@ -2804,18 +2692,22 @@ public sealed class NodEditorForm : Form
             _language,
             LanguageCatalog.ListAvailable(AppContext.BaseDirectory),
             _language.FileName,
-            AppVersionInfo.ReleaseChannel)
+            AppVersionInfo.ReleaseChannel,
+            _language.PackageId)
         {
             TopMost = TopMost
         };
 
-        if (form.ShowDialog(this) == DialogResult.OK && form.SelectedLanguageFile is not null)
+        if (form.ShowDialog(this) == DialogResult.OK && form.SelectedLanguage is not null)
         {
-            if (_language.FileName.Equals(form.SelectedLanguageFile, StringComparison.OrdinalIgnoreCase))
+            if (form.SelectedLanguage.Matches(_language.FileName, _language.PackageId))
                 return;
 
-            LanguageCatalog.SaveConfigured(AppContext.BaseDirectory, form.SelectedLanguageFile);
-            _language = LanguageCatalog.Load(AppContext.BaseDirectory, form.SelectedLanguageFile);
+            LanguageCatalog.SaveConfigured(AppContext.BaseDirectory, form.SelectedLanguage);
+            _language = LanguageCatalog.Load(
+                AppContext.BaseDirectory,
+                form.SelectedLanguage.FileName,
+                form.SelectedLanguage.PackageId);
             ApplyLanguageImmediately();
         }
     }
@@ -4895,13 +4787,13 @@ public sealed class NodEditorForm : Form
         }
     }
 
-    private void AddBlankNewTab()
+    private void AddBlankNewTab(EditorTab? afterTab = null)
     {
-        AddNewTab(T("editor.tab.new", "new"), "", null, dirty: false);
+        AddNewTab(T("editor.tab.new", "new"), "", null, dirty: false, afterTab);
     }
 
     // Maakt een nieuwe editor-tab met regelnummers, syntax highlighting en preview-updates.
-    private void AddNewTab(string title, string text, string? path, bool dirty)
+    private void AddNewTab(string title, string text, string? path, bool dirty, EditorTab? afterTab = null)
     {
         var page = new TabPage(title);
         var layout = new TableLayoutPanel
@@ -5023,8 +4915,20 @@ public sealed class NodEditorForm : Form
         layout.Controls.Add(editor, 1, 0);
 
         _tabs[page] = tab;
+        AttachEditorTabContextMenu(tab);
         _editorTabStrip.Controls.Add(tab.HeaderPanel);
-        _tabControl.TabPages.Add(page);
+        if (afterTab is not null && _tabs.ContainsKey(afterTab.Page))
+        {
+            var tabIndex = _tabControl.TabPages.IndexOf(afterTab.Page);
+            var headerIndex = _editorTabStrip.Controls.IndexOf(afterTab.HeaderPanel);
+            _tabControl.TabPages.Insert(Math.Min(tabIndex + 1, _tabControl.TabPages.Count), page);
+            _editorTabStrip.Controls.SetChildIndex(tab.HeaderPanel, Math.Min(headerIndex + 1, _editorTabStrip.Controls.Count - 1));
+        }
+        else
+        {
+            _tabControl.TabPages.Add(page);
+        }
+
         SelectEditorTab(page);
 
         editor.Text = normalizedText;
@@ -5493,6 +5397,79 @@ public sealed class NodEditorForm : Form
         var tab = CurrentTab;
         if (tab is not null)
             CloseTab(tab);
+    }
+
+    private void AttachEditorTabContextMenu(EditorTab tab)
+    {
+        var menu = CreateEditorTabContextMenu(tab);
+        tab.HeaderPanel.ContextMenuStrip = menu;
+        tab.HeaderTitle.ContextMenuStrip = menu;
+        tab.HeaderCloseButton.ContextMenuStrip = menu;
+    }
+
+    private ContextMenuStrip CreateEditorTabContextMenu(EditorTab tab)
+    {
+        var menu = new ContextMenuStrip();
+        var newRight = menu.Items.Add(T("editor.tabs.new_right", "New tab to the right"));
+        menu.Items.Add(new ToolStripSeparator());
+        var closeAll = menu.Items.Add(T("editor.tabs.close_all", "Close all tabs"));
+        var closeRight = menu.Items.Add(T("editor.tabs.close_right", "Close tabs to the right"));
+        var closeLeft = menu.Items.Add(T("editor.tabs.close_left", "Close tabs to the left"));
+
+        menu.Opening += (_, _) =>
+        {
+            if (_tabs.ContainsKey(tab.Page))
+                SelectEditorTab(tab.Page);
+
+            var tabs = GetEditorTabsInHeaderOrder();
+            var index = tabs.IndexOf(tab);
+            closeAll.Enabled = tabs.Count > 0;
+            closeLeft.Enabled = index > 0;
+            closeRight.Enabled = index >= 0 && index < tabs.Count - 1;
+        };
+
+        newRight.Click += (_, _) => AddBlankNewTab(tab);
+        closeAll.Click += (_, _) => CloseEditorTabs(GetEditorTabsInHeaderOrder());
+        closeRight.Click += (_, _) =>
+        {
+            var tabs = GetEditorTabsInHeaderOrder();
+            var index = tabs.IndexOf(tab);
+            if (index >= 0)
+                CloseEditorTabs(tabs.Skip(index + 1));
+        };
+        closeLeft.Click += (_, _) =>
+        {
+            var tabs = GetEditorTabsInHeaderOrder();
+            var index = tabs.IndexOf(tab);
+            if (index > 0)
+                CloseEditorTabs(tabs.Take(index));
+        };
+
+        return menu;
+    }
+
+    private List<EditorTab> GetEditorTabsInHeaderOrder()
+    {
+        var result = new List<EditorTab>();
+        foreach (Control control in _editorTabStrip.Controls)
+        {
+            var tab = _tabs.Values.FirstOrDefault(item => ReferenceEquals(item.HeaderPanel, control));
+            if (tab is not null)
+                result.Add(tab);
+        }
+
+        return result;
+    }
+
+    private bool CloseEditorTabs(IEnumerable<EditorTab> tabs)
+    {
+        foreach (var tab in tabs.ToList())
+        {
+            if (_tabs.ContainsKey(tab.Page) && !CloseTab(tab))
+                return false;
+        }
+
+        return true;
     }
 
     // Sluit een specifieke tab en vraagt eerst om opslaan bij wijzigingen.

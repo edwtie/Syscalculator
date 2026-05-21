@@ -16,6 +16,9 @@ De tests controleren:
 - data field math
 */
 
+using Tiedragon.Graph;
+using Tiedragon.Graph.G2D;
+using Tiedragon.Graph.G3D;
 using Tiedragon.NodSystem.Core;
 
 var total = 0;
@@ -61,6 +64,44 @@ Test("pi circle", () =>
     AssertNear(78.539816m, value, 0.0001m);
 });
 
+Test("circle equation detects point on circle", () =>
+{
+    var vars = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["a"] = 0m,
+        ["b"] = 0m,
+        ["r"] = 5m,
+        ["x"] = 3m,
+        ["y"] = 4m
+    };
+
+    var left = NodExpressionEvaluator.Evaluate("(x-a)^2 + (y-b)^2", 0, vars);
+    var right = NodExpressionEvaluator.Evaluate("r^2", 0, vars);
+    var radius = NodExpressionEvaluator.Evaluate("distance(vec(a,b), vec(x,y))", 0, vars);
+
+    AssertDecimal(right, left);
+    AssertDecimal(5m, radius);
+});
+
+Test("circle equation detects point outside circle", () =>
+{
+    var vars = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["a"] = 1m,
+        ["b"] = 2m,
+        ["r"] = 5m,
+        ["x"] = 8m,
+        ["y"] = 6m
+    };
+
+    var left = NodExpressionEvaluator.Evaluate("(x-a)^2 + (y-b)^2", 0, vars);
+    var right = NodExpressionEvaluator.Evaluate("r^2", 0, vars);
+    var radius = NodExpressionEvaluator.Evaluate("distance(vec(a,b), vec(x,y))", 0, vars);
+
+    AssertTrue(left > right, "Point should be outside the circle when squared distance is greater than r^2.");
+    AssertNear(8.062257m, radius, 0.0001m);
+});
+
 Test("complex math", () =>
 {
     var value = NodExpressionEvaluator.Evaluate("sqrt((ans^2 + 25) / 3) + log(ans,2)", 8);
@@ -96,6 +137,65 @@ Test("expression vector length and scalar projection", () =>
     AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4,0))", 0));
     AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
     AssertDecimal(5m, NodExpressionEvaluator.Evaluate("|vec(3,4)|", 0));
+});
+
+Test("graph3d treats vector length as arrow from origin", () =>
+{
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4))", 0));
+    AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
+
+    var arrow2D = Graph3DApi.From2D(new PointF(3f, 4f), z: 0d);
+    AssertNear(3m, (decimal)arrow2D.X, 0.0001m);
+    AssertNear(4m, (decimal)arrow2D.Y, 0.0001m);
+    AssertNear(0m, (decimal)arrow2D.Z, 0.0001m);
+
+    var arrow3D = new GraphPoint3D(3d, 4d, 12d);
+    var plot = new Rectangle(0, 0, 400, 300);
+    var view = Graph3DApi.CreateFitView(new[] { new GraphPoint3D(0d, 0d, 0d), arrow3D });
+    var projectedOrigin = Graph3DApi.ProjectToScreen(new GraphPoint3D(0d, 0d, 0d), plot, view, Graph3DApi.DefaultCamera);
+    var projectedTip = Graph3DApi.ProjectToScreen(arrow3D, plot, view, Graph3DApi.DefaultCamera);
+
+    AssertTrue(float.IsFinite(projectedOrigin.Screen.X), "Graph3D origin projection should be finite.");
+    AssertTrue(float.IsFinite(projectedTip.Screen.X), "Graph3D vector tip projection should be finite.");
+    AssertTrue(projectedOrigin.Screen != projectedTip.Screen, "Graph3D vector arrow should project to a visible segment.");
+
+    using var bitmap = new Bitmap(400, 300);
+    using var graphics = Graphics.FromImage(bitmap);
+    graphics.Clear(Color.White);
+    Graph3DApi.DrawVectorArrow(graphics, new GraphPoint3D(0d, 0d, 0d), arrow3D, plot, view, Graph3DApi.DefaultCamera, Color.FromArgb(15, 63, 143));
+    AssertTrue(HasNonWhitePixel(bitmap), "Graph3D vector arrow should draw pixels.");
+});
+
+Test("graph2d treats vector length as arrow from origin", () =>
+{
+    AssertDecimal(5m, NodExpressionEvaluator.Evaluate("length(vec(3,4))", 0));
+    AssertDecimal(13m, NodExpressionEvaluator.Evaluate("length(vec(3,4,12))", 0));
+
+    var projectedVector3D = GraphSurfaceApi.ProjectFormulaVectorTo2D(new[] { 3d, 4d, 12d });
+    AssertNear(0.25m, (decimal)projectedVector3D.X, 0.0001m);
+    AssertNear(0.333333m, (decimal)projectedVector3D.Y, 0.0001m);
+
+    var zeroDepthVector3D = GraphSurfaceApi.ProjectFormulaVectorTo2D(new[] { 3d, 4d, 0d });
+    AssertNear(3m, (decimal)zeroDepthVector3D.X, 0.0001m);
+    AssertNear(4m, (decimal)zeroDepthVector3D.Y, 0.0001m);
+
+    var plot = new Rectangle(0, 0, 400, 300);
+    var view = GraphSurfaceApi.CreateFitView(new[] { new PointF(0f, 0f), projectedVector3D }, -1d, 4d, plot.Size);
+    var projectedOrigin = GraphSurfaceApi.GraphToScreen(new PointF(0f, 0f), plot, view);
+    var projectedTip = GraphSurfaceApi.GraphToScreen(projectedVector3D, plot, view);
+    var roundTripTip = GraphSurfaceApi.ScreenToGraph(projectedTip, plot, view);
+
+    AssertTrue(float.IsFinite(projectedOrigin.X), "Graph2D origin projection should be finite.");
+    AssertTrue(float.IsFinite(projectedTip.X), "Graph2D vector tip projection should be finite.");
+    AssertTrue(projectedOrigin != projectedTip, "Graph2D vector arrow should project to a visible segment.");
+    AssertNear(0.25m, (decimal)roundTripTip.X, 0.0001m);
+    AssertNear(0.333333m, (decimal)roundTripTip.Y, 0.0001m);
+
+    using var bitmap = new Bitmap(400, 300);
+    using var graphics = Graphics.FromImage(bitmap);
+    graphics.Clear(Color.White);
+    GraphSurfaceApi.DrawVectorArrow(graphics, new PointF(0f, 0f), projectedVector3D, plot, view, Color.FromArgb(15, 63, 143));
+    AssertTrue(HasNonWhitePixel(bitmap), "Graph2D vector arrow should draw pixels.");
 });
 
 Test("expression vector arithmetic keeps z component", () =>
@@ -163,6 +263,33 @@ Test("expression matrix vector and matrix multiplication", () =>
     AssertDecimal(6m, NodExpressionEvaluator.Evaluate("x(mat2(2,0,0,3) * vec(3,4))", 0));
     AssertDecimal(12m, NodExpressionEvaluator.Evaluate("y(mat2(2,0,0,3) * vec(3,4))", 0));
     AssertDecimal(4m, NodExpressionEvaluator.Evaluate("mget(mat2(1,2,3,4) * mat2(2,0,1,2),1,2)", 0));
+});
+
+Test("expression matrix 3x3 determinant trace and lookup", () =>
+{
+    AssertDecimal(1m, NodExpressionEvaluator.Evaluate("det(mat3(1,2,3,0,1,4,5,6,0))", 0));
+    AssertDecimal(2m, NodExpressionEvaluator.Evaluate("trace(mat3(1,2,3,0,1,4,5,6,0))", 0));
+    AssertDecimal(6m, NodExpressionEvaluator.Evaluate("mget(mat3(1,2,3,0,1,4,5,6,0),3,2)", 0));
+});
+
+Test("expression matrix 3x3 vector and matrix multiplication", () =>
+{
+    AssertDecimal(14m, NodExpressionEvaluator.Evaluate("x(mat3(1,2,3,0,1,4,5,6,0) * vec(1,2,3))", 0));
+    AssertDecimal(14m, NodExpressionEvaluator.Evaluate("y(mat3(1,2,3,0,1,4,5,6,0) * vec(1,2,3))", 0));
+    AssertDecimal(17m, NodExpressionEvaluator.Evaluate("z(mat3(1,2,3,0,1,4,5,6,0) * vec(1,2,3))", 0));
+    AssertDecimal(6m, NodExpressionEvaluator.Evaluate("mget(mat3(1,2,3,0,1,4,5,6,0) * mat3(1,0,0,0,1,0,0,0,1),3,2)", 0));
+});
+
+Test("nod math supports matrix 3x3 determinant", () =>
+{
+    var doc = NodParser.Parse("""
+    Name Matrix 3x3 determinant
+    math det(mat3(1,2,3,0,1,4,5,6,0))
+    end
+    """);
+
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(1m, result.NumericValue ?? 0);
 });
 
 Test("expression statistics functions", () =>
@@ -257,6 +384,26 @@ Test("equation can solve graph intersection", () =>
     var report = SolverStepBuilder.Build(doc, "0");
     if (report.EquationGraph is null)
         throw new Exception("Intersection solve should expose equation graph info.");
+});
+
+Test("equation circle radius from center and point", () =>
+{
+    var doc = NodParser.Parse("""
+    Name Cirkelstraal
+    mode equation
+    given a = 1
+    given b = 2
+    given x = 4
+    given y = 6
+    equation r = sqrt((x-a)^2 + (y-b)^2)
+    solve r
+    constraint r >= 0
+    end
+    """);
+
+    var result = NodEngine.SolveEquation(doc);
+    AssertText("r", result.Variable);
+    AssertDecimal(5m, result.Value);
 });
 
 Test("intersection solver demo nod parses and solves", () =>
@@ -1006,7 +1153,7 @@ Test("parser supports named input output without deprecation", () =>
     AssertDecimal(0m, doc.Deprecations.Count);
 });
 
-Test("parser keeps xyz inputs as future metadata only", () =>
+Test("parser keeps xyz inputs as graph3d metadata", () =>
 {
     var doc = NodParser.Parse("""
     Name 3D point
@@ -1026,24 +1173,38 @@ Test("parser keeps xyz inputs as future metadata only", () =>
     AssertDecimal(0m, doc.Deprecations.Count);
 });
 
-Test("parser rejects geometry mode in nod 2 beta", () =>
+Test("parser supports geometry mode for graph3d math", () =>
 {
-    AssertThrows("Line 2: mode geometry is not supported in NOD 2.0 beta. Use formula cards for educational geometry, or wait for the future 3D graph/geometry engine.", () => NodParser.Parse("""
-    Name Geometry future
+    var doc = NodParser.Parse("""
+    Name Geometry 3D vector
     mode geometry
     input x X coordinate
+    input y Y coordinate
+    input z Z coordinate
+    math length(vec(3,4,12))
     end
-    """));
+    """);
+
+    AssertText("geometry", doc.Mode ?? "");
+    AssertDecimal(3m, doc.Inputs.Count);
+    AssertText("z", doc.Inputs[2].Name);
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(13m, result.NumericValue ?? 0);
 });
 
-Test("parser rejects matrix 3x3 mode in nod 2 beta", () =>
+Test("parser supports matrix 3x3 mode", () =>
 {
-    AssertThrows("Line 2: mode matrix3x3 is not supported in NOD 2.0 beta. Limited matrix support is 2x2 formula-card education only.", () => NodParser.Parse("""
-    Name Matrix future
+    var doc = NodParser.Parse("""
+    Name Matrix 3x3
     mode matrix3x3
     input text Matrix values
+    math det(mat3(1,2,3,0,1,4,5,6,0))
     end
-    """));
+    """);
+
+    AssertText("matrix3x3", doc.Mode ?? "");
+    var result = NodEngine.ConvertForward(doc, "0");
+    AssertDecimal(1m, result.NumericValue ?? 0);
 });
 
 Test("parser supports text input for trans chg tools", () =>
@@ -1511,6 +1672,26 @@ static void AssertNear(decimal expected, decimal actual, decimal tolerance)
 {
     if (Math.Abs(expected - actual) > tolerance)
         throw new Exception($"Expected near {expected}, got {actual}.");
+}
+
+static void AssertTrue(bool condition, string message)
+{
+    if (!condition)
+        throw new Exception(message);
+}
+
+static bool HasNonWhitePixel(Bitmap bitmap)
+{
+    for (var y = 0; y < bitmap.Height; y += 3)
+    {
+        for (var x = 0; x < bitmap.Width; x += 3)
+        {
+            if (bitmap.GetPixel(x, y).ToArgb() != Color.White.ToArgb())
+                return true;
+        }
+    }
+
+    return false;
 }
 
 static void AssertThrows(string expectedMessage, Action action)

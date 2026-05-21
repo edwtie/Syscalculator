@@ -222,10 +222,11 @@ public static class NodExpressionEvaluator
         {
             "vec" or "vector" when args.Count is 2 or 3 => Value.Vector(args.Select(arg => arg.AsScalar()).ToArray()),
             "mat2" or "matrix2" when args.Count == 4 => Value.Matrix2(args.Select(arg => arg.AsScalar()).ToArray()),
-            "det" when args.Count == 1 => Value.Scalar(Determinant(args[0].AsMatrix2())),
+            "mat3" or "matrix3" when args.Count == 9 => Value.Matrix3(args.Select(arg => arg.AsScalar()).ToArray()),
+            "det" when args.Count == 1 => Value.Scalar(Determinant(args[0].AsMatrix())),
             "det" or "det2" when args.Count == 4 => Value.Scalar(args[0].AsScalar() * args[3].AsScalar() - args[1].AsScalar() * args[2].AsScalar()),
-            "trace" when args.Count == 1 => Value.Scalar(MatrixTrace(args[0].AsMatrix2())),
-            "mget" when args.Count == 3 => Value.Scalar(MatrixComponent(args[0].AsMatrix2(), args[1].AsScalar(), args[2].AsScalar())),
+            "trace" when args.Count == 1 => Value.Scalar(MatrixTrace(args[0].AsMatrix())),
+            "mget" when args.Count == 3 => Value.Scalar(MatrixComponent(args[0].AsMatrix(), args[1].AsScalar(), args[2].AsScalar())),
             "length" or "norm" or "mag" when args.Count == 1 => Value.Scalar(VectorLength(args[0].AsVector())),
             "unit" when args.Count == 1 => Value.Vector(UnitVector(args[0].AsVector())),
             "dot" when args.Count == 2 => Value.Scalar(Dot(args[0].AsVector(), args[1].AsVector())),
@@ -291,24 +292,24 @@ public static class NodExpressionEvaluator
         private static Value Add(Value left, Value right)
         {
             if (left.IsScalar && right.IsScalar) return Value.Scalar(left.AsScalar() + right.AsScalar());
-            if (left.IsMatrix && right.IsMatrix) return Value.Matrix2(ZipMatrix2(left.AsMatrix2(), right.AsMatrix2(), static (a, b) => a + b));
+            if (left.IsMatrix && right.IsMatrix) return Value.Matrix(ZipMatrix(left.AsMatrix(), right.AsMatrix(), static (a, b) => a + b));
             return Value.Vector(ZipVectors(left.AsVector(), right.AsVector(), static (a, b) => a + b));
         }
 
         private static Value Subtract(Value left, Value right)
         {
             if (left.IsScalar && right.IsScalar) return Value.Scalar(left.AsScalar() - right.AsScalar());
-            if (left.IsMatrix && right.IsMatrix) return Value.Matrix2(ZipMatrix2(left.AsMatrix2(), right.AsMatrix2(), static (a, b) => a - b));
+            if (left.IsMatrix && right.IsMatrix) return Value.Matrix(ZipMatrix(left.AsMatrix(), right.AsMatrix(), static (a, b) => a - b));
             return Value.Vector(ZipVectors(left.AsVector(), right.AsVector(), static (a, b) => a - b));
         }
 
         private static Value Multiply(Value left, Value right)
         {
             if (left.IsScalar && right.IsScalar) return Value.Scalar(left.AsScalar() * right.AsScalar());
-            if (left.IsMatrix && right.IsScalar) return Value.Matrix2(ScaleMatrix2(left.AsMatrix2(), right.AsScalar()));
-            if (left.IsScalar && right.IsMatrix) return Value.Matrix2(ScaleMatrix2(right.AsMatrix2(), left.AsScalar()));
-            if (left.IsMatrix && right.IsVector) return Value.Vector(MultiplyMatrixVector(left.AsMatrix2(), right.AsVector()));
-            if (left.IsMatrix && right.IsMatrix) return Value.Matrix2(MultiplyMatrix2(left.AsMatrix2(), right.AsMatrix2()));
+            if (left.IsMatrix && right.IsScalar) return Value.Matrix(ScaleMatrix(left.AsMatrix(), right.AsScalar()));
+            if (left.IsScalar && right.IsMatrix) return Value.Matrix(ScaleMatrix(right.AsMatrix(), left.AsScalar()));
+            if (left.IsMatrix && right.IsVector) return Value.Vector(MultiplyMatrixVector(left.AsMatrix(), right.AsVector()));
+            if (left.IsMatrix && right.IsMatrix) return Value.Matrix(MultiplyMatrix(left.AsMatrix(), right.AsMatrix()));
             if (left.IsVector && right.IsScalar) return Value.Vector(ScaleVector(left.AsVector(), right.AsScalar()));
             if (left.IsScalar && right.IsVector) return Value.Vector(ScaleVector(right.AsVector(), left.AsScalar()));
             throw new FormatException("Use dot(...) for vector-vector multiplication.");
@@ -317,7 +318,7 @@ public static class NodExpressionEvaluator
         private static Value Divide(Value left, Value right)
         {
             if (left.IsScalar && right.IsScalar) return Value.Scalar(left.AsScalar() / right.AsScalar());
-            if (left.IsMatrix && right.IsScalar) return Value.Matrix2(ScaleMatrix2(left.AsMatrix2(), 1.0 / right.AsScalar()));
+            if (left.IsMatrix && right.IsScalar) return Value.Matrix(ScaleMatrix(left.AsMatrix(), 1.0 / right.AsScalar()));
             if (left.IsVector && right.IsScalar) return Value.Vector(ScaleVector(left.AsVector(), 1.0 / right.AsScalar()));
             throw new FormatException("Vector and matrix division only support value / scalar.");
         }
@@ -332,7 +333,7 @@ public static class NodExpressionEvaluator
         private static Value Negate(Value value)
         {
             if (value.IsScalar) return Value.Scalar(-value.AsScalar());
-            if (value.IsMatrix) return Value.Matrix2(ScaleMatrix2(value.AsMatrix2(), -1.0));
+            if (value.IsMatrix) return Value.Matrix(ScaleMatrix(value.AsMatrix(), -1.0));
             return Value.Vector(ScaleVector(value.AsVector(), -1.0));
         }
 
@@ -434,42 +435,56 @@ public static class NodExpressionEvaluator
 
         private static double Determinant(IReadOnlyList<double> matrix)
         {
-            return matrix[0] * matrix[3] - matrix[1] * matrix[2];
+            var size = MatrixSize(matrix);
+            if (size == 2)
+                return matrix[0] * matrix[3] - matrix[1] * matrix[2];
+
+            return
+                matrix[0] * (matrix[4] * matrix[8] - matrix[5] * matrix[7]) -
+                matrix[1] * (matrix[3] * matrix[8] - matrix[5] * matrix[6]) +
+                matrix[2] * (matrix[3] * matrix[7] - matrix[4] * matrix[6]);
         }
 
         private static double MatrixTrace(IReadOnlyList<double> matrix)
         {
-            return matrix[0] + matrix[3];
+            var size = MatrixSize(matrix);
+            var trace = 0.0;
+            for (var i = 0; i < size; i++)
+                trace += matrix[i * size + i];
+            return trace;
         }
 
         private static double MatrixComponent(IReadOnlyList<double> matrix, double rowValue, double columnValue)
         {
-            var row = RequireMatrixIndex(rowValue, "row");
-            var column = RequireMatrixIndex(columnValue, "column");
-            return matrix[row * 2 + column];
+            var size = MatrixSize(matrix);
+            var row = RequireMatrixIndex(rowValue, "row", size);
+            var column = RequireMatrixIndex(columnValue, "column", size);
+            return matrix[row * size + column];
         }
 
-        private static int RequireMatrixIndex(double value, string name)
+        private static int RequireMatrixIndex(double value, string name, int size)
         {
             if (Math.Abs(value - Math.Round(value)) > 0.0000000001)
-                throw new FormatException($"mget expects whole-number {name} index 1 or 2.");
+                throw new FormatException($"mget expects whole-number {name} index 1 to {size}.");
             var index = (int)Math.Round(value);
-            if (index is not (1 or 2))
-                throw new FormatException($"mget expects {name} index 1 or 2.");
+            if (index < 1 || index > size)
+                throw new FormatException($"mget expects {name} index 1 to {size}.");
             return index - 1;
         }
 
-        private static double[] ZipMatrix2(IReadOnlyList<double> left, IReadOnlyList<double> right, Func<double, double, double> operation)
+        private static double[] ZipMatrix(IReadOnlyList<double> left, IReadOnlyList<double> right, Func<double, double, double> operation)
         {
-            var result = new double[4];
+            var size = RequireSameMatrixSize(left, right);
+            var result = new double[size * size];
             for (var i = 0; i < result.Length; i++)
                 result[i] = operation(left[i], right[i]);
             return result;
         }
 
-        private static double[] ScaleMatrix2(IReadOnlyList<double> matrix, double factor)
+        private static double[] ScaleMatrix(IReadOnlyList<double> matrix, double factor)
         {
-            var result = new double[4];
+            var size = MatrixSize(matrix);
+            var result = new double[size * size];
             for (var i = 0; i < result.Length; i++)
                 result[i] = matrix[i] * factor;
             return result;
@@ -477,24 +492,57 @@ public static class NodExpressionEvaluator
 
         private static double[] MultiplyMatrixVector(IReadOnlyList<double> matrix, IReadOnlyList<double> vector)
         {
-            if (vector.Count != 2)
-                throw new FormatException("2x2 matrix multiplication expects a 2D vector.");
-            return
-            [
-                matrix[0] * vector[0] + matrix[1] * vector[1],
-                matrix[2] * vector[0] + matrix[3] * vector[1]
-            ];
+            var size = MatrixSize(matrix);
+            if (vector.Count != size)
+                throw new FormatException($"{size}x{size} matrix multiplication expects a {size}D vector.");
+
+            var result = new double[size];
+            for (var row = 0; row < size; row++)
+            {
+                var sum = 0.0;
+                for (var column = 0; column < size; column++)
+                    sum += matrix[row * size + column] * vector[column];
+                result[row] = sum;
+            }
+
+            return result;
         }
 
-        private static double[] MultiplyMatrix2(IReadOnlyList<double> left, IReadOnlyList<double> right)
+        private static double[] MultiplyMatrix(IReadOnlyList<double> left, IReadOnlyList<double> right)
         {
-            return
-            [
-                left[0] * right[0] + left[1] * right[2],
-                left[0] * right[1] + left[1] * right[3],
-                left[2] * right[0] + left[3] * right[2],
-                left[2] * right[1] + left[3] * right[3]
-            ];
+            var size = RequireSameMatrixSize(left, right);
+            var result = new double[size * size];
+            for (var row = 0; row < size; row++)
+            {
+                for (var column = 0; column < size; column++)
+                {
+                    var sum = 0.0;
+                    for (var i = 0; i < size; i++)
+                        sum += left[row * size + i] * right[i * size + column];
+                    result[row * size + column] = sum;
+                }
+            }
+
+            return result;
+        }
+
+        private static int RequireSameMatrixSize(IReadOnlyList<double> left, IReadOnlyList<double> right)
+        {
+            var leftSize = MatrixSize(left);
+            var rightSize = MatrixSize(right);
+            if (leftSize != rightSize)
+                throw new FormatException("Matrix operations require matrices with the same size.");
+            return leftSize;
+        }
+
+        private static int MatrixSize(IReadOnlyList<double> matrix)
+        {
+            return matrix.Count switch
+            {
+                4 => 2,
+                9 => 3,
+                _ => throw new FormatException("Matrix value must be 2x2 or 3x3.")
+            };
         }
 
         private static double Median(IReadOnlyList<double> values)
@@ -549,6 +597,23 @@ public static class NodExpressionEvaluator
                 return new(0.0, null, values);
             }
 
+            public static Value Matrix3(double[] values)
+            {
+                if (values.Length != 9)
+                    throw new FormatException("mat3 expects 9 scalar components.");
+                return new(0.0, null, values);
+            }
+
+            public static Value Matrix(double[] values)
+            {
+                return values.Length switch
+                {
+                    4 => Matrix2(values),
+                    9 => Matrix3(values),
+                    _ => throw new FormatException("Matrix value must be 2x2 or 3x3.")
+                };
+            }
+
             public double AsScalar()
             {
                 if (VectorValue is not null)
@@ -565,11 +630,19 @@ public static class NodExpressionEvaluator
                 return VectorValue;
             }
 
-            public double[] AsMatrix2()
+            public double[] AsMatrix()
             {
                 if (MatrixValue is null)
-                    throw new FormatException("Expected 2x2 matrix value.");
+                    throw new FormatException("Expected matrix value.");
                 return MatrixValue;
+            }
+
+            public double[] AsMatrix2()
+            {
+                var matrix = AsMatrix();
+                if (matrix.Length != 4)
+                    throw new FormatException("Expected 2x2 matrix value.");
+                return matrix;
             }
         }
 

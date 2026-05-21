@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
@@ -11,5 +12,32 @@
     <Company>Tiedragon</Company>
     <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tiedragon.NodSystem.Core\Tiedragon.NodSystem.Core.csproj" />
+    <ProjectReference Include="..\Tiedragon.Help\Tiedragon.Help.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\syscalculator\*.lng" LinkBase="Resources\Languages">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\syscalculator\Resources\nod-help.css" Link="Resources\nod-help.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\syscalculator\Resources\Help\**\*.*" LinkBase="Resources\Help">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

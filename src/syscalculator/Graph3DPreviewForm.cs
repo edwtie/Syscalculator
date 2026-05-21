@@ -194,8 +194,6 @@ internal sealed class Graph3DPreviewForm : Form
         _rotationDial = new Graph3DRotationDial { Width = 88, Height = 88, Camera = _camera };
         _rotationDial.RotationDeltaRequested += (yaw, pitch) => RotateCamera(yaw, pitch);
         _rotationDial.ResetRequested += () => SetCamera(GraphCameraPreset3D.Isometric);
-        host.Controls.Add(_rotationDial);
-        _rotationDial.BringToFront();
 
         var overlay = GraphPointTableOverlay.Create(
             GraphOverlayButtonDensity.Normal,
@@ -420,6 +418,7 @@ internal sealed class Graph3DPreviewForm : Form
 
     private void Canvas_Paint(object? sender, PaintEventArgs e)
     {
+        e.Graphics.Clear(_canvas.BackColor);
         if (_flat2DMode)
         {
             var view = Get2DView();
@@ -454,6 +453,8 @@ internal sealed class Graph3DPreviewForm : Form
             _disabledMessage,
             "Generate graph",
             GraphPlotDensity.Normal);
+        Graph3DApi.DrawCompass(e.Graphics, _rotationDial.Bounds, _camera);
+        Graph3DApi.DrawCompassDegrees(e.Graphics, _rotationDial.Bounds, _camera);
     }
 
     private void InvalidateCanvas()
@@ -701,11 +702,10 @@ internal sealed class Graph3DPreviewForm : Form
         _navigationPanel.Left = Math.Max(gap, host.ClientSize.Width - _navigationPanel.Width - gap);
         _navigationPanel.Top = Math.Max(gap, host.ClientSize.Height - _navigationPanel.Height - gap);
         _rotationDial.Left = gap;
-        _rotationDial.Top = Math.Max(gap, host.ClientSize.Height - _rotationDial.Height - gap);
+        _rotationDial.Top = Math.Max(gap, host.ClientSize.Height - _rotationDial.Height - gap - 16);
         _pointsPanel.Left = gap;
         _pointsPanel.Top = gap;
         _pointsPanel.BringToFront();
-        _rotationDial.BringToFront();
         _navigationPanel.BringToFront();
     }
 

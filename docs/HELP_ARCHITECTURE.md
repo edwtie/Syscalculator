@@ -38,6 +38,16 @@ Resources/Help/Content
   taalteksten met eng.lng als fallback
 ```
 
+Voor grotere taalsets is er een apart ontwerp voor ZIP-taalpakketten:
+
+```text
+docs/LANGUAGE_PACKAGE_DESIGN.md
+```
+
+Dat ontwerp bundelt `.lng`, helpcontent, manualbestanden en taalafhankelijke
+assets in een installeerbaar pakket, zonder de huidige losse `.lng` bestanden
+te breken.
+
 ## Taalafspraak
 
 Schrijvers kunnen tekst taalafhankelijk maken met tokens:
@@ -64,7 +74,7 @@ Redenen:
 
 ## Schrijversafspraak
 
-- Bewerk inhoud in HTML of Markdown-achtige contentbestanden.
+- Bewerk helpinhoud als gewone HTML-bestanden.
 - Gebruik eenvoudige tags voor koppen, alinea's, tabellen, waarschuwingen en voorbeelden.
 - Zet taalafhankelijke tekst tussen `[lng.key]`.
 - Laat styling in CSS staan.

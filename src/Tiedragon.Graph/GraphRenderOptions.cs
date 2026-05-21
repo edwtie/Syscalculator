@@ -1,5 +1,7 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Defines shared graph render density and line-series options.
 namespace Tiedragon.Graph;
 
 /// <summary>

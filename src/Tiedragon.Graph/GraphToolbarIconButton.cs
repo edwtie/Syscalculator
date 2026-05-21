@@ -1,11 +1,16 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Shared icon button control for graph overlay toolbars.
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
-using Tiedragon.Graph;
 
-namespace Syscalculator.UI.WinForms;
+namespace Tiedragon.Graph;
 
-internal enum GraphToolbarIcon
+/// <summary>
+/// Icon choices for the shared graph toolbar buttons.
+/// </summary>
+public enum GraphToolbarIcon
 {
     Copy,
     Open,
@@ -13,13 +18,19 @@ internal enum GraphToolbarIcon
     TableHidden
 }
 
-internal sealed class GraphToolbarIconButton : Button
+/// <summary>
+/// Shared WinForms toolbar button used by Graph2D and Graph3D overlays.
+/// </summary>
+public sealed class GraphToolbarIconButton : Button
 {
     private GraphToolbarIcon _icon;
     private readonly ToolTip _toolTip = new();
     private bool _hover;
     private bool _pressed;
 
+    /// <summary>
+    /// Creates a graph toolbar button with the requested icon and tooltip text.
+    /// </summary>
     public GraphToolbarIconButton(GraphToolbarIcon icon, string tooltip)
     {
         _icon = icon;
@@ -40,6 +51,9 @@ internal sealed class GraphToolbarIconButton : Button
         _toolTip.SetToolTip(this, tooltip);
     }
 
+    /// <summary>
+    /// Gets or sets the icon rendered inside the button.
+    /// </summary>
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public GraphToolbarIcon Icon
@@ -55,6 +69,9 @@ internal sealed class GraphToolbarIconButton : Button
         }
     }
 
+    /// <summary>
+    /// Gets or sets the tooltip shown when the button is hovered.
+    /// </summary>
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string TooltipText
@@ -186,5 +203,4 @@ internal sealed class GraphToolbarIconButton : Button
             g.DrawLine(pen, markCenter.X - 4, markCenter.Y, markCenter.X + 4, markCenter.Y);
         }
     }
-
 }

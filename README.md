@@ -7,6 +7,7 @@ Deze broncode werkt het NOD-systeem verder uit met:
 - NOD 2.0 Equation: `given`, `equation`, `solve`, `constraint`
 - NOD Data: `table`, `field`, `phoneformat`, `output`, `preview`, `backup`, `lookup` als model
 - In-memory DataTransformEngine voor testbare veldtransformaties
+- Graph2D en Graph3D als Tiedragon graph-libraries
 - Testproject zonder externe packages
 
 ## Ontwikkellijnen
@@ -23,10 +24,25 @@ Zie `docs/ARCHITECTURE_INDEX.md` voor de actuele softwarearchitectuur, Help-arch
 ## Projecten
 
 ```text
-src/NodSystem.Core   library
-src/NodSystem.Demo   demo-console
-src/NodSystem.Tests  simpele test-console zonder NuGet
+src/Tiedragon.NodSystem.Core   NOD parser, engine, math, equation en data core
+src/Tiedragon.Graph            gedeelde graph-basis, formatting, pijlen en overlay-stijl
+src/Tiedragon.Graph.2D         Graph2D API en WinForms-rendering, namespace Tiedragon.Graph.G2D
+src/Tiedragon.Graph.3D         Graph3D API, projectie, grid, camera en kompas, namespace Tiedragon.Graph.G3D
+src/Tiedragon.Help             gedeelde Help/HTML helpers
+src/Tiedragon.LanguagePackage  zelfstandige compiler voor .lngpdk taalpackages
+src/Tiedragon.ToolEditor       zelfstandige ToolEditor-app voor taalpackages, help-HTML en media
+src/Tiedragon.ClipboardConvert clipboard/data conversie helpers
+src/NodSystem.Demo             demo-console
+src/NodSystem.Tests            simpele test-console zonder NuGet
+src/syscalculator              WinForms app voor Syscalculator 2.0 daily/beta/production
+src/Syscalculator.Updater      updater helper
+src/Syscalculator.UI.Uwp       UWP placeholder/experiment
 ```
+
+Zie ook `docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg` voor de actuele Tiedragon Graph architectuur.
+Zie `docs/LANGUAGE_PACKAGE_DESIGN.md` en `docs/LANGUAGE_PACKAGE_TOOL.md` voor
+het Localization-hoofdstuk rond `.lngpdk`, basispackages en de zelfstandige
+Language Package toolchain.
 
 ## Run demo
 
@@ -158,7 +174,9 @@ NodCatalogService
 NodUiMetadata
 ```
 
-Dit is een UI-prototype bovenop `NodSystem.Core`.
+Dit is de WinForms UI bovenop `Tiedragon.NodSystem.Core` en de gedeelde Tiedragon graph/help/tooling-libraries.
+
+Graph3D is beschikbaar in de daily-lijn als native foundation voor X/Y/Z-ruimte, camera, grids, vectorpijlen en puntvisualisatie. Echte surface sampling zoals `z = f(x,y)` is nog roadmapwerk en wordt gevolgd in GitHub issue #8: “Roadmap: continue 3D graph and surface visualization for advanced NOD math”.
 
 ## Installers
 

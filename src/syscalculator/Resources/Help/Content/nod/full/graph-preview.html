@@ -156,6 +156,34 @@
 <h2>Graph 3D tabel</h2>
 <p>De puntentabel toont in 3D-modus <b>x</b>, <b>y</b> en <b>z</b>. In 2D-modus toont de tabel alleen <b>x</b> en <b>y</b>, zodat hij overeenkomt met Graph 2D.</p>
 
+<h2>Geometry, vectorpijlen en lengte</h2>
+<p><b>Geometry</b> verbindt NOD math met Graph 2D en Graph 3D. Een vector is daarbij niet alleen een getalrij, maar ook een pijl vanaf de oorsprong.</p>
+<ul>
+  <li><code>vec(3,4)</code> is een 2D-pijl van <code>(0,0)</code> naar <code>(3,4)</code>. De lengte is <code>5</code>.</li>
+  <li><code>vec(3,4,12)</code> is een 3D-pijl van <code>(0,0,0)</code> naar <code>(3,4,12)</code>. De lengte is <code>13</code>.</li>
+  <li><code>math vec 3 4</code> is een korte schrijfwijze voor <code>math length(vec(3,4))</code>.</li>
+  <li><code>distance(vec(a,b), vec(x,y))</code> meet de afstand tussen twee punten.</li>
+  <li>Graph 2D tekent 2D-vectoren direct in het vlak. Graph 3D projecteert ze met camera, rotatie en Z-diepte.</li>
+</ul>
+<p>Gebruik je een 3D-vector in Graph 2D, dan kan hij als <b>perspectiefprojectie</b> worden getoond. De formule <code>length(vec(x,y,z))</code> rekent met X, Y en Z; de 2D-projectie gebruikt <code>(x/z, y/z)</code> zolang <code>z</code> niet nul is. Is <code>z</code> nul, dan valt Graph 2D terug op de gewone pijl naar <code>(x,y)</code>. Graph 3D tekent dezelfde vector naar <code>(x,y,z)</code>.</p>
+<pre>Name Geometry 3D vector
+mode geometry
+input x X coordinate
+input y Y coordinate
+input z Z coordinate
+math length(vec(3,4,12))
+end</pre>
+
+<h2>Cirkelvergelijkingen</h2>
+<p>Een cirkel met middelpunt <code>(a,b)</code> en straal <code>r</code> gebruikt:</p>
+<pre>(x-a)^2 + (y-b)^2 = r^2</pre>
+<ul>
+  <li>Is de linkerkant gelijk aan <code>r^2</code>, dan ligt het punt op de cirkel.</li>
+  <li>Is de linkerkant kleiner dan <code>r^2</code>, dan ligt het punt binnen de cirkel.</li>
+  <li>Is de linkerkant groter dan <code>r^2</code>, dan ligt het punt buiten de cirkel.</li>
+  <li>De straal kan ook met afstand worden berekend: <code>distance(vec(a,b), vec(x,y))</code>.</li>
+</ul>
+
 <h2>Graph 2D en Graph 3D samen</h2>
 <p>Graph 3D is bedoeld als uitbreiding op Graph 2D. Als de knop <b>2D</b> actief is, moet Graph 3D zich gedragen als Graph 2D. Als <b>3D</b> actief is, worden Z-bereik, rooster, rotatie en camera gebruikt.</p>
 

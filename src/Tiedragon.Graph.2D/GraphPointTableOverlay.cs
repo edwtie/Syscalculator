@@ -1,4 +1,7 @@
 #nullable enable
+
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Builds the draggable point-table overlay used by graph surfaces.
 using System.Drawing.Drawing2D;
 using Tiedragon.Graph;
 

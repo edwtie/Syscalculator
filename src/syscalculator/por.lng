@@ -37,10 +37,12 @@ menu.tools=Extras
 menu.tools.wizard=WizardExpress
 menu.tools.calculator=Calculadora
 menu.tools.nod_editor=Editor NOD
+menu.tools.tool_editor=ToolEditor
 menu.tools.trace=Trace
 menu.tools.show_intro=Mostrar introducao novamente
 menu.about=Sobre
 menu.about.syscalculator=Sobre Syscalculator
+menu.about.language_manager=Gerenciador de idiomas...
 menu.about.check_updates=Verificar atualizacoes...
 menu.about.feedback=Feedback...
 
@@ -236,6 +238,10 @@ editor.menu.file.open=Abrir...
 editor.menu.file.save=Salvar
 editor.menu.file.save_as=Salvar como...
 editor.menu.file.close_tab=Fechar aba
+editor.tabs.new_right=Nova aba a direita
+editor.tabs.close_all=Fechar todas as abas
+editor.tabs.close_right=Fechar abas a direita
+editor.tabs.close_left=Fechar abas a esquerda
 editor.menu.file.recent_files=Arquivos recentes
 editor.menu.file.recent_empty=Nenhum arquivo recente
 editor.menu.file.close=Fechar
@@ -446,6 +452,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D mostra a seta XYZ completa. Graph 2D usa (x/z,y/z) e volta para (x,y) quando z = 0.
+formula_card.card.vector-length-3d.title=Comprimento do vetor 3D
+formula_card.card.vector-length-3d.description=O comprimento do vetor 3D e o comprimento da seta da origem ate (x,y,z). Graph 3D mostra a seta XYZ completa; Graph 2D pode mostrar o mesmo vetor como projecao em perspectiva com (x/z,y/z), ou como uma seta X/Y simples quando z e zero.
 
 common.yes=Sim
 common.no=Nao
@@ -518,7 +527,7 @@ help.main.page.window.body=<p>As configuracoes da janela controlam como Syscalcu
 help.main.page.nodfiles.title=Arquivos NOD e catalogo
 help.main.page.nodfiles.body=<p>Conversores Syscalculator sao armazenados como arquivos NOD. Um arquivo NOD descreve nome, rotulos e regras de conversao.</p><h2>Uso diario</h2><ul><li><b>Abrir NOD</b>: carregar um arquivo conversor especifico.</li><li><b>Recarregar lista</b>: atualizar a lista depois de adicionar ou alterar arquivos.</li><li><b>Gerenciador de catalogo</b>: ver e gerenciar o catalogo.</li></ul><h2>Edicao e compatibilidade</h2><p>Use o <b>NOD Editor</b> para criar, inspecionar ou reparar arquivos conversores. Syscalculator 2.0 mantem reconhecivel o estilo classico NOD 1.0 e tambem explica recursos NOD 2.0.</p><p>Arquivos NOD antigos do Syscalculator 1.74 devem continuar legiveis. Quando um arquivo usa <code>input1</code> e <code>input2</code>, o editor pode explicar a alternativa moderna.</p>
 help.main.page.support.title=Limitacoes e suporte
-help.main.page.support.body=<div class="warning"><b>Build de teste:</b> builds de teste do Syscalculator 2.0 sao para experimentar a versao moderna antes de uma versao estavel. Guarde backups de arquivos NOD importantes e use Syscalculator 1.74 quando precisar da versao legada VB6.</div><h2>Limitacoes conhecidas</h2><ul><li>O comportamento da area de transferencia pode variar por aplicativo. Excel e Microsoft 365 precisam de cuidado extra.</li><li>Os instaladores Daily/Beta sao self-contained. Uma Microsoft .NET Desktop Runtime separada nao e necessaria para iniciar Syscalculator; as informacoes de suporte ainda mostram shared runtimes instaladas.</li><li>NOD 2.0 beta ainda nao inclui todas as ideias futuras. Modos nao suportados, como geometria 3D completa ou matrix3x3, sao recusados.</li></ul><h2>Informacoes para suporte</h2><p>Informe a versao do Syscalculator, idioma escolhido, nome do conversor e passos exatos. Para problemas de area de transferencia, informe tambem o aplicativo de origem e destino.</p>
+help.main.page.support.body=<div class="warning"><b>Build de teste:</b> builds de teste do Syscalculator 2.0 sao para experimentar a versao moderna antes de uma versao estavel. Guarde backups de arquivos NOD importantes e use Syscalculator 1.74 quando precisar da versao legada VB6.</div><h2>Limitacoes conhecidas</h2><ul><li>O comportamento da area de transferencia pode variar por aplicativo. Excel e Microsoft 365 precisam de cuidado extra.</li><li>Os instaladores Daily/Beta sao self-contained. Uma Microsoft .NET Desktop Runtime separada nao e necessaria para iniciar Syscalculator; as informacoes de suporte ainda mostram shared runtimes instaladas.</li><li>NOD 2.0 beta ja inclui visualizacao Graph 3D, mas ainda nao inclui todas as ideias futuras de math/geometry. Modos nao suportados, como geometria 3D completa ou matrix3x3, continuam a ser recusados.</li></ul><h2>Informacoes para suporte</h2><p>Informe a versao do Syscalculator, idioma escolhido, nome do conversor e passos exatos. Para problemas de area de transferencia, informe tambem o aplicativo de origem e destino.</p>
 help.main.page.updater.title=Updater
 help.main.page.updater.body=<p>O updater mantem o Syscalculator atualizado sem alterar seus arquivos NOD nem suas configuracoes pessoais.</p><h2>Canais</h2><table><tr><th>Canal</th><th>Objetivo</th><th>Pacote</th></tr><tr><td><b>Daily</b></td><td>Builds de teste frequentes para correcoes rapidas.</td><td>Instalador Inno Setup e pacote updater.</td></tr><tr><td><b>Beta</b></td><td>Builds de teste para avaliacao. Uma beta pode conter recursos inacabados ou regressos e nao e adequada para uso diario normal.</td><td>MSIX, instalador Inno Setup e pacote updater.</td></tr><tr><td><b>Alpha</b></td><td>Builds internas muito iniciais para experimentos. Uma alpha pode causar problemas mais facilmente.</td><td>Somente se um pacote alpha for publicado.</td></tr><tr><td><b>Release</b></td><td>Linha publica estavel.</td><td>MSIX e instalador Inno Setup.</td></tr></table><div class="warning"><b>Importante:</b> builds Alpha e Beta podem causar problemas porque sao versoes de teste. Elas nao sao adequadas para uso diario normal.</div>
 

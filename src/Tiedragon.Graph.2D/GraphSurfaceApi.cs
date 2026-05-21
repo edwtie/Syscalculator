@@ -1,5 +1,7 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Public Graph2D surface API for chrome, range controls, drawing, and view helpers.
 using Tiedragon.Graph;
 
 namespace Tiedragon.Graph.G2D;
@@ -337,6 +339,48 @@ public static class GraphSurfaceApi
     public static PointF GraphToScreen(PointF graphPoint, Rectangle plot, GraphPlotView view)
     {
         return GraphGeometry2D.GraphToScreen(graphPoint, plot, view);
+    }
+
+    /// <summary>
+    /// Draws a vector arrow in Graph2D coordinates.
+    /// </summary>
+    public static void DrawVectorArrow(
+        Graphics graphics,
+        PointF start,
+        PointF end,
+        Rectangle plot,
+        GraphPlotView view,
+        Color color,
+        float width = 2.2f)
+    {
+        GraphArrowRenderer.DrawArrow(
+            graphics,
+            GraphToScreen(start, plot, view),
+            GraphToScreen(end, plot, view),
+            color,
+            width);
+    }
+
+    /// <summary>
+    /// Projects a formula vector to the Graph2D plane.
+    /// 2D vectors already live in the plane; 3D vectors use the basic perspective projection (x/z, y/z).
+    /// If z is zero, Graph2D falls back to the plain X/Y plane so the vector remains drawable.
+    /// </summary>
+    public static PointF ProjectFormulaVectorTo2D(IReadOnlyList<double> vector)
+    {
+        if (vector.Count is not 2 and not 3)
+            throw new ArgumentException("Graph2D formula vectors must have 2 or 3 components.", nameof(vector));
+
+        var x = vector[0];
+        var y = vector[1];
+
+        if (vector.Count == 3 && vector[2] != 0d)
+        {
+            var z = vector[2];
+            return new PointF((float)(x / z), (float)(y / z));
+        }
+
+        return new PointF((float)x, (float)y);
     }
 
     public static double GetNumberBoxValue(NumericUpDown box)

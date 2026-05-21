@@ -37,10 +37,12 @@ menu.tools=Extra
 menu.tools.wizard=WizardExpress
 menu.tools.calculator=Calcolatrice
 menu.tools.nod_editor=Editor NOD
+menu.tools.tool_editor=ToolEditor
 menu.tools.trace=Trace
 menu.tools.show_intro=Mostra di nuovo introduzione
 menu.about=Informazioni
 menu.about.syscalculator=Informazioni su Syscalculator
+menu.about.language_manager=Gestore lingue...
 menu.about.check_updates=Controlla aggiornamenti...
 menu.about.feedback=Feedback...
 
@@ -236,6 +238,10 @@ editor.menu.file.open=Apri...
 editor.menu.file.save=Salva
 editor.menu.file.save_as=Salva come...
 editor.menu.file.close_tab=Chiudi scheda
+editor.tabs.new_right=Nuova scheda a destra
+editor.tabs.close_all=Chiudi tutte le schede
+editor.tabs.close_right=Chiudi schede a destra
+editor.tabs.close_left=Chiudi schede a sinistra
 editor.menu.file.recent_files=File recenti
 editor.menu.file.recent_empty=Nessun file recente
 editor.menu.file.close=Chiudi
@@ -446,6 +452,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D mostra la freccia XYZ completa. Graph 2D usa (x/z,y/z) e torna a (x,y) quando z = 0.
+formula_card.card.vector-length-3d.title=Lunghezza vettore 3D
+formula_card.card.vector-length-3d.description=La lunghezza del vettore 3D e la lunghezza della freccia dall'origine a (x,y,z). Graph 3D mostra la freccia XYZ completa; Graph 2D puo mostrare lo stesso vettore come proiezione prospettica con (x/z,y/z), oppure come normale freccia X/Y quando z e zero.
 
 common.yes=Si
 common.no=No
@@ -518,7 +527,7 @@ help.main.page.window.body=<p>Le impostazioni della finestra controllano come Sy
 help.main.page.nodfiles.title=File NOD e catalogo
 help.main.page.nodfiles.body=<p>I convertitori Syscalculator sono salvati come file NOD. Un file NOD descrive nome, etichette e regole di conversione.</p><h2>Uso quotidiano</h2><ul><li><b>Apri NOD</b>: carica un file convertitore specifico.</li><li><b>Ricarica lista convertitori</b>: aggiorna la lista dopo aggiunte o modifiche.</li><li><b>Gestore catalogo</b>: visualizza e gestisce il catalogo.</li></ul><h2>Modifica e compatibilita</h2><p>Usa il <b>NOD Editor</b> per creare, controllare o riparare file convertitore. Syscalculator 2.0 mantiene riconoscibile lo stile classico NOD 1.0 e spiega anche le funzioni NOD 2.0.</p><p>I vecchi file NOD di Syscalculator 1.74 devono restare leggibili. Se un file usa <code>input1</code> e <code>input2</code>, l'editor puo spiegare l'alternativa moderna.</p>
 help.main.page.support.title=Limitazioni e supporto
-help.main.page.support.body=<div class="warning"><b>Build di test:</b> le build di test di Syscalculator 2.0 servono per provare la versione moderna prima di una release stabile. Conserva backup dei file NOD importanti e usa Syscalculator 1.74 se ti serve la vecchia versione VB6.</div><h2>Limitazioni note</h2><ul><li>Il comportamento degli appunti puo cambiare per applicazione. Excel e Microsoft 365 richiedono attenzione extra.</li><li>Gli installer Daily/Beta sono self-contained. Una Microsoft .NET Desktop Runtime separata non e necessaria per avviare Syscalculator; le informazioni di supporto indicano comunque le shared runtime installate.</li><li>NOD 2.0 beta non include ancora tutte le idee future. Modi non supportati come geometria 3D completa o matrix3x3 vengono rifiutati.</li></ul><h2>Informazioni per il supporto</h2><p>Indica versione di Syscalculator, lingua scelta, nome del convertitore e passaggi esatti. Per problemi con gli appunti indica anche l'applicazione da cui copi e quella in cui incolli.</p>
+help.main.page.support.body=<div class="warning"><b>Build di test:</b> le build di test di Syscalculator 2.0 servono per provare la versione moderna prima di una release stabile. Conserva backup dei file NOD importanti e usa Syscalculator 1.74 se ti serve la vecchia versione VB6.</div><h2>Limitazioni note</h2><ul><li>Il comportamento degli appunti puo cambiare per applicazione. Excel e Microsoft 365 richiedono attenzione extra.</li><li>Gli installer Daily/Beta sono self-contained. Una Microsoft .NET Desktop Runtime separata non e necessaria per avviare Syscalculator; le informazioni di supporto indicano comunque le shared runtime installate.</li><li>NOD 2.0 beta include la visualizzazione Graph 3D, ma non ancora tutte le idee future math/geometry. Modi non supportati come geometria 3D completa o matrix3x3 vengono rifiutati.</li></ul><h2>Informazioni per il supporto</h2><p>Indica versione di Syscalculator, lingua scelta, nome del convertitore e passaggi esatti. Per problemi con gli appunti indica anche l'applicazione da cui copi e quella in cui incolli.</p>
 help.main.page.updater.title=Updater
 help.main.page.updater.body=<p>L'updater mantiene Syscalculator aggiornato senza cambiare i file NOD o le impostazioni personali.</p><h2>Canali</h2><table><tr><th>Canale</th><th>Scopo</th><th>Pacchetto</th></tr><tr><td><b>Daily</b></td><td>Build di test frequenti per correzioni rapide.</td><td>Installer Inno Setup e pacchetto updater.</td></tr><tr><td><b>Beta</b></td><td>Build di test per valutazione. Una beta puo contenere funzioni incomplete o regressioni e non e adatta all'uso quotidiano normale.</td><td>MSIX, installer Inno Setup e pacchetto updater.</td></tr><tr><td><b>Alpha</b></td><td>Build interne molto iniziali per esperimenti. Una alpha puo causare problemi piu facilmente.</td><td>Solo quando viene pubblicato un pacchetto alpha.</td></tr><tr><td><b>Release</b></td><td>Linea pubblica stabile.</td><td>MSIX e installer Inno Setup.</td></tr></table><div class="warning"><b>Importante:</b> le build Alpha e Beta possono causare problemi perche sono versioni di test. Non sono adatte all'uso quotidiano normale.</div>
 

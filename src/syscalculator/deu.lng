@@ -37,10 +37,12 @@ menu.tools=Extras
 menu.tools.wizard=WizardExpress
 menu.tools.calculator=Rechner
 menu.tools.nod_editor=NOD Editor
+menu.tools.tool_editor=ToolEditor
 menu.tools.trace=Trace
 menu.tools.show_intro=Einleitung erneut anzeigen
 menu.about=Info
 menu.about.syscalculator=Info zu Syscalculator
+menu.about.language_manager=Sprachmanager...
 menu.about.check_updates=Nach Updates suchen...
 menu.about.feedback=Feedback...
 
@@ -236,6 +238,10 @@ editor.menu.file.open=Oeffnen...
 editor.menu.file.save=Speichern
 editor.menu.file.save_as=Speichern unter...
 editor.menu.file.close_tab=Tab schliessen
+editor.tabs.new_right=Neuer Tab rechts
+editor.tabs.close_all=Alle Tabs schliessen
+editor.tabs.close_right=Tabs rechts schliessen
+editor.tabs.close_left=Tabs links schliessen
 editor.menu.file.recent_files=Zuletzt verwendete Dateien
 editor.menu.file.recent_empty=Keine zuletzt verwendeten Dateien
 editor.menu.file.close=Schliessen
@@ -447,6 +453,9 @@ formula_card.table_level=Niveau
 formula_card.summary_differentiation=Samenvatting: differentiatie gaat over veranderingssnelheid en helling. Begin met machtsregel, somregel en constante factor; gebruik daarna product-, quotient- en kettingregel voor samengestelde functies.
 formula_card.summary_integrals=Samenvatting: integralen gaan over oppervlakte, optellen van kleine stukjes en primitiveren. In NOD 2.0 blijft dit beperkt tot formulekaart en numerieke uitleg; kringintegralen zijn verdieping voor PWS, Wiskunde D of propedeuse.
 formula_card.table_use=Wanneer?
+formula_card.vector3d_projection_note=Graph 3D zeigt den vollstaendigen XYZ-Pfeil. Graph 2D verwendet (x/z,y/z) und faellt bei z = 0 auf (x,y) zurueck.
+formula_card.card.vector-length-3d.title=3D-Vektorlaenge
+formula_card.card.vector-length-3d.description=Die 3D-Vektorlaenge ist die Laenge des Pfeils vom Ursprung nach (x,y,z). Graph 3D zeigt den vollstaendigen XYZ-Pfeil; Graph 2D kann denselben Vektor als Perspektivprojektion mit (x/z,y/z) anzeigen oder als einfachen X/Y-Pfeil, wenn z null ist.
 
 common.yes=Ja
 common.no=Nein
@@ -518,7 +527,7 @@ help.main.page.window.body=<p>Die Fenstereinstellungen bestimmen, wie Syscalcula
 help.main.page.nodfiles.title=NOD-Dateien und Katalog
 help.main.page.nodfiles.body=<p>Syscalculator-Konverter werden als NOD-Dateien gespeichert. Eine NOD-Datei beschreibt Name, Beschriftungen und Umrechnungsregeln eines Konverters.</p><h2>Taegliche Nutzung</h2><ul><li><b>NOD oeffnen</b>: eine bestimmte Konverterdatei laden.</li><li><b>Konverterliste neu laden</b>: die Liste aktualisieren, nachdem Dateien hinzugefuegt oder geaendert wurden.</li><li><b>Katalogverwaltung</b>: den Konverterkatalog ansehen und verwalten.</li></ul><h2>Bearbeiten und Kompatibilitaet</h2><p>Verwenden Sie den <b>NOD Editor</b>, um Konverterdateien zu erstellen, zu pruefen oder zu reparieren. Syscalculator 2.0 haelt den klassischen NOD-1.0-Stil erkennbar und erklaert zugleich neuere NOD-2.0-Funktionen.</p><p>Alte Syscalculator-1.74-NOD-Dateien sollen lesbar bleiben. Wenn eine Datei alte Befehle wie <code>input1</code> und <code>input2</code> verwendet, kann der Editor die moderne Alternative erklaeren.</p>
 help.main.page.support.title=Begrenzungen und Support
-help.main.page.support.body=<div class="warning"><b>Test-Build:</b> Syscalculator-2.0-Test-Builds sind zum Ausprobieren der modernen Version vor einer stabilen Version gedacht. Bewahren Sie Sicherungen wichtiger NOD-Dateien auf und verwenden Sie Syscalculator 1.74, wenn Sie die alte VB6-Legacy-Version brauchen.</div><h2>Bekannte Begrenzungen</h2><ul><li>Zwischenablage-Verhalten kann je Anwendung unterschiedlich sein. Excel und Microsoft 365 brauchen besondere Aufmerksamkeit.</li><li>Daily/Beta-Installer sind self-contained. Eine separate Microsoft .NET Desktop Runtime ist zum Starten von Syscalculator nicht noetig; Support-Informationen zeigen trotzdem installierte shared runtimes.</li><li>NOD 2.0 beta enthaelt noch nicht jede Zukunftsidee. Nicht unterstuetzte Modi wie volle 3D-Geometrie oder matrix3x3 werden abgelehnt statt halb verarbeitet.</li></ul><h2>Support-Informationen</h2><p>Nennen Sie bei einem Problem die Syscalculator-Version, die gewaehlte Sprache, den Konverternamen und die genauen Schritte. Bei Zwischenablageproblemen nennen Sie auch die Anwendung, aus der kopiert und in die eingefuegt wurde.</p>
+help.main.page.support.body=<div class="warning"><b>Test-Build:</b> Syscalculator-2.0-Test-Builds sind zum Ausprobieren der modernen Version vor einer stabilen Version gedacht. Bewahren Sie Sicherungen wichtiger NOD-Dateien auf und verwenden Sie Syscalculator 1.74, wenn Sie die alte VB6-Legacy-Version brauchen.</div><h2>Bekannte Begrenzungen</h2><ul><li>Zwischenablage-Verhalten kann je Anwendung unterschiedlich sein. Excel und Microsoft 365 brauchen besondere Aufmerksamkeit.</li><li>Daily/Beta-Installer sind self-contained. Eine separate Microsoft .NET Desktop Runtime ist zum Starten von Syscalculator nicht noetig; Support-Informationen zeigen trotzdem installierte shared runtimes.</li><li>NOD 2.0 beta enthaelt Graph-3D-Visualisierung, aber noch nicht jede Math/Geometry-Zukunftsidee. Nicht unterstuetzte Modi wie volle 3D-Geometrie oder matrix3x3 werden abgelehnt statt halb verarbeitet.</li></ul><h2>Support-Informationen</h2><p>Nennen Sie bei einem Problem die Syscalculator-Version, die gewaehlte Sprache, den Konverternamen und die genauen Schritte. Bei Zwischenablageproblemen nennen Sie auch die Anwendung, aus der kopiert und in die eingefuegt wurde.</p>
 help.copy.copied=Kopiert
 help.main.page.updater.title=Updater
 help.main.page.updater.body=<p>Der Updater haelt Syscalculator aktuell, ohne Ihre NOD-Dateien oder persoenlichen Einstellungen zu aendern.</p><h2>Wo finde ich ihn?</h2><ul><li><b>Info &gt; Nach Updates suchen...</b> prueft sofort.</li><li><b>Konfiguration &gt; Automatisch nach Updates suchen</b> prueft beim Start.</li><li><b>Konfiguration &gt; Updatekanal</b> waehlt die Release-Linie.</li></ul><h2>Updatekanaele</h2><table><tr><th>Kanal</th><th>Zweck</th><th>Paket</th></tr><tr><td><b>Daily</b></td><td>Haeufige Test-Builds fuer schnelle Korrekturen.</td><td>Inno Setup Installer und Updater-Zip.</td></tr><tr><td><b>Beta</b></td><td>Test-Builds zur Bewertung. Beta kann unfertige Funktionen oder Rueckschritte enthalten und ist nicht fuer den normalen taeglichen Einsatz gedacht.</td><td>MSIX, Inno Setup Installer und Updater-Zip.</td></tr><tr><td><b>Alpha</b></td><td>Sehr fruehe interne Builds fuer Experimente. Alpha kann leichter Probleme verursachen.</td><td>Nur wenn ein Alpha-Testpaket veroeffentlicht wird.</td></tr><tr><td><b>Release</b></td><td>Stabile oeffentliche Release-Linie.</td><td>MSIX und Inno Setup Installer.</td></tr></table><div class="warning"><b>Achtung:</b> Alpha- und Beta-Builds koennen Probleme verursachen, weil sie Testversionen sind. Sie sind nicht fuer normalen taeglichen Gebrauch geeignet.</div>

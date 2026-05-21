@@ -1,5 +1,7 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Defines 2D graph view ranges, coordinate conversion, fitting, and aspect matching.
 namespace Tiedragon.Graph;
 
 /// <summary>

@@ -1,5 +1,7 @@
 #nullable enable
 
+// Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
+// Formats graph numbers for axis labels, ticks, and compact display.
 using System.Globalization;
 
 namespace Tiedragon.Graph;
