@@ -28,6 +28,12 @@ internal static class Program
         WriteIndented = true,
     };
 
+    private static readonly JsonSerializerOptions AgentJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+    };
+
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".css",
@@ -63,7 +69,9 @@ internal static class Program
 
             return args[0].ToLowerInvariant() switch
             {
+                "compile" => PackLanguage(args),
                 "pack-language" => PackLanguage(args),
+                "agent-compile" => AgentCompileLanguage(args),
                 "validate" => ValidatePackage(args),
                 "inspect" => InspectPackage(args),
                 _ => Usage(),
@@ -81,7 +89,9 @@ internal static class Program
         Console.WriteLine("Tiedragon.LanguagePackage");
         Console.WriteLine();
         Console.WriteLine("Commands:");
+        Console.WriteLine("  compile <input-folder> <output.lngpdk>");
         Console.WriteLine("  pack-language <input-folder> <output.lngpdk>");
+        Console.WriteLine("  agent-compile <input-folder> <output.lngpdk>");
         Console.WriteLine("  validate <package.lngpdk>");
         Console.WriteLine("  inspect <package.lngpdk>");
         return 2;
@@ -92,8 +102,40 @@ internal static class Program
         if (args.Length != 3)
             return Usage();
 
-        var inputFolder = Path.GetFullPath(args[1]);
-        var outputPath = Path.GetFullPath(args[2]);
+        var result = BuildLanguagePackage(args[1], args[2]);
+
+        Console.WriteLine("created: " + result.OutputPath);
+        Console.WriteLine("key: " + result.PackageKey);
+        Console.WriteLine("language: " + result.LanguageCode);
+        Console.WriteLine("entries: " + result.EntryCount);
+        Console.WriteLine("packageSha256: " + result.PackageSha256);
+        Console.WriteLine("payloadSha256: " + result.PayloadSha256);
+        return 0;
+    }
+
+    private static int AgentCompileLanguage(string[] args)
+    {
+        if (args.Length != 3)
+            return Usage();
+
+        try
+        {
+            var result = BuildLanguagePackage(args[1], args[2]);
+            Console.WriteLine(JsonSerializer.Serialize(result, AgentJsonOptions));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            var error = new LanguagePackageAgentError(false, ex.Message);
+            Console.WriteLine(JsonSerializer.Serialize(error, AgentJsonOptions));
+            return 1;
+        }
+    }
+
+    private static LanguagePackageBuildResult BuildLanguagePackage(string inputFolderValue, string outputPathValue)
+    {
+        var inputFolder = Path.GetFullPath(inputFolderValue);
+        var outputPath = Path.GetFullPath(outputPathValue);
         if (!Directory.Exists(inputFolder))
             throw new DirectoryNotFoundException(inputFolder);
         if (!Path.GetExtension(outputPath).Equals(".lngpdk", StringComparison.OrdinalIgnoreCase))
@@ -125,11 +167,17 @@ internal static class Program
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
         WriteWrappedPackage(outputPath, header, payload);
 
-        Console.WriteLine("created: " + outputPath);
-        Console.WriteLine("key: " + manifest.PackageKey);
-        Console.WriteLine("packageSha256: " + ComputeSha256(File.ReadAllBytes(outputPath)));
-        Console.WriteLine("payloadSha256: " + payloadHash);
-        return 0;
+        return new LanguagePackageBuildResult(
+            Success: true,
+            OutputPath: outputPath,
+            PackageKey: manifest.PackageKey,
+            LanguageCode: manifest.LanguageCode,
+            DisplayName: manifest.DisplayName,
+            EntryCount: Directory.GetFiles(inputFolder, "*", SearchOption.AllDirectories).Length,
+            PackageSha256: ComputeSha256(File.ReadAllBytes(outputPath)),
+            PayloadSha256: payloadHash,
+            Encrypted: false,
+            Signed: false);
     }
 
     private static int ValidatePackage(string[] args)
@@ -450,6 +498,22 @@ internal sealed record PackageInspection(
     LanguagePackageContainerHeader? Header,
     string PackageSha256,
     byte[] Payload);
+
+internal sealed record LanguagePackageBuildResult(
+    bool Success,
+    string OutputPath,
+    string PackageKey,
+    string LanguageCode,
+    string DisplayName,
+    int EntryCount,
+    string PackageSha256,
+    string PayloadSha256,
+    bool Encrypted,
+    bool Signed);
+
+internal sealed record LanguagePackageAgentError(
+    bool Success,
+    string Error);
 
 internal sealed class LanguagePackageManifest
 {

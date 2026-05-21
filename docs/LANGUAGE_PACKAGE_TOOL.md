@@ -6,10 +6,26 @@ packages.
 ## Commands
 
 ```text
+compile <input-folder> <output.lngpdk>
 pack-language <input-folder> <output.lngpdk>
+agent-compile <input-folder> <output.lngpdk>
 validate <package.lngpdk>
 inspect <package.lngpdk>
 ```
+
+`compile` and `pack-language` are equivalent. `agent-compile` is the same
+compiler with JSON output, intended for AI agents, scripts and release
+automation.
+
+PowerShell helper:
+
+```powershell
+tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk>
+```
+
+The helper runs `agent-compile`, so callers can parse `success`,
+`packageSha256`, `payloadSha256`, `languageCode`, `packageKey` and `entryCount`
+without scraping human-readable text.
 
 ## Input Folder
 
@@ -48,7 +64,7 @@ assets/...
 
 ## Package Output
 
-`pack-language` creates a wrapped `.lngpdk` file:
+`compile`, `pack-language` and `agent-compile` create a wrapped `.lngpdk` file:
 
 ```text
 SYSCALC-LNGPDK
@@ -66,6 +82,23 @@ The tool also prints `packageSha256`, the SHA-256 checksum of the complete
 `.lngpdk` file. Use this value in release manifests, updater metadata or manual
 checksum lists. `payloadSha256` protects the archive inside the wrapper;
 `packageSha256` protects the distributed package file itself.
+
+Agent JSON example:
+
+```json
+{
+  "success": true,
+  "outputPath": "C:\\packages\\Syscalculator.Language.ned.lngpdk",
+  "packageKey": "ned",
+  "languageCode": "ned",
+  "displayName": "Nederlands",
+  "entryCount": 120,
+  "packageSha256": "64 hex characters",
+  "payloadSha256": "64 hex characters",
+  "encrypted": false,
+  "signed": false
+}
+```
 
 ## Validation
 
