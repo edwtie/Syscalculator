@@ -524,7 +524,7 @@ public sealed class ToolEditorForm : Form
             return;
 
         var removedPath = _current.PackagePath;
-        RemoveDocument(_current);
+        RemoveDocumentFromPackage(_current);
         SetStatus("Uit pakket verwijderd: " + removedPath, isError: false);
     }
 
@@ -642,6 +642,7 @@ public sealed class ToolEditorForm : Form
 
         document.HeaderPanel = header.Panel;
         document.HeaderTitle = header.Title;
+        document.IsOpen = true;
         _documents.Add(document);
         _tabStrip.Controls.Add(header.Panel);
         RefreshFileTree();
@@ -668,6 +669,7 @@ public sealed class ToolEditorForm : Form
 
         document.HeaderPanel = header.Panel;
         document.HeaderTitle = header.Title;
+        document.IsOpen = true;
         _documents.Add(document);
         _tabStrip.Controls.Add(header.Panel);
         RefreshFileTree();
@@ -794,6 +796,7 @@ public sealed class ToolEditorForm : Form
 
     private void SelectDocument(ToolEditorDocument document)
     {
+        EnsureDocumentTabOpen(document);
         _current = document;
         SelectDocumentInTree(document);
         SelectDocumentInList(document);
@@ -831,25 +834,27 @@ public sealed class ToolEditorForm : Form
 
     private void CloseDocument(ToolEditorDocument document)
     {
-        if (document.Dirty)
+        document.IsOpen = false;
+        _tabStrip.Controls.Remove(document.HeaderPanel);
+
+        if (ReferenceEquals(_current, document))
         {
-            var result = MessageBox.Show(
-                this,
-                "This document has unsaved changes. Close anyway?",
-                "ToolEditor",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
-            if (result != DialogResult.Yes)
-                return;
+            _current = _documents.LastOrDefault(item => item.IsOpen);
+            _editorContent.Controls.Clear();
+            if (_current is not null)
+                SelectDocument(_current);
+            else
+                UpdatePreview();
         }
 
-        RemoveDocument(document);
+        RefreshTabStrip();
+        UpdateUiState();
     }
 
-    private void RemoveDocument(ToolEditorDocument document)
+    private void RemoveDocumentFromPackage(ToolEditorDocument document)
     {
         var wasCurrent = ReferenceEquals(_current, document);
-        var nextDocument = wasCurrent ? _documents.LastOrDefault(item => !ReferenceEquals(item, document)) : _current;
+        var nextDocument = wasCurrent ? _documents.LastOrDefault(item => !ReferenceEquals(item, document) && item.IsOpen) : _current;
 
         if (wasCurrent)
             _current = null;
@@ -874,6 +879,18 @@ public sealed class ToolEditorForm : Form
         _editorContent.Controls.Clear();
         UpdatePreview();
         UpdateUiState();
+    }
+
+    private void EnsureDocumentTabOpen(ToolEditorDocument document)
+    {
+        if (document.IsOpen)
+            return;
+
+        document.IsOpen = true;
+        if (!_tabStrip.Controls.Contains(document.HeaderPanel))
+            _tabStrip.Controls.Add(document.HeaderPanel);
+
+        RefreshTabStrip();
     }
 
     private void RefreshDocumentList()
@@ -1691,7 +1708,7 @@ public sealed class ToolEditorForm : Form
 
     private void RefreshTabStrip()
     {
-        foreach (var document in _documents)
+        foreach (var document in _documents.Where(document => document.IsOpen))
         {
             var title = BuildTabTitle(document) + (document.Dirty ? " *" : "");
             ToolEditorTabsApi.SetHeaderState(document.HeaderPanel, document.HeaderTitle, title, ReferenceEquals(document, _current), document.Dirty, Font);
@@ -1808,6 +1825,7 @@ public sealed class ToolEditorForm : Form
         public bool Highlighting { get; set; }
         public bool Dirty { get; set; }
         public bool ReadOnly { get; set; }
+        public bool IsOpen { get; set; }
     }
 
     private sealed class LineNumberPanel : Panel
