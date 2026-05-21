@@ -1,8 +1,9 @@
 # Language Package 1.0
 
 `Language Package 1.0` is the small agent-friendly compiler in
-`Tiedragon.LanguagePackage`. It builds and checks Syscalculator `.lngpdk`
-language packages.
+`Tiedragon.LanguagePackage`. It builds and checks `.lngpdk` language packages
+for Tiedragon apps. Syscalculator is the first supported app, but the package
+identity comes from `product` and `softwareId` in `manifest.json`.
 
 The graphical editor is `Tiedragon.ToolEditor`. It is a standalone WinForms app
 for editing concept language packages, HTML help, formula cards and media. It
@@ -62,6 +63,11 @@ Minimum manifest:
   "fallbackLanguage": "eng"
 }
 ```
+
+For another Tiedragon app, keep `producer` as `Tiedragon` and set `product` and
+`softwareId` to that app. The compiler writes the same `softwareId` into the
+package header. Each app reader remains responsible for accepting only its own
+trusted `softwareId`.
 
 Agent error JSON example:
 
@@ -131,8 +137,10 @@ Agent JSON example:
 ```json
 {
   "success": true,
-  "outputPath": "C:\\packages\\Syscalculator.Language.ned.lngpdk",
+  "outputPath": "C:\\packages\\Tiedragon.App.Language.ned.lngpdk",
   "packageKey": "ned",
+  "product": "Syscalculator",
+  "softwareId": "tiedragon.syscalculator",
   "languageCode": "ned",
   "displayName": "Nederlands",
   "entryCount": 120,
@@ -161,13 +169,13 @@ The tool checks:
 
 Validation is fail-closed. If any required identity field, checksum, manifest
 field, path rule, file type rule or size limit fails, the package must be
-rejected. Syscalculator should not load partial content from a failed package;
-it should continue with the previous valid package, loose `.lng` files or the
-English fallback.
+rejected. An app should not load partial content from a failed package; it
+should continue with the previous valid package, loose `.lng` files or its
+fallback language.
 
 Common failures:
 
-- wrong `producer`, `product`, `softwareId` or `packageType`;
+- wrong `producer`, unsafe `product`, unsafe `softwareId` or wrong `packageType`;
 - mismatching `payloadSha256` or external `packageSha256`;
 - missing `manifest.json` or `language/<code>.lng`;
 - blocked executable/script files;

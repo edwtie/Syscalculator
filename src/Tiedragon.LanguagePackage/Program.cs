@@ -14,8 +14,6 @@ internal static class Program
     private const string MagicText = "SYSCALC-LNGPDK";
     private const int ContainerFormat = 1;
     private const string ProducerName = "Tiedragon";
-    private const string ProductName = "Syscalculator";
-    private const string SoftwareId = "tiedragon.syscalculator";
     private const string PackageType = "language";
     private const int MaxHeaderBytes = 64 * 1024;
     private const int MaxEntryCount = 2048;
@@ -222,7 +220,7 @@ internal static class Program
         var header = new LanguagePackageContainerHeader
         {
             Format = ContainerFormat,
-            SoftwareId = SoftwareId,
+            SoftwareId = manifest.SoftwareId,
             PackageType = PackageType,
             PayloadFormat = "zip",
             PayloadSha256 = payloadHash,
@@ -237,6 +235,8 @@ internal static class Program
             Success: true,
             OutputPath: outputPath,
             PackageKey: manifest.PackageKey,
+            Product: manifest.Product,
+            SoftwareId: manifest.SoftwareId,
             LanguageCode: manifest.LanguageCode,
             DisplayName: manifest.DisplayName,
             EntryCount: Directory.GetFiles(inputFolder, "*", SearchOption.AllDirectories).Length,
@@ -262,9 +262,16 @@ internal static class Program
 
         if (ReadArchiveEntry(inspection.Payload, "language/" + manifest.LanguageCode + ".lng") is null)
             throw new InvalidDataException($"language/{manifest.LanguageCode}.lng is missing.");
+        if (inspection.Header is not null &&
+            !inspection.Header.SoftwareId.Equals(manifest.SoftwareId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Header softwareId does not match manifest softwareId.");
+        }
 
         Console.WriteLine("valid: " + packagePath);
         Console.WriteLine("key: " + manifest.PackageKey);
+        Console.WriteLine("product: " + manifest.Product);
+        Console.WriteLine("softwareId: " + manifest.SoftwareId);
         Console.WriteLine("language: " + manifest.LanguageCode);
         Console.WriteLine("wrapped: " + inspection.IsWrapped);
         Console.WriteLine("packageSha256: " + inspection.PackageSha256);
@@ -489,10 +496,10 @@ internal static class Program
             throw new InvalidDataException("Unsupported manifest format.");
         if (!ProducerName.Equals(manifest.Producer, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Manifest producer must be Tiedragon.");
-        if (!ProductName.Equals(manifest.Product, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Manifest product must be Syscalculator.");
-        if (!SoftwareId.Equals(manifest.SoftwareId, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Manifest softwareId must be tiedragon.syscalculator.");
+        if (!IsSafeProductName(manifest.Product))
+            throw new InvalidDataException("Manifest product is invalid.");
+        if (!IsSafeKey(manifest.SoftwareId))
+            throw new InvalidDataException("Manifest softwareId is invalid.");
         if (!IsSafeKey(manifest.PackageKey))
             throw new InvalidDataException("Manifest key is invalid.");
         if (!IsSafeLanguageCode(manifest.LanguageCode))
@@ -505,7 +512,7 @@ internal static class Program
     {
         if (header.Format != ContainerFormat)
             throw new InvalidDataException("Unsupported header format.");
-        if (!SoftwareId.Equals(header.SoftwareId, StringComparison.OrdinalIgnoreCase))
+        if (!IsSafeKey(header.SoftwareId))
             throw new InvalidDataException("Unsupported softwareId.");
         if (!PackageType.Equals(header.PackageType, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Unsupported packageType.");
@@ -543,6 +550,15 @@ internal static class Program
             value.All(character => char.IsLetterOrDigit(character) || character is '.' or '-' or '_');
     }
 
+    private static bool IsSafeProductName(string value)
+    {
+        return value.Length > 0 &&
+            value.Length <= 96 &&
+            value.All(character => char.IsLetterOrDigit(character) ||
+                char.IsWhiteSpace(character) ||
+                character is '.' or '-' or '_');
+    }
+
     private static bool IsSafeLanguageCode(string value)
     {
         return value.Length is >= 2 and <= 12 &&
@@ -569,6 +585,8 @@ internal sealed record LanguagePackageBuildResult(
     bool Success,
     string OutputPath,
     string PackageKey,
+    string Product,
+    string SoftwareId,
     string LanguageCode,
     string DisplayName,
     int EntryCount,
