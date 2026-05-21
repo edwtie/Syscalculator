@@ -550,7 +550,7 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildHtmlTemplate()
     {
-        return BuildConceptHelpWarning("nl") + """
+        return BuildConceptHelpBanner("nl") + """
         <h1>Syscalculator Help</h1>
         <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
         <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
@@ -599,7 +599,7 @@ public sealed class ToolEditorForm : Form
             var packageName = pageNameMap[Path.GetFileName(file)];
             var html = File.ReadAllText(file, Encoding.Latin1);
             html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
-            html = BuildConceptHelpWarning(languagePrefix) + html;
+            html = BuildConceptHelpBanner(languagePrefix) + html;
             AddDocument("manual/" + packageName, html, file);
         }
     }
@@ -617,25 +617,31 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildEnglishHtmlTemplate()
     {
-        return BuildConceptHelpWarning("en") + """
+        return BuildConceptHelpBanner("en") + """
         <h1>Syscalculator Help</h1>
         <p>This starter language package contains the editable package structure for Syscalculator help, NOD help, formula cards, translations and media.</p>
         <div class="help-info">Use this English base package as the source for a new translation package.</div>
         """;
     }
 
-    private static string BuildConceptHelpWarning(string languagePrefix)
+    private static string BuildConceptHelpBanner(string languagePrefix)
     {
         if (languagePrefix.Equals("nl", StringComparison.OrdinalIgnoreCase))
         {
             return """
-            <div class="help-warning"><b>Concept:</b> deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiële Syscalculator-help.</div>
+            <div class="concept-banner" role="note" aria-label="Conceptwaarschuwing">
+              <span><b>Concept:</b> deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiele Syscalculator-help.</span>
+              <button class="concept-banner-close" type="button" title="Sluiten" aria-label="Sluiten">x</button>
+            </div>
 
             """;
         }
 
         return """
-        <div class="help-warning"><b>Concept:</b> this help information is package draft material and is not official Syscalculator help yet.</div>
+        <div class="concept-banner" role="note" aria-label="Concept warning">
+          <span><b>Concept:</b> this help information is package draft material and is not official Syscalculator help yet.</span>
+          <button class="concept-banner-close" type="button" title="Close" aria-label="Close">x</button>
+        </div>
 
         """;
     }
@@ -3276,6 +3282,7 @@ public sealed class ToolEditorForm : Form
     private static string BuildEditableHtml(string body)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine +
+            ToolEditorConceptBannerCss() + Environment.NewLine +
             "body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }";
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHtmlEditScript()));
     }
@@ -3414,13 +3421,24 @@ public sealed class ToolEditorForm : Form
         .media-meta { color: #334155; margin-bottom: 14px; }
         .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
         .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
-        """;
+        """ + Environment.NewLine + ToolEditorConceptBannerCss();
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapTopicPage(title, body, css, ToolEditorHelpPreviewScript()));
     }
 
     private static string WrapContentHtml(string body)
     {
-        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, HelpApi.NodHelpCss(), bodyTail: ToolEditorHelpPreviewScript()));
+        var css = HelpApi.NodHelpCss() + Environment.NewLine + ToolEditorConceptBannerCss();
+        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHelpPreviewScript()));
+    }
+
+    private static string ToolEditorConceptBannerCss()
+    {
+        return """
+        .concept-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 18px; padding: 10px 12px; border: 1px solid #f1c232; border-left: 5px solid #d69400; border-radius: 6px; background: #fff4bf; color: #3f2f12; box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
+        .concept-banner b { color: #7a4a00; }
+        .concept-banner-close { flex: 0 0 auto; width: 24px; height: 24px; border: 1px solid #d6a318; border-radius: 50%; background: #fff9dc; color: #6b4500; font: 700 14px/20px "Segoe UI", Arial, sans-serif; cursor: pointer; }
+        .concept-banner-close:hover { background: #ffe98f; border-color: #b77900; }
+        """;
     }
 
     private static string ToolEditorHtmlEditScript()
@@ -3428,6 +3446,13 @@ public sealed class ToolEditorForm : Form
         return """
         <script>
         document.body.contentEditable = 'true';
+        document.addEventListener('click', event => {
+          const close = event.target && event.target.closest ? event.target.closest('.concept-banner-close') : null;
+          if (!close) return;
+          event.preventDefault();
+          close.closest('.concept-banner')?.remove();
+          window.chrome.webview.postMessage('changed');
+        });
         document.body.addEventListener('click', event => {
           const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
           if (link) event.preventDefault();
@@ -3448,6 +3473,12 @@ public sealed class ToolEditorForm : Form
     {
         return HelpHtml.NodCopyButtonsScript() + """
         <script>
+        document.addEventListener('click', event => {
+          const close = event.target && event.target.closest ? event.target.closest('.concept-banner-close') : null;
+          if (!close) return;
+          event.preventDefault();
+          close.closest('.concept-banner')?.remove();
+        });
         document.addEventListener('click', event => {
           const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
           if (!link) return;
