@@ -13,6 +13,8 @@ internal static class LanguagePackageService
     private const int CurrentFormat = 1;
     private const string PackageDirectoryName = "LanguagePackages";
     private const string CacheDirectoryName = "Cache";
+    private const string PackageExtension = ".lngpdk";
+    private const string LegacyZipExtension = ".zip";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -40,7 +42,7 @@ internal static class LanguagePackageService
             return [];
 
         var packages = new List<LanguagePackageInfo>();
-        foreach (var zipPath in EnumeratePackageZipFiles(root))
+        foreach (var zipPath in EnumeratePackageFiles(root))
         {
             if (TryReadZipPackage(zipPath, out var package))
                 packages.Add(package);
@@ -77,7 +79,7 @@ internal static class LanguagePackageService
             return false;
 
         var root = GetPackageRoot(baseDirectory);
-        foreach (var zipPath in EnumeratePackageZipFiles(root))
+        foreach (var zipPath in EnumeratePackageFiles(root))
         {
             if (TryReadZipPackage(zipPath, out var zipPackage) &&
                 zipPackage.Manifest.PackageKey.Equals(packageKey, StringComparison.OrdinalIgnoreCase))
@@ -220,16 +222,25 @@ internal static class LanguagePackageService
         return JsonSerializer.Deserialize<LanguagePackageManifest>(stream, JsonOptions);
     }
 
-    private static IEnumerable<string> EnumeratePackageZipFiles(string root)
+    private static IEnumerable<string> EnumeratePackageFiles(string root)
     {
-        foreach (var path in Directory.GetFiles(root, "*.zip"))
+        foreach (var path in EnumeratePackageFilesInDirectory(root))
             yield return path;
 
         var cache = Path.Combine(root, CacheDirectoryName);
         if (!Directory.Exists(cache))
             yield break;
 
-        foreach (var path in Directory.GetFiles(cache, "*.zip"))
+        foreach (var path in EnumeratePackageFilesInDirectory(cache))
+            yield return path;
+    }
+
+    private static IEnumerable<string> EnumeratePackageFilesInDirectory(string directory)
+    {
+        foreach (var path in Directory.GetFiles(directory, "*" + PackageExtension))
+            yield return path;
+
+        foreach (var path in Directory.GetFiles(directory, "*" + LegacyZipExtension))
             yield return path;
     }
 
@@ -339,7 +350,7 @@ internal static class LanguagePackageService
     {
         var cache = Path.Combine(root, CacheDirectoryName);
         Directory.CreateDirectory(cache);
-        File.Copy(zipPath, Path.Combine(cache, packageKey + ".zip"), overwrite: true);
+        File.Copy(zipPath, Path.Combine(cache, packageKey + PackageExtension), overwrite: true);
     }
 }
 

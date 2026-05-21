@@ -4,7 +4,7 @@
 
 Syscalculator help and manuals are growing beyond a small set of loose `.lng`
 files. A language package should group all language-dependent material in one
-installable ZIP file, while keeping the current simple fallback behavior.
+installable `.lngpdk` file, while keeping the current simple fallback behavior.
 
 The design must support:
 
@@ -14,7 +14,7 @@ The design must support:
 - manuals and writer content;
 - screenshots/SVG help assets when they are language-specific;
 - fallback to English when a translation is incomplete;
-- manual installation by copying one ZIP file;
+- manual installation by copying one `.lngpdk` file;
 - future update/download through the updater.
 
 ## Current State
@@ -40,16 +40,18 @@ English through `LanguageCatalog` and `HelpApi`.
 
 ## Package Format
 
-Language packages should use a normal ZIP archive with a clear extension:
+Language packages should use a normal ZIP archive internally, with a
+Syscalculator-specific extension:
 
 ```text
-Syscalculator.Language.<code>.zip
+Syscalculator.Language.<code>.lngpdk
 ```
 
-Optional friendly extension for later:
+Legacy `.zip` files remain readable for compatibility, but new packages should
+use:
 
 ```text
-*.syslang
+*.lngpdk
 ```
 
 The contents should stay plain text and editable:
@@ -65,7 +67,7 @@ assets/...
 Example:
 
 ```text
-Syscalculator.Language.ned.zip
+Syscalculator.Language.ned.lngpdk
 ├─ manifest.json
 ├─ language/
 │  └─ ned.lng
@@ -112,7 +114,7 @@ Rules:
 
 - `format` is the package format version, not the app version.
 - `key` is the package identity used by `language.cfg`; it is read from inside
-  the ZIP, so the ZIP file name does not matter.
+  the package, so the package file name does not matter.
 - `id` is a longer publisher/package identifier and remains supported as a
   fallback when older packages do not contain `key`.
 - `languageCode` stays compatible with current file names such as `ned.lng`.
@@ -125,8 +127,8 @@ Rules:
 Recommended runtime location for packages that remain compressed:
 
 ```text
-<app>\LanguagePackages\<package-id>.zip
-<app>\LanguagePackages\Cache\<package-id>.zip
+<app>\LanguagePackages\<package-key>.lngpdk
+<app>\LanguagePackages\Cache\<package-key>.lngpdk
 ```
 
 Extracted folders are still supported for compatibility and manual editing:
@@ -135,7 +137,7 @@ Extracted folders are still supported for compatibility and manual editing:
 <app>\LanguagePackages\<package-id>\
 ```
 
-The ZIP cache location is:
+The package cache location is:
 
 ```text
 <app>\LanguagePackages\Cache\
@@ -145,9 +147,9 @@ Compressed package example:
 
 ```text
 LanguagePackages/
-|-- syscalculator.language.ned.zip
+|-- ned.lngpdk
 `-- Cache/
-    `-- syscalculator.language.ned.zip
+    `-- ned.lngpdk
 ```
 
 Extracted compatibility example:
@@ -155,7 +157,7 @@ Extracted compatibility example:
 ```text
 LanguagePackages/
 ├─ Cache/
-│  └─ Syscalculator.Language.ned.zip
+│  └─ Syscalculator.Language.ned.lngpdk
 └─ syscalculator.language.ned/
    ├─ manifest.json
    ├─ language/ned.lng
@@ -171,7 +173,7 @@ extend the lookup order instead of replacing it.
 Recommended lookup order for UI text:
 
 ```text
-1. selected language package ZIP: language/<code>.lng
+1. selected `.lngpdk` language package: language/<code>.lng
 2. <app>\Languages\<code>.lng
 3. <app>\<code>.lng
 4. selected extracted language package: language/<code>.lng
@@ -215,11 +217,13 @@ Blocked:
 - `..` path traversal
 - files that would escape `LanguagePackages` if extracted later
 
-ZIP reading and optional extraction must validate every entry path before use.
+Package reading and optional extraction must validate every entry path before
+use.
 
 ## Zip Library
 
-.NET already includes the required ZIP API:
+`.lngpdk` is still a ZIP container internally. .NET already includes the
+required ZIP API:
 
 ```csharp
 System.IO.Compression.ZipArchive
@@ -246,7 +250,7 @@ Responsibilities:
 - discover installed packages;
 - read `manifest.json`;
 - validate package paths;
-- read language packages directly from ZIP archives;
+- read language packages directly from `.lngpdk` archives;
 - keep extracted language package folders compatible;
 - block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
 - return the active `.lng` content;
@@ -285,7 +289,7 @@ language=ned.lng
 languagePackage=ned
 ```
 
-`languagePackage` is the manifest `key`, not the ZIP file name. If
+`languagePackage` is the manifest `key`, not the package file name. If
 `languagePackage` is absent, Syscalculator behaves exactly as today.
 
 ## Versioning and Updates
@@ -301,8 +305,9 @@ packageVersion
 contentBuild
 ```
 
-Daily release can ship built-in `.lng` files and optional ZIP packages. Beta and
-production can later download or install language packages through the updater.
+Daily release can ship built-in `.lng` files and optional `.lngpdk` packages.
+Beta and production can later download or install language packages through the
+updater.
 
 ## Migration Plan
 
@@ -330,10 +335,11 @@ production can later download or install language packages through the updater.
 ### Phase 4: Package installer
 
 - Add “Install language package...” button.
-- Validate ZIP.
-- Copy the ZIP into `LanguagePackages\Cache` without requiring extraction.
+- Validate `.lngpdk`.
+- Copy the `.lngpdk` into `LanguagePackages\Cache` without requiring extraction.
 - Save `languagePackage=...` in `language.cfg`.
-- Status: ZIP validation and direct ZIP reading exist; UI button is still roadmap.
+- Status: package validation and direct `.lngpdk` reading exist; UI button is
+  still roadmap.
 
 ### Phase 5: Release/update integration
 
@@ -353,7 +359,7 @@ production can later download or install language packages through the updater.
 
 Start conservative:
 
-1. Use `.zip`.
+1. Use `.lngpdk`.
 2. Use built-in `System.IO.Compression`.
 3. Keep loose `.lng` support.
 4. Add package loading only for UI text first.
