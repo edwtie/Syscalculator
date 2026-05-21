@@ -1527,6 +1527,9 @@ public sealed class ToolEditorForm : Form
         if (string.IsNullOrWhiteSpace(name))
             return "Onderwerp";
 
+        name = Regex.Replace(name, @"^(help|manual)[_-]+(nl|ned)[_-]+", "", RegexOptions.IgnoreCase);
+        name = Regex.Replace(name, @"^(nl|ned)[_-]+", "", RegexOptions.IgnoreCase);
+
         if (name.Equals("index", StringComparison.OrdinalIgnoreCase))
             return "Startpagina";
         if (name.Equals("readme", StringComparison.OrdinalIgnoreCase))
@@ -1536,7 +1539,15 @@ public sealed class ToolEditorForm : Form
             ' ',
             name.Replace('_', '-')
                 .Split('-', StringSplitOptions.RemoveEmptyEntries)
-                .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
+                .Select(FriendlyTopicPart));
+    }
+
+    private static string FriendlyTopicPart(string part)
+    {
+        if (part.Equals("nod", StringComparison.OrdinalIgnoreCase))
+            return "NOD";
+
+        return char.ToUpperInvariant(part[0]) + part[1..];
     }
 
     private static TreeNode? FindChild(TreeNode parent, string text)
