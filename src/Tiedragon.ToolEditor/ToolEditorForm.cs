@@ -1184,6 +1184,18 @@ public sealed class ToolEditorForm : Form
         RefreshTabStrip();
         UpdatePreview();
         UpdateUiState();
+        UpdateDocumentStatus(document);
+    }
+
+    private void UpdateDocumentStatus(ToolEditorDocument document)
+    {
+        if (document.ImageBytes is not null)
+        {
+            SetStatus("Media: " + document.PackagePath + " (" + document.ImageBytes.Length.ToString("N0") + " bytes)", isError: false);
+            return;
+        }
+
+        SetStatus("Geselecteerd: " + BuildTabTitle(document), isError: false);
     }
 
     private void UpdateHtmlToolbarState(ToolEditorDocument? document)
@@ -1428,9 +1440,13 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildDocumentTooltip(ToolEditorDocument document)
     {
-        return document.TreeGroup + Environment.NewLine +
+        var tooltip = document.TreeGroup + Environment.NewLine +
             document.TreeTopic + Environment.NewLine +
             document.PackagePath;
+        if (document.ImageBytes is not null)
+            tooltip += Environment.NewLine + document.ImageBytes.Length.ToString("N0") + " bytes";
+
+        return tooltip;
     }
 
     private static IReadOnlyList<string> BuildTreePath(string packagePath)
@@ -1929,7 +1945,7 @@ public sealed class ToolEditorForm : Form
     {
         var extension = Path.GetExtension(document.DisplayName);
         if (document.ImageBytes is not null)
-            return WrapImageHtml(document.DisplayName, BuildImagePreview(document));
+            return WrapImageHtml(BuildImagePreview(document));
 
         var text = document.Editor.Text;
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
@@ -2055,13 +2071,7 @@ public sealed class ToolEditorForm : Form
         var mime = ImageMimeType(document.PackagePath);
         var base64 = Convert.ToBase64String(document.ImageBytes);
         var fileName = WebUtility.HtmlEncode(Path.GetFileName(document.PackagePath));
-        var packagePath = WebUtility.HtmlEncode(document.PackagePath);
         return $$"""
-        <div class="media-meta">
-          <b>{{fileName}}</b><br>
-          <span>{{packagePath}}</span><br>
-          <span>{{document.ImageBytes.Length:N0}} bytes</span>
-        </div>
         <div class="image-preview">
           <img src="data:{{mime}};base64,{{base64}}" alt="{{fileName}}">
         </div>
@@ -2160,7 +2170,7 @@ public sealed class ToolEditorForm : Form
         """;
     }
 
-    private static string WrapImageHtml(string title, string body)
+    private static string WrapImageHtml(string body)
     {
         return $$"""
         <!doctype html>
@@ -2169,15 +2179,12 @@ public sealed class ToolEditorForm : Form
           <meta charset="utf-8">
           <style>
             html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-            body { box-sizing: border-box; display: flex; flex-direction: column; font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1f2937; background: #fff; }
-            h1 { flex: 0 0 auto; font-size: 22px; margin: 18px 22px 14px; color: #0f3f8f; }
-            .media-meta { flex: 0 0 auto; color: #334155; margin: 0 22px 14px; }
-            .image-preview { flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; border-top: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 0; overflow: auto; }
+            body { box-sizing: border-box; display: flex; font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1f2937; background: #fff; }
+            .image-preview { flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 0; overflow: auto; }
             .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
           </style>
         </head>
         <body>
-          <h1>{{WebUtility.HtmlEncode(title)}}</h1>
           {{body}}
         </body>
         </html>
