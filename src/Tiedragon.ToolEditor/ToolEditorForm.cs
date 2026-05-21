@@ -912,7 +912,7 @@ public sealed class ToolEditorForm : Form
         if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || IsImagePath(path))
             return ["Media en afbeeldingen", fileName];
 
-        return ["Overige inhoud", topic];
+        return ["Pakketbeheer", topic];
     }
 
     private static (string Group, string Topic) BuildListLabels(string packagePath)
@@ -920,7 +920,7 @@ public sealed class ToolEditorForm : Form
         var path = BuildTreePath(packagePath);
         return path.Count >= 2
             ? (path[0], path[^1])
-            : ("Overige inhoud", path[0]);
+            : ("Pakketbeheer", path[0]);
     }
 
     private static void ApplyDocumentLabels(ToolEditorDocument document)
