@@ -64,11 +64,8 @@ internal static class Program
     private static readonly HashSet<string> AllowedScriptFiles = new(StringComparer.OrdinalIgnoreCase)
     {
         "basis.js",
-        "formula-card-copy-buttons.js",
-        "formula-film.js",
-        "formula-search.js",
-        "nod-copy-buttons.js",
-        "nod-popup-height.js",
+        "formula.js",
+        "nod.js",
     };
 
     public static int Main(string[] args)

@@ -64,11 +64,8 @@ public sealed class ToolEditorForm : Form
     private static readonly HashSet<string> AllowedPackageScriptFiles = new(StringComparer.OrdinalIgnoreCase)
     {
         "basis.js",
-        "formula-card-copy-buttons.js",
-        "formula-film.js",
-        "formula-search.js",
-        "nod-copy-buttons.js",
-        "nod-popup-height.js",
+        "formula.js",
+        "nod.js",
     };
 
     private static readonly Regex HtmlCommentRegex = new("<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);

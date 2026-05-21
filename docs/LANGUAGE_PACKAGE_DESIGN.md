@@ -271,7 +271,7 @@ Allowed:
 - `.lng`
 - `.html`
 - `.css`
-- `.js` from trusted Syscalculator package only
+- `.js` only for trusted basis scripts: `basis.js`, `nod.js`, `formula.js`
 - `.svg`
 - `.png`, `.jpg`, `.webp`
 - `.json`

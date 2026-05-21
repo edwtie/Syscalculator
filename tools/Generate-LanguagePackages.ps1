@@ -44,11 +44,8 @@ $displayNames = @{
 
 $allowedHelpScripts = @(
     "basis.js",
-    "formula-card-copy-buttons.js",
-    "formula-film.js",
-    "formula-search.js",
-    "nod-copy-buttons.js",
-    "nod-popup-height.js"
+    "formula.js",
+    "nod.js"
 )
 
 function Test-Mojibake {

@@ -206,6 +206,7 @@ The tool checks:
 - required `language/<code>.lng`;
 - allowed file extensions;
 - blocked executable/script extensions;
+- restricted JavaScript names: only `basis.js`, `nod.js` and `formula.js`;
 - unsafe paths such as absolute paths or `..`;
 - maximum file count and file sizes;
 - wrapper payload SHA-256;
@@ -224,7 +225,7 @@ Common failures:
 - wrong `producer`, unsafe `product`, unsafe `softwareId` or wrong `packageType`;
 - mismatching `payloadSha256` or external `packageSha256`;
 - missing `manifest.json` or `language/<code>.lng`;
-- blocked executable/script files;
+- blocked executable/script files or unsupported script names;
 - absolute paths or `..` path traversal;
 - too many files or files that exceed package limits;
 - encrypted packages before encryption support is implemented.

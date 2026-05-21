@@ -148,32 +148,39 @@ public static class HelpHtml
 
     public static string NodCopyButtonsScript()
     {
-        return ScriptTag("nod-copy-buttons.js");
+        return ScriptTag("basis.js") + ScriptTag("nod.js") + InlineScript("window.syscalNodHelp && window.syscalNodHelp.installCopyButtons();");
     }
 
     public static string NodPopupHeightScript()
     {
-        return ScriptTag("nod-popup-height.js");
+        return ScriptTag("basis.js") + ScriptTag("nod.js") + InlineScript("window.syscalNodHelp && window.syscalNodHelp.installPopupHeight();");
     }
 
     public static string FormulaCardCopyButtonsScript()
     {
-        return ScriptTag("formula-card-copy-buttons.js");
+        return ScriptTag("basis.js") + ScriptTag("formula.js") + InlineScript("window.syscalFormulaHelp && window.syscalFormulaHelp.installCopyButtons();");
     }
 
     public static string FormulaSearchScript()
     {
-        return ReadHelpFile("formula-search.js", "");
+        return ReadHelpFile("basis.js", "") + Environment.NewLine +
+            ReadHelpFile("formula.js", "") + Environment.NewLine +
+            "window.syscalFormulaHelp && window.syscalFormulaHelp.installSearch();";
     }
 
     public static string FormulaFilmScript()
     {
-        return ScriptTag("formula-film.js");
+        return ScriptTag("basis.js") + ScriptTag("formula.js") + InlineScript("window.syscalFormulaHelp && window.syscalFormulaHelp.installFilm();");
     }
 
     private static string ScriptTag(string fileName)
     {
         var script = ReadHelpFile(fileName, "");
+        return string.IsNullOrWhiteSpace(script) ? "" : $"<script>\n{script}\n</script>";
+    }
+
+    private static string InlineScript(string script)
+    {
         return string.IsNullOrWhiteSpace(script) ? "" : $"<script>\n{script}\n</script>";
     }
 
