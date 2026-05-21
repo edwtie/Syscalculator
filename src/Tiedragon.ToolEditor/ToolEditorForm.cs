@@ -2087,7 +2087,12 @@ public sealed class ToolEditorForm : Form
         var fileName = WebUtility.HtmlEncode(Path.GetFileName(document.PackagePath));
         return $$"""
         <div class="image-preview">
-          <img src="data:{{mime}};base64,{{base64}}" alt="{{fileName}}">
+          <img id="media-image" src="data:{{mime}};base64,{{base64}}" alt="{{fileName}}">
+          <div class="image-tools" aria-label="Afbeelding zoom">
+            <button type="button" data-zoom="in" title="Inzoomen">+</button>
+            <button type="button" data-zoom="out" title="Uitzoomen">-</button>
+            <button type="button" data-zoom="reset" title="100%">100%</button>
+          </div>
         </div>
         """;
     }
@@ -2225,12 +2230,31 @@ public sealed class ToolEditorForm : Form
           <style>
             html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
             body { box-sizing: border-box; display: flex; font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; color: #1f2937; background: #fff; }
-            .image-preview { flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 0; overflow: auto; }
-            .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
+            .image-preview { position: relative; flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 0; overflow: auto; }
+            .image-preview img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center center; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
+            .image-tools { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; padding: 6px; border: 1px solid #cfe0f5; border-radius: 18px; background: rgba(255, 255, 255, .92); box-shadow: 0 8px 18px rgba(15, 23, 42, .14); }
+            .image-tools button { width: 38px; height: 34px; border: 1px solid #cfe0f5; border-radius: 14px; background: #fff; color: #123f73; font: 700 15px "Segoe UI", Arial, sans-serif; cursor: pointer; }
+            .image-tools button:hover { background: #edf6ff; border-color: #8abcf4; }
           </style>
         </head>
         <body>
           {{body}}
+          <script>
+            let zoom = 1;
+            const image = document.getElementById('media-image');
+            const applyZoom = () => {
+              image.style.transform = `scale(${zoom})`;
+              image.style.maxWidth = zoom === 1 ? '100%' : 'none';
+              image.style.maxHeight = zoom === 1 ? '100%' : 'none';
+            };
+            document.querySelector('.image-tools').addEventListener('click', event => {
+              const action = event.target && event.target.dataset ? event.target.dataset.zoom : '';
+              if (action === 'in') zoom = Math.min(zoom * 1.2, 8);
+              if (action === 'out') zoom = Math.max(zoom / 1.2, .2);
+              if (action === 'reset') zoom = 1;
+              applyZoom();
+            });
+          </script>
         </body>
         </html>
         """;
