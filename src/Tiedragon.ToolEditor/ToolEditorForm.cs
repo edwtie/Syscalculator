@@ -16,6 +16,7 @@ namespace Tiedragon.ToolEditor;
 public sealed class ToolEditorForm : Form
 {
     private readonly TreeView _fileTree;
+    private readonly ListView _documentList;
     private readonly FlowLayoutPanel _tabStrip;
     private readonly Panel _editorContent;
     private readonly WebView2 _preview;
@@ -71,6 +72,31 @@ public sealed class ToolEditorForm : Form
             Padding = new Padding(1)
         };
         fileTreeHost.Controls.Add(_fileTree);
+
+        _documentList = new ListView
+        {
+            Dock = DockStyle.Fill,
+            BorderStyle = BorderStyle.None,
+            FullRowSelect = true,
+            HideSelection = false,
+            MultiSelect = false,
+            View = View.Details,
+            Font = new Font("Segoe UI", 9),
+            BackColor = Color.White,
+            ForeColor = Color.FromArgb(31, 41, 55)
+        };
+        _documentList.Columns.Add("Soort", 150);
+        _documentList.Columns.Add("Onderwerp", 240);
+        _documentList.Columns.Add("Pakketpad", 360);
+        _documentList.SelectedIndexChanged += DocumentList_SelectedIndexChanged;
+
+        var listHost = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(203, 213, 225),
+            Padding = new Padding(1)
+        };
+        listHost.Controls.Add(_documentList);
 
         _tabStrip = ToolEditorTabsApi.CreateStrip();
         _tabStrip.Dock = DockStyle.Fill;
@@ -131,7 +157,39 @@ public sealed class ToolEditorForm : Form
         };
         previewHost.Controls.Add(_preview);
 
-        var editorSplit = new SplitContainer
+        var contentSplit = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            BorderStyle = BorderStyle.None,
+            SplitterWidth = 5,
+            BackColor = Color.FromArgb(226, 232, 240),
+            Panel1MinSize = 1,
+            Panel2MinSize = 1
+        };
+        contentSplit.Panel1.Controls.Add(editorHost);
+        contentSplit.Panel2.Padding = new Padding(0, 4, 4, 0);
+        contentSplit.Panel2.Controls.Add(previewHost);
+        contentSplit.SizeChanged += (_, _) => ClampSplitter(contentSplit);
+        Shown += (_, _) => ClampSplitter(contentSplit);
+
+        var workspaceSplit = new SplitContainer
+        {
+            Dock = DockStyle.Fill,
+            Orientation = Orientation.Horizontal,
+            BorderStyle = BorderStyle.None,
+            SplitterWidth = 5,
+            FixedPanel = FixedPanel.Panel1,
+            BackColor = Color.FromArgb(226, 232, 240),
+            Panel1MinSize = 1,
+            Panel2MinSize = 1
+        };
+        workspaceSplit.Panel1.Padding = new Padding(0, 4, 4, 0);
+        workspaceSplit.Panel1.Controls.Add(listHost);
+        workspaceSplit.Panel2.Controls.Add(contentSplit);
+        workspaceSplit.SizeChanged += (_, _) => ClampSplitter(workspaceSplit, 155);
+        Shown += (_, _) => ClampSplitter(workspaceSplit, 155);
+
+        var split = new SplitContainer
         {
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.None,
@@ -141,26 +199,11 @@ public sealed class ToolEditorForm : Form
             Panel1MinSize = 1,
             Panel2MinSize = 1
         };
-        editorSplit.Panel1.Padding = new Padding(4, 4, 0, 0);
-        editorSplit.Panel1.Controls.Add(fileTreeHost);
-        editorSplit.Panel2.Controls.Add(editorHost);
-        editorSplit.SizeChanged += (_, _) => ClampSplitter(editorSplit, 220);
-        Shown += (_, _) => ClampSplitter(editorSplit, 220);
-
-        var split = new SplitContainer
-        {
-            Dock = DockStyle.Fill,
-            BorderStyle = BorderStyle.None,
-            SplitterWidth = 5,
-            BackColor = Color.FromArgb(226, 232, 240),
-            Panel1MinSize = 1,
-            Panel2MinSize = 1
-        };
-        split.Panel1.Controls.Add(editorSplit);
-        split.Panel2.Padding = new Padding(0, 4, 4, 0);
-        split.Panel2.Controls.Add(previewHost);
-        split.SizeChanged += (_, _) => ClampSplitter(split);
-        Shown += (_, _) => ClampSplitter(split);
+        split.Panel1.Padding = new Padding(4, 4, 0, 0);
+        split.Panel1.Controls.Add(fileTreeHost);
+        split.Panel2.Controls.Add(workspaceSplit);
+        split.SizeChanged += (_, _) => ClampSplitter(split, 270);
+        Shown += (_, _) => ClampSplitter(split, 270);
 
         _statusLabel = new Label
         {
@@ -179,6 +222,7 @@ public sealed class ToolEditorForm : Form
 
         NewLanguagePackageTemplate();
         RefreshFileTree();
+        RefreshDocumentList();
         UpdateUiState();
     }
 
@@ -253,7 +297,9 @@ public sealed class ToolEditorForm : Form
             _current.FilePath = path;
             _current.DisplayName = Path.GetFileName(path);
             _current.PackagePath = NormalizePackagePath(_current.DisplayName);
+            ApplyDocumentLabels(_current);
             RefreshFileTree();
+            RefreshDocumentList();
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -267,6 +313,7 @@ public sealed class ToolEditorForm : Form
         var page = new TabPage(displayName);
         var editor = CreateTextEditor(text);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath, editor);
+        ApplyDocumentLabels(document);
         var header = ToolEditorTabsApi.CreateHeader(
             page,
             (_, _) => SelectDocument(document),
@@ -277,6 +324,7 @@ public sealed class ToolEditorForm : Form
         _documents.Add(document);
         _tabStrip.Controls.Add(header.Panel);
         RefreshFileTree();
+        RefreshDocumentList();
         SelectDocument(document);
     }
 
@@ -304,6 +352,7 @@ public sealed class ToolEditorForm : Form
     {
         _current = document;
         SelectDocumentInTree(document);
+        SelectDocumentInList(document);
         _editorContent.SuspendLayout();
         _editorContent.Controls.Clear();
         _editorContent.Controls.Add(document.Editor);
@@ -330,6 +379,7 @@ public sealed class ToolEditorForm : Form
         _tabStrip.Controls.Remove(document.HeaderPanel);
         _documents.Remove(document);
         RemoveDocumentFromTree(document);
+        RemoveDocumentFromList(document);
         document.Editor.Dispose();
         document.Page.Dispose();
 
@@ -345,6 +395,64 @@ public sealed class ToolEditorForm : Form
 
         RefreshTabStrip();
         RefreshFileTree();
+        RefreshDocumentList();
+    }
+
+    private void RefreshDocumentList()
+    {
+        if (_documentList.IsDisposed)
+            return;
+
+        _documentList.BeginUpdate();
+        _documentList.Items.Clear();
+        foreach (var document in _documents.OrderBy(document => document.TreeGroup, StringComparer.CurrentCultureIgnoreCase)
+                     .ThenBy(document => document.TreeTopic, StringComparer.CurrentCultureIgnoreCase))
+        {
+            var item = new ListViewItem(document.TreeGroup);
+            item.SubItems.Add(document.TreeTopic);
+            item.SubItems.Add(document.PackagePath);
+            item.Tag = document;
+            _documentList.Items.Add(item);
+        }
+
+        _documentList.EndUpdate();
+        if (_current is not null)
+            SelectDocumentInList(_current);
+    }
+
+    private void SelectDocumentInList(ToolEditorDocument document)
+    {
+        foreach (ListViewItem item in _documentList.Items)
+        {
+            var selected = ReferenceEquals(item.Tag, document);
+            if (item.Selected == selected)
+                continue;
+
+            item.Selected = selected;
+            if (selected)
+                item.EnsureVisible();
+        }
+    }
+
+    private void RemoveDocumentFromList(ToolEditorDocument document)
+    {
+        foreach (ListViewItem item in _documentList.Items)
+        {
+            if (!ReferenceEquals(item.Tag, document))
+                continue;
+
+            _documentList.Items.Remove(item);
+            return;
+        }
+    }
+
+    private void DocumentList_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_documentList.SelectedItems.Count == 0)
+            return;
+
+        if (_documentList.SelectedItems[0].Tag is ToolEditorDocument document && !ReferenceEquals(document, _current))
+            SelectDocument(document);
     }
 
     private void RefreshFileTree()
@@ -371,7 +479,7 @@ public sealed class ToolEditorForm : Form
 
     private static void AddDocumentNode(TreeNode root, ToolEditorDocument document)
     {
-        var parts = BuildTreePath(document);
+        var parts = BuildTreePath(document.PackagePath);
         var parent = root;
         for (var i = 0; i < parts.Count; i++)
         {
@@ -389,9 +497,9 @@ public sealed class ToolEditorForm : Form
         parent.Tag = document;
     }
 
-    private static IReadOnlyList<string> BuildTreePath(ToolEditorDocument document)
+    private static IReadOnlyList<string> BuildTreePath(string packagePath)
     {
-        var path = document.PackagePath.Replace('\\', '/').Trim('/');
+        var path = packagePath.Replace('\\', '/').Trim('/');
         var fileName = Path.GetFileName(path);
         var topic = FriendlyTopicName(fileName);
 
@@ -427,6 +535,21 @@ public sealed class ToolEditorForm : Form
             return ["Media en afbeeldingen", topic];
 
         return ["Overige inhoud", topic];
+    }
+
+    private static (string Group, string Topic) BuildListLabels(string packagePath)
+    {
+        var path = BuildTreePath(packagePath);
+        return path.Count >= 2
+            ? (path[0], path[^1])
+            : ("Overige inhoud", path[0]);
+    }
+
+    private static void ApplyDocumentLabels(ToolEditorDocument document)
+    {
+        var labels = BuildListLabels(document.PackagePath);
+        document.TreeGroup = labels.Group;
+        document.TreeTopic = labels.Topic;
     }
 
     private static string FriendlyLanguageName(string code)
@@ -834,6 +957,8 @@ public sealed class ToolEditorForm : Form
         public TabPage Page { get; } = page;
         public string DisplayName { get; set; } = displayName;
         public string PackagePath { get; set; } = packagePath;
+        public string TreeGroup { get; set; } = "";
+        public string TreeTopic { get; set; } = "";
         public string? FilePath { get; set; } = filePath;
         public RichTextBox Editor { get; } = editor;
         public Panel HeaderPanel { get; set; } = null!;
