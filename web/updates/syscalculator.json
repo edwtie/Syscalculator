@@ -11,8 +11,10 @@
       "packageUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.20-daily/Syscalculator-2.0-daily-2.0.2026.05.20.zip",
       "packageId": "daily-2026.05.20-graph3d-001",
       "sha256": "954304500f06a9b2082d8504362db4699f26c8173c73fa26f9c498ca500d1ab1",
+      "languagePackagesUrl": "https://www.tiedragon.com/packages/languages/language-packages.json",
+      "languagePackagesActive": true,
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.20-daily",
-      "summary": "Daily build with the new Tiedragon.Graph architecture, Graph 3D preview, Graph 2D naming, graph help updates, graph language updates and Graph 3D layout fixes."
+      "summary": "Daily build with the new Tiedragon.Graph architecture, Graph 3D preview, Graph 2D naming, graph help updates, graph language updates, active language packages and Graph 3D layout fixes."
     },
     "beta": {
       "version": "2.0.2026.05.16",

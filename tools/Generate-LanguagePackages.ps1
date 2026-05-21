@@ -152,7 +152,10 @@ foreach ($languageFile in $languageFiles) {
 
 $manifestPath = Join-Path $outputRoot "language-packages.json"
 $results |
-    Select-Object packageKey, languageCode, displayName, packageSha256, payloadSha256, entryCount, outputPath |
+    Select-Object packageKey, languageCode, displayName, packageSha256, payloadSha256, entryCount,
+        @{ Name = "fileName"; Expression = { [System.IO.Path]::GetFileName($_.outputPath) } },
+        @{ Name = "downloadPath"; Expression = { "packages/languages/" + [System.IO.Path]::GetFileName($_.outputPath) } },
+        @{ Name = "active"; Expression = { $true } } |
     ConvertTo-Json -Depth 5 |
     Set-Content -Encoding UTF8 $manifestPath
 
