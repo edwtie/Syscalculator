@@ -15,6 +15,8 @@ $buildInstaller = Join-Path $root "src\syscalculator\Build\BuildInstaller.ps1"
 $solution = Join-Path $root "Syscalculator20_UI_Prototype_OldModelConverterLook_BuildFix.sln"
 
 $manifestChannelName = if ($Channel -eq "production") { "stable" } else { $Channel }
+$releaseChannelName = if ($Channel -eq "stable") { "production" } else { $Channel }
+$todayVersion = Get-Date -Format "yyyy.MM.dd"
 
 function Write-Title([string] $Text) {
     Write-Host ""
@@ -30,15 +32,69 @@ function Get-ManifestInfo {
     return $json.channels.PSObject.Properties[$manifestChannelName].Value
 }
 
-$channelInfo = Get-ManifestInfo
-$dateVersion = if ($channelInfo -and $channelInfo.date) {
-    [DateTime]::Parse($channelInfo.date).ToString("yyyy.MM.dd")
-} elseif ($channelInfo -and $channelInfo.displayVersion) {
-    [string] $channelInfo.displayVersion
-} else {
-    Get-Date -Format "yyyy.MM.dd"
+function Get-ManifestDateVersion {
+    param([object] $Info)
+
+    if ($Info -and $Info.date) {
+        return [DateTime]::Parse($Info.date).ToString("yyyy.MM.dd")
+    }
+
+    if ($Info -and $Info.displayVersion) {
+        return [string] $Info.displayVersion
+    }
+
+    return $null
 }
-$releaseChannelName = if ($Channel -eq "stable") { "production" } else { $Channel }
+
+function Read-ZipPackageId {
+    param([string] $Path)
+
+    if (-not (Test-Path $Path)) {
+        return $null
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($Path)
+    try {
+        $entry = $zip.GetEntry("update-state.cfg")
+        if (-not $entry) {
+            return $null
+        }
+
+        $stream = $entry.Open()
+        try {
+            $reader = [System.IO.StreamReader]::new($stream, [System.Text.Encoding]::UTF8, $true)
+            try {
+                $text = $reader.ReadToEnd()
+            }
+            finally {
+                $reader.Dispose()
+            }
+        }
+        finally {
+            $stream.Dispose()
+        }
+
+        foreach ($line in ($text -split "`r?`n")) {
+            if ($line -match '^\s*packageId\s*=\s*(.+?)\s*$') {
+                return $Matches[1]
+            }
+        }
+
+        return $null
+    }
+    finally {
+        $zip.Dispose()
+    }
+}
+
+$channelInfo = Get-ManifestInfo
+$dateVersion = if ($releaseChannelName -eq "daily") {
+    $todayVersion
+} else {
+    $manifestDateVersion = Get-ManifestDateVersion $channelInfo
+    if ($manifestDateVersion) { $manifestDateVersion } else { $todayVersion }
+}
 $tag = "v$appVersion.$dateVersion-$releaseChannelName"
 $installer = Join-Path $root "artifacts\installer\Syscalculator-$appVersion-$releaseChannelName-$appVersion.$dateVersion.exe"
 $updateZip = Join-Path $root "artifacts\updates\Syscalculator-$appVersion-$releaseChannelName-$appVersion.$dateVersion.zip"
@@ -83,9 +139,24 @@ function Write-ReleaseInfo {
 
     if (Test-Path $updateZip) {
         $hash = (Get-FileHash $updateZip -Algorithm SHA256).Hash.ToLowerInvariant()
+        $zipPackageId = Read-ZipPackageId $updateZip
         Write-Host ""
         Write-Host "Local update zip SHA256:"
         Write-Host "  $hash"
+        Write-Host "Local update zip packageId:"
+        Write-Host "  $zipPackageId"
+
+        if ($channelInfo -and $channelInfo.sha256 -and $hash -ne ([string] $channelInfo.sha256).ToLowerInvariant()) {
+            Write-Host ""
+            Write-Host "ERROR: manifest sha256 does not match local update zip."
+            exit 1
+        }
+
+        if ($channelInfo -and $channelInfo.packageId -and $zipPackageId -ne [string] $channelInfo.packageId) {
+            Write-Host ""
+            Write-Host "ERROR: manifest packageId does not match update-state.cfg in local update zip."
+            exit 1
+        }
     }
 
     if (Test-Path $installer) {
@@ -105,7 +176,8 @@ function Invoke-Build {
     $originalUpdateState = if (Test-Path $updateStatePath) { Get-Content $updateStatePath -Raw } else { $null }
 
     try {
-        $packageId = if ($channelInfo -and $channelInfo.packageId) {
+        $manifestDateVersion = Get-ManifestDateVersion $channelInfo
+        $packageId = if ($channelInfo -and $channelInfo.packageId -and $manifestDateVersion -eq $dateVersion) {
             $channelInfo.packageId
         } elseif ($releaseChannelName -eq "production") {
             "production-$dateVersion-store-001"
@@ -124,7 +196,7 @@ function Invoke-Build {
         }
 
         $installVersion = "$appVersion.$dateVersion"
-        powershell -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName -InstallVersion $installVersion -PackageId $packageId
+        pwsh -NoProfile -ExecutionPolicy Bypass -File $buildInstaller -Channel $releaseChannelName -InstallVersion $installVersion -PackageId $packageId
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
     finally {

@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..\..')
 $project = Join-Path $repoRoot 'src\syscalculator\Syscalculator.UI.WinForms.csproj'
 $updaterProject = Join-Path $repoRoot 'src\Syscalculator.Updater\Syscalculator.Updater.csproj'
+$languagePackageScript = Join-Path $repoRoot 'tools\Generate-LanguagePackages.ps1'
 $publishDir = Join-Path $repoRoot 'artifacts\publish\Syscalculator\win-x64'
 $updaterPublishDir = Join-Path $publishDir 'Updater'
 $installerScript = Join-Path $repoRoot 'installer\Syscalculator.iss'
@@ -19,6 +20,25 @@ $generatedVersionFile = Join-Path $repoRoot 'src\syscalculator\AppVersionInfo.Ge
 $updatesDir = Join-Path $repoRoot 'artifacts\updates'
 $isSelfContained = $Channel -in @('daily', 'beta', 'production')
 $selfContainedArg = if ($isSelfContained) { 'true' } else { 'false' }
+
+function Find-PowerShell7 {
+    $command = Get-Command 'pwsh' -ErrorAction SilentlyContinue
+    if ($command) {
+        return $command.Source
+    }
+
+    $candidatePaths = @(
+        (Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'),
+        (Join-Path ${env:ProgramFiles(x86)} 'PowerShell\7\pwsh.exe')
+    )
+
+    return $candidatePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
+
+$pwshPath = Find-PowerShell7
+if (-not $pwshPath) {
+    throw 'PowerShell 7 was not found. Install it first, for example with: winget install --id Microsoft.PowerShell --source winget'
+}
 
 $isccCommand = Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue
 $isccPath = if ($isccCommand) { $isccCommand.Source } else { $null }
@@ -37,6 +57,11 @@ if (-not $isccPath) {
     throw 'Inno Setup compiler ISCC.exe was not found. Install Inno Setup 6 first.'
 }
 
+& $pwshPath -NoProfile -ExecutionPolicy Bypass -File $languagePackageScript
+if ($LASTEXITCODE -ne 0) {
+    throw "Language package generation failed with exit code $LASTEXITCODE."
+}
+
 if (Test-Path $publishDir) {
     Remove-Item -LiteralPath $publishDir -Recurse -Force
 }
@@ -53,6 +78,11 @@ if ($LASTEXITCODE -ne 0) {
 
 if (-not (Test-Path -LiteralPath (Join-Path $publishDir 'Syscalculator.exe'))) {
     throw "Publish output is missing Syscalculator.exe: $publishDir"
+}
+
+$publishedLanguagePackages = Get-ChildItem -LiteralPath (Join-Path $publishDir 'LanguagePackages') -Filter '*.lngpdk' -File -ErrorAction SilentlyContinue
+if ($publishedLanguagePackages.Count -lt 9) {
+    throw "Publish output is missing bundled language packages in $publishDir\LanguagePackages."
 }
 
 $versionText = Get-Content $generatedVersionFile -Raw
@@ -89,6 +119,14 @@ elseif ($Channel -eq 'beta') {
 else {
     "daily-$($installVersion -replace '^2\.0\.', '')-installer-001"
 }
+
+$publishedUpdateStatePath = Join-Path $publishDir 'update-state.cfg'
+[System.IO.File]::WriteAllText(
+    $publishedUpdateStatePath,
+    "# Installed update package marker.`r`n" +
+    "# Used by the updater and About dialog to detect the installed release channel.`r`n" +
+    "packageId=$env:SYSCALC_PACKAGE_ID`r`n",
+    [System.Text.UTF8Encoding]::new($false))
 
 if (-not (Test-Path $updatesDir)) {
     New-Item -ItemType Directory -Path $updatesDir | Out-Null

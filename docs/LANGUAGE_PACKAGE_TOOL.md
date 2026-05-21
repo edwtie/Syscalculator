@@ -46,9 +46,47 @@ tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk>
 tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk> -BasePackage <base-folder-or-package>
 ```
 
+Run language-package scripts with PowerShell 7 or newer:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File tools/Generate-LanguagePackages.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File tools/Test-LanguagePackageIntegration.ps1
+```
+
+The generation, translation and integration smoke scripts reject Windows
+PowerShell 5.1. This keeps `.lng`, HTML, JSON and docs on predictable UTF-8
+handling and avoids mojibake during release work.
+
 The helper runs `agent-compile`, so callers can parse `success`, `code`,
 `packageSha256`, `payloadSha256`, `languageCode`, `packageKey` and `entryCount`
 without scraping human-readable text.
+
+## Syscalculator Activation
+
+Syscalculator consumes compiled packages from the application folder:
+
+```text
+LanguagePackages/
+  Syscalculator.Language.eng.lngpdk
+  Syscalculator.Language.ned.lngpdk
+  language-packages.json
+```
+
+The active language configuration can point at a package:
+
+```ini
+language=ned.lng
+languagePackage=ned
+```
+
+The app first reads `language/<code>.lng` and help content from the package. If
+the package is missing, invalid or not intended for `tiedragon.syscalculator`,
+the app falls back to the loose `.lng` files and built-in help files. This keeps
+daily builds usable while the package system grows.
+
+The installer build runs package generation before publish, includes the
+packages in update zips and writes the matching package key for the selected
+installer language.
 
 ## Basispackage Merge
 

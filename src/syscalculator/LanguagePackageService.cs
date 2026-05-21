@@ -284,11 +284,13 @@ internal static class LanguagePackageService
             yield break;
 
         if (normalized.StartsWith("help/", StringComparison.OrdinalIgnoreCase) ||
-            normalized.StartsWith("manual/", StringComparison.OrdinalIgnoreCase))
+            normalized.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("formula/", StringComparison.OrdinalIgnoreCase))
         {
             yield return normalized;
         }
 
+        yield return "help/" + normalized;
         yield return "help/Content/" + normalized;
         yield return "Content/" + normalized;
         yield return "manual/" + normalized;

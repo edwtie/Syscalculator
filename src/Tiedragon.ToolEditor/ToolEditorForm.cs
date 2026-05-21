@@ -375,6 +375,8 @@ public sealed class ToolEditorForm : Form
 
         var help = new ToolStripMenuItem("Help");
         help.DropDownItems.Add(CreateMenuItem("ToolEditor help", Keys.F1, (_, _) => ShowToolEditorHelp()));
+        help.DropDownItems.Add(new ToolStripSeparator());
+        help.DropDownItems.Add("About Syscalculator", null, (_, _) => ShowAboutSyscalculator());
 
         menu.Items.Add(file);
         menu.Items.Add(edit);
@@ -401,6 +403,12 @@ public sealed class ToolEditorForm : Form
             BuildToolEditorHelpPages(),
             "overview",
             new HelpNavigationLabels("Start", "Vorige", "Volgende")));
+    }
+
+    private void ShowAboutSyscalculator()
+    {
+        using var form = new ToolEditorAboutForm();
+        form.ShowDialog(this);
     }
 
     private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages()
@@ -1594,7 +1602,10 @@ public sealed class ToolEditorForm : Form
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
         if (Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase))
+        {
             text = StripToolEditorConceptBanners(text);
+            text = EnsureHtmlDocumentMarkup(text);
+        }
 
         var editor = CreateTextEditor(text, document);
         if (IsManifestPath(document.PackagePath))
@@ -1623,6 +1634,14 @@ public sealed class ToolEditorForm : Form
     private static string StripToolEditorConceptBanners(string html)
     {
         return LegacyConceptWarningRegex.Replace(ConceptBannerRegex.Replace(html, ""), "");
+    }
+
+    private static string EnsureHtmlDocumentMarkup(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html) || html.Contains('<'))
+            return html;
+
+        return "<h1>" + WebUtility.HtmlEncode(html.Trim()) + "</h1>" + Environment.NewLine;
     }
 
     private ToolEditorDocument AddImageDocument(string displayName, byte[] bytes, string? filePath)
@@ -2350,6 +2369,12 @@ public sealed class ToolEditorForm : Form
         var topic = FriendlyTopicName(fileName);
         if (section == "full")
         {
+            var fullPage = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant();
+            if (fullPage is "index" or "title")
+                return ["NOD voor ontwikkelaars", "Startpagina"];
+            if (fullPage == "keyword_title")
+                return ["NOD voor ontwikkelaars", "Belangrijke commands", "Startpagina"];
+
             if (TryGetNodCommandGroupFromFullPage(fileName, out var group))
                 return ["NOD voor ontwikkelaars", "Belangrijke commands", group, topic];
 
@@ -2607,6 +2632,10 @@ public sealed class ToolEditorForm : Form
 
         var errors = new List<string>();
         ValidatePackageForCompile(errors);
+        errors = errors
+            .Where(error => !string.IsNullOrWhiteSpace(error))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         if (errors.Count > 0)
         {
             SetStatus("Package niet gecompileerd: " + errors[0], isError: true);
@@ -2641,7 +2670,8 @@ public sealed class ToolEditorForm : Form
                 "Package gecompileerd:\r\n" + outputPath +
                 "\r\n\r\nPackage SHA-256:\r\n" + result.PackageSha256 +
                 "\r\n\r\nPayload SHA-256:\r\n" + result.PayloadSha256 +
-                "\r\n\r\nEncryptie: uit (reader weigert encrypted packages nog fail-closed).",
+                "\r\n\r\nEncryptie: nog niet actief\r\n" +
+                "De reader accepteert voorlopig alleen niet-versleutelde packages.",
                 "Package compileren",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -2954,7 +2984,7 @@ public sealed class ToolEditorForm : Form
         else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             ValidateLanguageFile(text, errors);
         else if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) && !text.Contains('<'))
-            errors.Add("HTML document does not contain markup.");
+            errors.Add(document.PackagePath + ": HTML document does not contain markup.");
 
         if (string.IsNullOrWhiteSpace(text))
             errors.Add("Document is empty.");

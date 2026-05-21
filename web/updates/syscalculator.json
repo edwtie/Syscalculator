@@ -1,20 +1,20 @@
 {
   "product": "Syscalculator",
-  "generatedAtUtc": "2026-05-20T00:00:00Z",
+  "generatedAtUtc": "2026-05-21T15:38:00Z",
   "channels": {
     "daily": {
-      "version": "2026.05.20.1",
-      "displayVersion": "2026.05.20",
-      "date": "2026-05-20",
-      "title": "Syscalculator 2.0 Daily 2026-05-20",
-      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.20-daily/Syscalculator-2.0-daily-2.0.2026.05.20.exe",
-      "packageUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.20-daily/Syscalculator-2.0-daily-2.0.2026.05.20.zip",
-      "packageId": "daily-2026.05.20-graph3d-001",
-      "sha256": "954304500f06a9b2082d8504362db4699f26c8173c73fa26f9c498ca500d1ab1",
+      "version": "2026.05.21.1",
+      "displayVersion": "2026.05.21",
+      "date": "2026-05-21",
+      "title": "Syscalculator 2.0 Daily 2026-05-21",
+      "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.21-daily/Syscalculator-2.0-daily-2.0.2026.05.21.exe",
+      "packageUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.21-daily/Syscalculator-2.0-daily-2.0.2026.05.21.zip",
+      "packageId": "daily-2026.05.21-installer-001",
+      "sha256": "7079f91243f97b4078cb7e72580c68367aa03849249886cb2604c2300ac298aa",
       "languagePackagesUrl": "https://www.tiedragon.com/packages/languages/language-packages.json",
       "languagePackagesActive": true,
-      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.20-daily",
-      "summary": "Daily build with the new Tiedragon.Graph architecture, Graph 3D preview, Graph 2D naming, graph help updates, graph language updates, active language packages and Graph 3D layout fixes."
+      "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.21-daily",
+      "summary": "Daily build with bundled language packages, package-aware language configuration, Graph3D/geometry foundation and updated installer/updater packaging."
     },
     "beta": {
       "version": "2.0.2026.05.16",

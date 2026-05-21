@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$LanguageDirectory = "src/syscalculator",
     [string]$HelpDirectory = "src/syscalculator/Resources/Help",
     [string]$HelpContentDirectory = "src/syscalculator/Resources/Help/Content",
@@ -9,7 +9,15 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Encoding rule:
+# - Run this script with PowerShell 7+ (`pwsh`) to avoid Windows PowerShell 5.1
+#   encoding surprises.
+# - Generated package files are written as UTF-8 without BOM so package hashes
+#   remain stable.
+$Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $scriptRoot "Assert-PowerShell7.ps1") -Purpose "language packages" -ScriptPath $PSCommandPath
 $repoRoot = Split-Path -Parent $scriptRoot
 $languageRoot = Join-Path $repoRoot $LanguageDirectory
 $helpRoot = Join-Path $repoRoot $HelpDirectory
@@ -94,6 +102,15 @@ function Copy-DirectoryContent {
     }
 }
 
+function Write-Utf8NoBomText {
+    param(
+        [string]$Path,
+        [string]$Text
+    )
+
+    [System.IO.File]::WriteAllText($Path, $Text, $script:Utf8NoBom)
+}
+
 function Read-LanguageMap {
     param([string]$Path)
 
@@ -129,6 +146,68 @@ function Set-ToolEditorHelpContent {
     New-Item -ItemType Directory -Path $toolEditorRoot -Force | Out-Null
 
     if ($LanguageCode -eq "ned") {
+        return
+    }
+
+    $localizedPages = @{
+        deu = @{
+            "overview.html" = "<p>ToolEditor ist der Arbeitsbereich fuer Tiedragon-Sprachpakete. Links steht der Paketbaum, in der Mitte der Editor und rechts die Vorschau.</p><h2>Aufbau</h2><ul><li>Uebersetzung enthaelt die Spracheintraege.</li><li>Benutzerhilfe enthaelt normale Handbuchseiten.</li><li>NOD fuer Entwickler enthaelt technische Themen.</li><li>Formelkarte enthaelt Rechen- und Formelhilfe.</li><li>Medien und Bilder enthaelt nur erlaubte Bilder.</li></ul><p>Geschlossene Registerkarten bleiben im Baum sichtbar, damit die Struktur erhalten bleibt.</p>"
+            "package-workflow.html" = "<p>Ein Sprachpaket beginnt immer mit einem Basispaket. Dadurch entsteht kein leeres Paket und die feste Struktur bleibt erhalten.</p><h2>Aktionen</h2><ul><li>Neues Paket erstellt ein Paket aus der englischen Basis.</li><li>Sprachpaket oeffnen oeffnet ein Konzept oder ein kompiliertes Paket.</li><li>Konzept speichern speichert die Arbeit ohne Release-Status.</li><li>Sprachpaket kompilieren erstellt die endgueltige .lngpdk-Datei.</li></ul><div class=""warning-sign""><div><b>Ein Konzept ist kein offizielles Paket.</b><br>Nur ein kompiliertes Paket gehoert in Daily oder Release.</div></div>"
+            "html-editor.html" = "<p>HTML-Dokumente koennen als Quelle oder im Bearbeitungsmodus geaendert werden.</p><h2>Quelle</h2><p>Quelle zeigt HTML mit Zeilennummern und exakten Tags.</p><h2>Bearbeiten</h2><p>Bearbeiten zeigt die Seite als editierbaren Hilfetext.</p><h2>Bloecke</h2><p>H1, H2, P, Info, Tip, Warn, Code, Kbd, Link und Img fuegen Standardteile ein. Interne Links funktionieren in der Vorschau wie in der echten Hilfe.</p>"
+            "media.html" = "<p>Medien ist der Dateimanager fuer Bilder im Hilfesystem.</p><h2>Erlaubt</h2><ul><li>png</li><li>jpg und jpeg</li><li>svg</li></ul><p>Unbekannte Dateien gehoeren nicht in ein Sprachpaket. Die Vorschau nutzt eine volle Flaeche; Sie koennen zoomen und das Bild mit der Maus verschieben.</p>"
+            "compile.html" = "<p>Kompilieren Sie erst, wenn der Inhalt vollstaendig ist. ToolEditor prueft Struktur, Links, Bilder, Skripte und Akzente.</p><h2>Qualitaet</h2><ul><li>Alle Pflichtdateien muessen vorhanden sein.</li><li>Interne Links muessen funktionieren.</li><li>Bilder muessen existieren.</li><li>Nur basis.js, nod.js und formula.js sind erlaubt.</li><li>SHA-256-Pruefsummen sichern das Paket.</li></ul>"
+        }
+        fra = @{
+            "overview.html" = "<p>ToolEditor est l'espace de travail des paquets de langue Tiedragon. L'arborescence est a gauche, l'editeur au centre et l'apercu a droite.</p><h2>Structure</h2><ul><li>Traduction contient les entrees de langue.</li><li>Aide utilisateur contient les pages du manuel.</li><li>NOD pour developpeurs contient les sujets techniques.</li><li>Carte de formules contient l'aide de calcul.</li><li>Medias et images contient seulement les images autorisees.</li></ul><p>Les onglets fermes restent visibles dans l'arborescence.</p>"
+            "package-workflow.html" = "<p>Un paquet de langue commence toujours par un paquet de base. Cela evite les paquets vides et garde la structure fixe.</p><h2>Actions</h2><ul><li>Nouveau paquet cree un paquet depuis la base anglaise.</li><li>Ouvrir paquet de langue ouvre un concept ou un paquet compile.</li><li>Enregistrer concept garde le travail sans statut officiel.</li><li>Compiler paquet de langue cree le fichier .lngpdk final.</li></ul><div class=""warning-sign""><div><b>Un concept n'est pas un paquet officiel.</b><br>Seul un paquet compile appartient a daily ou release.</div></div>"
+            "html-editor.html" = "<p>Les documents HTML peuvent etre modifies en mode Source ou Edition.</p><h2>Source</h2><p>Source montre le HTML avec numeros de ligne et balises exactes.</p><h2>Edition</h2><p>Edition affiche la page comme texte d'aide modifiable.</p><h2>Blocs</h2><p>H1, H2, P, Info, Tip, Warn, Code, Kbd, Link et Img ajoutent des elements standard. Les liens internes fonctionnent dans l'apercu comme dans l'aide reelle.</p>"
+            "media.html" = "<p>Medias est le gestionnaire de fichiers pour les images de l'aide.</p><h2>Autorise</h2><ul><li>png</li><li>jpg et jpeg</li><li>svg</li></ul><p>Les fichiers inconnus n'ont pas leur place dans un paquet de langue. L'apercu utilise toute la zone; vous pouvez zoomer et deplacer l'image a la souris.</p>"
+            "compile.html" = "<p>Compilez seulement quand le contenu est complet. ToolEditor verifie structure, liens, images, scripts et accents.</p><h2>Qualite</h2><ul><li>Tous les fichiers obligatoires doivent exister.</li><li>Les liens internes doivent fonctionner.</li><li>Les images doivent exister.</li><li>Seuls basis.js, nod.js et formula.js sont autorises.</li><li>Les sommes SHA-256 protegent le paquet.</li></ul>"
+        }
+        ind = @{
+            "overview.html" = "<p>ToolEditor adalah ruang kerja untuk paket bahasa Tiedragon. Pohon paket ada di kiri, editor aktif di tengah, dan pratinjau di kanan.</p><h2>Struktur</h2><ul><li>Terjemahan berisi entri bahasa.</li><li>Bantuan pengguna berisi halaman manual.</li><li>NOD untuk pengembang berisi topik teknis.</li><li>Kartu formula berisi bantuan perhitungan.</li><li>Media dan gambar hanya berisi gambar yang diizinkan.</li></ul><p>Tab yang ditutup tetap terlihat di pohon.</p>"
+            "package-workflow.html" = "<p>Paket bahasa selalu dimulai dari paket dasar. Ini mencegah paket kosong dan menjaga struktur tetap tetap.</p><h2>Aksi</h2><ul><li>Paket baru membuat paket dari basis Inggris.</li><li>Buka paket bahasa membuka konsep atau paket terkompilasi.</li><li>Simpan konsep menyimpan pekerjaan tanpa status resmi.</li><li>Kompilasi paket bahasa membuat file .lngpdk akhir.</li></ul><div class=""warning-sign""><div><b>Konsep bukan paket resmi.</b><br>Hanya paket terkompilasi yang masuk ke daily atau release.</div></div>"
+            "html-editor.html" = "<p>Dokumen HTML dapat diedit dalam mode Source atau Edit.</p><h2>Source</h2><p>Source menampilkan HTML dengan nomor baris dan tag yang tepat.</p><h2>Edit</h2><p>Edit menampilkan halaman sebagai teks bantuan yang dapat diedit.</p><h2>Blok</h2><p>H1, H2, P, Info, Tip, Warn, Code, Kbd, Link dan Img menambahkan bagian standar. Link internal bekerja di pratinjau seperti bantuan asli.</p>"
+            "media.html" = "<p>Media adalah pengelola file untuk gambar dalam bantuan.</p><h2>Diizinkan</h2><ul><li>png</li><li>jpg dan jpeg</li><li>svg</li></ul><p>File tidak dikenal tidak boleh ada dalam paket bahasa. Pratinjau memakai kanvas penuh; Anda dapat memperbesar dan menggeser gambar dengan mouse.</p>"
+            "compile.html" = "<p>Kompilasi hanya saat konten lengkap. ToolEditor memeriksa struktur, link, gambar, skrip dan aksen.</p><h2>Kualitas</h2><ul><li>Semua file wajib harus ada.</li><li>Link internal harus bekerja.</li><li>Gambar harus ada.</li><li>Hanya basis.js, nod.js dan formula.js yang diizinkan.</li><li>Checksum SHA-256 melindungi paket.</li></ul>"
+        }
+        ita = @{
+            "overview.html" = "<p>ToolEditor e l'area di lavoro per i pacchetti lingua Tiedragon. L'albero del pacchetto e a sinistra, l'editor al centro e l'anteprima a destra.</p><h2>Struttura</h2><ul><li>Traduzione contiene le voci lingua.</li><li>Aiuto utente contiene le pagine manuale.</li><li>NOD per sviluppatori contiene temi tecnici.</li><li>Scheda formule contiene aiuto di calcolo.</li><li>Media e immagini contiene solo immagini consentite.</li></ul><p>Le schede chiuse restano visibili nell'albero.</p>"
+            "package-workflow.html" = "<p>Un pacchetto lingua inizia sempre da un pacchetto base. Cosi non nasce un pacchetto vuoto e la struttura resta fissa.</p><h2>Azioni</h2><ul><li>Nuovo pacchetto crea un pacchetto dalla base inglese.</li><li>Apri pacchetto lingua apre un concetto o un pacchetto compilato.</li><li>Salva concetto conserva il lavoro senza stato ufficiale.</li><li>Compila pacchetto lingua crea il file .lngpdk finale.</li></ul><div class=""warning-sign""><div><b>Un concetto non e un pacchetto ufficiale.</b><br>Solo un pacchetto compilato appartiene a daily o release.</div></div>"
+            "html-editor.html" = "<p>I documenti HTML possono essere modificati in Source o Edit.</p><h2>Source</h2><p>Source mostra HTML con numeri di riga e tag esatti.</p><h2>Edit</h2><p>Edit mostra la pagina come testo guida modificabile.</p><h2>Blocchi</h2><p>H1, H2, P, Info, Tip, Warn, Code, Kbd, Link e Img aggiungono parti standard. I link interni funzionano nell'anteprima come nella guida reale.</p>"
+            "media.html" = "<p>Media e il file manager per immagini nella guida.</p><h2>Consentiti</h2><ul><li>png</li><li>jpg e jpeg</li><li>svg</li></ul><p>File sconosciuti non appartengono a un pacchetto lingua. L'anteprima usa tutta l'area; puoi zoomare e trascinare l'immagine con il mouse.</p>"
+            "compile.html" = "<p>Compila solo quando il contenuto e completo. ToolEditor controlla struttura, link, immagini, script e accenti.</p><h2>Qualita</h2><ul><li>Tutti i file obbligatori devono esistere.</li><li>I link interni devono funzionare.</li><li>Le immagini devono esistere.</li><li>Sono consentiti solo basis.js, nod.js e formula.js.</li><li>I checksum SHA-256 proteggono il pacchetto.</li></ul>"
+        }
+        por = @{
+            "overview.html" = "<p>ToolEditor e o espaco de trabalho para pacotes de idioma Tiedragon. A arvore do pacote fica a esquerda, o editor no centro e a visualizacao a direita.</p><h2>Estrutura</h2><ul><li>Traducao contem as entradas de idioma.</li><li>Ajuda do usuario contem paginas do manual.</li><li>NOD para desenvolvedores contem topicos tecnicos.</li><li>Cartao de formulas contem ajuda de calculo.</li><li>Midia e imagens contem apenas imagens permitidas.</li></ul><p>Guias fechadas continuam visiveis na arvore.</p>"
+            "package-workflow.html" = "<p>Um pacote de idioma sempre comeca a partir de um pacote base. Isso evita pacotes vazios e mantem a estrutura fixa.</p><h2>Acoes</h2><ul><li>Novo pacote cria um pacote a partir da base inglesa.</li><li>Abrir pacote de idioma abre um conceito ou pacote compilado.</li><li>Salvar conceito guarda o trabalho sem status oficial.</li><li>Compilar pacote de idioma cria o arquivo .lngpdk final.</li></ul><div class=""warning-sign""><div><b>Um conceito nao e pacote oficial.</b><br>Somente pacote compilado pertence ao daily ou release.</div></div>"
+            "html-editor.html" = "<p>Documentos HTML podem ser editados em Source ou Edit.</p><h2>Source</h2><p>Source mostra HTML com numeros de linha e tags exatas.</p><h2>Edit</h2><p>Edit mostra a pagina como texto de ajuda editavel.</p><h2>Blocos</h2><p>H1, H2, P, Info, Tip, Warn, Code, Kbd, Link e Img adicionam partes padrao. Links internos funcionam na visualizacao como na ajuda real.</p>"
+            "media.html" = "<p>Midia e o gerenciador de arquivos para imagens na ajuda.</p><h2>Permitidos</h2><ul><li>png</li><li>jpg e jpeg</li><li>svg</li></ul><p>Arquivos desconhecidos nao pertencem a um pacote de idioma. A visualizacao usa a area inteira; voce pode ampliar e arrastar a imagem com o mouse.</p>"
+            "compile.html" = "<p>Compile somente quando o conteudo estiver completo. ToolEditor verifica estrutura, links, imagens, scripts e acentos.</p><h2>Qualidade</h2><ul><li>Todos os arquivos obrigatorios devem existir.</li><li>Links internos devem funcionar.</li><li>Imagens devem existir.</li><li>Apenas basis.js, nod.js e formula.js sao permitidos.</li><li>Checksums SHA-256 protegem o pacote.</li></ul>"
+        }
+        spa = @{
+            "overview.html" = "<p>ToolEditor es el espacio de trabajo para paquetes de idioma Tiedragon. El arbol del paquete esta a la izquierda, el editor en el centro y la vista previa a la derecha.</p><h2>Estructura</h2><ul><li>Traduccion contiene las entradas de idioma.</li><li>Ayuda de usuario contiene paginas del manual.</li><li>NOD para desarrolladores contiene temas tecnicos.</li><li>Tarjeta de formulas contiene ayuda de calculo.</li><li>Medios e imagenes contiene solo imagenes permitidas.</li></ul><p>Las pestanas cerradas siguen visibles en el arbol.</p>"
+            "package-workflow.html" = "<p>Un paquete de idioma siempre empieza desde un paquete base. Esto evita paquetes vacios y mantiene la estructura fija.</p><h2>Acciones</h2><ul><li>Nuevo paquete crea un paquete desde la base inglesa.</li><li>Abrir paquete de idioma abre un concepto o paquete compilado.</li><li>Guardar concepto conserva el trabajo sin estado oficial.</li><li>Compilar paquete de idioma crea el archivo .lngpdk final.</li></ul><div class=""warning-sign""><div><b>Un concepto no es un paquete oficial.</b><br>Solo un paquete compilado pertenece a daily o release.</div></div>"
+            "html-editor.html" = "<p>Los documentos HTML pueden editarse en Source o Edit.</p><h2>Source</h2><p>Source muestra HTML con numeros de linea y etiquetas exactas.</p><h2>Edit</h2><p>Edit muestra la pagina como texto de ayuda editable.</p><h2>Bloques</h2><p>H1, H2, P, Info, Tip, Warn, Code, Kbd, Link e Img agregan partes estandar. Los enlaces internos funcionan en la vista previa como en la ayuda real.</p>"
+            "media.html" = "<p>Medios es el gestor de archivos para imagenes de la ayuda.</p><h2>Permitidos</h2><ul><li>png</li><li>jpg y jpeg</li><li>svg</li></ul><p>Los archivos desconocidos no pertenecen a un paquete de idioma. La vista previa usa toda el area; puedes hacer zoom y arrastrar la imagen con el raton.</p>"
+            "compile.html" = "<p>Compila solo cuando el contenido este completo. ToolEditor comprueba estructura, enlaces, imagenes, scripts y acentos.</p><h2>Calidad</h2><ul><li>Todos los archivos obligatorios deben existir.</li><li>Los enlaces internos deben funcionar.</li><li>Las imagenes deben existir.</li><li>Solo se permiten basis.js, nod.js y formula.js.</li><li>Las sumas SHA-256 protegen el paquete.</li></ul>"
+        }
+        zho = @{
+            "overview.html" = "<p>ToolEditor 是 Tiedragon 语言包的工作区。左侧是包树，中间是编辑器，右侧是预览。</p><h2>结构</h2><ul><li>翻译包含语言条目。</li><li>用户帮助包含普通手册页面。</li><li>开发者 NOD 包含技术主题。</li><li>公式卡包含计算和公式帮助。</li><li>媒体和图片只包含允许的图片。</li></ul><p>关闭的标签页仍保留在树中，方便继续浏览结构。</p>"
+            "package-workflow.html" = "<p>语言包始终从基础包开始。这样不会产生空包，并且固定结构保持一致。</p><h2>操作</h2><ul><li>新建包从英文基础结构创建包。</li><li>打开语言包打开概念包或已编译包。</li><li>保存概念语言包保存编辑工作，但不是正式发布。</li><li>编译语言包创建最终 .lngpdk 文件。</li></ul><div class=""warning-sign""><div><b>概念包不是正式包。</b><br>只有已编译包才属于 daily 或 release。</div></div>"
+            "html-editor.html" = "<p>HTML 文档可以在 Source 或 Edit 模式中编辑。</p><h2>Source</h2><p>Source 显示带行号和精确标签的 HTML。</p><h2>Edit</h2><p>Edit 将页面显示为可编辑的帮助文本。</p><h2>块</h2><p>H1、H2、P、Info、Tip、Warn、Code、Kbd、Link 和 Img 会插入标准部分。内部链接在预览中像真实帮助一样工作。</p>"
+            "media.html" = "<p>媒体是帮助图片的文件管理器。</p><h2>允许</h2><ul><li>png</li><li>jpg 和 jpeg</li><li>svg</li></ul><p>未知文件不属于语言包。预览使用完整画布；你可以缩放并用鼠标拖动图片。</p>"
+            "compile.html" = "<p>只有内容完整后才编译。ToolEditor 会检查结构、链接、图片、脚本和编码。</p><h2>质量</h2><ul><li>所有必需文件必须存在。</li><li>内部链接必须工作。</li><li>图片必须存在。</li><li>只允许 basis.js、nod.js 和 formula.js。</li><li>SHA-256 校验保护包。</li></ul>"
+        }
+    }
+
+    if ($localizedPages.ContainsKey($LanguageCode)) {
+        foreach ($page in $localizedPages[$LanguageCode].GetEnumerator()) {
+            Write-Utf8NoBomText `
+                -Path (Join-Path $toolEditorRoot $page.Key) `
+                -Text ($page.Value.Trim() + [Environment]::NewLine)
+        }
+
         return
     }
 
@@ -233,10 +312,9 @@ function Set-ToolEditorHelpContent {
     }
 
     foreach ($page in $pages.GetEnumerator()) {
-        [System.IO.File]::WriteAllText(
-            (Join-Path $toolEditorRoot $page.Key),
-            $page.Value.Trim() + [Environment]::NewLine,
-            [System.Text.UTF8Encoding]::new($false))
+        Write-Utf8NoBomText `
+            -Path (Join-Path $toolEditorRoot $page.Key) `
+            -Text ($page.Value.Trim() + [Environment]::NewLine)
     }
 }
 
@@ -299,7 +377,9 @@ foreach ($languageFile in $languageFiles) {
         packageVersion = $PackageVersion
         fallbackLanguage = "eng"
     }
-    $manifest | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 (Join-Path $concept "manifest.json")
+    Write-Utf8NoBomText `
+        -Path (Join-Path $concept "manifest.json") `
+        -Text (($manifest | ConvertTo-Json -Depth 5) + [Environment]::NewLine)
 
     $outputPackage = Join-Path $outputRoot ("Syscalculator.Language." + $code + ".lngpdk")
     $json = dotnet run --project $project --no-restore -- agent-compile $concept $outputPackage
@@ -319,13 +399,13 @@ foreach ($languageFile in $languageFiles) {
 }
 
 $manifestPath = Join-Path $outputRoot "language-packages.json"
-$results |
+$indexJson = $results |
     Select-Object packageKey, languageCode, displayName, packageSha256, payloadSha256, entryCount,
         @{ Name = "fileName"; Expression = { [System.IO.Path]::GetFileName($_.outputPath) } },
         @{ Name = "downloadPath"; Expression = { "packages/languages/" + [System.IO.Path]::GetFileName($_.outputPath) } },
         active, translationComplete, missingRequiredKeyCount, missingRequiredKeys |
-    ConvertTo-Json -Depth 5 |
-    Set-Content -Encoding UTF8 $manifestPath
+    ConvertTo-Json -Depth 5
+Write-Utf8NoBomText -Path $manifestPath -Text ($indexJson + [Environment]::NewLine)
 
 Write-Host "Generated $($results.Count) language packages in $outputRoot"
 Write-Host "Manifest: $manifestPath"
