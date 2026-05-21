@@ -987,43 +987,50 @@ public sealed class ToolEditorForm : Form
         if (_current is null)
             return;
 
-        if (_current.ReadOnly)
+        await SaveDocumentAsync(_current);
+    }
+
+    private async Task<bool> SaveDocumentAsync(ToolEditorDocument document)
+    {
+        if (document.ReadOnly)
         {
-            SetStatus("Alleen tonen: " + _current.DisplayName, isError: true);
-            return;
+            SetStatus("Alleen tonen: " + document.DisplayName, isError: true);
+            return false;
         }
 
-        await SyncHtmlEditorToSourceAsync();
+        if (ReferenceEquals(_current, document))
+            await SyncHtmlEditorToSourceAsync();
 
-        var path = _current.FilePath;
+        var path = document.FilePath;
         if (string.IsNullOrWhiteSpace(path))
         {
             using var dialog = new SaveFileDialog
             {
                 Title = "Save ToolEditor document",
-                FileName = _current.DisplayName.Replace('/', Path.DirectorySeparatorChar),
+                FileName = document.DisplayName.Replace('/', Path.DirectorySeparatorChar),
                 Filter = "Language package files (*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
             };
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
-                return;
+                return false;
 
             path = dialog.FileName;
-            _current.FilePath = path;
-            _current.DisplayName = Path.GetFileName(path);
-            _current.PackagePath = NormalizePackagePath(_current.DisplayName);
-            ApplyDocumentLabels(_current);
+            document.FilePath = path;
+            document.DisplayName = Path.GetFileName(path);
+            document.PackagePath = NormalizePackagePath(document.DisplayName);
+            ApplyDocumentLabels(document);
             RefreshFileTree();
             RefreshDocumentList();
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        if (_current.ImageBytes is not null)
-            File.WriteAllBytes(path, _current.ImageBytes);
+        if (document.ImageBytes is not null)
+            File.WriteAllBytes(path, document.ImageBytes);
         else
-            File.WriteAllText(path, _current.Editor.Text, Encoding.UTF8);
-        SetDirty(_current, false);
+            File.WriteAllText(path, document.Editor.Text, Encoding.UTF8);
+        SetDirty(document, false);
         SetStatus("Saved: " + path, isError: false);
+        return true;
     }
 
     private ToolEditorDocument AddDocument(string displayName, string text, string? filePath)
@@ -1322,16 +1329,22 @@ public sealed class ToolEditorForm : Form
             ClampSplitter(_contentSplit, 390);
     }
 
-    private void CloseDocument(ToolEditorDocument document)
+    private async void CloseDocument(ToolEditorDocument document)
     {
-        CloseDocuments([document]);
+        await CloseDocumentsAsync([document]);
     }
 
-    private void CloseDocuments(IEnumerable<ToolEditorDocument> documents)
+    private async Task<bool> CloseDocumentsAsync(IEnumerable<ToolEditorDocument> documents)
     {
         var closing = documents.Where(document => document.IsOpen).Distinct().ToList();
         if (closing.Count == 0)
-            return;
+            return true;
+
+        foreach (var document in closing)
+        {
+            if (!await ConfirmCloseDocumentAsync(document))
+                return false;
+        }
 
         var currentWasClosed = _current is not null && closing.Contains(_current);
         foreach (var document in closing)
@@ -1352,6 +1365,28 @@ public sealed class ToolEditorForm : Form
 
         RefreshTabStrip();
         UpdateUiState();
+        return true;
+    }
+
+    private async Task<bool> ConfirmCloseDocumentAsync(ToolEditorDocument document)
+    {
+        if (!document.Dirty || document.ReadOnly)
+            return true;
+
+        var result = MessageBox.Show(
+            this,
+            "Tab heeft niet-opgeslagen wijzigingen.\r\n\r\nOpslaan voordat de tab wordt gesloten?\r\n\r\n" + BuildTabTitle(document),
+            "ToolEditor",
+            MessageBoxButtons.YesNoCancel,
+            MessageBoxIcon.Warning);
+
+        if (result == DialogResult.Cancel)
+            return false;
+        if (result == DialogResult.No)
+            return true;
+
+        SelectDocument(document);
+        return await SaveDocumentAsync(document);
     }
 
     private void AttachTabContextMenu(ToolEditorDocument document, params Control[] controls)
@@ -1378,20 +1413,20 @@ public sealed class ToolEditorForm : Form
             closeRight.Enabled = index >= 0 && index < openDocuments.Count - 1;
         };
 
-        closeAll.Click += (_, _) => CloseDocuments(GetOpenDocumentsInTabOrder());
-        closeRight.Click += (_, _) =>
+        closeAll.Click += async (_, _) => await CloseDocumentsAsync(GetOpenDocumentsInTabOrder());
+        closeRight.Click += async (_, _) =>
         {
             var openDocuments = GetOpenDocumentsInTabOrder();
             var index = openDocuments.IndexOf(document);
             if (index >= 0)
-                CloseDocuments(openDocuments.Skip(index + 1));
+                await CloseDocumentsAsync(openDocuments.Skip(index + 1));
         };
-        closeLeft.Click += (_, _) =>
+        closeLeft.Click += async (_, _) =>
         {
             var openDocuments = GetOpenDocumentsInTabOrder();
             var index = openDocuments.IndexOf(document);
             if (index > 0)
-                CloseDocuments(openDocuments.Take(index));
+                await CloseDocumentsAsync(openDocuments.Take(index));
         };
 
         return menu;
