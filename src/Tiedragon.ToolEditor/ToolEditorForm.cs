@@ -346,7 +346,11 @@ public sealed class ToolEditorForm : Form
         toolbar.Items.Add(CreateHtmlButton("Img", "Afbeelding uit media invoegen", (_, _) => InsertHtmlImage()));
         toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(CreateHtmlButton("UL", "Lijst invoegen", (_, _) => InsertHtmlSnippet("<ul>\r\n  <li>Item</li>\r\n</ul>")));
-        toolbar.Items.Add(CreateHtmlButton("Notice", "Infoblok invoegen", (_, _) => InsertHtmlSnippet("<div class=\"notice\">Tekst</div>")));
+        toolbar.Items.Add(CreateHtmlButton("Info", "Infoblok invoegen", (_, _) => InsertHtmlSnippet("<div class=\"help-info\">Informatie</div>")));
+        toolbar.Items.Add(CreateHtmlButton("Tip", "Tipblok invoegen", (_, _) => InsertHtmlSnippet("<div class=\"help-tip\">Tip</div>")));
+        toolbar.Items.Add(CreateHtmlButton("Warn", "Waarschuwing invoegen", (_, _) => InsertHtmlSnippet("<div class=\"help-warning\">Waarschuwing</div>")));
+        toolbar.Items.Add(CreateHtmlButton("Code", "Codeblok invoegen", (_, _) => InsertHtmlSnippet("<pre><code>code</code></pre>")));
+        toolbar.Items.Add(CreateHtmlButton("Kbd", "Toets/keyboard invoegen", (_, _) => InsertHtmlSnippet("<kbd>Ctrl</kbd>")));
         toolbar.Items.Add(CreateHtmlButton("BR", "Regeleinde invoegen", (_, _) => InsertHtmlSnippet("<br>")));
         return toolbar;
     }
@@ -1855,6 +1859,13 @@ public sealed class ToolEditorForm : Form
             body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }
             h1 { font-size: 22px; color: #0f3f8f; }
             .notice { border-left: 4px solid #1d70d8; background: #eff6ff; padding: 10px 12px; margin: 10px 0; }
+            .help-info, .help-tip, .help-warning { border-left: 4px solid; padding: 10px 12px; margin: 10px 0; }
+            .help-info { border-color: #1d70d8; background: #eff6ff; }
+            .help-tip { border-color: #16803c; background: #ecfdf3; }
+            .help-warning { border-color: #c2410c; background: #fff7ed; }
+            pre { white-space: pre-wrap; font-family: Consolas, monospace; background: #f8fafc; border: 1px solid #d7e0ec; padding: 12px; }
+            code { font-family: Consolas, monospace; }
+            kbd { font-family: Consolas, monospace; border: 1px solid #cbd5e1; border-bottom-width: 2px; border-radius: 4px; background: #f8fafc; padding: 1px 5px; }
             img { max-width: 100%; height: auto; }
           </style>
         </head>
@@ -1988,6 +1999,12 @@ public sealed class ToolEditorForm : Form
             th { width: 220px; text-align: left; background: #f3f7fc; color: #173b70; }
             pre { white-space: pre-wrap; font-family: Consolas, monospace; background: #f8fafc; border: 1px solid #d7e0ec; padding: 12px; }
             .notice { border-left: 4px solid #1d70d8; background: #eff6ff; padding: 10px 12px; margin: 10px 0; }
+            .help-info, .help-tip, .help-warning { border-left: 4px solid; padding: 10px 12px; margin: 10px 0; }
+            .help-info { border-color: #1d70d8; background: #eff6ff; }
+            .help-tip { border-color: #16803c; background: #ecfdf3; }
+            .help-warning { border-color: #c2410c; background: #fff7ed; }
+            code { font-family: Consolas, monospace; }
+            kbd { font-family: Consolas, monospace; border: 1px solid #cbd5e1; border-bottom-width: 2px; border-radius: 4px; background: #f8fafc; padding: 1px 5px; }
             .media-meta { color: #334155; margin-bottom: 14px; }
             .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
             .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
