@@ -31,6 +31,7 @@ public sealed class ToolEditorForm : Form
     private readonly ToolStrip _htmlToolbar;
     private readonly RowStyle _htmlToolbarRow;
     private readonly Panel _editorContent;
+    private readonly WebView2 _htmlEditor;
     private readonly WebView2 _preview;
     private readonly Label _statusLabel;
     private readonly ToolStripButton _saveButton;
@@ -39,7 +40,10 @@ public sealed class ToolEditorForm : Form
     private readonly List<ToolEditorDocument> _documents = [];
     private string _manifestText = "";
     private string? _pendingHtml;
+    private string? _pendingHtmlEditor;
     private bool _browserFailed;
+    private bool _htmlEditorFailed;
+    private bool _loadingHtmlEditor;
     private bool _updatingNavigation;
     private ToolEditorDocument? _current;
 
@@ -124,6 +128,34 @@ public sealed class ToolEditorForm : Form
         _htmlToolbar = CreateHtmlToolbar();
         _htmlToolbar.Visible = false;
 
+        _htmlEditor = new WebView2
+        {
+            Dock = DockStyle.Fill,
+            AllowExternalDrop = false,
+            CreationProperties = new CoreWebView2CreationProperties
+            {
+                UserDataFolder = GetWebView2UserDataFolder("HtmlEditor")
+            }
+        };
+        _htmlEditor.CoreWebView2InitializationCompleted += (_, e) =>
+        {
+            if (!e.IsSuccess || _htmlEditor.CoreWebView2 is null)
+                return;
+
+            _htmlEditor.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+            _htmlEditor.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+            _htmlEditor.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            _htmlEditor.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            _htmlEditor.CoreWebView2.WebMessageReceived += (_, _) =>
+            {
+                if (_current is not null && _current.HtmlEditMode)
+                    SetDirty(_current, true);
+            };
+            ShowPendingHtmlEditorIfReady();
+        };
+        _htmlEditor.NavigationCompleted += (_, _) => _loadingHtmlEditor = false;
+        _ = InitializeHtmlEditorAsync();
+
         _editorContent = new Panel
         {
             Dock = DockStyle.Fill,
@@ -154,7 +186,7 @@ public sealed class ToolEditorForm : Form
             AllowExternalDrop = false,
             CreationProperties = new CoreWebView2CreationProperties
             {
-                UserDataFolder = GetWebView2UserDataFolder()
+                UserDataFolder = GetWebView2UserDataFolder("Preview")
             }
         };
         _preview.CoreWebView2InitializationCompleted += (_, e) =>
@@ -300,6 +332,9 @@ public sealed class ToolEditorForm : Form
             RenderMode = ToolStripRenderMode.System
         };
 
+        toolbar.Items.Add(CreateHtmlButton("Source", "HTML-broncode bewerken", (_, _) => SetHtmlEditMode(false)));
+        toolbar.Items.Add(CreateHtmlButton("Edit", "Visuele HTML-editor", (_, _) => SetHtmlEditMode(true)));
+        toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(CreateHtmlButton("H1", "Kop 1 invoegen", (_, _) => WrapHtmlSelection("h1", "Kop")));
         toolbar.Items.Add(CreateHtmlButton("H2", "Kop 2 invoegen", (_, _) => WrapHtmlSelection("h2", "Kop")));
         toolbar.Items.Add(CreateHtmlButton("P", "Paragraaf invoegen", (_, _) => WrapHtmlSelection("p", "Tekst")));
@@ -665,7 +700,7 @@ public sealed class ToolEditorForm : Form
         MessageBox.Show(this, message, "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
-    private void SaveCurrent()
+    private async void SaveCurrent()
     {
         if (_current is null)
             return;
@@ -675,6 +710,8 @@ public sealed class ToolEditorForm : Form
             SetStatus("Alleen tonen: " + _current.DisplayName, isError: true);
             return;
         }
+
+        await SyncHtmlEditorToSourceAsync();
 
         var path = _current.FilePath;
         if (string.IsNullOrWhiteSpace(path))
@@ -795,18 +832,39 @@ public sealed class ToolEditorForm : Form
             "Grootte: " + bytes.ToString("N0") + " bytes\r\n";
     }
 
+    private async void SetHtmlEditMode(bool editMode)
+    {
+        if (_current is null || _current.ImageBytes is not null || !IsHtmlDocument(_current))
+        {
+            SetStatus("Selecteer eerst een HTML-document.", isError: true);
+            return;
+        }
+
+        if (!editMode && _current.HtmlEditMode)
+            await SyncHtmlEditorToSourceAsync();
+
+        _current.HtmlEditMode = editMode;
+        SelectDocument(_current);
+    }
+
     private void WrapHtmlSelection(string tag, string fallbackText)
     {
         if (!CanEditCurrentHtml())
             return;
 
-        var editor = _current!.Editor;
-        var selected = editor.SelectedText;
-        if (string.IsNullOrEmpty(selected))
-            selected = fallbackText;
+        if (_current!.HtmlEditMode)
+            ExecuteHtmlEditorCommand("formatBlock", "<" + tag + ">");
+        else
+        {
+            var editor = _current.Editor;
+            var selected = editor.SelectedText;
+            if (string.IsNullOrEmpty(selected))
+                selected = fallbackText;
 
-        editor.SelectedText = "<" + tag + ">" + selected + "</" + tag + ">";
-        editor.Focus();
+            editor.SelectedText = "<" + tag + ">" + selected + "</" + tag + ">";
+            editor.Focus();
+        }
+
         UpdatePreview();
     }
 
@@ -815,10 +873,16 @@ public sealed class ToolEditorForm : Form
         if (!CanEditCurrentHtml())
             return;
 
-        var editor = _current!.Editor;
-        var selected = string.IsNullOrWhiteSpace(editor.SelectedText) ? "linktekst" : editor.SelectedText;
-        editor.SelectedText = "<a href=\"#\">" + selected + "</a>";
-        editor.Focus();
+        if (_current!.HtmlEditMode)
+            ExecuteHtmlEditorCommand("createLink", "#");
+        else
+        {
+            var editor = _current.Editor;
+            var selected = string.IsNullOrWhiteSpace(editor.SelectedText) ? "linktekst" : editor.SelectedText;
+            editor.SelectedText = "<a href=\"#\">" + selected + "</a>";
+            editor.Focus();
+        }
+
         UpdatePreview();
     }
 
@@ -829,7 +893,10 @@ public sealed class ToolEditorForm : Form
 
         var media = _documents.FirstOrDefault(document => document.ImageBytes is not null);
         var path = media?.PackagePath ?? "assets/afbeelding.png";
-        InsertHtmlSnippet("<img src=\"" + path + "\" alt=\"\">");
+        if (_current!.HtmlEditMode)
+            ExecuteHtmlEditorInsertHtml("<img src=\"" + path + "\" alt=\"\">");
+        else
+            InsertHtmlSnippet("<img src=\"" + path + "\" alt=\"\">");
     }
 
     private void InsertHtmlSnippet(string snippet)
@@ -837,9 +904,36 @@ public sealed class ToolEditorForm : Form
         if (!CanEditCurrentHtml())
             return;
 
-        _current!.Editor.SelectedText = snippet;
-        _current.Editor.Focus();
+        if (_current!.HtmlEditMode)
+            ExecuteHtmlEditorInsertHtml(snippet);
+        else
+        {
+            _current.Editor.SelectedText = snippet;
+            _current.Editor.Focus();
+        }
+
         UpdatePreview();
+    }
+
+    private void ExecuteHtmlEditorCommand(string command, string value)
+    {
+        if (_htmlEditor.CoreWebView2 is null)
+            return;
+
+        var script = "document.execCommand(" +
+            JsonSerializer.Serialize(command) + ", false, " +
+            JsonSerializer.Serialize(value) + "); window.chrome.webview.postMessage('changed');";
+        _ = _htmlEditor.CoreWebView2.ExecuteScriptAsync(script);
+    }
+
+    private void ExecuteHtmlEditorInsertHtml(string html)
+    {
+        if (_htmlEditor.CoreWebView2 is null)
+            return;
+
+        var script = "document.execCommand('insertHTML', false, " +
+            JsonSerializer.Serialize(html) + "); window.chrome.webview.postMessage('changed');";
+        _ = _htmlEditor.CoreWebView2.ExecuteScriptAsync(script);
     }
 
     private bool CanEditCurrentHtml()
@@ -889,7 +983,12 @@ public sealed class ToolEditorForm : Form
         UpdateHtmlToolbarState(document);
         _editorContent.SuspendLayout();
         _editorContent.Controls.Clear();
-        if (document.LineNumbers is not null && document.ImageBytes is null)
+        if (document.HtmlEditMode && document.ImageBytes is null && IsHtmlDocument(document))
+        {
+            _editorContent.Controls.Add(_htmlEditor);
+            SetHtmlEditor(document.Editor.Text);
+        }
+        else if (document.LineNumbers is not null && document.ImageBytes is null)
         {
             var host = new Panel
             {
@@ -1252,10 +1351,12 @@ public sealed class ToolEditorForm : Form
             SelectDocument(document);
     }
 
-    private void ValidateCurrent(bool showMessage)
+    private async void ValidateCurrent(bool showMessage)
     {
         if (_current is null)
             return;
+
+        await SyncHtmlEditorToSourceAsync();
 
         var errors = ValidateDocument(_current);
         AddMissingMediaLinkErrors(_current, errors);
@@ -1589,7 +1690,7 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private void UpdatePreview()
+    private async void UpdatePreview()
     {
         if (_current is null)
         {
@@ -1597,6 +1698,7 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        await SyncHtmlEditorToSourceAsync();
         SetHtml(BuildPreviewHtml(_current));
     }
 
@@ -1629,6 +1731,90 @@ public sealed class ToolEditorForm : Form
             var dataUri = "data:" + ImageMimeType(media.PackagePath) + ";base64," + Convert.ToBase64String(media.ImageBytes);
             return match.Value.Replace(link, dataUri);
         });
+    }
+
+    private void SetHtmlEditor(string html)
+    {
+        SetHtmlEditorHtml(BuildEditableHtml(html));
+    }
+
+    private void SetHtmlEditorHtml(string html)
+    {
+        _loadingHtmlEditor = true;
+        _pendingHtmlEditor = html;
+        ShowPendingHtmlEditorIfReady();
+    }
+
+    private void ShowPendingHtmlEditorIfReady()
+    {
+        if (_htmlEditorFailed || IsDisposed || _htmlEditor.IsDisposed || _pendingHtmlEditor is null || _htmlEditor.CoreWebView2 is null)
+            return;
+
+        var html = _pendingHtmlEditor;
+        _pendingHtmlEditor = null;
+        try
+        {
+            _htmlEditor.NavigateToString(html);
+        }
+        catch (COMException)
+        {
+            _htmlEditorFailed = true;
+        }
+        catch (ObjectDisposedException)
+        {
+            _htmlEditorFailed = true;
+        }
+    }
+
+    private static string BuildEditableHtml(string body)
+    {
+        return $$"""
+        <!doctype html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; margin: 16px; color: #1f2937; background: #fff; }
+            body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }
+            h1 { font-size: 22px; color: #0f3f8f; }
+            .notice { border-left: 4px solid #1d70d8; background: #eff6ff; padding: 10px 12px; margin: 10px 0; }
+            img { max-width: 100%; height: auto; }
+          </style>
+        </head>
+        <body contenteditable="true">
+          {{body}}
+          <script>
+            document.body.addEventListener('input', () => window.chrome.webview.postMessage('changed'));
+            document.body.focus();
+          </script>
+        </body>
+        </html>
+        """;
+    }
+
+    private async Task SyncHtmlEditorToSourceAsync()
+    {
+        if (_current is null || !_current.HtmlEditMode || _loadingHtmlEditor || _htmlEditor.CoreWebView2 is null)
+            return;
+
+        try
+        {
+            var json = await _htmlEditor.CoreWebView2.ExecuteScriptAsync("document.body.innerHTML");
+            var html = JsonSerializer.Deserialize<string>(json);
+            if (html is null)
+                return;
+
+            var cleaned = Regex.Replace(html, @"\s*<script>[\s\S]*?</script>\s*$", "", RegexOptions.IgnoreCase).Trim();
+            _current.Editor.Text = cleaned;
+        }
+        catch (COMException)
+        {
+            _htmlEditorFailed = true;
+        }
+        catch (ObjectDisposedException)
+        {
+            _htmlEditorFailed = true;
+        }
     }
 
     private static string BuildImagePreview(ToolEditorDocument document)
@@ -1765,6 +1951,33 @@ public sealed class ToolEditorForm : Form
         }
     }
 
+    private async Task InitializeHtmlEditorAsync()
+    {
+        try
+        {
+            await _htmlEditor.EnsureCoreWebView2Async();
+            ShowPendingHtmlEditorIfReady();
+        }
+        catch (COMException)
+        {
+            _htmlEditorFailed = true;
+        }
+        catch (ObjectDisposedException)
+        {
+            _htmlEditorFailed = true;
+        }
+        catch (Exception ex)
+        {
+            _htmlEditorFailed = true;
+            _htmlEditor.Controls.Add(new Label
+            {
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Text = "HTML editor could not start.\r\n" + ex.Message
+            });
+        }
+    }
+
     private void SetHtml(string html)
     {
         _pendingHtml = html;
@@ -1792,10 +2005,10 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string GetWebView2UserDataFolder()
+    private static string GetWebView2UserDataFolder(string name)
     {
         var root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var path = Path.Combine(root, "Syscalculator", "ToolEditor", "WebView2");
+        var path = Path.Combine(root, "Syscalculator", "ToolEditor", "WebView2", name);
         Directory.CreateDirectory(path);
         return path;
     }
@@ -1928,6 +2141,7 @@ public sealed class ToolEditorForm : Form
         public bool Dirty { get; set; }
         public bool ReadOnly { get; set; }
         public bool IsOpen { get; set; }
+        public bool HtmlEditMode { get; set; }
     }
 
     private sealed class LineNumberPanel : Panel
