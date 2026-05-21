@@ -945,6 +945,7 @@ public sealed class ToolEditorForm : Form
 
         document.HeaderPanel = header.Panel;
         document.HeaderTitle = header.Title;
+        AttachTabContextMenu(document, header.Panel, header.Title, header.CloseButton);
         _documents.Add(document);
         RefreshFileTree();
         RefreshDocumentList();
@@ -970,6 +971,7 @@ public sealed class ToolEditorForm : Form
 
         document.HeaderPanel = header.Panel;
         document.HeaderTitle = header.Title;
+        AttachTabContextMenu(document, header.Panel, header.Title, header.CloseButton);
         _documents.Add(document);
         RefreshFileTree();
         RefreshDocumentList();
@@ -1220,12 +1222,25 @@ public sealed class ToolEditorForm : Form
 
     private void CloseDocument(ToolEditorDocument document)
     {
-        document.IsOpen = false;
-        _tabStrip.Controls.Remove(document.HeaderPanel);
+        CloseDocuments([document]);
+    }
 
-        if (ReferenceEquals(_current, document))
+    private void CloseDocuments(IEnumerable<ToolEditorDocument> documents)
+    {
+        var closing = documents.Where(document => document.IsOpen).Distinct().ToList();
+        if (closing.Count == 0)
+            return;
+
+        var currentWasClosed = _current is not null && closing.Contains(_current);
+        foreach (var document in closing)
         {
-            _current = _documents.LastOrDefault(item => item.IsOpen);
+            document.IsOpen = false;
+            _tabStrip.Controls.Remove(document.HeaderPanel);
+        }
+
+        if (currentWasClosed)
+        {
+            _current = GetOpenDocumentsInTabOrder().LastOrDefault();
             _editorContent.Controls.Clear();
             if (_current is not null)
                 SelectDocument(_current);
@@ -1235,6 +1250,62 @@ public sealed class ToolEditorForm : Form
 
         RefreshTabStrip();
         UpdateUiState();
+    }
+
+    private void AttachTabContextMenu(ToolEditorDocument document, params Control[] controls)
+    {
+        var menu = CreateTabContextMenu(document);
+        foreach (var control in controls)
+            control.ContextMenuStrip = menu;
+    }
+
+    private ContextMenuStrip CreateTabContextMenu(ToolEditorDocument document)
+    {
+        var menu = new ContextMenuStrip();
+        var closeAll = menu.Items.Add("Sluit alle tabs");
+        var closeRight = menu.Items.Add("Sluit tabs rechts");
+        var closeLeft = menu.Items.Add("Sluit tabs links");
+
+        menu.Opening += (_, _) =>
+        {
+            SelectDocument(document);
+            var openDocuments = GetOpenDocumentsInTabOrder();
+            var index = openDocuments.IndexOf(document);
+            closeAll.Enabled = openDocuments.Count > 0;
+            closeLeft.Enabled = index > 0;
+            closeRight.Enabled = index >= 0 && index < openDocuments.Count - 1;
+        };
+
+        closeAll.Click += (_, _) => CloseDocuments(GetOpenDocumentsInTabOrder());
+        closeRight.Click += (_, _) =>
+        {
+            var openDocuments = GetOpenDocumentsInTabOrder();
+            var index = openDocuments.IndexOf(document);
+            if (index >= 0)
+                CloseDocuments(openDocuments.Skip(index + 1));
+        };
+        closeLeft.Click += (_, _) =>
+        {
+            var openDocuments = GetOpenDocumentsInTabOrder();
+            var index = openDocuments.IndexOf(document);
+            if (index > 0)
+                CloseDocuments(openDocuments.Take(index));
+        };
+
+        return menu;
+    }
+
+    private List<ToolEditorDocument> GetOpenDocumentsInTabOrder()
+    {
+        var result = new List<ToolEditorDocument>();
+        foreach (Control control in _tabStrip.Controls)
+        {
+            var document = _documents.FirstOrDefault(item => item.IsOpen && ReferenceEquals(item.HeaderPanel, control));
+            if (document is not null)
+                result.Add(document);
+        }
+
+        return result;
     }
 
     private void RemoveDocumentFromPackage(ToolEditorDocument document)
