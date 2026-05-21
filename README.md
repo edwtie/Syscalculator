@@ -29,6 +29,7 @@ src/Tiedragon.Graph            gedeelde graph-basis, formatting, pijlen en overl
 src/Tiedragon.Graph.2D         Graph2D API en WinForms-rendering, namespace Tiedragon.Graph.G2D
 src/Tiedragon.Graph.3D         Graph3D API, projectie, grid, camera en kompas, namespace Tiedragon.Graph.G3D
 src/Tiedragon.Help             gedeelde Help/HTML helpers
+src/Tiedragon.LanguagePackage  zelfstandige compiler voor .lngpdk taalpackages
 src/Tiedragon.ToolEditor       zelfstandige ToolEditor-app voor taalpackages, help-HTML en media
 src/Tiedragon.ClipboardConvert clipboard/data conversie helpers
 src/NodSystem.Demo             demo-console
@@ -39,6 +40,9 @@ src/Syscalculator.UI.Uwp       UWP placeholder/experiment
 ```
 
 Zie ook `docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg` voor de actuele Tiedragon Graph architectuur.
+Zie `docs/LANGUAGE_PACKAGE_DESIGN.md` en `docs/LANGUAGE_PACKAGE_TOOL.md` voor
+het Localization-hoofdstuk rond `.lngpdk`, basispackages en de zelfstandige
+Language Package toolchain.
 
 ## Run demo
 

@@ -1,9 +1,14 @@
-# Language Package 1.0
+# Localization / Language Package 1.0
 
 `Language Package 1.0` is the small agent-friendly compiler in
 `Tiedragon.LanguagePackage`. It builds and checks `.lngpdk` language packages
 for Tiedragon apps. Syscalculator is the first supported app, but the package
 identity comes from `product` and `softwareId` in `manifest.json`.
+
+This belongs to the `Tiedragon.Localization` domain. The compiler and
+`Tiedragon.ToolEditor` are standalone enough to move to their own git repository
+later; Syscalculator should only consume the compiled `.lngpdk` packages and
+keep its app-specific loading policy.
 
 The graphical editor is `Tiedragon.ToolEditor`. It is a standalone WinForms app
 for editing concept language packages, HTML help, formula cards and media. It

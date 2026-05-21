@@ -45,6 +45,7 @@ src/
 │  └─ Graph3DCompass.cs
 │
 ├─ Tiedragon.Help
+├─ Tiedragon.LanguagePackage
 ├─ Tiedragon.ToolEditor
 ├─ Tiedragon.ClipboardConvert
 │
@@ -86,7 +87,30 @@ The current graph architecture drawing is linked from `docs/ARCHITECTURE_INDEX.m
 docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg
 ```
 
-## A1. NuGet package management
+## A1. Localization
+
+Localization is een eigen Tiedragon-domein binnen de codebase. Syscalculator is
+de eerste consument, maar de package-tooling is niet Syscalculator-specifiek.
+
+```text
+Tiedragon.Localization      domeinnaam voor taalpackages, helpcontent en media
+Tiedragon.LanguagePackage   command-line compiler/validator voor .lngpdk
+Tiedragon.ToolEditor        editor voor conceptpackages, HTML help en media
+syscalculator               app-consument die alleen vertrouwde packages laadt
+```
+
+Het basispackage is de referentie voor een taalpakket. De compiler kan een
+conceptpakket tegen een basispackage controleren, ontbrekende bestanden
+toevoegen en ontbrekende taalsleutels aanvullen zonder bestaande vertalingen te
+overschrijven.
+
+Deze onderdelen moeten zelfstandig kunnen groeien. Als `Language Package 1.0`
+buiten Syscalculator gebruikt wordt, is de gewenste grens een eigen git
+repository voor `Tiedragon.Localization` met `Tiedragon.LanguagePackage` en
+`Tiedragon.ToolEditor` als projecten. Syscalculator houdt dan alleen een
+referentie of release-artifact vast en blijft consument van `.lngpdk`.
+
+## A2. NuGet package management
 
 Syscalculator 2.0 uses central NuGet package management through `Directory.Packages.props`.
 

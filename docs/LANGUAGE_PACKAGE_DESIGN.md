@@ -1,10 +1,11 @@
-# Language Package Design
+# Localization / Language Package Design
 
 ## Goal
 
+Localization is a Tiedragon domain, not only a Syscalculator feature.
 Syscalculator help and manuals are growing beyond a small set of loose `.lng`
-files. A language package should group all language-dependent material in one
-installable `.lngpdk` file, while keeping the current simple fallback behavior.
+files, so a language package groups all language-dependent material in one
+installable `.lngpdk` file while keeping the current simple fallback behavior.
 
 The design must support:
 
@@ -37,6 +38,24 @@ Resources/Help/Content
 
 The Help layer already supports `[some.lng.key]` placeholders and falls back to
 English through `LanguageCatalog` and `HelpApi`.
+
+## Repository Boundary
+
+`Tiedragon.Localization` is the logical owner for language packages, help
+content, formula cards and package media. Inside this repository the current
+projects are:
+
+```text
+src/Tiedragon.LanguagePackage
+src/Tiedragon.ToolEditor
+src/syscalculator/LanguagePackageService.cs
+```
+
+The first two projects are intentionally standalone. They can later move to a
+separate git repository for `Tiedragon.Localization`, because the package
+compiler and editor are useful for other Tiedragon apps as well. Syscalculator
+should then stay a consumer: it loads trusted `.lngpdk` packages and keeps only
+the app-specific reader/fallback integration.
 
 ## Package Format
 
@@ -353,16 +372,22 @@ Not implemented yet:
 - package removal UI;
 - package install button in the language dialog.
 
-Later, if this grows, it can move to:
+Logical package boundary:
 
 ```text
-src/Tiedragon.Help
+Tiedragon.Localization
+|-- Tiedragon.LanguagePackage
+|-- Tiedragon.ToolEditor
+`-- package schemas and validation docs
 ```
 
-or a new:
+Syscalculator boundary:
 
 ```text
-src/Tiedragon.Localization
+syscalculator
+|-- LanguagePackageService
+|-- LanguageCatalog integration
+`-- Help/Resources fallback integration
 ```
 
 ## Language Configuration
