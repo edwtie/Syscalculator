@@ -19,23 +19,44 @@ dotnet run --project src/Tiedragon.ToolEditor
 compile <input-folder> <output.lngpdk>
 pack-language <input-folder> <output.lngpdk>
 agent-compile <input-folder> <output.lngpdk>
+agent-compile-with-base <base-folder-or-package> <input-folder> <output.lngpdk>
 validate <package.lngpdk>
 inspect <package.lngpdk>
 ```
 
 `compile` and `pack-language` are equivalent. `agent-compile` is the same
 compiler with JSON output, intended for AI agents, scripts and release
-automation.
+automation. `agent-compile-with-base` first merges a basispackage into the
+concept folder before compiling.
 
 PowerShell helper:
 
 ```powershell
 tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk>
+tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk> -BasePackage <base-folder-or-package>
 ```
 
 The helper runs `agent-compile`, so callers can parse `success`, `code`,
 `packageSha256`, `payloadSha256`, `languageCode`, `packageKey` and `entryCount`
 without scraping human-readable text.
+
+## Basispackage Merge
+
+Use a basispackage when a concept package should be checked against a complete
+reference package and automatically filled before compile:
+
+```powershell
+tools/Compile-LanguagePackage.ps1 .\concept .\out.lngpdk -BasePackage .\base.lngpdk
+```
+
+The basispackage can be a concept folder or an existing `.lngpdk`. The compiler:
+
+- requires the same `producer`, `product` and `softwareId`;
+- copies missing non-manifest files from the base package;
+- maps missing language keys from `language/<base-code>.lng` into
+  `language/<target-code>.lng`;
+- never overwrites existing concept files or existing language keys;
+- reports `basePackage`, `addedEntries` and `addedLanguageKeys` in agent JSON.
 
 ## Input Folder
 
@@ -90,6 +111,7 @@ E_OUTPUT_EXTENSION
 E_MANIFEST_MISSING
 E_MANIFEST_JSON
 E_MANIFEST_INVALID
+E_BASE_PACKAGE
 E_REQUIRED_FILE
 E_PATH_UNSAFE
 E_FILE_BLOCKED
@@ -147,7 +169,10 @@ Agent JSON example:
   "packageSha256": "64 hex characters",
   "payloadSha256": "64 hex characters",
   "encrypted": false,
-  "signed": false
+  "signed": false,
+  "basePackage": "",
+  "addedEntries": [],
+  "addedLanguageKeys": []
 }
 ```
 

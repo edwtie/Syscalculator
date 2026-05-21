@@ -72,6 +72,7 @@ internal static class Program
                 "compile" => PackLanguage(args),
                 "pack-language" => PackLanguage(args),
                 "agent-compile" => AgentCompileLanguage(args),
+                "agent-compile-with-base" => AgentCompileLanguageWithBase(args),
                 "validate" => ValidatePackage(args),
                 "inspect" => InspectPackage(args),
                 _ => Usage(),
@@ -93,6 +94,7 @@ internal static class Program
         Console.WriteLine("  compile <input-folder> <output.lngpdk>");
         Console.WriteLine("  pack-language <input-folder> <output.lngpdk>");
         Console.WriteLine("  agent-compile <input-folder> <output.lngpdk>");
+        Console.WriteLine("  agent-compile-with-base <base-folder-or-package> <input-folder> <output.lngpdk>");
         Console.WriteLine("  validate <package.lngpdk>");
         Console.WriteLine("  inspect <package.lngpdk>");
         return 2;
@@ -135,6 +137,27 @@ internal static class Program
         }
     }
 
+    private static int AgentCompileLanguageWithBase(string[] args)
+    {
+        if (args.Length != 4)
+        {
+            WriteAgentError("E_ARGS", "agent-compile-with-base requires <base-folder-or-package> <input-folder> <output.lngpdk>.");
+            return 2;
+        }
+
+        try
+        {
+            var result = BuildLanguagePackageWithBase(args[1], args[2], args[3]);
+            Console.WriteLine(JsonSerializer.Serialize(result, AgentJsonOptions));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            WriteAgentError(GetErrorCode(ex), ex.Message);
+            return 1;
+        }
+    }
+
     private static void WriteAgentError(string code, string message)
     {
         var error = new LanguagePackageAgentError(false, code, message);
@@ -159,6 +182,8 @@ internal static class Program
             return "E_UNKNOWN";
 
         var message = ex.Message;
+        if (message.Contains("base package", StringComparison.OrdinalIgnoreCase))
+            return "E_BASE_PACKAGE";
         if (message.Contains("manifest", StringComparison.OrdinalIgnoreCase))
             return "E_MANIFEST_INVALID";
         if (message.Contains("language/", StringComparison.OrdinalIgnoreCase) && message.Contains("required", StringComparison.OrdinalIgnoreCase))
@@ -243,7 +268,69 @@ internal static class Program
             PackageSha256: ComputeSha256(File.ReadAllBytes(outputPath)),
             PayloadSha256: payloadHash,
             Encrypted: false,
-            Signed: false);
+            Signed: false,
+            BasePackage: "",
+            AddedEntries: [],
+            AddedLanguageKeys: []);
+    }
+
+    private static LanguagePackageBuildResult BuildLanguagePackageWithBase(
+        string basePackageValue,
+        string inputFolderValue,
+        string outputPathValue)
+    {
+        var basePackage = Path.GetFullPath(basePackageValue);
+        var inputFolder = Path.GetFullPath(inputFolderValue);
+        if (!Directory.Exists(inputFolder))
+            throw new DirectoryNotFoundException(inputFolder);
+
+        var baseEntries = ReadPackageEntryBytes(basePackage);
+        if (!baseEntries.TryGetValue("manifest.json", out var baseManifestBytes))
+            throw new InvalidDataException("Base package manifest.json is missing.");
+
+        var baseManifest = JsonSerializer.Deserialize<LanguagePackageManifest>(
+            DecodeUtf8Text(baseManifestBytes),
+            JsonOptions) ?? throw new InvalidDataException("Base package manifest.json is invalid.");
+        ValidateManifest(baseManifest);
+
+        var targetManifestPath = Path.Combine(inputFolder, "manifest.json");
+        if (!File.Exists(targetManifestPath))
+            throw new FileNotFoundException("manifest.json is required.", targetManifestPath);
+
+        var targetManifest = JsonSerializer.Deserialize<LanguagePackageManifest>(
+            File.ReadAllText(targetManifestPath),
+            JsonOptions) ?? throw new InvalidDataException("manifest.json is invalid.");
+        ValidateManifest(targetManifest);
+        ValidateSameApp(baseManifest, targetManifest);
+
+        var tempFolder = Path.Combine(Path.GetTempPath(), "Tiedragon.LanguagePackage", "base-merge", Guid.NewGuid().ToString("N"));
+        try
+        {
+            CopySourceFolder(inputFolder, tempFolder);
+            var addedEntries = AddMissingBaseEntries(baseEntries, baseManifest, tempFolder);
+            var addedLanguageKeys = AddMissingLanguageKeys(baseEntries, baseManifest, targetManifest, tempFolder);
+            var result = BuildLanguagePackage(tempFolder, outputPathValue);
+            return result with
+            {
+                BasePackage = basePackage,
+                AddedEntries = addedEntries,
+                AddedLanguageKeys = addedLanguageKeys,
+            };
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempFolder))
+                    Directory.Delete(tempFolder, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
     }
 
     private static int ValidatePackage(string[] args)
@@ -342,6 +429,185 @@ internal static class Program
         }
 
         return memory.ToArray();
+    }
+
+    private static IReadOnlyDictionary<string, byte[]> ReadPackageEntryBytes(string sourcePath)
+    {
+        if (Directory.Exists(sourcePath))
+            return ReadDirectoryEntryBytes(sourcePath);
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException("Base package was not found.", sourcePath);
+
+        var inspection = Inspect(sourcePath);
+        ValidateArchiveEntries(inspection.Payload);
+
+        var entries = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        using var archive = ArchiveFactory.OpenArchive(new MemoryStream(inspection.Payload, writable: false));
+        foreach (var entry in archive.Entries)
+        {
+            if (entry.IsDirectory)
+                continue;
+
+            var name = NormalizeEntryName(entry.Key);
+            ValidateEntryName(name);
+            using var stream = entry.OpenEntryStream();
+            using var memory = new MemoryStream();
+            stream.CopyTo(memory);
+            entries[name] = memory.ToArray();
+        }
+
+        return entries;
+    }
+
+    private static IReadOnlyDictionary<string, byte[]> ReadDirectoryEntryBytes(string sourceFolder)
+    {
+        var root = Path.GetFullPath(sourceFolder);
+        var entries = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+            ValidateEntryName(relative);
+            entries[relative] = File.ReadAllBytes(file);
+        }
+
+        return entries;
+    }
+
+    private static void CopySourceFolder(string sourceFolder, string targetFolder)
+    {
+        var root = Path.GetFullPath(sourceFolder);
+        foreach (var file in Directory.GetFiles(root, "*", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+            ValidateEntryName(relative);
+            WriteEntryBytes(targetFolder, relative, File.ReadAllBytes(file));
+        }
+    }
+
+    private static IReadOnlyList<string> AddMissingBaseEntries(
+        IReadOnlyDictionary<string, byte[]> baseEntries,
+        LanguagePackageManifest baseManifest,
+        string targetFolder)
+    {
+        var added = new List<string>();
+        foreach (var entry in baseEntries.OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            if (entry.Key.Equals("manifest.json", StringComparison.OrdinalIgnoreCase) ||
+                entry.Key.Equals("language/" + baseManifest.LanguageCode + ".lng", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var targetPath = GetSafeEntryPath(targetFolder, entry.Key);
+            if (File.Exists(targetPath))
+                continue;
+
+            WriteEntryBytes(targetFolder, entry.Key, entry.Value);
+            added.Add(entry.Key);
+        }
+
+        return added;
+    }
+
+    private static IReadOnlyList<string> AddMissingLanguageKeys(
+        IReadOnlyDictionary<string, byte[]> baseEntries,
+        LanguagePackageManifest baseManifest,
+        LanguagePackageManifest targetManifest,
+        string targetFolder)
+    {
+        var baseLanguagePath = "language/" + baseManifest.LanguageCode + ".lng";
+        if (!baseEntries.TryGetValue(baseLanguagePath, out var baseLanguageBytes))
+            throw new InvalidDataException(baseLanguagePath + " is missing in base package.");
+
+        var targetLanguagePath = "language/" + targetManifest.LanguageCode + ".lng";
+        var targetPath = GetSafeEntryPath(targetFolder, targetLanguagePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        if (!File.Exists(targetPath))
+            File.WriteAllText(targetPath, "# Added from base package " + baseManifest.PackageKey + Environment.NewLine, Encoding.UTF8);
+
+        var targetText = File.ReadAllText(targetPath, Encoding.UTF8);
+        var knownKeys = ReadLanguageKeys(targetText);
+        var added = new List<string>();
+        var additions = new StringBuilder();
+        foreach (var line in DecodeUtf8Text(baseLanguageBytes).Replace("\r\n", "\n").Split('\n'))
+        {
+            if (!TryReadLanguageKey(line, out var key) || knownKeys.Contains(key))
+                continue;
+
+            additions.AppendLine(line.TrimEnd('\r'));
+            knownKeys.Add(key);
+            added.Add(key);
+        }
+
+        if (additions.Length == 0)
+            return added;
+
+        var separator = targetText.EndsWith('\n') ? "" : Environment.NewLine;
+        File.AppendAllText(
+            targetPath,
+            separator + "# Added from base package " + baseManifest.PackageKey + Environment.NewLine + additions,
+            Encoding.UTF8);
+        return added;
+    }
+
+    private static HashSet<string> ReadLanguageKeys(string text)
+    {
+        var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in text.Replace("\r\n", "\n").Split('\n'))
+        {
+            if (TryReadLanguageKey(line, out var key))
+                keys.Add(key);
+        }
+
+        return keys;
+    }
+
+    private static bool TryReadLanguageKey(string line, out string key)
+    {
+        key = "";
+        var trimmed = line.Trim();
+        if (trimmed.Length == 0 || trimmed.StartsWith('#') || trimmed.StartsWith(';'))
+            return false;
+
+        var separator = trimmed.IndexOf('=');
+        if (separator <= 0)
+            return false;
+
+        key = trimmed[..separator].Trim();
+        return key.Length > 0;
+    }
+
+    private static string DecodeUtf8Text(byte[] bytes)
+    {
+        return Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF');
+    }
+
+    private static void ValidateSameApp(LanguagePackageManifest baseManifest, LanguagePackageManifest targetManifest)
+    {
+        if (!baseManifest.Producer.Equals(targetManifest.Producer, StringComparison.OrdinalIgnoreCase) ||
+            !baseManifest.Product.Equals(targetManifest.Product, StringComparison.OrdinalIgnoreCase) ||
+            !baseManifest.SoftwareId.Equals(targetManifest.SoftwareId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Base package app identity does not match target manifest.");
+        }
+    }
+
+    private static void WriteEntryBytes(string rootFolder, string entryName, byte[] bytes)
+    {
+        var path = GetSafeEntryPath(rootFolder, entryName);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, bytes);
+    }
+
+    private static string GetSafeEntryPath(string rootFolder, string entryName)
+    {
+        var root = Path.GetFullPath(rootFolder);
+        var fullPath = Path.GetFullPath(Path.Combine(root, NormalizeEntryName(entryName).Replace('/', Path.DirectorySeparatorChar)));
+        var rootPrefix = root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
+        if (!fullPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Unsafe path: " + entryName);
+
+        return fullPath;
     }
 
     private static void WriteWrappedPackage(string outputPath, LanguagePackageContainerHeader header, byte[] payload)
@@ -593,7 +859,10 @@ internal sealed record LanguagePackageBuildResult(
     string PackageSha256,
     string PayloadSha256,
     bool Encrypted,
-    bool Signed);
+    bool Signed,
+    string BasePackage,
+    IReadOnlyList<string> AddedEntries,
+    IReadOnlyList<string> AddedLanguageKeys);
 
 internal sealed record LanguagePackageAgentError(
     bool Success,
