@@ -1355,7 +1355,9 @@ public sealed class ToolEditorForm : Form
         };
         _fileTree.Nodes.Add(root);
 
-        foreach (var document in _documents.OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
+        foreach (var document in _documents
+                     .OrderBy(document => GetTreeSortGroup(document.PackagePath))
+                     .ThenBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
             AddDocumentNode(root, document);
 
         root.ExpandAll();
@@ -1390,6 +1392,26 @@ public sealed class ToolEditorForm : Form
 
         parent.Tag = document;
         parent.ToolTipText = BuildDocumentTooltip(document);
+    }
+
+    private static int GetTreeSortGroup(string packagePath)
+    {
+        var path = packagePath.Replace('\\', '/').Trim('/');
+        if (path.StartsWith("language/", StringComparison.OrdinalIgnoreCase))
+            return 0;
+
+        if (path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || IsImagePath(path))
+            return 9;
+
+        return 8;
     }
 
     private static string BuildDocumentTooltip(ToolEditorDocument document)
