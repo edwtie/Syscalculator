@@ -112,11 +112,11 @@ internal sealed class LanguageCatalog
         File.WriteAllText(
             Path.Combine(baseDirectory, "language.cfg"),
             "# Active language file." + Environment.NewLine +
-            "# Optional languagePackage points to a folder in LanguagePackages." + Environment.NewLine +
+            "# Optional languagePackage points to the key inside a language package manifest." + Environment.NewLine +
             "# Examples:" + Environment.NewLine +
             "# language=eng.lng" + Environment.NewLine +
             "# language=ned.lng" + Environment.NewLine +
-            "# languagePackage=syscalculator.language.ned" + Environment.NewLine +
+            "# languagePackage=ned" + Environment.NewLine +
             "# language=deu.lng" + Environment.NewLine +
             "# language=spa.lng" + Environment.NewLine +
             "language=" + language.FileName + Environment.NewLine +
@@ -148,7 +148,7 @@ internal sealed class LanguageCatalog
         {
             var texts = LanguagePackageService.TryReadLanguageFile(
                 baseDirectory,
-                package.Manifest.Id,
+                package.Manifest.PackageKey,
                 package.LanguageFileName,
                 out var packageContent,
                 out _)
@@ -164,7 +164,7 @@ internal sealed class LanguageCatalog
                 displayName = name;
             }
 
-            languages.Add(new LanguageInfo(displayName, package.LanguageFileName, package.Manifest.Id));
+            languages.Add(new LanguageInfo(displayName, package.LanguageFileName, package.Manifest.PackageKey));
         }
 
         return languages

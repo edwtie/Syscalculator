@@ -91,6 +91,7 @@ Syscalculator.Language.ned.zip
 ```json
 {
   "format": 1,
+  "key": "ned",
   "id": "syscalculator.language.ned",
   "languageCode": "ned",
   "displayName": "Nederlands",
@@ -110,6 +111,10 @@ Syscalculator.Language.ned.zip
 Rules:
 
 - `format` is the package format version, not the app version.
+- `key` is the package identity used by `language.cfg`; it is read from inside
+  the ZIP, so the ZIP file name does not matter.
+- `id` is a longer publisher/package identifier and remains supported as a
+  fallback when older packages do not contain `key`.
 - `languageCode` stays compatible with current file names such as `ned.lng`.
 - `fallbackLanguage` should normally be `eng`.
 - `packageVersion` can follow the daily/beta release number or a separate
@@ -277,10 +282,11 @@ Compatible extension:
 
 ```text
 language=ned.lng
-languagePackage=syscalculator.language.ned
+languagePackage=ned
 ```
 
-If `languagePackage` is absent, Syscalculator behaves exactly as today.
+`languagePackage` is the manifest `key`, not the ZIP file name. If
+`languagePackage` is absent, Syscalculator behaves exactly as today.
 
 ## Versioning and Updates
 

@@ -55,7 +55,7 @@ internal static class LanguagePackageService
             if (manifest is null || !TryResolveLanguageFile(directory, manifest.LanguageCode, out var languagePath))
                 continue;
 
-            if (packages.Any(package => package.Manifest.Id.Equals(manifest.Id, StringComparison.OrdinalIgnoreCase)))
+            if (packages.Any(package => package.Manifest.PackageKey.Equals(manifest.PackageKey, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
             packages.Add(LanguagePackageInfo.FromDirectory(manifest, directory, languagePath));
@@ -63,37 +63,48 @@ internal static class LanguagePackageService
 
         return packages
             .OrderBy(package => package.Manifest.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-            .ThenBy(package => package.Manifest.Id, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(package => package.Manifest.PackageKey, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
     public static bool TryFindPackage(
         string baseDirectory,
-        string packageId,
+        string packageKey,
         out LanguagePackageInfo package)
     {
         package = null!;
-        if (!IsSafePackageId(packageId))
+        if (!IsSafePackageKey(packageKey))
             return false;
 
         var root = GetPackageRoot(baseDirectory);
         foreach (var zipPath in EnumeratePackageZipFiles(root))
         {
             if (TryReadZipPackage(zipPath, out var zipPackage) &&
-                zipPackage.Manifest.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                zipPackage.Manifest.PackageKey.Equals(packageKey, StringComparison.OrdinalIgnoreCase))
             {
                 package = zipPackage;
                 return true;
             }
         }
 
-        var directory = Path.Combine(GetPackageRoot(baseDirectory), packageId);
-        var manifest = ReadManifest(directory);
-        if (manifest is null || !TryResolveLanguageFile(directory, manifest.LanguageCode, out var languagePath))
-            return false;
+        foreach (var directory in Directory.GetDirectories(root))
+        {
+            if (Path.GetFileName(directory).Equals(CacheDirectoryName, StringComparison.OrdinalIgnoreCase))
+                continue;
 
-        package = LanguagePackageInfo.FromDirectory(manifest, directory, languagePath);
-        return true;
+            var manifest = ReadManifest(directory);
+            if (manifest is null ||
+                !manifest.PackageKey.Equals(packageKey, StringComparison.OrdinalIgnoreCase) ||
+                !TryResolveLanguageFile(directory, manifest.LanguageCode, out var languagePath))
+            {
+                continue;
+            }
+
+            package = LanguagePackageInfo.FromDirectory(manifest, directory, languagePath);
+            return true;
+        }
+
+        return false;
     }
 
     public static bool TryReadLanguageFile(
@@ -168,7 +179,7 @@ internal static class LanguagePackageService
         if (!ContainsEntry(archive, "language/" + manifest.LanguageCode + ".lng"))
             throw new InvalidDataException($"Language package does not contain language/{manifest.LanguageCode}.lng.");
 
-        CopyToCache(root, zipPath, manifest.Id);
+        CopyToCache(root, zipPath, manifest.PackageKey);
         return manifest;
     }
 
@@ -283,8 +294,8 @@ internal static class LanguagePackageService
     {
         if (manifest.Format != CurrentFormat)
             throw new InvalidDataException($"Unsupported language package format: {manifest.Format}.");
-        if (!IsSafePackageId(manifest.Id))
-            throw new InvalidDataException("Language package id contains unsafe characters.");
+        if (!IsSafePackageKey(manifest.PackageKey))
+            throw new InvalidDataException("Language package key contains unsafe characters.");
         if (!IsSafeLanguageCode(manifest.LanguageCode))
             throw new InvalidDataException("Language package language code is invalid.");
         if (string.IsNullOrWhiteSpace(manifest.DisplayName))
@@ -311,7 +322,7 @@ internal static class LanguagePackageService
             throw new InvalidDataException($"Language package contains blocked file type: {extension}.");
     }
 
-    private static bool IsSafePackageId(string value)
+    private static bool IsSafePackageKey(string value)
     {
         return value.Length > 0 &&
             value.Length <= 96 &&
@@ -324,11 +335,11 @@ internal static class LanguagePackageService
             value.All(character => char.IsLetterOrDigit(character) || character is '-' or '_');
     }
 
-    private static void CopyToCache(string root, string zipPath, string packageId)
+    private static void CopyToCache(string root, string zipPath, string packageKey)
     {
         var cache = Path.Combine(root, CacheDirectoryName);
         Directory.CreateDirectory(cache);
-        File.Copy(zipPath, Path.Combine(cache, packageId + ".zip"), overwrite: true);
+        File.Copy(zipPath, Path.Combine(cache, packageKey + ".zip"), overwrite: true);
     }
 }
 
@@ -355,6 +366,7 @@ internal sealed record LanguagePackageInfo(
 internal sealed class LanguagePackageManifest
 {
     public int Format { get; set; }
+    public string Key { get; set; } = "";
     public string Id { get; set; } = "";
     public string LanguageCode { get; set; } = "";
     public string DisplayName { get; set; } = "";
@@ -362,4 +374,6 @@ internal sealed class LanguagePackageManifest
     public string AppMinVersion { get; set; } = "";
     public string PackageVersion { get; set; } = "";
     public string FallbackLanguage { get; set; } = "eng";
+
+    public string PackageKey => string.IsNullOrWhiteSpace(Key) ? Id : Key;
 }
