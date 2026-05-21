@@ -1280,8 +1280,9 @@ public sealed class ToolEditorForm : Form
         lineNumbers.Attach(editor);
         editor.TextChanged += (_, _) =>
         {
-            if (_current?.Editor == editor && !document.ReadOnly)
+            if (_current?.Editor == editor && !document.ReadOnly && !document.Highlighting)
                 SetDirty(_current, true);
+
             document.LineNumbers?.Invalidate();
             ScheduleSyntaxHighlight(document);
         };
