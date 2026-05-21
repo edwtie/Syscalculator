@@ -426,26 +426,38 @@ public sealed class ToolEditorForm : Form
 
     private void ShowManifestDialog()
     {
+        var properties = ReadManifestProperties(_manifestText);
         using var dialog = new Form
         {
-            Text = "Manifest",
-            Width = 620,
-            Height = 520,
+            Text = "Eigenschappen van taalpakket",
+            Width = 560,
+            Height = 420,
             StartPosition = FormStartPosition.CenterParent,
             MinimizeBox = false,
             MaximizeBox = false,
             ShowIcon = false
         };
 
-        var editor = new RichTextBox
+        var content = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ReadOnly = true,
-            BorderStyle = BorderStyle.FixedSingle,
-            Font = new Font("Consolas", 10),
-            BackColor = Color.FromArgb(248, 250, 252),
-            Text = _manifestText
+            ColumnCount = 2,
+            RowCount = 0,
+            BackColor = Color.White,
+            Padding = new Padding(18, 16, 18, 12)
         };
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170));
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
+        AddManifestPropertyRow(content, "Naam", properties.DisplayName);
+        AddManifestPropertyRow(content, "Taalcode", properties.LanguageCode);
+        AddManifestPropertyRow(content, "Native naam", properties.NativeName);
+        AddManifestPropertyRow(content, "Pakketversie", properties.PackageVersion);
+        AddManifestPropertyRow(content, "Fallback taal", properties.FallbackLanguage);
+        AddManifestPropertyRow(content, "Producent", properties.Producer);
+        AddManifestPropertyRow(content, "Product", properties.Product);
+        AddManifestPropertyRow(content, "Software-id", properties.SoftwareId);
+        AddManifestPropertyRow(content, "Package-id", properties.Id);
 
         var close = new Button
         {
@@ -463,9 +475,60 @@ public sealed class ToolEditorForm : Form
         };
         buttons.Controls.Add(close);
 
-        dialog.Controls.Add(editor);
+        dialog.Controls.Add(content);
         dialog.Controls.Add(buttons);
         dialog.ShowDialog(this);
+    }
+
+    private static void AddManifestPropertyRow(TableLayoutPanel content, string label, string value)
+    {
+        var row = content.RowCount++;
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+        content.Controls.Add(new Label
+        {
+            Text = label,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            ForeColor = Color.FromArgb(71, 85, 105)
+        }, 0, row);
+        content.Controls.Add(new Label
+        {
+            Text = string.IsNullOrWhiteSpace(value) ? "-" : value,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Font = new Font("Segoe UI", 9, FontStyle.Bold),
+            ForeColor = Color.FromArgb(15, 23, 42)
+        }, 1, row);
+    }
+
+    private static ManifestProperties ReadManifestProperties(string manifestText)
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(manifestText);
+            var root = json.RootElement;
+            return new ManifestProperties(
+                GetManifestString(root, "id"),
+                GetManifestString(root, "producer"),
+                GetManifestString(root, "product"),
+                GetManifestString(root, "softwareId"),
+                GetManifestString(root, "languageCode"),
+                GetManifestString(root, "displayName"),
+                GetManifestString(root, "nativeName"),
+                GetManifestString(root, "packageVersion"),
+                GetManifestString(root, "fallbackLanguage"));
+        }
+        catch (JsonException)
+        {
+            return new ManifestProperties("", "", "", "", "", "Ongeldig manifest", "", "", "");
+        }
+    }
+
+    private static string GetManifestString(JsonElement root, string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString() ?? ""
+            : "";
     }
 
     private void ShowMediaFileListDialog()
@@ -2156,6 +2219,17 @@ public sealed class ToolEditorForm : Form
         public bool IsOpen { get; set; }
         public bool HtmlEditMode { get; set; }
     }
+
+    private sealed record ManifestProperties(
+        string Id,
+        string Producer,
+        string Product,
+        string SoftwareId,
+        string LanguageCode,
+        string DisplayName,
+        string NativeName,
+        string PackageVersion,
+        string FallbackLanguage);
 
     private sealed class LineNumberPanel : Panel
     {
