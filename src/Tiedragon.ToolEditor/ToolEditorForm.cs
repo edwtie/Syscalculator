@@ -2670,7 +2670,8 @@ public sealed class ToolEditorForm : Form
                 "Package gecompileerd:\r\n" + outputPath +
                 "\r\n\r\nPackage SHA-256:\r\n" + result.PackageSha256 +
                 "\r\n\r\nPayload SHA-256:\r\n" + result.PayloadSha256 +
-                "\r\n\r\nEncryptie: uit (reader weigert encrypted packages nog fail-closed).",
+                "\r\n\r\nEncryptie: nog niet actief\r\n" +
+                "De reader accepteert voorlopig alleen niet-versleutelde packages.",
                 "Package compileren",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
