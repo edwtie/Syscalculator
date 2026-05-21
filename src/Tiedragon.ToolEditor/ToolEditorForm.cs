@@ -456,22 +456,42 @@ public sealed class ToolEditorForm : Form
 
     private void AddNodHelpDocuments()
     {
-        var nodDirectory = FindRepositoryPath("src/syscalculator/Resources/Help/Content/nod/full");
-        if (nodDirectory is null)
+        var nodRoot = FindRepositoryPath("src/syscalculator/Resources/Help/Content/nod");
+        if (nodRoot is null)
         {
-            AddDocument("help/content/nod/index.html", BuildNodHelpFallback(), null);
+            AddDocument("help/content/nod/full/index.html", BuildNodHelpFallback(), null);
             return;
         }
 
-        foreach (var file in Directory.GetFiles(nodDirectory, "*.html")
-                     .OrderBy(path => Path.GetFileName(path).Equals("title.html", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase))
+        var helpFiles = Directory.GetFiles(nodRoot, "*.html", SearchOption.AllDirectories)
+            .OrderBy(path => BuildNodHelpSortKey(nodRoot, path), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (helpFiles.Count == 0)
         {
-            var fileName = Path.GetFileName(file);
-            var packageName = fileName.Equals("title.html", StringComparison.OrdinalIgnoreCase)
-                ? "index.html"
-                : fileName;
-            AddDocument("help/content/nod/" + packageName, File.ReadAllText(file, Encoding.UTF8), file);
+            AddDocument("help/content/nod/full/index.html", BuildNodHelpFallback(), null);
+            return;
         }
+
+        foreach (var file in helpFiles)
+            AddDocument(BuildNodHelpPackagePath(nodRoot, file), File.ReadAllText(file, Encoding.UTF8), file);
+    }
+
+    private static string BuildNodHelpSortKey(string nodRoot, string file)
+    {
+        var packagePath = BuildNodHelpPackagePath(nodRoot, file);
+        if (packagePath.Equals("help/content/nod/full/index.html", StringComparison.OrdinalIgnoreCase))
+            return "0";
+
+        return packagePath;
+    }
+
+    private static string BuildNodHelpPackagePath(string nodRoot, string file)
+    {
+        var relative = Path.GetRelativePath(nodRoot, file).Replace('\\', '/');
+        if (relative.Equals("full/title.html", StringComparison.OrdinalIgnoreCase))
+            relative = "full/index.html";
+
+        return "help/content/nod/" + relative;
     }
 
     private void AddFormulaCardDocuments()
@@ -1678,10 +1698,12 @@ public sealed class ToolEditorForm : Form
             return ["Help voor gebruikers", topic];
         }
 
-        if (path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase))
+        if (TryGetNodHelpRelativePath(path, out var nodRelativePath))
         {
+            var parts = nodRelativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2)
+                return ["NOD voor ontwikkelaars", FriendlyNodHelpCategory(parts[0]), FriendlyTopicName(parts[^1])];
+
             return ["NOD voor ontwikkelaars", topic];
         }
 
@@ -1695,6 +1717,46 @@ public sealed class ToolEditorForm : Form
             return ["Media en afbeeldingen", fileName];
 
         return ["Ongeldig pakketbestand", topic];
+    }
+
+    private static bool TryGetNodHelpRelativePath(string path, out string relativePath)
+    {
+        const string contentPrefix = "help/content/nod/";
+        const string helpPrefix = "help/nod/";
+        const string nodPrefix = "nod/";
+
+        if (path.StartsWith(contentPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[contentPrefix.Length..];
+            return true;
+        }
+
+        if (path.StartsWith(helpPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[helpPrefix.Length..];
+            return true;
+        }
+
+        if (path.StartsWith(nodPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[nodPrefix.Length..];
+            return true;
+        }
+
+        relativePath = string.Empty;
+        return false;
+    }
+
+    private static string FriendlyNodHelpCategory(string category)
+    {
+        return category.ToLowerInvariant() switch
+        {
+            "full" => "Volledige help",
+            "command" => "Command extra",
+            "popup" => "Popup help",
+            "snippet" => "Snippets",
+            _ => FriendlyTopicName(category)
+        };
     }
 
     private static (string Group, string Topic) BuildListLabels(string packagePath)
