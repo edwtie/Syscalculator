@@ -3,6 +3,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -15,6 +16,14 @@ namespace Tiedragon.ToolEditor;
 // document tabs, source editor and HTML preview.
 public sealed class ToolEditorForm : Form
 {
+    private static readonly Regex HtmlCommentRegex = new("<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex HtmlTagRegex = new("</?[a-zA-Z][^>]*?>", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex HtmlAttributeRegex = new(@"\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?=\s*=)", RegexOptions.Compiled);
+    private static readonly Regex QuotedStringRegex = new("(\"[^\"]*\"|'[^']*')", RegexOptions.Compiled);
+    private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
+    private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
+
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
     private readonly FlowLayoutPanel _tabStrip;
@@ -311,8 +320,9 @@ public sealed class ToolEditorForm : Form
     private void AddDocument(string displayName, string text, string? filePath)
     {
         var page = new TabPage(displayName);
-        var editor = CreateTextEditor(text);
-        var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath, editor);
+        var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
+        var editor = CreateTextEditor(text, document);
+        document.Editor = editor;
         ApplyDocumentLabels(document);
         var header = ToolEditorTabsApi.CreateHeader(
             page,
@@ -328,7 +338,7 @@ public sealed class ToolEditorForm : Form
         SelectDocument(document);
     }
 
-    private RichTextBox CreateTextEditor(string text)
+    private RichTextBox CreateTextEditor(string text, ToolEditorDocument document)
     {
         var editor = new RichTextBox
         {
@@ -340,11 +350,14 @@ public sealed class ToolEditorForm : Form
             HideSelection = false,
             Text = text
         };
+        document.Editor = editor;
         editor.TextChanged += (_, _) =>
         {
             if (_current?.Editor == editor)
                 SetDirty(_current, true);
+            ScheduleSyntaxHighlight(document);
         };
+        ScheduleSyntaxHighlight(document);
         return editor;
     }
 
@@ -380,6 +393,7 @@ public sealed class ToolEditorForm : Form
         _documents.Remove(document);
         RemoveDocumentFromTree(document);
         RemoveDocumentFromList(document);
+        document.HighlightTimer?.Dispose();
         document.Editor.Dispose();
         document.Page.Dispose();
 
@@ -679,6 +693,110 @@ public sealed class ToolEditorForm : Form
         return value.Replace('\\', '/').Trim('/');
     }
 
+    private void ScheduleSyntaxHighlight(ToolEditorDocument document)
+    {
+        if (document.Highlighting || document.Editor.IsDisposed)
+            return;
+
+        document.HighlightTimer ??= new System.Windows.Forms.Timer
+        {
+            Interval = 180
+        };
+        document.HighlightTimer.Stop();
+        document.HighlightTimer.Tick -= HighlightTimer_Tick;
+        document.HighlightTimer.Tick += HighlightTimer_Tick;
+        document.HighlightTimer.Tag = document;
+        document.HighlightTimer.Start();
+    }
+
+    private void HighlightTimer_Tick(object? sender, EventArgs e)
+    {
+        if (sender is not System.Windows.Forms.Timer timer)
+            return;
+
+        timer.Stop();
+        if (timer.Tag is ToolEditorDocument document)
+            ApplySyntaxHighlight(document);
+    }
+
+    private static void ApplySyntaxHighlight(ToolEditorDocument document)
+    {
+        var editor = document.Editor;
+        if (editor.IsDisposed || document.Highlighting)
+            return;
+
+        document.Highlighting = true;
+        try
+        {
+            var selectionStart = editor.SelectionStart;
+            var selectionLength = editor.SelectionLength;
+            var text = editor.Text;
+
+            editor.SuspendLayout();
+            editor.SelectAll();
+            editor.SelectionColor = Color.FromArgb(31, 41, 55);
+
+            var extension = Path.GetExtension(document.PackagePath);
+            if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
+                HighlightHtml(editor, text);
+            else if (extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
+                HighlightCss(editor, text);
+            else if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                HighlightJson(editor, text);
+            else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
+                HighlightLanguage(editor, text);
+
+            editor.Select(Math.Min(selectionStart, editor.TextLength), Math.Min(selectionLength, Math.Max(0, editor.TextLength - selectionStart)));
+            editor.SelectionColor = Color.FromArgb(31, 41, 55);
+            editor.ResumeLayout();
+        }
+        finally
+        {
+            document.Highlighting = false;
+        }
+    }
+
+    private static void HighlightHtml(RichTextBox editor, string text)
+    {
+        ApplyMatches(editor, text, HtmlCommentRegex, Color.FromArgb(47, 128, 67));
+        ApplyMatches(editor, text, HtmlTagRegex, Color.FromArgb(0, 74, 173));
+        ApplyMatches(editor, text, HtmlAttributeRegex, Color.FromArgb(170, 72, 20), groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, Color.FromArgb(126, 82, 0));
+    }
+
+    private static void HighlightCss(RichTextBox editor, string text)
+    {
+        ApplyMatches(editor, text, CssSelectorRegex, Color.FromArgb(96, 64, 160), groupIndex: 2);
+        ApplyMatches(editor, text, HtmlAttributeRegex, Color.FromArgb(170, 72, 20), groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, Color.FromArgb(126, 82, 0));
+    }
+
+    private static void HighlightJson(RichTextBox editor, string text)
+    {
+        ApplyMatches(editor, text, JsonPropertyRegex, Color.FromArgb(0, 74, 173));
+        ApplyMatches(editor, text, QuotedStringRegex, Color.FromArgb(126, 82, 0));
+        ApplyMatches(editor, text, JsonPropertyRegex, Color.FromArgb(0, 74, 173));
+    }
+
+    private static void HighlightLanguage(RichTextBox editor, string text)
+    {
+        ApplyMatches(editor, text, LanguageKeyRegex, Color.FromArgb(0, 74, 173));
+        ApplyMatches(editor, text, new Regex(@"^[ \t]*[#;].*$", RegexOptions.Multiline), Color.FromArgb(47, 128, 67));
+    }
+
+    private static void ApplyMatches(RichTextBox editor, string text, Regex regex, Color color, int groupIndex = 0)
+    {
+        foreach (Match match in regex.Matches(text))
+        {
+            var group = match.Groups[groupIndex];
+            if (!group.Success || group.Length == 0)
+                continue;
+
+            editor.Select(group.Index, group.Length);
+            editor.SelectionColor = color;
+        }
+    }
+
     private static void ValidateJson(string text, List<string> errors)
     {
         try
@@ -952,7 +1070,7 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private sealed class ToolEditorDocument(TabPage page, string displayName, string packagePath, string? filePath, RichTextBox editor)
+    private sealed class ToolEditorDocument(TabPage page, string displayName, string packagePath, string? filePath)
     {
         public TabPage Page { get; } = page;
         public string DisplayName { get; set; } = displayName;
@@ -960,9 +1078,11 @@ public sealed class ToolEditorForm : Form
         public string TreeGroup { get; set; } = "";
         public string TreeTopic { get; set; } = "";
         public string? FilePath { get; set; } = filePath;
-        public RichTextBox Editor { get; } = editor;
+        public RichTextBox Editor { get; set; } = null!;
         public Panel HeaderPanel { get; set; } = null!;
         public Label HeaderTitle { get; set; } = null!;
+        public System.Windows.Forms.Timer? HighlightTimer { get; set; }
+        public bool Highlighting { get; set; }
         public bool Dirty { get; set; }
     }
 }
