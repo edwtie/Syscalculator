@@ -5,12 +5,14 @@ using System.Text;
 using System.Text.Json;
 using SharpCompress.Archives;
 
-namespace Syscalculator.PackageTool;
+namespace Tiedragon.LanguagePackage;
 
 internal static class Program
 {
     private const string MagicText = "SYSCALC-LNGPDK";
     private const int ContainerFormat = 1;
+    private const string ProducerName = "Tiedragon";
+    private const string ProductName = "Syscalculator";
     private const string SoftwareId = "tiedragon.syscalculator";
     private const string PackageType = "language";
     private const int MaxHeaderBytes = 64 * 1024;
@@ -76,7 +78,7 @@ internal static class Program
 
     private static int Usage()
     {
-        Console.WriteLine("Syscalculator Package Tool");
+        Console.WriteLine("Tiedragon.LanguagePackage");
         Console.WriteLine();
         Console.WriteLine("Commands:");
         Console.WriteLine("  pack-language <input-folder> <output.lngpdk>");
@@ -361,6 +363,12 @@ internal static class Program
     {
         if (manifest.Format != 1)
             throw new InvalidDataException("Unsupported manifest format.");
+        if (!ProducerName.Equals(manifest.Producer, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Manifest producer must be Tiedragon.");
+        if (!ProductName.Equals(manifest.Product, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Manifest product must be Syscalculator.");
+        if (!SoftwareId.Equals(manifest.SoftwareId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Manifest softwareId must be tiedragon.syscalculator.");
         if (!IsSafeKey(manifest.PackageKey))
             throw new InvalidDataException("Manifest key is invalid.");
         if (!IsSafeLanguageCode(manifest.LanguageCode))
@@ -437,6 +445,9 @@ internal sealed class LanguagePackageManifest
     public int Format { get; set; }
     public string Key { get; set; } = "";
     public string Id { get; set; } = "";
+    public string Producer { get; set; } = "";
+    public string Product { get; set; } = "";
+    public string SoftwareId { get; set; } = "";
     public string LanguageCode { get; set; } = "";
     public string DisplayName { get; set; } = "";
     public string NativeName { get; set; } = "";

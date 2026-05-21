@@ -17,6 +17,8 @@ internal static class LanguagePackageService
     private const string CacheDirectoryName = "Cache";
     private const string PackageExtension = ".lngpdk";
     private const string LegacyZipExtension = ".zip";
+    private const string ProducerName = "Tiedragon";
+    private const string ProductName = "Syscalculator";
     private const string SoftwareId = "tiedragon.syscalculator";
     private const string PackageType = "language";
     private const int ContainerFormat = 1;
@@ -436,6 +438,12 @@ internal static class LanguagePackageService
     {
         if (manifest.Format != CurrentFormat)
             throw new InvalidDataException($"Unsupported language package format: {manifest.Format}.");
+        if (!ProducerName.Equals(manifest.Producer, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Language package producer is not trusted.");
+        if (!ProductName.Equals(manifest.Product, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Language package product is not supported.");
+        if (!SoftwareId.Equals(manifest.SoftwareId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Language package is not intended for Syscalculator.");
         if (!IsSafePackageKey(manifest.PackageKey))
             throw new InvalidDataException("Language package key contains unsafe characters.");
         if (!IsSafeLanguageCode(manifest.LanguageCode))
@@ -510,6 +518,9 @@ internal sealed class LanguagePackageManifest
     public int Format { get; set; }
     public string Key { get; set; } = "";
     public string Id { get; set; } = "";
+    public string Producer { get; set; } = "";
+    public string Product { get; set; } = "";
+    public string SoftwareId { get; set; } = "";
     public string LanguageCode { get; set; } = "";
     public string DisplayName { get; set; } = "";
     public string NativeName { get; set; } = "";

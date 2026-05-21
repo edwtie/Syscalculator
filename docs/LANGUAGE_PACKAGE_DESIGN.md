@@ -127,7 +127,10 @@ Syscalculator.Language.ned.lngpdk
 {
   "format": 1,
   "key": "ned",
-  "id": "syscalculator.language.ned",
+  "id": "tiedragon.language.ned",
+  "producer": "Tiedragon",
+  "product": "Syscalculator",
+  "softwareId": "tiedragon.syscalculator",
   "languageCode": "ned",
   "displayName": "Nederlands",
   "nativeName": "Nederlands",
@@ -150,6 +153,8 @@ Rules:
   the package, so the package file name does not matter.
 - `id` is a longer publisher/package identifier and remains supported as a
   fallback when older packages do not contain `key`.
+- `producer`, `product` and `softwareId` bind the package to the trusted
+  Tiedragon Syscalculator package line.
 - `languageCode` stays compatible with current file names such as `ned.lng`.
 - `fallbackLanguage` should normally be `eng`.
 - `packageVersion` can follow the daily/beta release number or a separate
@@ -282,7 +287,7 @@ packages.
 Current code:
 
 ```text
-src/Syscalculator.PackageTool
+src/Tiedragon.LanguagePackage
 src/syscalculator/LanguagePackageService.cs
 src/syscalculator/LanguageCatalog.cs
 src/syscalculator/LanguageSelectionForm.cs
@@ -299,7 +304,7 @@ Responsibilities:
   7z-compatible containers;
 - enforce package size, file count and per-file limits;
 - build, inspect and validate `.lngpdk` packages through
-  `Syscalculator.PackageTool`;
+  `Tiedragon.LanguagePackage`;
 - keep extracted language package folders compatible;
 - block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
 - return the active `.lng` content;

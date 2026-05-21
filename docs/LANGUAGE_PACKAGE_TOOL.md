@@ -1,6 +1,6 @@
-# Language Package Tool
+# Tiedragon LanguagePackage Tool
 
-`Syscalculator.PackageTool` builds and checks Syscalculator `.lngpdk` language
+`Tiedragon.LanguagePackage` builds and checks Syscalculator `.lngpdk` language
 packages.
 
 ## Commands
@@ -18,6 +18,24 @@ Minimum:
 ```text
 manifest.json
 language/<code>.lng
+```
+
+Minimum manifest:
+
+```json
+{
+  "format": 1,
+  "key": "ned",
+  "id": "tiedragon.language.ned",
+  "producer": "Tiedragon",
+  "product": "Syscalculator",
+  "softwareId": "tiedragon.syscalculator",
+  "languageCode": "ned",
+  "displayName": "Nederlands",
+  "nativeName": "Nederlands",
+  "packageVersion": "2026.05.21.001",
+  "fallbackLanguage": "eng"
+}
 ```
 
 Optional:
@@ -48,7 +66,8 @@ can read ZIP and 7z-compatible payloads through the same `.lngpdk` extension.
 
 The tool checks:
 
-- manifest format, package key, language code and display name;
+- manifest format, producer, product, software-id, package key, language code
+  and display name;
 - required `language/<code>.lng`;
 - allowed file extensions;
 - blocked executable/script extensions;
