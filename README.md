@@ -13,6 +13,7 @@ De daily-lijn is bedoeld als actieve ontwikkelbron voor Beta 2. Belangrijke onde
 - Graph2D en Graph3D via Tiedragon graph-libraries.
 - Graph3D/geometry basis voor X/Y/Z-ruimte, 2D/3D-modus, grids, assen, labels, puntentabel, rode punten, vectorpijlen, camera/navigator, zoom, rotatie en kompas.
 - Language Package 1.0 met `.lngpdk`, SHA-256 controle, quality gates, ToolEditor en HTML-help/media beheer.
+- Syscalculator laadt taal, help, NOD-help en formulekaart nu package-aware uit gebundelde `.lngpdk` packages, met fallback naar ingebouwde bestanden.
 - WinForms UI voor Syscalculator 2.0 daily/beta/production.
 - Test- en buildscripts voor daily, beta, production en de oude 1.74-lijn.
 
@@ -68,7 +69,7 @@ Graph3D is in daily beschikbaar als foundation voor 3D-geometrie. Echte surface 
 
 ## Language Package 1.0
 
-De oude losse `.lng` aanpak groeit door naar `.lngpdk` packages. Een package bevat taalteksten, HTML-help, NOD-help, formulekaarten, toegestane media en package metadata.
+De oude losse `.lng` aanpak groeit door naar `.lngpdk` packages. Een package bevat taalteksten, HTML-help, NOD-help, formulekaarten, toegestane media en package metadata. Daily publiceert deze packages mee onder `LanguagePackages`, zodat Syscalculator direct de packageversie kan gebruiken.
 
 De package toolchain controleert onder andere:
 
@@ -87,6 +88,15 @@ deu, eng, fra, ind, ita, ned, por, spa, zho
 ```
 
 ToolEditor is de zelfstandige editor voor deze packages. Daarmee kunnen vertaling, HTML-help, NOD-help, formulekaart en media beheerd worden zonder handmatig door pakketbestanden te zoeken.
+
+`language.cfg` kan naast het oude taalbestand ook het package aanwijzen:
+
+```ini
+language=ned.lng
+languagePackage=ned
+```
+
+Als het package ontbreekt of wordt geweigerd, valt Syscalculator terug op de losse `.lng` en ingebouwde helpbestanden.
 
 ## Build
 
@@ -161,6 +171,9 @@ web/packages/languages/language-packages.json
 ## Installers
 
 Syscalculator 2.0 gebruikt Inno Setup 6 via `installer/Syscalculator.iss`.
+De installer-build gebruikt PowerShell 7, genereert de taalpackages opnieuw,
+publiceert ze onder `LanguagePackages` en schrijft `languagePackage=...` in
+`language.cfg`.
 
 ```bat
 BUILD_INSTALLER.bat daily

@@ -1,146 +1,128 @@
 [
-    {
-        "packageKey":  "deu",
-        "languageCode":  "deu",
-        "displayName":  "Deutsch",
-        "packageSha256":  "e4c44f3fe90681f42c1891031b5991761110c3464f0f2eca7c2ee9d5e198bac1",
-        "payloadSha256":  "f5d408db88fc6ae3732929d8b450cb418d2a54a4cb40e39a1facd2257cfdf67c",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.deu.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.deu.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "eng",
-        "languageCode":  "eng",
-        "displayName":  "English",
-        "packageSha256":  "57b95d1d315a854008ef5f5af4f7918cff2ebaf4b5b824a93d071138e6188609",
-        "payloadSha256":  "13ba771e1eed2b426de4268c2845289bdd2582ef16a3f9e653fc5e5168a976be",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.eng.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.eng.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "fra",
-        "languageCode":  "fra",
-        "displayName":  "Français",
-        "packageSha256":  "13d2879b79720dacb63a57898f717d1b19029a26939d3a582a51364deb05dc7e",
-        "payloadSha256":  "9c2492a1c7e1be257fa9e920fb8823551fd4c9db4f746f270cae708b931f9386",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.fra.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.fra.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "ind",
-        "languageCode":  "ind",
-        "displayName":  "Indonesia",
-        "packageSha256":  "eab38bec38f850934918ddd3d67c0b2fbcaa5e2bd59f156625dab4be2c3a9e6b",
-        "payloadSha256":  "364e0f8e3e93577c5bba18c9cb213be74b11f157f025ba28059fa9847568132e",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.ind.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.ind.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "ita",
-        "languageCode":  "ita",
-        "displayName":  "Italiano",
-        "packageSha256":  "4e9cd393100e3a344d1c14915a04c7b98dfb78fd669ab9ac34ab01efb4ec9805",
-        "payloadSha256":  "45dc229a8ea4b21b32f963e6a35c893edd93e874065be6f14b3e58c5dd1fc285",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.ita.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.ita.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "ned",
-        "languageCode":  "ned",
-        "displayName":  "Nederlands",
-        "packageSha256":  "410a5698a6a5e28a8d892c8eae5518e35eff15e92a697f848f7b92eda16c3950",
-        "payloadSha256":  "fbed86b7c3ab922d8c0fd910e9850acbc54afd15673881bf7ad2fd8fbf33af02",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.ned.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.ned.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "por",
-        "languageCode":  "por",
-        "displayName":  "Português",
-        "packageSha256":  "74222c218c7ac24f1ce9bc97b7e8d6798b533d21f1563b0dcf0be6eaa1a22c7a",
-        "payloadSha256":  "788ff73ab15a33b968e8bec828e99a0996a2a78a430c4a9dd4b275c91b889a04",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.por.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.por.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "spa",
-        "languageCode":  "spa",
-        "displayName":  "Español",
-        "packageSha256":  "7d9e9f8d483485fc02ef086afcd65b9069b9e6b28e93644b5d5bdb5e0bc4ce30",
-        "payloadSha256":  "5118aa4f5cffcfb315b7a324a2a76c1b5db0f02a3fd7967f55ab59d89e2f8df0",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.spa.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.spa.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    },
-    {
-        "packageKey":  "zho",
-        "languageCode":  "zho",
-        "displayName":  "中文",
-        "packageSha256":  "022d896031fceef229d1f2a4a104f2aa565ed8824e6cb11729bcef100b389cf3",
-        "payloadSha256":  "c39c572972e228a51c6afd670af8cc564b2875401a16a6bfd275eab754e26970",
-        "entryCount":  117,
-        "fileName":  "Syscalculator.Language.zho.lngpdk",
-        "downloadPath":  "packages/languages/Syscalculator.Language.zho.lngpdk",
-        "active":  true,
-        "translationComplete":  true,
-        "missingRequiredKeyCount":  0,
-        "missingRequiredKeys":  [
-
-                                ]
-    }
+  {
+    "packageKey": "deu",
+    "languageCode": "deu",
+    "displayName": "Deutsch",
+    "packageSha256": "092f98d48c0b0e448c96da08924871b7ceb0e1c20e7f4de5a140067afa7d2c14",
+    "payloadSha256": "e9ded34d7956550543dc9679dbaa49b08b6b91b80381595bb77abadb8a73ce10",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.deu.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.deu.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "eng",
+    "languageCode": "eng",
+    "displayName": "English",
+    "packageSha256": "3a89046419e5158bac6099cdb47051752e57c8abee7cecdee1e657ad8e475252",
+    "payloadSha256": "517500b9e6fba9dd6418729bbc58b6a283771a095ef2bffc4ab8ab10c0e7cb3d",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.eng.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.eng.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "fra",
+    "languageCode": "fra",
+    "displayName": "Français",
+    "packageSha256": "55399e71b1b5eae21baac865943a3a9046afcae20fab1d545b7a8834db2c0aaa",
+    "payloadSha256": "ed644ab304bf3ef198e94966322bceb269bcc25ae84ea68b208494b6a2954b33",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.fra.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.fra.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "ind",
+    "languageCode": "ind",
+    "displayName": "Indonesia",
+    "packageSha256": "471e56ce10a47d1af8d619196293526966d3cc05f0689c599070e847d9498471",
+    "payloadSha256": "00cddc3adc98bdd383d74f8c96ae4ae0daca66469376aa3d3ee609aeaf03c3d0",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.ind.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.ind.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "ita",
+    "languageCode": "ita",
+    "displayName": "Italiano",
+    "packageSha256": "fc2bf0c103f0fcfce941368930869f524923584874687dfd6f5a107849f020b9",
+    "payloadSha256": "6c8106257377cd1a825b82416be1b61bd5f876da8426064aec29ee98fb90a097",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.ita.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.ita.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "ned",
+    "languageCode": "ned",
+    "displayName": "Nederlands",
+    "packageSha256": "e9a97bdbc2009f1174b3d158a23a049423f57f89d7737e7c8baa679f7eec0fe6",
+    "payloadSha256": "de21728b69b4edd624f8784a3123fe776687d1f6a262fbf9d557b6c7f3296f71",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.ned.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.ned.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "por",
+    "languageCode": "por",
+    "displayName": "Português",
+    "packageSha256": "4b48033c191df09a8a0c2d86243d76e744705161b39f073857594896b48f18d2",
+    "payloadSha256": "f6836f1ba34ca3b85cb59b514cb682594a039ca68eea2fe5dd350d2814bc160f",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.por.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.por.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "spa",
+    "languageCode": "spa",
+    "displayName": "Español",
+    "packageSha256": "c7fde937d9b7457997c26c0a4c1557803f7f1561ca0224c099b1515b9ab82799",
+    "payloadSha256": "49825858a5373f35e5cba1be07d485accbca15a6eaacc5a7595ff90388671699",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.spa.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.spa.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  },
+  {
+    "packageKey": "zho",
+    "languageCode": "zho",
+    "displayName": "中文",
+    "packageSha256": "312104457655b27c50e0562953071136576bda420a763d2250c16b06cc59c38c",
+    "payloadSha256": "57fbd02182c772ba5ed1f9ea9d2c72f4f3c0b2f60e67168b30e59d2ca5ed6eed",
+    "entryCount": 117,
+    "fileName": "Syscalculator.Language.zho.lngpdk",
+    "downloadPath": "packages/languages/Syscalculator.Language.zho.lngpdk",
+    "active": true,
+    "translationComplete": true,
+    "missingRequiredKeyCount": 0,
+    "missingRequiredKeys": []
+  }
 ]

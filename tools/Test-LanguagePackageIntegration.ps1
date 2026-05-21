@@ -47,6 +47,7 @@ AssemblyLoadContext.Default.Resolving += (context, name) =>
 
 var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
 var service = assembly.GetType("Syscalculator.UI.WinForms.LanguagePackageService", throwOnError: true)!;
+var catalogType = assembly.GetType("Syscalculator.UI.WinForms.LanguageCatalog", throwOnError: true)!;
 var flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
 var manifest = service.GetMethod("Install", flags)!.Invoke(null, new object?[] { baseDirectory, packagePath })!;
@@ -70,6 +71,16 @@ var nodHelpOk = (bool)service.GetMethod("TryReadHelpContentFile", flags)!.Invoke
 object?[] formulaArgs = [baseDirectory, packageKey, "formula-card.html", ""];
 var formulaHelpOk = (bool)service.GetMethod("TryReadHelpContentFile", flags)!.Invoke(null, formulaArgs)!;
 
+File.WriteAllText(
+    Path.Combine(baseDirectory, "language.cfg"),
+    $"language={languageCode}.lng{Environment.NewLine}languagePackage={packageKey}{Environment.NewLine}");
+var configuredCatalog = catalogType.GetMethod("LoadConfigured", flags)!.Invoke(null, new object?[] { baseDirectory })!;
+var configuredPackageId = (string?)catalogType.GetProperty("PackageId")!.GetValue(configuredCatalog);
+var configuredFileName = (string)catalogType.GetProperty("FileName")!.GetValue(configuredCatalog)!;
+var configuredPackageOk =
+    string.Equals(configuredPackageId, packageKey, StringComparison.OrdinalIgnoreCase) &&
+    string.Equals(configuredFileName, languageCode + ".lng", StringComparison.OrdinalIgnoreCase);
+
 Console.WriteLine($"PackageKey={packageKey}");
 Console.WriteLine($"LanguageCode={languageCode}");
 Console.WriteLine($"InstalledPackages={packages.Count}");
@@ -80,8 +91,9 @@ Console.WriteLine($"ToolEditorHelpOk={toolEditorHelpOk}");
 Console.WriteLine($"ToolEditorHelpHasText={toolEditorHelpText.Contains("ToolEditor", StringComparison.OrdinalIgnoreCase)}");
 Console.WriteLine($"NodHelpOk={nodHelpOk}");
 Console.WriteLine($"FormulaHelpOk={formulaHelpOk}");
+Console.WriteLine($"ConfiguredPackageOk={configuredPackageOk}");
 
-if (!languageOk || !toolEditorHelpOk || !nodHelpOk || !formulaHelpOk)
+if (!languageOk || !toolEditorHelpOk || !nodHelpOk || !formulaHelpOk || !configuredPackageOk)
     Environment.Exit(1);
 '@ | Set-Content -Encoding ASCII (Join-Path $projectDirectory "Program.cs")
 

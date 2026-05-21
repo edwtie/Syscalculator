@@ -227,6 +227,22 @@ begin
   end;
 end;
 
+function AppLanguagePackage: String;
+begin
+  case ActiveLanguage of
+    'nl': Result := 'ned';
+    'de': Result := 'deu';
+    'fr': Result := 'fra';
+    'it': Result := 'ita';
+    'pt': Result := 'por';
+    'es': Result := 'spa';
+    'id': Result := 'ind';
+    'zh': Result := 'zho';
+  else
+    Result := 'eng';
+  end;
+end;
+
 function InitializeSetup: Boolean;
 #if MySelfContained != "true"
 var
@@ -271,7 +287,9 @@ begin
       SaveStringToFile(
         ExpandConstant('{app}\language.cfg'),
         '# Active language file.' + #13#10 +
-        'language=' + AppLanguageFile + #13#10,
+        '# languagePackage points to a bundled .lngpdk in LanguagePackages.' + #13#10 +
+        'language=' + AppLanguageFile + #13#10 +
+        'languagePackage=' + AppLanguagePackage + #13#10,
         False);
       SaveStringToFile(
         ExpandConstant('{app}\update-state.cfg'),

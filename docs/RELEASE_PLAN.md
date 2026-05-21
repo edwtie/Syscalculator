@@ -12,7 +12,7 @@ Syscalculator 2.0 Daily
 = active C#/.NET 10 development line
 = frequent builds for internal testing
 = may contain experimental features
-= package set: Inno Setup installer and standalone updater zip only
+= package set: Inno Setup installer, bundled language packages and standalone updater zip only
 
 Syscalculator 2.0 Beta
 = tester-ready builds promoted from daily
@@ -50,6 +50,7 @@ Daily builds deliberately skip MSIX so experimental work stays lightweight. Beta
 - Use `daily` for active work.
 - Build only the Inno Setup installer and standalone updater zip.
 - Do not create MSIX packages for Daily.
+- Generate and bundle `.lngpdk` language packages in every daily installer/update zip.
 - Daily builds may include experimental or hidden work, such as the solver/formula animation path.
 - Keep release notes honest: daily builds are for testing, not final production use.
 - Keep issue links updated for visible work:
@@ -113,7 +114,7 @@ Daily-to-Beta promotion procedure: `docs/DAILY_TO_BETA_PROCEDURE.md`.
 For Syscalculator 2.0 installer:
 
 ```powershell
-.\src\syscalculator\Build\BuildInstaller.ps1 -Channel daily
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\src\syscalculator\Build\BuildInstaller.ps1 -Channel daily
 ```
 
 Use `-Channel beta` or `-Channel production` only when promoting that release line.
