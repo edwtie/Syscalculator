@@ -23,7 +23,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
-    private static readonly Regex HtmlMediaLinkRegex = new("(?:src|href)\\s*=\\s*[\"'](?<path>[^\"']+\\.(?:png|jpg|jpeg|webp|svg))[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex HtmlMediaLinkRegex = new("(?:src|href)\\s*=\\s*[\"'](?<path>[^\"']+\\.(?:png|svg))[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
     private readonly ListView _documentList;
@@ -390,7 +390,7 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Open ToolEditor document",
-            Filter = "Tool documents (*.html;*.json;*.lng;*.css;*.txt;*.png;*.jpg;*.jpeg;*.webp;*.svg)|*.html;*.json;*.lng;*.css;*.txt;*.png;*.jpg;*.jpeg;*.webp;*.svg|All files (*.*)|*.*"
+            Filter = "Tool documents (*.html;*.json;*.lng;*.css;*.txt;*.png;*.svg)|*.html;*.json;*.lng;*.css;*.txt;*.png;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -408,7 +408,7 @@ public sealed class ToolEditorForm : Form
         {
             Title = "Media toevoegen aan language package",
             Multiselect = true,
-            Filter = "Media (*.png;*.jpg;*.jpeg;*.webp;*.svg)|*.png;*.jpg;*.jpeg;*.webp;*.svg|All files (*.*)|*.*"
+            Filter = "Media (*.png;*.svg)|*.png;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -428,7 +428,7 @@ public sealed class ToolEditorForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = "Media vervangen",
-            Filter = "Media (*.png;*.jpg;*.jpeg;*.webp;*.svg)|*.png;*.jpg;*.jpeg;*.webp;*.svg|All files (*.*)|*.*"
+            Filter = "Media (*.png;*.svg)|*.png;*.svg|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1097,9 +1097,6 @@ public sealed class ToolEditorForm : Form
     {
         var extension = Path.GetExtension(path);
         return extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".webp", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".svg", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -1351,8 +1348,6 @@ public sealed class ToolEditorForm : Form
         var extension = Path.GetExtension(path).ToLowerInvariant();
         return extension switch
         {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".webp" => "image/webp",
             ".svg" => "image/svg+xml",
             _ => "image/png"
         };
