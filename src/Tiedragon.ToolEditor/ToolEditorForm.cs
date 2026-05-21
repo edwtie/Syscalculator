@@ -371,8 +371,9 @@ public sealed class ToolEditorForm : Form
     private void NewLanguagePackageTemplate()
     {
         _manifestText = BuildManifestTemplate();
-        AddDocument("language/ned.lng", LoadDutchLanguageText(), null);
+        var languageDocument = AddDocument("language/ned.lng", LoadDutchLanguageText(), null);
         AddDutchHelpDocuments();
+        SelectDocument(languageDocument);
     }
 
     private static string BuildManifestTemplate()
@@ -529,7 +530,7 @@ public sealed class ToolEditorForm : Form
         else if (IsImagePath(dialog.FileName))
             AddOrReplaceImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName, markDirty: false);
         else if (TryBuildImportPackagePath(dialog.FileName, out var packagePath))
-            AddDocument(packagePath, File.ReadAllText(dialog.FileName), dialog.FileName);
+            SelectDocument(AddDocument(packagePath, File.ReadAllText(dialog.FileName), dialog.FileName));
         else
             RejectUnsupportedPackageFile(dialog.FileName);
     }
@@ -918,7 +919,7 @@ public sealed class ToolEditorForm : Form
         SetStatus("Saved: " + path, isError: false);
     }
 
-    private void AddDocument(string displayName, string text, string? filePath)
+    private ToolEditorDocument AddDocument(string displayName, string text, string? filePath)
     {
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
@@ -939,15 +940,13 @@ public sealed class ToolEditorForm : Form
 
         document.HeaderPanel = header.Panel;
         document.HeaderTitle = header.Title;
-        document.IsOpen = true;
         _documents.Add(document);
-        _tabStrip.Controls.Add(header.Panel);
         RefreshFileTree();
         RefreshDocumentList();
-        SelectDocument(document);
+        return document;
     }
 
-    private void AddImageDocument(string displayName, byte[] bytes, string? filePath)
+    private ToolEditorDocument AddImageDocument(string displayName, byte[] bytes, string? filePath)
     {
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath)
@@ -966,12 +965,10 @@ public sealed class ToolEditorForm : Form
 
         document.HeaderPanel = header.Panel;
         document.HeaderTitle = header.Title;
-        document.IsOpen = true;
         _documents.Add(document);
-        _tabStrip.Controls.Add(header.Panel);
         RefreshFileTree();
         RefreshDocumentList();
-        SelectDocument(document);
+        return document;
     }
 
     private void AddOrReplaceImageDocument(string displayName, byte[] bytes, string? filePath, bool markDirty)
@@ -981,9 +978,10 @@ public sealed class ToolEditorForm : Form
             document.PackagePath.Equals(packagePath, StringComparison.OrdinalIgnoreCase));
         if (document is null)
         {
-            AddImageDocument(displayName, bytes, filePath);
-            if (_current is not null && markDirty)
-                SetDirty(_current, true);
+            document = AddImageDocument(displayName, bytes, filePath);
+            if (markDirty)
+                SetDirty(document, true);
+            SelectDocument(document);
             return;
         }
 
