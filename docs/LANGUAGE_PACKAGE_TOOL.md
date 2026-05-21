@@ -3,6 +3,14 @@
 `Tiedragon.LanguagePackage` builds and checks Syscalculator `.lngpdk` language
 packages.
 
+The graphical editor is `Tiedragon.ToolEditor`. It is a standalone WinForms app
+for editing concept language packages, HTML help, formula cards and media. It
+can still be opened from Syscalculator, but it also runs independently:
+
+```powershell
+dotnet run --project src/Tiedragon.ToolEditor
+```
+
 ## Commands
 
 ```text

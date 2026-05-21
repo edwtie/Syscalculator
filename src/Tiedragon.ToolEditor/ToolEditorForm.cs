@@ -549,7 +549,8 @@ public sealed class ToolEditorForm : Form
 
     private void AddNodHelpDocuments()
     {
-        var nodRoot = FindRepositoryPath("src/syscalculator/Resources/Help/Content/nod");
+        var nodRoot = FindToolEditorResourcePath("Resources/Help/Content/nod") ??
+            FindRepositoryPath("src/syscalculator/Resources/Help/Content/nod");
         if (nodRoot is null)
         {
             AddDocument("help/content/nod/full/index.html", BuildNodHelpFallback(), null);
@@ -747,7 +748,8 @@ public sealed class ToolEditorForm : Form
 
     private static string LoadLanguageText(string languageCode, string displayName)
     {
-        var path = FindRepositoryPath("src/syscalculator/" + languageCode + ".lng");
+        var path = FindToolEditorResourcePath("Resources/Languages/" + languageCode + ".lng") ??
+            FindRepositoryPath("src/syscalculator/" + languageCode + ".lng");
         if (path is not null)
             return File.ReadAllText(path, Encoding.UTF8);
 
@@ -775,6 +777,15 @@ public sealed class ToolEditorForm : Form
         menu.tools.tool_editor=ToolEditor
         status.ready=Gereed
         """;
+    }
+
+    private static string? FindToolEditorResourcePath(string relativePath)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (File.Exists(path) || Directory.Exists(path))
+            return path;
+
+        return null;
     }
 
     private static string? FindRepositoryPath(string relativePath)

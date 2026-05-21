@@ -29,7 +29,7 @@ src/Tiedragon.Graph            gedeelde graph-basis, formatting, pijlen en overl
 src/Tiedragon.Graph.2D         Graph2D API en WinForms-rendering, namespace Tiedragon.Graph.G2D
 src/Tiedragon.Graph.3D         Graph3D API, projectie, grid, camera en kompas, namespace Tiedragon.Graph.G3D
 src/Tiedragon.Help             gedeelde Help/HTML helpers
-src/Tiedragon.ToolEditor       editor-bouwstenen
+src/Tiedragon.ToolEditor       zelfstandige ToolEditor-app voor taalpackages, help-HTML en media
 src/Tiedragon.ClipboardConvert clipboard/data conversie helpers
 src/NodSystem.Demo             demo-console
 src/NodSystem.Tests            simpele test-console zonder NuGet
