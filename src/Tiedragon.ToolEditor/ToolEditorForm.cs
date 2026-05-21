@@ -1401,11 +1401,23 @@ public sealed class ToolEditorForm : Form
             return 0;
 
         if (path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("help/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase))
+            path.StartsWith("help/content/main/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/main/", StringComparison.OrdinalIgnoreCase))
         {
             return 1;
+        }
+
+        if (path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        if (path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase) ||
+            path.Contains("formula", StringComparison.OrdinalIgnoreCase))
+        {
+            return 3;
         }
 
         if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || IsImagePath(path))
