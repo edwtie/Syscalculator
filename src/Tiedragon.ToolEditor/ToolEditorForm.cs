@@ -371,7 +371,7 @@ public sealed class ToolEditorForm : Form
         package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
 
         var help = new ToolStripMenuItem("Help");
-        help.DropDownItems.Add("ToolEditor", null, (_, _) => MessageBox.Show(this, "ToolEditor bewerkt taalpakketten, help-HTML, NOD-onderwerpen, formulekaarten en media.", "ToolEditor"));
+        help.DropDownItems.Add(CreateMenuItem("ToolEditor help", Keys.F1, (_, _) => ShowToolEditorHelp()));
 
         menu.Items.Add(file);
         menu.Items.Add(edit);
@@ -389,6 +389,74 @@ public sealed class ToolEditorForm : Form
         };
         item.Click += click;
         return item;
+    }
+
+    private void ShowToolEditorHelp()
+    {
+        HelpApi.ShowDialog(this, new HelpDialogOptions(
+            "ToolEditor help",
+            BuildToolEditorHelpPages(),
+            "overview",
+            new HelpNavigationLabels("Start", "Vorige", "Volgende")));
+    }
+
+    private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages()
+    {
+        return
+        [
+            BuildToolEditorHelpPage("overview", "ToolEditor gebruiken", "overview.html", BuildToolEditorOverviewFallback()),
+            BuildToolEditorHelpPage("package", "Taalpakket workflow", "package-workflow.html", BuildToolEditorPackageFallback()),
+            BuildToolEditorHelpPage("html", "HTML bewerken", "html-editor.html", BuildToolEditorHtmlFallback()),
+            BuildToolEditorHelpPage("media", "Media en afbeeldingen", "media.html", BuildToolEditorMediaFallback()),
+            BuildToolEditorHelpPage("compile", "Valideren en compileren", "compile.html", BuildToolEditorCompileFallback())
+        ];
+    }
+
+    private static NodHelpPage BuildToolEditorHelpPage(string id, string title, string fileName, string fallback)
+    {
+        var body = HelpHtml.Content("tool-editor/" + fileName, fallback);
+        return new NodHelpPage(id, title, HelpHtml.WrapTopicPage(title, body, HelpApi.NodHelpCss(), ToolEditorHelpPreviewScript()));
+    }
+
+    private static string BuildToolEditorOverviewFallback()
+    {
+        return """
+        <p>ToolEditor bewerkt Tiedragon language packages: vertaling, help, NOD-documentatie, formulekaart en media.</p>
+        <ul>
+          <li>Links staat de vaste pakketstructuur.</li>
+          <li>Boven werk je aan de actieve tab.</li>
+          <li>Bij source-weergave toont de rechterzijde of onderzijde de HTML-preview.</li>
+        </ul>
+        """;
+    }
+
+    private static string BuildToolEditorPackageFallback()
+    {
+        return """
+        <p>Gebruik <b>Nieuw package</b> voor een basispakket, <b>Save concept taalpackage</b> voor werkbestanden en <b>Compileer taalpackage</b> voor een gecontroleerd .lngpdk-bestand.</p>
+        """;
+    }
+
+    private static string BuildToolEditorHtmlFallback()
+    {
+        return """
+        <p>HTML-documenten hebben twee standen: <b>Source</b> voor broncode en <b>Edit</b> voor directe bewerking.</p>
+        <p>De knoppen H1, H2, P, Info, Tip, Warn, Code en Kbd voegen standaard helpblokken in.</p>
+        """;
+    }
+
+    private static string BuildToolEditorMediaFallback()
+    {
+        return """
+        <p>Media bevat alleen toegestane afbeeldingen zoals png, jpg en svg. Sleep en zoom in de afbeeldingpreview om details te controleren.</p>
+        """;
+    }
+
+    private static string BuildToolEditorCompileFallback()
+    {
+        return """
+        <p>Validate controleert structuur, links, media en scripts. Compile maakt een .lngpdk met checksum en strikte bestandslijst.</p>
+        """;
     }
 
     private ToolStrip CreateHtmlToolbar()
