@@ -76,7 +76,7 @@ Syscalculator.Language.ned.zip
 │     ├─ nod/command/
 │     └─ nod/popup/
 ├─ manual/
-│  ├─ README.md
+│  ├─ index.html
 │  ├─ user-guide.html
 │  └─ release-notes.html
 └─ assets/
@@ -176,7 +176,6 @@ Allowed:
 
 - `.lng`
 - `.html`
-- `.md`
 - `.css`
 - `.js` from trusted Syscalculator package only
 - `.svg`

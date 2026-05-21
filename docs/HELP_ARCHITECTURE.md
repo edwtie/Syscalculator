@@ -74,7 +74,7 @@ Redenen:
 
 ## Schrijversafspraak
 
-- Bewerk inhoud in HTML of Markdown-achtige contentbestanden.
+- Bewerk helpinhoud als gewone HTML-bestanden.
 - Gebruik eenvoudige tags voor koppen, alinea's, tabellen, waarschuwingen en voorbeelden.
 - Zet taalafhankelijke tekst tussen `[lng.key]`.
 - Laat styling in CSS staan.

@@ -1,0 +1,30 @@
+<h1>JavaScript En CSS</h1>
+
+<p>Meestal hoef je zelf geen JavaScript te kiezen. Het programma kiest dat automatisch per soort help.</p>
+
+<table>
+  <tr><th>Waar</th><th>JavaScript</th><th>Wat doet het?</th></tr>
+  <tr><td><code>main/*.html</code></td><td>geen extra schrijvers-JS</td><td>Gewone gebruikershelp.</td></tr>
+  <tr><td><code>nod/full/*.html</code></td><td><code>nod-copy-buttons.js</code></td><td>Zet automatisch een kopieerknop bij elk <code>&lt;pre&gt;</code> codeblok.</td></tr>
+  <tr><td><code>nod/command/*.html</code></td><td><code>nod-copy-buttons.js</code></td><td>Zet automatisch een kopieerknop bij elk <code>&lt;pre&gt;</code> codeblok.</td></tr>
+  <tr><td><code>nod/popup/*.html</code></td><td><code>nod-popup-height.js</code></td><td>Past de hoogte van de kleine helpballon aan.</td></tr>
+  <tr><td>formulekaart</td><td><code>formula-card-copy-buttons.js</code>, <code>formula-search.js</code>, <code>formula-film.js</code></td><td>Alleen voor de formulekaart en formulefilm.</td></tr>
+</table>
+
+<p>Welke CSS hoort erbij:</p>
+
+<table>
+  <tr><th>Waar</th><th>CSS</th></tr>
+  <tr><td><code>main/*.html</code></td><td><code>main-help.css</code></td></tr>
+  <tr><td><code>nod/full/*.html</code> en <code>nod/command/*.html</code></td><td><code>nod-help.css</code></td></tr>
+  <tr><td><code>nod/popup/*.html</code></td><td><code>nod-popup.css</code></td></tr>
+</table>
+
+<h2>Kort</h2>
+
+<ul>
+  <li>Gewone tekst? Geen JS nodig.</li>
+  <li>Codeblok met <code>&lt;pre&gt;</code> in NOD-help? Kopieerknop komt vanzelf.</li>
+  <li>Uitklapblok met <code>&lt;details&gt;</code>? Geen JS nodig.</li>
+  <li>Zet zelf geen <code>&lt;script&gt;</code> in helpteksten.</li>
+</ul>
