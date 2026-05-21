@@ -1,0 +1,83 @@
+﻿[
+    {
+        "packageKey":  "deu",
+        "languageCode":  "deu",
+        "displayName":  "Deutsch",
+        "packageSha256":  "dbdf946069f4a79e518066791e2ab6c865e38a0c89f970b22968eb00009eb478",
+        "payloadSha256":  "8c9dc14499372857654b971174d96c2248d4787ebce5f65df773d1cdfec019be",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.deu.lngpdk"
+    },
+    {
+        "packageKey":  "eng",
+        "languageCode":  "eng",
+        "displayName":  "English",
+        "packageSha256":  "920df0a3c1ff04cc30e7246dcd7d415c7b7a1c27c9491eafa38bedc944395335",
+        "payloadSha256":  "1b75349a4764c9ba9862cf25177e70c4889ddc9c4bf9581cdf696dbbda3b761e",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.eng.lngpdk"
+    },
+    {
+        "packageKey":  "fra",
+        "languageCode":  "fra",
+        "displayName":  "Français",
+        "packageSha256":  "8ee95ba1a32a9d87eecc16384a41d037a2693b26f39259fbb6c69848fe01bf2f",
+        "payloadSha256":  "609fee85a3e2bffbf022e2c8001b99b3337f1d5998b7e05798f8c3a4fbda4e85",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.fra.lngpdk"
+    },
+    {
+        "packageKey":  "ind",
+        "languageCode":  "ind",
+        "displayName":  "Indonesia",
+        "packageSha256":  "66a08b856b990081c57e240ba30e5cea0b25ae59bdfe295a85174f18d3763810",
+        "payloadSha256":  "0b5bf3a7abf6690d8e454a307d47b892e988ed396e274905b8de925b2071469f",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.ind.lngpdk"
+    },
+    {
+        "packageKey":  "ita",
+        "languageCode":  "ita",
+        "displayName":  "Italiano",
+        "packageSha256":  "4f293b9349786864fb6a063c24621255ee74797040b18db1cdf7e79ecf00a089",
+        "payloadSha256":  "0c830c2b9d4449bf928cc9b9cc78d37bacc6624515ac94d3637208848f72584f",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.ita.lngpdk"
+    },
+    {
+        "packageKey":  "ned",
+        "languageCode":  "ned",
+        "displayName":  "Nederlands",
+        "packageSha256":  "ec74c1f2cebb9389546881e6df69957c4343c9b2ca561659f3491287a0502305",
+        "payloadSha256":  "9794c24791b4a0730b67f07ad4132d4d8342bff2a3694e98a967048fba7d601b",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.ned.lngpdk"
+    },
+    {
+        "packageKey":  "por",
+        "languageCode":  "por",
+        "displayName":  "Português",
+        "packageSha256":  "90ea7f8fdad68bd1b0a1db5b0ae48c15f02ecf6e9eb8e021b2f5025b07928cc4",
+        "payloadSha256":  "78b2f78b2f701a2adc0cd4f708a2c3c97748dca77579644312670df90892e70b",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.por.lngpdk"
+    },
+    {
+        "packageKey":  "spa",
+        "languageCode":  "spa",
+        "displayName":  "Español",
+        "packageSha256":  "fa030aaee626371582919832372b86241134f448def967341a464aa62c89da37",
+        "payloadSha256":  "09808763f189dbe0e225fcdd8286e33540694a51e054e03768c80b1a3386bece",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.spa.lngpdk"
+    },
+    {
+        "packageKey":  "zho",
+        "languageCode":  "zho",
+        "displayName":  "中文",
+        "packageSha256":  "d569dbb52fefe88b7d4f1dbcfd624b854093880475d286a02ccdab07dffe2e2f",
+        "payloadSha256":  "f41adb15d86eddd00fd050a49369d2db6976e592e20eac6603c68bf1fd50e34a",
+        "entryCount":  102,
+        "outputPath":  "C:\\Users\\Edward Tie\\source\\repos\\Syscalculator\\web\\packages\\languages\\Syscalculator.Language.zho.lngpdk"
+    }
+]
