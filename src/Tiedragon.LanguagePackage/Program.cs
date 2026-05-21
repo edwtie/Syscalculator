@@ -116,7 +116,10 @@ internal static class Program
     private static int AgentCompileLanguage(string[] args)
     {
         if (args.Length != 3)
-            return Usage();
+        {
+            WriteAgentError("E_ARGS", "agent-compile requires <input-folder> <output.lngpdk>.");
+            return 2;
+        }
 
         try
         {
@@ -126,10 +129,70 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            var error = new LanguagePackageAgentError(false, ex.Message);
-            Console.WriteLine(JsonSerializer.Serialize(error, AgentJsonOptions));
+            WriteAgentError(GetErrorCode(ex), ex.Message);
             return 1;
         }
+    }
+
+    private static void WriteAgentError(string code, string message)
+    {
+        var error = new LanguagePackageAgentError(false, code, message);
+        Console.WriteLine(JsonSerializer.Serialize(error, AgentJsonOptions));
+    }
+
+    private static string GetErrorCode(Exception ex)
+    {
+        if (ex is DirectoryNotFoundException)
+            return "E_INPUT_NOT_FOUND";
+        if (ex is FileNotFoundException fileNotFound)
+            return fileNotFound.FileName?.EndsWith("manifest.json", StringComparison.OrdinalIgnoreCase) == true
+                ? "E_MANIFEST_MISSING"
+                : "E_FILE_NOT_FOUND";
+        if (ex is UnauthorizedAccessException or IOException)
+            return "E_IO";
+        if (ex is JsonException)
+            return "E_MANIFEST_JSON";
+        if (ex is InvalidOperationException && ex.Message.Contains(".lngpdk", StringComparison.OrdinalIgnoreCase))
+            return "E_OUTPUT_EXTENSION";
+        if (ex is not InvalidDataException and not InvalidOperationException)
+            return "E_UNKNOWN";
+
+        var message = ex.Message;
+        if (message.Contains("manifest", StringComparison.OrdinalIgnoreCase))
+            return "E_MANIFEST_INVALID";
+        if (message.Contains("language/", StringComparison.OrdinalIgnoreCase) && message.Contains("required", StringComparison.OrdinalIgnoreCase))
+            return "E_REQUIRED_FILE";
+        if (message.Contains("absolute", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("unsafe path", StringComparison.OrdinalIgnoreCase))
+        {
+            return "E_PATH_UNSAFE";
+        }
+        if (message.Contains("blocked file type", StringComparison.OrdinalIgnoreCase))
+            return "E_FILE_BLOCKED";
+        if (message.Contains("unsupported file type", StringComparison.OrdinalIgnoreCase))
+            return "E_FILE_UNSUPPORTED";
+        if (message.Contains("too many files", StringComparison.OrdinalIgnoreCase))
+            return "E_LIMIT_FILE_COUNT";
+        if (message.Contains("too large", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("payload size", StringComparison.OrdinalIgnoreCase))
+        {
+            return "E_LIMIT_SIZE";
+        }
+        if (message.Contains("SHA-256", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("checksum", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("hash", StringComparison.OrdinalIgnoreCase))
+        {
+            return "E_CHECKSUM";
+        }
+        if (message.Contains("encrypted", StringComparison.OrdinalIgnoreCase))
+            return "E_ENCRYPTED";
+        if (message.Contains("container format", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("header format", StringComparison.OrdinalIgnoreCase))
+        {
+            return "E_UNSUPPORTED_FORMAT";
+        }
+
+        return "E_PACKAGE_INVALID";
     }
 
     private static LanguagePackageBuildResult BuildLanguagePackage(string inputFolderValue, string outputPathValue)
@@ -513,6 +576,7 @@ internal sealed record LanguagePackageBuildResult(
 
 internal sealed record LanguagePackageAgentError(
     bool Success,
+    string Code,
     string Error);
 
 internal sealed class LanguagePackageManifest

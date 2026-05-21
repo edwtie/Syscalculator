@@ -31,7 +31,7 @@ PowerShell helper:
 tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk>
 ```
 
-The helper runs `agent-compile`, so callers can parse `success`,
+The helper runs `agent-compile`, so callers can parse `success`, `code`,
 `packageSha256`, `payloadSha256`, `languageCode`, `packageKey` and `entryCount`
 without scraping human-readable text.
 
@@ -60,6 +60,40 @@ Minimum manifest:
   "packageVersion": "2026.05.21.001",
   "fallbackLanguage": "eng"
 }
+```
+
+Agent error JSON example:
+
+```json
+{
+  "success": false,
+  "code": "E_FILE_BLOCKED",
+  "error": "Blocked file type: scripts/build.bat"
+}
+```
+
+Stable agent error codes:
+
+```text
+E_ARGS
+E_INPUT_NOT_FOUND
+E_FILE_NOT_FOUND
+E_IO
+E_OUTPUT_EXTENSION
+E_MANIFEST_MISSING
+E_MANIFEST_JSON
+E_MANIFEST_INVALID
+E_REQUIRED_FILE
+E_PATH_UNSAFE
+E_FILE_BLOCKED
+E_FILE_UNSUPPORTED
+E_LIMIT_FILE_COUNT
+E_LIMIT_SIZE
+E_CHECKSUM
+E_ENCRYPTED
+E_UNSUPPORTED_FORMAT
+E_PACKAGE_INVALID
+E_UNKNOWN
 ```
 
 Optional:
