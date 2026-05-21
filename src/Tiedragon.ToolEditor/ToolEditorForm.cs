@@ -462,6 +462,11 @@ public sealed class ToolEditorForm : Form
     {
         html = html.Replace("charset=windows-1252", "charset=utf-8", StringComparison.OrdinalIgnoreCase);
         html = html.Replace("Syscalculator 1.74", "Syscalculator", StringComparison.OrdinalIgnoreCase);
+        html = Regex.Replace(
+            html,
+            @"\s*<div\s+class\s*=\s*[""']nav[""']>\s*<a\s+href\s*=\s*[""']index_nl\.htm[""']>\s*Nederlandse help\s*</a>\s*</div>\s*",
+            Environment.NewLine,
+            RegexOptions.IgnoreCase);
         foreach (var item in pageNameMap)
             html = ReplaceQuotedPath(html, item.Key, item.Value);
         foreach (var item in mediaNameMap)
@@ -1947,7 +1952,7 @@ public sealed class ToolEditorForm : Form
 
         var text = document.Editor.Text;
         if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
-            return WrapHtml(document.DisplayName, ResolveMediaLinksForPreview(text));
+            return WrapContentHtml(ResolveMediaLinksForPreview(text));
         if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             return WrapHtml(document.DisplayName, BuildLanguagePreview(text));
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
@@ -2162,6 +2167,37 @@ public sealed class ToolEditorForm : Form
         </head>
         <body>
           <h1>{{WebUtility.HtmlEncode(title)}}</h1>
+          {{body}}
+        </body>
+        </html>
+        """;
+    }
+
+    private static string WrapContentHtml(string body)
+    {
+        return $$"""
+        <!doctype html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; margin: 18px 22px; color: #1f2937; background: #fff; }
+            h1 { font-size: 22px; margin: 0 0 14px; color: #0f3f8f; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #d7e0ec; padding: 6px 8px; vertical-align: top; }
+            th { width: 220px; text-align: left; background: #f3f7fc; color: #173b70; }
+            pre { white-space: pre-wrap; font-family: Consolas, monospace; background: #f8fafc; border: 1px solid #d7e0ec; padding: 12px; }
+            .notice { border-left: 4px solid #1d70d8; background: #eff6ff; padding: 10px 12px; margin: 10px 0; }
+            .help-info, .help-tip, .help-warning { border-left: 4px solid; padding: 10px 12px; margin: 10px 0; }
+            .help-info { border-color: #1d70d8; background: #eff6ff; }
+            .help-tip { border-color: #16803c; background: #ecfdf3; }
+            .help-warning { border-color: #c2410c; background: #fff7ed; }
+            code { font-family: Consolas, monospace; }
+            kbd { font-family: Consolas, monospace; border: 1px solid #cbd5e1; border-bottom-width: 2px; border-radius: 4px; background: #f8fafc; padding: 1px 5px; }
+            img { max-width: 100%; height: auto; }
+          </style>
+        </head>
+        <body>
           {{body}}
         </body>
         </html>
