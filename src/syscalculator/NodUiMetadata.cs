@@ -7,6 +7,12 @@ namespace Syscalculator.UI.WinForms;
 /// </summary>
 public sealed class NodUiMetadata
 {
+    private const string EuroSymbol = "\u20ac";
+    private const string MojibakeEuroLatin = "\u00e2\u201a\u00ac";
+    private const string MojibakeEuroCyrillic = "\u0442\u0412\u043c";
+    private const string MojibakeEuroCyrillicA = "\u0410";
+    private const string ReplacementCharacter = "\ufffd";
+
     public string Name { get; set; } = "NOD";
     public string Urln { get; set; } = "";
     public string Input1 { get; set; } = "Input";
@@ -108,17 +114,17 @@ public sealed class NodUiMetadata
         if (int.TryParse(symbol, out var code))
         {
             if (code is 128 or 8364)
-                return "€";
+                return EuroSymbol;
 
             if (code >= 32 && code <= 126)
                 return ((char)code).ToString();
         }
 
         return symbol
-            .Replace("â‚¬", "€", StringComparison.Ordinal)
-            .Replace("тВм", "€", StringComparison.Ordinal)
-            .Replace("А", "€", StringComparison.Ordinal)
-            .Replace("�", "€", StringComparison.Ordinal);
+            .Replace(MojibakeEuroLatin, EuroSymbol, StringComparison.Ordinal)
+            .Replace(MojibakeEuroCyrillic, EuroSymbol, StringComparison.Ordinal)
+            .Replace(MojibakeEuroCyrillicA, EuroSymbol, StringComparison.Ordinal)
+            .Replace(ReplacementCharacter, EuroSymbol, StringComparison.Ordinal);
     }
 
     private static string NormalizeInputRLabel(string value)

@@ -2936,6 +2936,8 @@ public sealed class ToolEditorForm : Form
         if (!IsAllowedPackageDocumentPath(document.PackagePath))
             errors.Add("Package path is not allowed: " + document.PackagePath);
 
+        ValidateNoMojibake(text, errors);
+
         if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             ValidateJson(text, errors);
         else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
@@ -2947,6 +2949,26 @@ public sealed class ToolEditorForm : Form
             errors.Add("Document is empty.");
 
         return errors;
+    }
+
+    private static void ValidateNoMojibake(string text, List<string> errors)
+    {
+        var lineNumber = 0;
+        foreach (var line in text.Replace("\r\n", "\n").Split('\n'))
+        {
+            lineNumber++;
+            if (ContainsMojibakeMarker(line))
+                errors.Add("Line " + lineNumber + " contains possible encoding damage/mojibake.");
+        }
+    }
+
+    private static bool ContainsMojibakeMarker(string text)
+    {
+        return text.Contains('\u00c3') ||
+            text.Contains('\u00c2') ||
+            text.Contains('\u00e2') ||
+            text.Contains("\u00e4\u00b8", StringComparison.Ordinal) ||
+            text.Contains("\u00e6\u2013", StringComparison.Ordinal);
     }
 
     private static bool IsAllowedPackageDocumentPath(string packagePath)

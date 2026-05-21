@@ -105,6 +105,7 @@ foreach ($languageFile in $languageFiles) {
     $nativeName = if ($names) { $names.native } else { $displayName }
     Assert-NoMojibake -Value $displayName -Label "$code displayName"
     Assert-NoMojibake -Value $nativeName -Label "$code nativeName"
+    Assert-NoMojibake -Value ([System.IO.File]::ReadAllText($languageFile.FullName, [System.Text.Encoding]::UTF8)) -Label $languageFile.Name
 
     $concept = Join-Path $conceptRoot $code
     if (Test-Path $concept) {
