@@ -10,14 +10,14 @@
 $ErrorActionPreference = "Stop"
 
 # Encoding rule:
-# - This .ps1 file is intentionally saved as UTF-8 with BOM because it contains
-#   non-ASCII translation text and must still parse correctly in Windows
-#   PowerShell 5.1.
+# - Run this script with PowerShell 7+ (`pwsh`) to avoid Windows PowerShell 5.1
+#   encoding surprises.
 # - Generated package files are written as UTF-8 without BOM so package hashes
-#   remain stable across Windows PowerShell and PowerShell 7.
+#   remain stable.
 $Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $scriptRoot "Assert-PowerShell7.ps1") -Purpose "language packages" -ScriptPath $PSCommandPath
 $repoRoot = Split-Path -Parent $scriptRoot
 $languageRoot = Join-Path $repoRoot $LanguageDirectory
 $helpRoot = Join-Path $repoRoot $HelpDirectory

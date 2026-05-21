@@ -139,8 +139,12 @@ All tests passed.
 Taalpackages opnieuw genereren:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/Generate-LanguagePackages.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File tools/Generate-LanguagePackages.ps1
 ```
+
+Gebruik PowerShell 7 of nieuwer voor language-package scripts. Oude Windows
+PowerShell 5.1 wordt geweigerd, omdat encoding anders te makkelijk mojibake in
+`.lng`, HTML of JSON veroorzaakt.
 
 Een package valideren:
 

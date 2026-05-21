@@ -12,6 +12,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $scriptRoot "Assert-PowerShell7.ps1") -Purpose "language package compile helpers" -ScriptPath $PSCommandPath
 $repoRoot = Split-Path -Parent $scriptRoot
 $project = Join-Path $repoRoot "src/Tiedragon.LanguagePackage/Tiedragon.LanguagePackage.csproj"
 

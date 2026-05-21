@@ -46,6 +46,17 @@ tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk>
 tools/Compile-LanguagePackage.ps1 <concept-folder> <output.lngpdk> -BasePackage <base-folder-or-package>
 ```
 
+Run language-package scripts with PowerShell 7 or newer:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File tools/Generate-LanguagePackages.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File tools/Test-LanguagePackageIntegration.ps1
+```
+
+The generation, translation and integration smoke scripts reject Windows
+PowerShell 5.1. This keeps `.lng`, HTML, JSON and docs on predictable UTF-8
+handling and avoids mojibake during release work.
+
 The helper runs `agent-compile`, so callers can parse `success`, `code`,
 `packageSha256`, `payloadSha256`, `languageCode`, `packageKey` and `entryCount`
 without scraping human-readable text.

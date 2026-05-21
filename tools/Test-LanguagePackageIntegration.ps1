@@ -6,6 +6,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$scriptRoot = Join-Path $repoRoot "tools"
+. (Join-Path $scriptRoot "Assert-PowerShell7.ps1") -Purpose "the language package integration smoke test" -ScriptPath $PSCommandPath
 $assemblyPath = (Resolve-Path (Join-Path $repoRoot $AppAssembly)).Path
 $languagePackagePath = (Resolve-Path (Join-Path $repoRoot $PackagePath)).Path
 $workRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("SyscalcLangSmoke_" + [guid]::NewGuid().ToString("N"))
