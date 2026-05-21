@@ -183,6 +183,7 @@ public sealed class ToolEditorForm : Form
         var contentSplit = new SplitContainer
         {
             Dock = DockStyle.Fill,
+            Orientation = Orientation.Horizontal,
             BorderStyle = BorderStyle.None,
             SplitterWidth = 5,
             BackColor = Color.FromArgb(226, 232, 240),
@@ -190,10 +191,10 @@ public sealed class ToolEditorForm : Form
             Panel2MinSize = 1
         };
         contentSplit.Panel1.Controls.Add(editorHost);
-        contentSplit.Panel2.Padding = new Padding(0, 4, 4, 0);
+        contentSplit.Panel2.Padding = new Padding(0, 4, 0, 0);
         contentSplit.Panel2.Controls.Add(previewHost);
-        contentSplit.SizeChanged += (_, _) => ClampSplitter(contentSplit);
-        Shown += (_, _) => ClampSplitter(contentSplit);
+        contentSplit.SizeChanged += (_, _) => ClampSplitter(contentSplit, 390);
+        Shown += (_, _) => ClampSplitter(contentSplit, 390);
 
         var split = new SplitContainer
         {
@@ -1763,15 +1764,16 @@ public sealed class ToolEditorForm : Form
 
     private static void ClampSplitter(SplitContainer split, int? preferredDistance = null)
     {
-        if (split.Width <= split.SplitterWidth + 2)
+        var length = split.Orientation == Orientation.Horizontal ? split.Height : split.Width;
+        if (length <= split.SplitterWidth + 2)
             return;
 
         var min = Math.Max(1, split.Panel1MinSize);
-        var max = split.Width - split.SplitterWidth - Math.Max(1, split.Panel2MinSize);
+        var max = length - split.SplitterWidth - Math.Max(1, split.Panel2MinSize);
         if (max < min)
             return;
 
-        var target = Math.Clamp(preferredDistance ?? split.Width / 2, min, max);
+        var target = Math.Clamp(preferredDistance ?? length / 2, min, max);
         try
         {
             if (split.SplitterDistance != target)
