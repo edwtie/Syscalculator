@@ -1159,7 +1159,7 @@ public sealed class ToolEditorForm : Form
 
         _current.HtmlEditMode = editMode;
         SelectDocument(_current);
-        BeginInvoke(FocusActiveEditor);
+        QueueFocusActiveEditor();
     }
 
     private void WrapHtmlSelection(string tag, string fallbackText)
@@ -1326,6 +1326,17 @@ public sealed class ToolEditorForm : Form
         UpdatePreview();
         UpdateUiState();
         UpdateDocumentStatus(document);
+        QueueFocusActiveEditor();
+    }
+
+    private void QueueFocusActiveEditor()
+    {
+        if (IsDisposed)
+            return;
+
+        if (!IsHandleCreated)
+            return;
+
         BeginInvoke(FocusActiveEditor);
     }
 
