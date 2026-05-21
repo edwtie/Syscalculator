@@ -474,7 +474,7 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildHtmlTemplate()
     {
-        return """
+        return BuildConceptHelpWarning("nl") + """
         <h1>Syscalculator Help</h1>
         <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
         <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
@@ -523,6 +523,7 @@ public sealed class ToolEditorForm : Form
             var packageName = pageNameMap[Path.GetFileName(file)];
             var html = File.ReadAllText(file, Encoding.Latin1);
             html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
+            html = BuildConceptHelpWarning(languagePrefix) + html;
             AddDocument("manual/" + packageName, html, file);
         }
     }
@@ -540,10 +541,26 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildEnglishHtmlTemplate()
     {
-        return """
+        return BuildConceptHelpWarning("en") + """
         <h1>Syscalculator Help</h1>
         <p>This starter language package contains the editable package structure for Syscalculator help, NOD help, formula cards, translations and media.</p>
         <div class="help-info">Use this English base package as the source for a new translation package.</div>
+        """;
+    }
+
+    private static string BuildConceptHelpWarning(string languagePrefix)
+    {
+        if (languagePrefix.Equals("nl", StringComparison.OrdinalIgnoreCase))
+        {
+            return """
+            <div class="help-warning"><b>Concept:</b> deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiële Syscalculator-help.</div>
+
+            """;
+        }
+
+        return """
+        <div class="help-warning"><b>Concept:</b> this help information is package draft material and is not official Syscalculator help yet.</div>
+
         """;
     }
 
