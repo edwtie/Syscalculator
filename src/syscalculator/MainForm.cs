@@ -384,7 +384,6 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         _calculatorMenuItem.Click += Calculator_Click;
         tools.DropDownItems.Add(_calculatorMenuItem);
         tools.DropDownItems.Add(T("menu.tools.nod_editor", "NOD Editor"), null, NodEditor_Click);
-        tools.DropDownItems.Add(T("menu.tools.tool_editor", "ToolEditor"), null, ToolEditor_Click);
         tools.DropDownItems.Add(T("menu.tools.trace", "Trace"), null, TraceViewer_Click);
         tools.DropDownItems.Add(T("menu.tools.show_intro", "Show introduction again"), null, (_, _) => ShowIntroAgain());
 
