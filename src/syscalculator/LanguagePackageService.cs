@@ -1,6 +1,6 @@
 #nullable enable
-using System.IO.Compression;
 using System.Text.Json;
+using SharpCompress.Archives;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -163,8 +163,7 @@ internal static class LanguagePackageService
 
     public static LanguagePackageManifest Install(string baseDirectory, string zipPath)
     {
-        using var archive = ZipFile.OpenRead(zipPath);
-        var manifest = ReadManifest(archive) ??
+        var manifest = ReadArchiveManifest(zipPath) ??
             throw new InvalidDataException("Language package manifest.json is missing or invalid.");
 
         ValidateManifest(manifest);
@@ -172,13 +171,9 @@ internal static class LanguagePackageService
         var root = GetPackageRoot(baseDirectory);
         Directory.CreateDirectory(root);
 
-        foreach (var entry in archive.Entries)
-        {
-            if (!string.IsNullOrWhiteSpace(entry.FullName) && !entry.FullName.EndsWith('/'))
-                ValidateEntryName(entry.FullName);
-        }
+        ValidatePackageEntries(zipPath);
 
-        if (!ContainsEntry(archive, "language/" + manifest.LanguageCode + ".lng"))
+        if (!ContainsEntry(zipPath, "language/" + manifest.LanguageCode + ".lng"))
             throw new InvalidDataException($"Language package does not contain language/{manifest.LanguageCode}.lng.");
 
         CopyToCache(root, zipPath, manifest.PackageKey);
@@ -211,15 +206,12 @@ internal static class LanguagePackageService
         }
     }
 
-    private static LanguagePackageManifest? ReadManifest(ZipArchive archive)
+    private static LanguagePackageManifest? ReadArchiveManifest(string packagePath)
     {
-        var entry = archive.Entries.FirstOrDefault(entry =>
-            entry.FullName.Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
-        if (entry is null)
+        if (!TryReadArchiveEntry(packagePath, "manifest.json", out var manifestText))
             return null;
 
-        using var stream = entry.Open();
-        return JsonSerializer.Deserialize<LanguagePackageManifest>(stream, JsonOptions);
+        return JsonSerializer.Deserialize<LanguagePackageManifest>(manifestText, JsonOptions);
     }
 
     private static IEnumerable<string> EnumeratePackageFiles(string root)
@@ -249,19 +241,14 @@ internal static class LanguagePackageService
         package = null!;
         try
         {
-            using var archive = ZipFile.OpenRead(zipPath);
-            var manifest = ReadManifest(archive);
+            var manifest = ReadArchiveManifest(zipPath);
             if (manifest is null)
                 return false;
 
             ValidateManifest(manifest);
-            foreach (var entry in archive.Entries)
-            {
-                if (!string.IsNullOrWhiteSpace(entry.FullName) && !entry.FullName.EndsWith('/'))
-                    ValidateEntryName(entry.FullName);
-            }
+            ValidatePackageEntries(zipPath);
 
-            if (!ContainsEntry(archive, "language/" + manifest.LanguageCode + ".lng"))
+            if (!ContainsEntry(zipPath, "language/" + manifest.LanguageCode + ".lng"))
                 return false;
 
             package = LanguagePackageInfo.FromArchive(manifest, zipPath);
@@ -275,30 +262,54 @@ internal static class LanguagePackageService
 
     private static bool TryReadZipEntry(string zipPath, string entryName, out string content)
     {
-        content = "";
         try
         {
-            using var archive = ZipFile.OpenRead(zipPath);
-            var entry = archive.Entries.FirstOrDefault(entry =>
-                entry.FullName.Equals(entryName, StringComparison.OrdinalIgnoreCase));
-            if (entry is null)
-                return false;
-
-            using var stream = entry.Open();
-            using var reader = new StreamReader(stream);
-            content = reader.ReadToEnd();
-            return true;
+            return TryReadArchiveEntry(zipPath, entryName, out content);
         }
         catch
         {
+            content = "";
             return false;
         }
     }
 
-    private static bool ContainsEntry(ZipArchive archive, string entryName)
+    private static bool TryReadArchiveEntry(string packagePath, string entryName, out string content)
     {
+        content = "";
+        using var archive = ArchiveFactory.OpenArchive(packagePath);
+        var entry = archive.Entries.FirstOrDefault(entry =>
+            !entry.IsDirectory &&
+            NormalizeArchiveEntryName(entry.Key).Equals(entryName, StringComparison.OrdinalIgnoreCase));
+        if (entry is null)
+            return false;
+
+        using var stream = entry.OpenEntryStream();
+        using var reader = new StreamReader(stream);
+        content = reader.ReadToEnd();
+        return true;
+    }
+
+    private static bool ContainsEntry(string packagePath, string entryName)
+    {
+        using var archive = ArchiveFactory.OpenArchive(packagePath);
         return archive.Entries.Any(entry =>
-            entry.FullName.Equals(entryName, StringComparison.OrdinalIgnoreCase));
+            !entry.IsDirectory &&
+            NormalizeArchiveEntryName(entry.Key).Equals(entryName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void ValidatePackageEntries(string packagePath)
+    {
+        using var archive = ArchiveFactory.OpenArchive(packagePath);
+        foreach (var entry in archive.Entries)
+        {
+            if (!entry.IsDirectory)
+                ValidateEntryName(NormalizeArchiveEntryName(entry.Key));
+        }
+    }
+
+    private static string NormalizeArchiveEntryName(string? entryName)
+    {
+        return (entryName ?? "").Replace('\\', '/').TrimStart('/');
     }
 
     private static void ValidateManifest(LanguagePackageManifest manifest)

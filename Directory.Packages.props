@@ -5,5 +5,6 @@
 
   <ItemGroup>
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
+    <PackageVersion Include="SharpCompress" Version="0.48.1" />
   </ItemGroup>
 </Project>

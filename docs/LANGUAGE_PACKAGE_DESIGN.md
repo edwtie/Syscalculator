@@ -40,15 +40,15 @@ English through `LanguageCatalog` and `HelpApi`.
 
 ## Package Format
 
-Language packages should use a normal ZIP archive internally, with a
-Syscalculator-specific extension:
+Language packages use a Syscalculator-specific extension:
 
 ```text
 Syscalculator.Language.<code>.lngpdk
 ```
 
-Legacy `.zip` files remain readable for compatibility, but new packages should
-use:
+The first implementation supports ZIP and 7z-compatible archive reading through
+the same `.lngpdk` extension. Legacy `.zip` files remain readable for
+compatibility, but new packages should use:
 
 ```text
 *.lngpdk
@@ -222,15 +222,16 @@ use.
 
 ## Zip Library
 
-`.lngpdk` is still a ZIP container internally. .NET already includes the
-required ZIP API:
+`.lngpdk` can be a ZIP container or a 7z-style archive internally. ZIP support
+comes from .NET:
 
 ```csharp
 System.IO.Compression.ZipArchive
 System.IO.Compression.ZipFile
 ```
 
-No new NuGet package is needed for the first implementation.
+7z-compatible reading is handled in managed code through `SharpCompress`, so the
+app does not need a separate `7z.exe` or native 7z DLL for language packages.
 
 This matches the existing updater direction, which already extracts ZIP update
 packages.
@@ -250,7 +251,8 @@ Responsibilities:
 - discover installed packages;
 - read `manifest.json`;
 - validate package paths;
-- read language packages directly from `.lngpdk` archives;
+- read language packages directly from `.lngpdk` archives, including ZIP and
+  7z-compatible containers;
 - keep extracted language package folders compatible;
 - block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
 - return the active `.lng` content;

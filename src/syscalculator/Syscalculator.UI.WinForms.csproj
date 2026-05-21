@@ -62,6 +62,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="SharpCompress" />
     <ProjectReference Include="../Tiedragon.ClipboardConvert/Tiedragon.ClipboardConvert.csproj" />
     <ProjectReference Include="../Tiedragon.Graph/Tiedragon.Graph.csproj" />
     <ProjectReference Include="../Tiedragon.Graph.2D/Tiedragon.Graph.2D.csproj" />
