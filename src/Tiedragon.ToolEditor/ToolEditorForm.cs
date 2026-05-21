@@ -2751,7 +2751,7 @@ public sealed class ToolEditorForm : Form
 
         if (message.StartsWith("tooleditor:goto:", StringComparison.Ordinal))
         {
-            NavigateToPackageLink(message["tooleditor:goto:".Length..]);
+            NavigateToPackageLink(message["tooleditor:goto:".Length..], preferPreview: false);
             return;
         }
 
@@ -2767,7 +2767,7 @@ public sealed class ToolEditorForm : Form
 
         if (message.StartsWith("tooleditor:goto:", StringComparison.Ordinal))
         {
-            NavigateToPackageLink(message["tooleditor:goto:".Length..]);
+            NavigateToPackageLink(message["tooleditor:goto:".Length..], preferPreview: true);
             return;
         }
 
@@ -2786,10 +2786,13 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private void NavigateToPackageLink(string link)
+    private void NavigateToPackageLink(string link, bool preferPreview)
     {
         if (TryResolvePackageLink(link, _current, out var target))
         {
+            if (preferPreview && target.ImageBytes is null && IsHtmlDocument(target))
+                target.HtmlEditMode = false;
+
             SelectDocument(target);
             SetStatus("Link: " + link + " -> " + target.PackagePath, isError: false);
             return;
@@ -2869,6 +2872,49 @@ public sealed class ToolEditorForm : Form
         yield return "help/content/nod/command/" + key + ".html";
         yield return "help/content/nod/popup/" + key + ".html";
         yield return "help/content/nod/snippet/" + key + ".html";
+        yield return "help/content/main/" + key + ".html";
+        yield return "manual/" + key + ".html";
+        foreach (var localized in BuildLocalizedMainHelpCandidates(key))
+            yield return localized;
+    }
+
+    private static IEnumerable<string> BuildLocalizedMainHelpCandidates(string key)
+    {
+        switch (key.ToLowerInvariant())
+        {
+            case "main":
+                yield return "manual/index.html";
+                yield return "manual/converteren.html";
+                yield return "manual/convert.html";
+                break;
+            case "fields":
+                yield return "manual/velden.html";
+                yield return "manual/fields.html";
+                break;
+            case "wizard":
+                yield return "manual/wizardexpress.html";
+                yield return "manual/wizard.html";
+                break;
+            case "calculator":
+                yield return "manual/rekenmachine.html";
+                yield return "manual/calculator.html";
+                break;
+            case "configuration":
+                yield return "manual/configuratie.html";
+                yield return "manual/configuration.html";
+                break;
+            case "window":
+                yield return "manual/venster-opties.html";
+                yield return "manual/window-options.html";
+                break;
+            case "nodfiles":
+                yield return "manual/nod-catalogus.html";
+                yield return "manual/nod-catalog.html";
+                break;
+            case "support":
+                yield return "manual/support.html";
+                break;
+        }
     }
 
     private static bool IsAdvancedMathCommand(string command)
