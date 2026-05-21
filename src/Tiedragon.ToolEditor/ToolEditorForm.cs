@@ -61,6 +61,16 @@ public sealed class ToolEditorForm : Form
         ".vbs",
     };
 
+    private static readonly HashSet<string> AllowedPackageScriptFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "basis.js",
+        "formula-card-copy-buttons.js",
+        "formula-film.js",
+        "formula-search.js",
+        "nod-copy-buttons.js",
+        "nod-popup-height.js",
+    };
+
     private static readonly Regex HtmlCommentRegex = new("<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HtmlTagRegex = new("</?[a-zA-Z][^>]*?>", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HtmlAttributeRegex = new(@"\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?=\s*=)", RegexOptions.Compiled);
@@ -1430,6 +1440,13 @@ public sealed class ToolEditorForm : Form
             extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
             extension.Equals(".js", StringComparison.OrdinalIgnoreCase))
         {
+            if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
+                !AllowedPackageScriptFiles.Contains(name))
+            {
+                packagePath = "";
+                return false;
+            }
+
             packagePath = "manual/" + name;
             return true;
         }
@@ -2672,6 +2689,11 @@ public sealed class ToolEditorForm : Form
         var extension = Path.GetExtension(path);
         if (BlockedPackageExtensions.Contains(extension) || !AllowedPackageExtensions.Contains(extension))
             errors.Add("Bestandstype is niet toegestaan: " + packagePath);
+        if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
+            !AllowedPackageScriptFiles.Contains(Path.GetFileName(path)))
+        {
+            errors.Add("Scriptbestand is niet toegestaan: " + packagePath);
+        }
 
         if (isImage && !path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
             errors.Add("Media hoort onder assets/: " + packagePath);

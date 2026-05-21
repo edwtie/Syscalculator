@@ -42,6 +42,15 @@ $displayNames = @{
     zho = @{ display = ([string]([char]0x4E2D) + [string]([char]0x6587)); native = ([string]([char]0x4E2D) + [string]([char]0x6587)) }
 }
 
+$allowedHelpScripts = @(
+    "basis.js",
+    "formula-card-copy-buttons.js",
+    "formula-film.js",
+    "formula-search.js",
+    "nod-copy-buttons.js",
+    "nod-popup-height.js"
+)
+
 function Copy-DirectoryContent {
     param(
         [string]$Source,
@@ -73,7 +82,10 @@ foreach ($languageFile in $languageFiles) {
 
     New-Item -ItemType Directory -Path (Join-Path $concept "language"), (Join-Path $concept "help"), (Join-Path $concept "help/Content") -Force | Out-Null
     Copy-Item $languageFile.FullName (Join-Path $concept ("language/" + $code + ".lng")) -Force
-    Get-ChildItem $helpRoot -File | Where-Object { $_.Extension -in @(".css", ".html", ".js") } | ForEach-Object {
+    Get-ChildItem $helpRoot -File | Where-Object {
+        $_.Extension -in @(".css", ".html") -or
+            ($_.Extension -ieq ".js" -and $allowedHelpScripts -contains $_.Name)
+    } | ForEach-Object {
         Copy-Item $_.FullName (Join-Path $concept ("help/" + $_.Name)) -Force
     }
     Copy-DirectoryContent -Source $helpContentRoot -Target (Join-Path $concept "help/Content")

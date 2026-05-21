@@ -61,6 +61,16 @@ internal static class Program
         ".vbs",
     };
 
+    private static readonly HashSet<string> AllowedScriptFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "basis.js",
+        "formula-card-copy-buttons.js",
+        "formula-film.js",
+        "formula-search.js",
+        "nod-copy-buttons.js",
+        "nod-popup-height.js",
+    };
+
     public static int Main(string[] args)
     {
         try
@@ -801,6 +811,12 @@ internal static class Program
         var extension = Path.GetExtension(normalized);
         if (BlockedExtensions.Contains(extension))
             throw new InvalidDataException("Blocked file type: " + normalized);
+        if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
+            !AllowedScriptFiles.Contains(Path.GetFileName(normalized)))
+        {
+            throw new InvalidDataException("Unsupported script file: " + normalized);
+        }
+
         if (!AllowedExtensions.Contains(extension))
             throw new InvalidDataException("Unsupported file type: " + normalized);
     }
