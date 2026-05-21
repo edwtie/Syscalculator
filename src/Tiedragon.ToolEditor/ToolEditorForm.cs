@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Tiedragon.Help;
 using Tiedragon.NodSystem.Core;
 
 namespace Tiedragon.ToolEditor;
@@ -204,6 +205,7 @@ public sealed class ToolEditorForm : Form
             _preview.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            _preview.CoreWebView2.WebMessageReceived += (_, args) => CopyHelpMessageToClipboard(args);
             ShowPendingHtmlIfReady();
         };
         _ = InitializeBrowserAsync();
@@ -2319,26 +2321,9 @@ public sealed class ToolEditorForm : Form
 
     private static string BuildEditableHtml(string body)
     {
-        return $$"""
-        <!doctype html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }
-            {{ToolEditorHelpCss()}}
-          </style>
-        </head>
-        <body contenteditable="true">
-          {{body}}
-          <script>
-            {{ToolEditorHelpScript()}}
-            document.body.addEventListener('input', () => window.chrome.webview.postMessage('changed'));
-            document.body.focus();
-          </script>
-        </body>
-        </html>
-        """;
+        var css = HelpApi.NodHelpCss() + Environment.NewLine +
+            "body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }";
+        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHtmlEditScript()));
     }
 
     private async Task SyncHtmlEditorToSourceAsync()
@@ -2471,93 +2456,44 @@ public sealed class ToolEditorForm : Form
 
     private static string WrapHtml(string title, string body)
     {
-        return $$"""
-        <!doctype html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; margin: 18px 22px; color: #1f2937; background: #fff; }
-            h1 { font-size: 22px; margin: 0 0 14px; color: #0f3f8f; }
-            {{ToolEditorHelpCss()}}
-            .media-meta { color: #334155; margin-bottom: 14px; }
-            .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
-            .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
-          </style>
-        </head>
-        <body>
-          <h1>{{WebUtility.HtmlEncode(title)}}</h1>
-          {{body}}
-          <script>
-            {{ToolEditorHelpScript()}}
-          </script>
-        </body>
-        </html>
+        var css = HelpApi.NodHelpCss() + Environment.NewLine + """
+        .media-meta { color: #334155; margin-bottom: 14px; }
+        .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
+        .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
         """;
+        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapTopicPage(title, body, css, ToolEditorHelpPreviewScript()));
     }
 
     private static string WrapContentHtml(string body)
     {
-        return $$"""
-        <!doctype html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            {{ToolEditorHelpCss()}}
-          </style>
-        </head>
-        <body>
-          {{body}}
-          <script>
-            {{ToolEditorHelpScript()}}
-          </script>
-        </body>
-        </html>
-        """;
+        return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, HelpApi.NodHelpCss(), bodyTail: ToolEditorHelpPreviewScript()));
     }
 
-    private static string ToolEditorHelpCss()
+    private static string ToolEditorHtmlEditScript()
     {
         return """
-        body { font-family: "Segoe UI", Arial, sans-serif; font-size: 14px; line-height: 1.55; margin: 18px 22px; color: #172033; background: #fff; }
-        h1, h2 { color: #0f3f8f; line-height: 1.2; }
-        h1 { font-size: 28px; margin: 0 0 18px; }
-        h2 { font-size: 22px; margin: 22px 0 12px; }
-        p { margin: 0 0 14px; }
-        table { width: min(100%, 760px); margin: 16px 0 22px; border: 1px solid #cfe0f5; border-radius: 8px; border-spacing: 0; border-collapse: separate; overflow: hidden; background: #fff; }
-        th, td { border-right: 1px solid #dbe6f5; border-bottom: 1px solid #dbe6f5; padding: 10px 12px; text-align: left; vertical-align: top; }
-        th:last-child, td:last-child { border-right: 0; }
-        tr:last-child td { border-bottom: 0; }
-        th { background: #eaf3ff; color: #0f3f8f; font-weight: 700; }
-        a { color: #005fcc; }
-        a.cmd-link, a.topic-link { text-decoration: none; }
-        code { font-family: Consolas, "Cascadia Mono", monospace; background: #eef6ff; color: #004c9a; border: 1px solid #9cc4ff; border-radius: 5px; padding: 1px 5px; }
-        a.cmd-link code, a code { display: inline-block; }
-        pre { white-space: pre-wrap; font-family: Consolas, "Cascadia Mono", monospace; background: #101827; color: #e5eefc; border: 1px solid #1f2a44; border-radius: 8px; padding: 12px; }
-        pre code { display: inline; color: inherit; background: transparent; border: 0; padding: 0; }
-        kbd { font-family: Consolas, monospace; border: 1px solid #cbd5e1; border-bottom-width: 2px; border-radius: 4px; background: #f8fafc; padding: 1px 5px; }
-        img { max-width: 100%; height: auto; }
-        .notice, .help-info, .help-tip, .help-warning { border-left: 4px solid; padding: 10px 12px; margin: 12px 0 16px; }
-        .notice, .help-info { border-color: #1d70d8; background: #eff6ff; }
-        .help-tip { border-color: #16803c; background: #ecfdf3; }
-        .help-warning { border-color: #c2410c; background: #fff7ed; }
-        .topic-links, .example-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 14px 0 18px; }
-        .topic-link, .example-card { display: block; border: 1px solid #cfe0f5; border-radius: 8px; background: #f8fbff; padding: 12px; color: #172033; }
-        .topic-link b { display: block; color: #0f3f8f; margin-bottom: 4px; }
-        .topic-link span { display: block; color: #475569; margin-bottom: 8px; }
-        """;
-    }
-
-    private static string ToolEditorHelpScript()
-    {
-        return """
-        document.querySelectorAll('table:not([class])').forEach(table => table.classList.add('help-table'));
-        document.querySelectorAll('a[href^="nodpage:"]').forEach(link => {
-          link.title = link.getAttribute('href');
-          link.addEventListener('click', event => event.preventDefault());
+        <script>
+        document.body.contentEditable = 'true';
+        document.body.addEventListener('click', event => {
+          const link = event.target && event.target.closest ? event.target.closest('a[href^="nodpage:"]') : null;
+          if (link) event.preventDefault();
         });
+        document.body.addEventListener('input', () => window.chrome.webview.postMessage('changed'));
+        document.body.focus();
+        </script>
         """;
+    }
+
+    private static string ToolEditorHelpPreviewScript()
+    {
+        return HelpHtml.NodCopyButtonsScript();
+    }
+
+    private static string ApplyToolEditorHelpPlaceholders(string html)
+    {
+        return html
+            .Replace("[menu.edit.copy]", "Kopieren", StringComparison.Ordinal)
+            .Replace("[help.copy.copied]", "Gekopieerd", StringComparison.Ordinal);
     }
 
     private static string WrapImageHtml(string body)
@@ -2712,6 +2648,20 @@ public sealed class ToolEditorForm : Form
         catch (ObjectDisposedException)
         {
             _browserFailed = true;
+        }
+    }
+
+    private static void CopyHelpMessageToClipboard(CoreWebView2WebMessageReceivedEventArgs args)
+    {
+        try
+        {
+            var text = args.TryGetWebMessageAsString();
+            if (!string.IsNullOrWhiteSpace(text))
+                Clipboard.SetText(text);
+        }
+        catch
+        {
+            // Help-copy is auxiliary; the preview should keep working if clipboard access fails.
         }
     }
 

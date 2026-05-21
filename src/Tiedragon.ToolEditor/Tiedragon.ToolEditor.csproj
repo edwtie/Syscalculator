@@ -18,6 +18,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tiedragon.NodSystem.Core\Tiedragon.NodSystem.Core.csproj" />
+    <ProjectReference Include="..\Tiedragon.Help\Tiedragon.Help.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\syscalculator\Resources\nod-help.css" Link="Resources\nod-help.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\syscalculator\Resources\Help\**\*.*" LinkBase="Resources\Help">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
