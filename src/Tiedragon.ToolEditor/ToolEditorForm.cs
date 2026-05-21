@@ -1782,11 +1782,7 @@ public sealed class ToolEditorForm : Form
 
         if (TryGetNodHelpRelativePath(path, out var nodRelativePath))
         {
-            var parts = nodRelativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2)
-                return ["NOD voor ontwikkelaars", FriendlyNodHelpCategory(parts[0]), FriendlyTopicName(parts[^1])];
-
-            return ["NOD voor ontwikkelaars", topic];
+            return BuildNodHelpTreePath(nodRelativePath, topic);
         }
 
         if (path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase) ||
@@ -1839,11 +1835,84 @@ public sealed class ToolEditorForm : Form
     {
         return category.ToLowerInvariant() switch
         {
-            "full" => "Volledige help",
-            "command" => "Command extra",
-            "popup" => "Popup help",
+            "full" => "NOD help",
+            "command" => "Belangrijke commands",
+            "popup" => "Belangrijke commands",
             "snippet" => "Snippets",
             _ => FriendlyTopicName(category)
+        };
+    }
+
+    private static IReadOnlyList<string> BuildNodHelpTreePath(string relativePath, string fallbackTopic)
+    {
+        var parts = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+            return ["NOD voor ontwikkelaars", fallbackTopic];
+
+        var section = parts[0].ToLowerInvariant();
+        var fileName = parts[^1];
+        var topic = FriendlyTopicName(fileName);
+        if (section == "full")
+        {
+            if (TryGetNodCommandGroupFromFullPage(fileName, out var group))
+                return ["NOD voor ontwikkelaars", "Belangrijke commands", group, topic];
+
+            return ["NOD voor ontwikkelaars", topic];
+        }
+
+        if (section == "popup")
+        {
+            var command = Path.GetFileNameWithoutExtension(fileName);
+            return ["NOD voor ontwikkelaars", "Belangrijke commands", FriendlyNodCommandGroup(command), topic];
+        }
+
+        if (section == "command")
+        {
+            var command = Path.GetFileNameWithoutExtension(fileName);
+            return ["NOD voor ontwikkelaars", "Belangrijke commands", FriendlyNodCommandGroup(command), topic];
+        }
+
+        if (section == "snippet")
+            return ["NOD voor ontwikkelaars", "Snippets", topic];
+
+        return ["NOD voor ontwikkelaars", FriendlyNodHelpCategory(section), topic];
+    }
+
+    private static bool TryGetNodCommandGroupFromFullPage(string fileName, out string group)
+    {
+        group = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "commands-basic" => "Basis en velden",
+            "commands-math" => "Rekenen",
+            "commands-text" => "Tekst en vertaling",
+            "commands-data" => "Data",
+            "commands-equation" => "Vergelijkingen",
+            "commands-system" => "NOD-systeem",
+            _ => ""
+        };
+
+        return group.Length > 0;
+    }
+
+    private static string FriendlyNodCommandGroup(string commandOrPage)
+    {
+        var key = commandOrPage.ToLowerInvariant();
+        if (key.EndsWith("-extra", StringComparison.OrdinalIgnoreCase))
+            key = key[..^"-extra".Length];
+        if (key.EndsWith("-advanced", StringComparison.OrdinalIgnoreCase))
+            key = key[..^"-advanced".Length];
+        if (key.EndsWith("-improved", StringComparison.OrdinalIgnoreCase))
+            key = key[..^"-improved".Length];
+
+        return key switch
+        {
+            "name" or "input" or "inputr" or "input1" or "input2" or "result" or "resfou" or "symb1" or "symb2" or "symb3" or "symb4" or "format" => "Basis en velden",
+            "math" or "reverse" => "Rekenen",
+            "trans" or "chg" => "Tekst en vertaling",
+            "table" or "field" or "output" or "phoneformat" or "lookup" or "match" => "Data",
+            "given" or "equation" or "solve" or "constraint" => "Vergelijkingen",
+            "mode" or "urln" or "preview" or "backup" or "indoprint" or "indoend" or "end" => "NOD-systeem",
+            _ => "Overige commands"
         };
     }
 
