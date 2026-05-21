@@ -40,6 +40,7 @@ public sealed class ToolEditorForm : Form
     private string _manifestText = "";
     private string? _pendingHtml;
     private bool _browserFailed;
+    private bool _updatingNavigation;
     private ToolEditorDocument? _current;
 
     public ToolEditorForm()
@@ -847,28 +848,32 @@ public sealed class ToolEditorForm : Form
 
     private void RemoveDocument(ToolEditorDocument document)
     {
+        var wasCurrent = ReferenceEquals(_current, document);
+        var nextDocument = wasCurrent ? _documents.LastOrDefault(item => !ReferenceEquals(item, document)) : _current;
+
+        if (wasCurrent)
+            _current = null;
+
         _tabStrip.Controls.Remove(document.HeaderPanel);
         _documents.Remove(document);
-        RemoveDocumentFromTree(document);
-        RemoveDocumentFromList(document);
         document.HighlightTimer?.Dispose();
         document.Editor.Dispose();
         document.LineNumbers?.Dispose();
         document.Page.Dispose();
 
-        if (_current == document)
-        {
-            _current = _documents.LastOrDefault();
-            _editorContent.Controls.Clear();
-            if (_current is not null)
-                SelectDocument(_current);
-            else
-                UpdateUiState();
-        }
-
         RefreshTabStrip();
         RefreshFileTree();
         RefreshDocumentList();
+
+        if (nextDocument is not null)
+        {
+            SelectDocument(nextDocument);
+            return;
+        }
+
+        _editorContent.Controls.Clear();
+        UpdatePreview();
+        UpdateUiState();
     }
 
     private void RefreshDocumentList()
@@ -876,6 +881,7 @@ public sealed class ToolEditorForm : Form
         if (_documentList.IsDisposed)
             return;
 
+        _updatingNavigation = true;
         _documentList.BeginUpdate();
         _documentList.Items.Clear();
         foreach (var document in _documents.OrderBy(document => document.TreeGroup, StringComparer.CurrentCultureIgnoreCase)
@@ -889,8 +895,15 @@ public sealed class ToolEditorForm : Form
         }
 
         _documentList.EndUpdate();
-        if (_current is not null)
-            SelectDocumentInList(_current);
+        try
+        {
+            if (_current is not null)
+                SelectDocumentInList(_current);
+        }
+        finally
+        {
+            _updatingNavigation = false;
+        }
     }
 
     private void SelectDocumentInList(ToolEditorDocument document)
@@ -921,6 +934,9 @@ public sealed class ToolEditorForm : Form
 
     private void DocumentList_SelectedIndexChanged(object? sender, EventArgs e)
     {
+        if (_updatingNavigation)
+            return;
+
         if (_documentList.SelectedItems.Count == 0)
             return;
 
@@ -947,7 +963,9 @@ public sealed class ToolEditorForm : Form
         if (_fileTree.IsDisposed)
             return;
 
+        _updatingNavigation = true;
         _fileTree.BeginUpdate();
+        _fileTree.SelectedNode = null;
         _fileTree.Nodes.Clear();
         var root = new TreeNode("Language package")
         {
@@ -960,8 +978,15 @@ public sealed class ToolEditorForm : Form
 
         root.ExpandAll();
         _fileTree.EndUpdate();
-        if (_current is not null)
-            SelectDocumentInTree(_current);
+        try
+        {
+            if (_current is not null)
+                SelectDocumentInTree(_current);
+        }
+        finally
+        {
+            _updatingNavigation = false;
+        }
     }
 
     private static void AddDocumentNode(TreeNode root, ToolEditorDocument document)
@@ -1115,6 +1140,9 @@ public sealed class ToolEditorForm : Form
 
     private void FileTree_AfterSelect(object? sender, TreeViewEventArgs e)
     {
+        if (_updatingNavigation)
+            return;
+
         if (e.Node?.Tag is ToolEditorDocument document && !ReferenceEquals(document, _current))
             SelectDocument(document);
     }
