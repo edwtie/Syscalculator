@@ -4,12 +4,15 @@ namespace Syscalculator.UI.WinForms;
 // Zoek/commentaar: Type-overzicht: class LanguageSelectionForm bevat de hoofdlogica/data voor dit onderdeel.
 internal sealed class LanguageSelectionForm : Form
 {
-    private readonly IReadOnlyList<LanguageCatalog.LanguageInfo> _languages;
+    private List<LanguageCatalog.LanguageInfo> _languages;
     private readonly LanguageCatalog _language;
     private readonly TextBox _searchBox = new();
     private readonly ListBox _languageList = new();
     private readonly Label _countLabel = new();
     private readonly Button _okButton = new();
+    private readonly Button _installButton = new();
+    private string _currentLanguageFile;
+    private string? _currentLanguagePackageId;
 
     public string? SelectedLanguageFile { get; private set; }
     public string? SelectedLanguagePackageId { get; private set; }
@@ -22,8 +25,10 @@ internal sealed class LanguageSelectionForm : Form
         string? currentLanguagePackageId,
         LanguageCatalog language)
     {
-        _languages = languages;
+        _languages = languages.ToList();
         _language = language;
+        _currentLanguageFile = currentLanguageFile;
+        _currentLanguagePackageId = currentLanguagePackageId;
 
         Text = T("dialog.language.title", "Choose language");
         ClientSize = new Size(460, 520);
@@ -62,7 +67,7 @@ internal sealed class LanguageSelectionForm : Form
         _searchBox.Dock = DockStyle.Fill;
         _searchBox.Margin = new Padding(0, 0, 0, 8);
         _searchBox.PlaceholderText = T("dialog.language.search", "Search language...");
-        _searchBox.TextChanged += (_, _) => RefreshLanguageList(_searchBox.Text, currentLanguageFile, currentLanguagePackageId);
+        _searchBox.TextChanged += (_, _) => RefreshLanguageList(_searchBox.Text, _currentLanguageFile, _currentLanguagePackageId);
         root.Controls.Add(_searchBox, 0, 1);
 
         _languageList.Dock = DockStyle.Fill;
@@ -94,6 +99,10 @@ internal sealed class LanguageSelectionForm : Form
         _okButton.Enabled = false;
         _okButton.Click += (_, _) => AcceptSelectedLanguage();
 
+        _installButton.Text = T("dialog.language.install_package", "Install package...");
+        _installButton.Width = 126;
+        _installButton.Click += (_, _) => InstallLanguagePackage();
+
         var cancelButton = new Button
         {
             Text = T("dialog.language.cancel", "Cancel"),
@@ -103,13 +112,14 @@ internal sealed class LanguageSelectionForm : Form
 
         buttons.Controls.Add(_okButton);
         buttons.Controls.Add(cancelButton);
+        buttons.Controls.Add(_installButton);
         root.Controls.Add(buttons, 0, 4);
 
         AcceptButton = _okButton;
         CancelButton = cancelButton;
         Controls.Add(root);
 
-        RefreshLanguageList("", currentLanguageFile, currentLanguagePackageId);
+        RefreshLanguageList("", _currentLanguageFile, _currentLanguagePackageId);
     }
 
     // Zoek/commentaar: Methode LanguageList_DrawItem: centrale logica voor deze stap.
@@ -210,6 +220,45 @@ internal sealed class LanguageSelectionForm : Form
         SelectedLanguagePackageId = language.PackageId;
         DialogResult = DialogResult.OK;
         Close();
+    }
+
+    private void InstallLanguagePackage()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = T("dialog.language.install_package", "Install package..."),
+            Filter = T("dialog.language.package_filter", "Language package (*.lngpdk;*.zip)|*.lngpdk;*.zip|All files (*.*)|*.*"),
+            CheckFileExists = true,
+            Multiselect = false,
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        try
+        {
+            var manifest = LanguagePackageService.Install(AppContext.BaseDirectory, dialog.FileName);
+            _languages = LanguageCatalog.ListAvailable(AppContext.BaseDirectory).ToList();
+            _currentLanguageFile = manifest.LanguageCode + ".lng";
+            _currentLanguagePackageId = manifest.PackageKey;
+            _searchBox.Clear();
+            RefreshLanguageList("", _currentLanguageFile, _currentLanguagePackageId);
+            SelectedLanguage = _languages.FirstOrDefault(language =>
+                language.Matches(_currentLanguageFile, _currentLanguagePackageId));
+            _okButton.Enabled = _languageList.SelectedItem is not null;
+            _countLabel.Text = string.Format(
+                T("dialog.language.install_ok", "Installed: {0}"),
+                string.IsNullOrWhiteSpace(manifest.NativeName) ? manifest.DisplayName : manifest.NativeName);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                this,
+                ex.Message,
+                T("dialog.language.install_failed", "Language package refused"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
 
     // Zoek/commentaar: Methode T: centrale logica voor deze stap.

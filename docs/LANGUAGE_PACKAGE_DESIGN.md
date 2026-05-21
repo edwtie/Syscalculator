@@ -468,7 +468,8 @@ updater.
 - Copy the `.lngpdk` into `LanguagePackages\Cache` without requiring extraction.
 - Save `languagePackage=...` in `language.cfg`.
 - Status: package validation and direct `.lngpdk` reading exist; UI button is
-  still roadmap.
+  implemented in the language selection dialog. Selecting the installed package
+  uses the existing `languagePackage=...` configuration path.
 
 ### Phase 5: Release/update integration
 
