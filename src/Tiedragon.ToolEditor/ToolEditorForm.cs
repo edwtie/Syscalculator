@@ -1602,7 +1602,10 @@ public sealed class ToolEditorForm : Form
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
         if (Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase))
+        {
             text = StripToolEditorConceptBanners(text);
+            text = EnsureHtmlDocumentMarkup(text);
+        }
 
         var editor = CreateTextEditor(text, document);
         if (IsManifestPath(document.PackagePath))
@@ -1631,6 +1634,14 @@ public sealed class ToolEditorForm : Form
     private static string StripToolEditorConceptBanners(string html)
     {
         return LegacyConceptWarningRegex.Replace(ConceptBannerRegex.Replace(html, ""), "");
+    }
+
+    private static string EnsureHtmlDocumentMarkup(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html) || html.Contains('<'))
+            return html;
+
+        return "<h1>" + WebUtility.HtmlEncode(html.Trim()) + "</h1>" + Environment.NewLine;
     }
 
     private ToolEditorDocument AddImageDocument(string displayName, byte[] bytes, string? filePath)
@@ -2358,6 +2369,12 @@ public sealed class ToolEditorForm : Form
         var topic = FriendlyTopicName(fileName);
         if (section == "full")
         {
+            var fullPage = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant();
+            if (fullPage is "index" or "title")
+                return ["NOD voor ontwikkelaars", "Startpagina"];
+            if (fullPage == "keyword_title")
+                return ["NOD voor ontwikkelaars", "Belangrijke commands", "Startpagina"];
+
             if (TryGetNodCommandGroupFromFullPage(fileName, out var group))
                 return ["NOD voor ontwikkelaars", "Belangrijke commands", group, topic];
 
