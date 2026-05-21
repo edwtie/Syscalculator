@@ -37,6 +37,7 @@ menu.tools=Ekstra
 menu.tools.wizard=WizardExpress
 menu.tools.calculator=Kalkulator
 menu.tools.nod_editor=Editor NOD
+menu.tools.tool_editor=ToolEditor
 menu.tools.trace=Trace
 menu.tools.show_intro=Tampilkan pengantar lagi
 menu.about=Tentang

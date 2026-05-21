@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using Tiedragon.NodSystem.Core;
 using System.IO;
 using Tiedragon.Help;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -383,6 +384,7 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         _calculatorMenuItem.Click += Calculator_Click;
         tools.DropDownItems.Add(_calculatorMenuItem);
         tools.DropDownItems.Add(T("menu.tools.nod_editor", "NOD Editor"), null, NodEditor_Click);
+        tools.DropDownItems.Add(T("menu.tools.tool_editor", "ToolEditor"), null, ToolEditor_Click);
         tools.DropDownItems.Add(T("menu.tools.trace", "Trace"), null, TraceViewer_Click);
         tools.DropDownItems.Add(T("menu.tools.show_intro", "Show introduction again"), null, (_, _) => ShowIntroAgain());
 
@@ -1918,6 +1920,13 @@ private void LoadNodFilePath(string nodPath)
 
         if (_currentItem is not null)
             LoadConverter(_currentItem);
+    }
+
+    // Zoek/commentaar: Methode ToolEditor_Click: opent de gedeelde Tiedragon ToolEditor-basis.
+    private void ToolEditor_Click(object? sender, EventArgs e)
+    {
+        using var form = new ToolEditorForm();
+        ShowOwnedDialog(form);
     }
 
     // Zoek/commentaar: Methode CatalogManager_Click: centrale logica voor deze stap.

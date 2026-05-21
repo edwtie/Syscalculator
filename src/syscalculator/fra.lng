@@ -37,6 +37,7 @@ menu.tools=Extras
 menu.tools.wizard=WizardExpress
 menu.tools.calculator=Calculatrice
 menu.tools.nod_editor=Editeur NOD
+menu.tools.tool_editor=ToolEditor
 menu.tools.trace=Trace
 menu.tools.show_intro=Afficher encore l'introduction
 menu.about=A propos
