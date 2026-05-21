@@ -91,6 +91,8 @@ docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg
 
 Localization is een eigen Tiedragon-domein binnen de codebase. Syscalculator is
 de eerste consument, maar de package-tooling is niet Syscalculator-specifiek.
+Het is bedoeld als nieuwe techniek voor ontwikkelaars die een eigen app willen
+bouwen met taal, help, formulekaarten en media buiten de programmacode.
 
 ```text
 Tiedragon.Localization      domeinnaam voor taalpackages, helpcontent en media
@@ -103,6 +105,10 @@ Het basispackage is de referentie voor een taalpakket. De compiler kan een
 conceptpakket tegen een basispackage controleren, ontbrekende bestanden
 toevoegen en ontbrekende taalsleutels aanvullen zonder bestaande vertalingen te
 overschrijven.
+
+Voor een eigen app kiest de ontwikkelaar een vaste `softwareId`, maakt een
+officieel basispackage en laat vertalingen daartegen compileren. De app zelf
+accepteert daarna alleen packages met de juiste identiteit en geldige checksums.
 
 Deze onderdelen moeten zelfstandig kunnen groeien. Als `Language Package 1.0`
 buiten Syscalculator gebruikt wordt, is de gewenste grens een eigen git

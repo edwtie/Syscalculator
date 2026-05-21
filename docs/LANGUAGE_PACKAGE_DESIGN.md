@@ -6,6 +6,9 @@ Localization is a Tiedragon domain, not only a Syscalculator feature.
 Syscalculator help and manuals are growing beyond a small set of loose `.lng`
 files, so a language package groups all language-dependent material in one
 installable `.lngpdk` file while keeping the current simple fallback behavior.
+The same technique is intended for developers who want to build their own app
+with a clean separation between program code and localized help, UI text,
+formula cards and media.
 
 The design must support:
 
@@ -17,6 +20,13 @@ The design must support:
 - fallback to English when a translation is incomplete;
 - manual installation by copying one `.lngpdk` file;
 - future update/download through the updater.
+
+For app developers, the model is:
+
+- define a stable app identity in `manifest.json`;
+- publish an official basispackage for the app;
+- let language packages inherit/check against that basispackage;
+- keep package validation in the app reader strict and fail-closed.
 
 ## Current State
 
