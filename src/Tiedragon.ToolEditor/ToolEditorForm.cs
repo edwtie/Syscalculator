@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Tiedragon.NodSystem.Core;
 
 namespace Tiedragon.ToolEditor;
 
@@ -373,6 +374,8 @@ public sealed class ToolEditorForm : Form
         _manifestText = BuildManifestTemplate();
         var languageDocument = AddDocument("language/ned.lng", LoadDutchLanguageText(), null);
         AddDutchHelpDocuments();
+        AddNodHelpDocuments();
+        AddFormulaCardDocuments();
         SelectDocument(languageDocument);
     }
 
@@ -440,6 +443,96 @@ public sealed class ToolEditorForm : Form
             html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
             AddDocument("manual/" + packageName, html, file);
         }
+    }
+
+    private void AddNodHelpDocuments()
+    {
+        var nodDirectory = FindRepositoryPath("src/syscalculator/Resources/Help/Content/nod/full");
+        if (nodDirectory is null)
+        {
+            AddDocument("help/content/nod/index.html", BuildNodHelpFallback(), null);
+            return;
+        }
+
+        foreach (var file in Directory.GetFiles(nodDirectory, "*.html")
+                     .OrderBy(path => Path.GetFileName(path).Equals("title.html", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase))
+        {
+            var fileName = Path.GetFileName(file);
+            var packageName = fileName.Equals("title.html", StringComparison.OrdinalIgnoreCase)
+                ? "index.html"
+                : fileName;
+            AddDocument("help/content/nod/" + packageName, File.ReadAllText(file, Encoding.UTF8), file);
+        }
+    }
+
+    private void AddFormulaCardDocuments()
+    {
+        var cards = FormulaCardCatalog.GetDefaultCards();
+        AddDocument("formula/index.html", BuildFormulaIndexHtml(cards), null);
+        foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
+            AddDocument("formula/" + card.Id + ".html", BuildFormulaCardHtml(card), null);
+    }
+
+    private static string BuildNodHelpFallback()
+    {
+        return """
+        <h1>NOD help</h1>
+        <p>NOD is de teksttaal waarmee Syscalculator converters, berekeningen, tekstomzettingen en dataregels beschrijft.</p>
+        <div class="help-info">De uitgebreide NOD-helpbronnen zijn niet gevonden in deze checkout.</div>
+        """;
+    }
+
+    private static string BuildFormulaIndexHtml(IReadOnlyList<FormulaCard> cards)
+    {
+        var rows = new StringBuilder();
+        foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
+        {
+            rows.Append("<tr><td><a href=\"")
+                .Append(WebUtility.HtmlEncode(card.Id))
+                .Append(".html\">")
+                .Append(WebUtility.HtmlEncode(card.Title))
+                .Append("</a></td><td>")
+                .Append(WebUtility.HtmlEncode(string.Join(", ", card.LevelTags)))
+                .Append("</td><td>")
+                .Append(WebUtility.HtmlEncode(card.Description))
+                .Append("</td></tr>");
+        }
+
+        return """
+        <h1>Formulekaart</h1>
+        <p>De formulekaart bundelt wiskundige basisregels, MathML, LaTeX en voorbeeld-NOD voor gebruik in Syscalculator.</p>
+        <table>
+          <thead><tr><th>Formule</th><th>Tags</th><th>Uitleg</th></tr></thead>
+          <tbody>
+        """ + rows + """
+          </tbody>
+        </table>
+        """;
+    }
+
+    private static string BuildFormulaCardHtml(FormulaCard card)
+    {
+        return $$"""
+        <h1>{{WebUtility.HtmlEncode(card.Title)}}</h1>
+        <div class="notice">{{WebUtility.HtmlEncode(string.Join(", ", card.LevelTags))}}</div>
+        <p>{{WebUtility.HtmlEncode(card.Description)}}</p>
+
+        <h2>Formule</h2>
+        <p><code>{{WebUtility.HtmlEncode(card.Formula)}}</code></p>
+        <div class="formula">{{card.MathMl}}</div>
+
+        <h2>Tekst</h2>
+        <pre>{{WebUtility.HtmlEncode(card.PlainText)}}</pre>
+
+        <h2>LaTeX</h2>
+        <pre>{{WebUtility.HtmlEncode(card.Latex)}}</pre>
+
+        <h2>MathML</h2>
+        <pre>{{WebUtility.HtmlEncode(card.MathMl)}}</pre>
+
+        <h2>Voorbeeld-NOD</h2>
+        <pre>{{WebUtility.HtmlEncode(card.ExampleNod)}}</pre>
+        """;
     }
 
     private Dictionary<string, string> AddDutchHelpMedia(string helpDirectory)

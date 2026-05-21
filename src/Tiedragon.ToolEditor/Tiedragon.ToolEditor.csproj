@@ -16,6 +16,10 @@
     <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Tiedragon.NodSystem.Core\Tiedragon.NodSystem.Core.csproj" />
+  </ItemGroup>
+
   <Target Name="RemoveUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
