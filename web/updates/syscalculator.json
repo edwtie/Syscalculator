@@ -10,11 +10,11 @@
       "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.21-daily/Syscalculator-2.0-daily-2.0.2026.05.21.exe",
       "packageUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.21-daily/Syscalculator-2.0-daily-2.0.2026.05.21.zip",
       "packageId": "daily-2026.05.21-installer-001",
-      "sha256": "7079f91243f97b4078cb7e72580c68367aa03849249886cb2604c2300ac298aa",
+      "sha256": "6db36d0ffb8fb547e2a155c61a058250d598e4fb48463d96923b943ae0226c1b",
       "languagePackagesUrl": "https://www.tiedragon.com/packages/languages/language-packages.json",
       "languagePackagesActive": true,
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.21-daily",
-      "summary": "Daily build with bundled language packages, package-aware language configuration, Graph3D/geometry foundation and updated installer/updater packaging."
+      "summary": "Daily build with bundled language packages, package-aware language configuration, Graph3D/geometry foundation, updated installer/updater packaging and smoother ToolEditor translation startup."
     },
     "beta": {
       "version": "2.0.2026.05.16",
