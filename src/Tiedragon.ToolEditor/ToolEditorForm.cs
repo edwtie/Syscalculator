@@ -149,11 +149,7 @@ public sealed class ToolEditorForm : Form
             _htmlEditor.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _htmlEditor.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _htmlEditor.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            _htmlEditor.CoreWebView2.WebMessageReceived += (_, _) =>
-            {
-                if (_current is not null && _current.HtmlEditMode)
-                    SetDirty(_current, true);
-            };
+            _htmlEditor.CoreWebView2.WebMessageReceived += (_, args) => HandleHtmlEditorMessage(args);
             ShowPendingHtmlEditorIfReady();
         };
         _htmlEditor.NavigationCompleted += (_, _) =>
@@ -205,7 +201,7 @@ public sealed class ToolEditorForm : Form
             _preview.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            _preview.CoreWebView2.WebMessageReceived += (_, args) => CopyHelpMessageToClipboard(args);
+            _preview.CoreWebView2.WebMessageReceived += (_, args) => HandlePreviewMessage(args);
             ShowPendingHtmlIfReady();
         };
         _ = InitializeBrowserAsync();
@@ -581,7 +577,7 @@ public sealed class ToolEditorForm : Form
         return $$"""
         <h1>{{WebUtility.HtmlEncode(card.Title)}}</h1>
         <div class="notice">{{WebUtility.HtmlEncode(string.Join(", ", card.LevelTags))}}</div>
-        <p>{{WebUtility.HtmlEncode(card.Description)}}</p>
+        <p>{{RenderFormulaCardDescription(card.Description)}}</p>
 
         <h2>Formule</h2>
         <p><code>{{WebUtility.HtmlEncode(card.Formula)}}</code></p>
@@ -599,6 +595,21 @@ public sealed class ToolEditorForm : Form
         <h2>Voorbeeld-NOD</h2>
         <pre>{{WebUtility.HtmlEncode(card.ExampleNod)}}</pre>
         """;
+    }
+
+    private static string RenderFormulaCardDescription(string description)
+    {
+        var html = WebUtility.HtmlEncode(description);
+        foreach (var command in new[] { "length", "distance", "dot", "angle", "angled", "cross", "det", "trace", "mget", "vec" })
+        {
+            html = Regex.Replace(
+                html,
+                @"\b" + Regex.Escape(command) + @"\b",
+                "<a class=\"cmd-link\" href=\"nodpage:cmd:" + command + "\"><code>" + command + "</code></a>",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        return html;
     }
 
     private Dictionary<string, string> AddDutchHelpMedia(string helpDirectory)
@@ -2539,8 +2550,14 @@ public sealed class ToolEditorForm : Form
         <script>
         document.body.contentEditable = 'true';
         document.body.addEventListener('click', event => {
-          const link = event.target && event.target.closest ? event.target.closest('a[href^="nodpage:"]') : null;
+          const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
           if (link) event.preventDefault();
+        });
+        document.body.addEventListener('contextmenu', event => {
+          const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+          if (!link) return;
+          event.preventDefault();
+          window.chrome.webview.postMessage('tooleditor:goto:' + link.getAttribute('href'));
         });
         document.body.addEventListener('input', () => window.chrome.webview.postMessage('changed'));
         document.body.focus();
@@ -2550,7 +2567,18 @@ public sealed class ToolEditorForm : Form
 
     private static string ToolEditorHelpPreviewScript()
     {
-        return HelpHtml.NodCopyButtonsScript();
+        return HelpHtml.NodCopyButtonsScript() + """
+        <script>
+        document.addEventListener('click', event => {
+          const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+          if (!link) return;
+          const href = link.getAttribute('href') || '';
+          if (!href || href.startsWith('#') || href.startsWith('http:') || href.startsWith('https:') || href.startsWith('mailto:')) return;
+          event.preventDefault();
+          window.chrome.webview.postMessage('tooleditor:goto:' + href);
+        });
+        </script>
+        """;
     }
 
     private static string ApplyToolEditorHelpPlaceholders(string html)
@@ -2715,11 +2743,150 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static void CopyHelpMessageToClipboard(CoreWebView2WebMessageReceivedEventArgs args)
+    private void HandleHtmlEditorMessage(CoreWebView2WebMessageReceivedEventArgs args)
+    {
+        var message = GetWebMessage(args);
+        if (message is null)
+            return;
+
+        if (message.StartsWith("tooleditor:goto:", StringComparison.Ordinal))
+        {
+            NavigateToPackageLink(message["tooleditor:goto:".Length..]);
+            return;
+        }
+
+        if (message.Equals("changed", StringComparison.Ordinal) && _current is not null && _current.HtmlEditMode)
+            SetDirty(_current, true);
+    }
+
+    private void HandlePreviewMessage(CoreWebView2WebMessageReceivedEventArgs args)
+    {
+        var message = GetWebMessage(args);
+        if (message is null)
+            return;
+
+        if (message.StartsWith("tooleditor:goto:", StringComparison.Ordinal))
+        {
+            NavigateToPackageLink(message["tooleditor:goto:".Length..]);
+            return;
+        }
+
+        CopyHelpMessageToClipboard(message);
+    }
+
+    private static string? GetWebMessage(CoreWebView2WebMessageReceivedEventArgs args)
     {
         try
         {
-            var text = args.TryGetWebMessageAsString();
+            return args.TryGetWebMessageAsString();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void NavigateToPackageLink(string link)
+    {
+        if (TryResolvePackageLink(link, _current, out var target))
+        {
+            SelectDocument(target);
+            SetStatus("Link: " + link + " -> " + target.PackagePath, isError: false);
+            return;
+        }
+
+        SetStatus("Linkdoel niet gevonden: " + link, isError: true);
+    }
+
+    private bool TryResolvePackageLink(string link, ToolEditorDocument? source, out ToolEditorDocument target)
+    {
+        foreach (var candidate in BuildPackageLinkCandidates(link, source))
+        {
+            var normalized = NormalizePackagePath(candidate);
+            var exact = _documents.FirstOrDefault(document => document.PackagePath.Equals(normalized, StringComparison.OrdinalIgnoreCase));
+            if (exact is not null)
+            {
+                target = exact;
+                return true;
+            }
+        }
+
+        target = null!;
+        return false;
+    }
+
+    private static IEnumerable<string> BuildPackageLinkCandidates(string link, ToolEditorDocument? source)
+    {
+        var cleaned = NormalizeMediaLink(WebUtility.HtmlDecode(link));
+        if (string.IsNullOrWhiteSpace(cleaned) || cleaned.StartsWith("#", StringComparison.Ordinal))
+            yield break;
+
+        if (cleaned.StartsWith("nodpage:", StringComparison.OrdinalIgnoreCase))
+        {
+            foreach (var candidate in BuildNodPageLinkCandidates(cleaned))
+                yield return candidate;
+            yield break;
+        }
+
+        if (cleaned.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+        {
+            if (cleaned.Contains('/', StringComparison.Ordinal))
+                yield return cleaned;
+
+            if (source is not null)
+            {
+                var sourceDirectory = GetPackageDirectory(source.PackagePath);
+                if (!string.IsNullOrWhiteSpace(sourceDirectory))
+                    yield return NormalizePackagePath(sourceDirectory + "/" + cleaned);
+            }
+
+            yield return "manual/" + Path.GetFileName(cleaned);
+            yield return "formula/" + cleaned;
+            yield return "help/content/nod/full/" + Path.GetFileName(cleaned);
+        }
+    }
+
+    private static IEnumerable<string> BuildNodPageLinkCandidates(string link)
+    {
+        var key = link["nodpage:".Length..].Trim().Trim('/');
+        if (key.StartsWith("cmd:", StringComparison.OrdinalIgnoreCase))
+        {
+            var command = key["cmd:".Length..].Trim().ToLowerInvariant();
+            yield return "help/content/nod/popup/" + command + ".html";
+            yield return "help/content/nod/command/" + command + ".html";
+
+            if (IsAdvancedMathCommand(command))
+            {
+                yield return "help/content/nod/command/math-advanced.html";
+                yield return "help/content/nod/command/math-extra.html";
+                yield return "help/content/nod/popup/math.html";
+            }
+
+            yield break;
+        }
+
+        yield return "help/content/nod/full/" + key + ".html";
+        yield return "help/content/nod/command/" + key + ".html";
+        yield return "help/content/nod/popup/" + key + ".html";
+        yield return "help/content/nod/snippet/" + key + ".html";
+    }
+
+    private static bool IsAdvancedMathCommand(string command)
+    {
+        return command is "length" or "norm" or "mag" or "vec" or "distance" or "dot" or "angle" or "angled" or "cross" or "det" or "trace" or "mget" or "x" or "y" or "z";
+    }
+
+    private static string GetPackageDirectory(string packagePath)
+    {
+        var normalized = NormalizePackagePath(packagePath);
+        var index = normalized.LastIndexOf('/');
+        return index < 0 ? "" : normalized[..index];
+    }
+
+    private static void CopyHelpMessageToClipboard(string text)
+    {
+        try
+        {
             if (!string.IsNullOrWhiteSpace(text))
                 Clipboard.SetText(text);
         }
