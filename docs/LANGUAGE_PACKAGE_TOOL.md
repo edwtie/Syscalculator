@@ -213,6 +213,7 @@ The tool checks:
 - stored concept warning/banner markup inside help documents;
 - broken internal HTML links;
 - missing or non-image media references;
+- release activation status based on required language-key coverage;
 - unsafe paths such as absolute paths or `..`;
 - maximum file count and file sizes;
 - wrapper payload SHA-256;

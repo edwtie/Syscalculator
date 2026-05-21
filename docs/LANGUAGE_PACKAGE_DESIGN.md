@@ -300,6 +300,10 @@ Release quality gates:
 - image references must point to existing previewable images;
 - JavaScript is restricted to `basis.js`, `nod.js` and `formula.js`;
 - compile fails on any warning that can break distribution.
+- release indexes mark a language package active only when it contains every
+  required language key from the English base file. Incomplete packages may be
+  built for inspection, but they must not be offered as active release packages
+  because that would allow visible fallback to English.
 
 Current limits:
 

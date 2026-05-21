@@ -94,10 +94,42 @@ function Copy-DirectoryContent {
     }
 }
 
+function Read-LanguageMap {
+    param([string]$Path)
+
+    $map = @{}
+    foreach ($line in [System.IO.File]::ReadAllLines($Path, [System.Text.Encoding]::UTF8)) {
+        $trimmed = $line.Trim()
+        if ($trimmed.Length -eq 0 -or $trimmed.StartsWith("#")) {
+            continue
+        }
+
+        $separator = $line.IndexOf("=")
+        if ($separator -le 0) {
+            continue
+        }
+
+        $key = $line.Substring(0, $separator).Trim()
+        $value = $line.Substring($separator + 1)
+        if ($key.Length -gt 0 -and -not $map.ContainsKey($key)) {
+            $map[$key] = $value
+        }
+    }
+
+    return $map
+}
+
 New-Item -ItemType Directory -Path $outputRoot, $conceptRoot -Force | Out-Null
 
 $results = @()
 $languageFiles = Get-ChildItem $languageRoot -Filter "*.lng" -File | Sort-Object Name
+$englishLanguagePath = Join-Path $languageRoot "eng.lng"
+if (-not (Test-Path $englishLanguagePath)) {
+    throw "English base language file not found: $englishLanguagePath"
+}
+
+$englishLanguageMap = Read-LanguageMap -Path $englishLanguagePath
+$requiredLanguageKeys = $englishLanguageMap.Keys | Sort-Object
 foreach ($languageFile in $languageFiles) {
     $code = [System.IO.Path]::GetFileNameWithoutExtension($languageFile.Name).ToLowerInvariant()
     $names = $displayNames[$code]
@@ -105,7 +137,17 @@ foreach ($languageFile in $languageFiles) {
     $nativeName = if ($names) { $names.native } else { $displayName }
     Assert-NoMojibake -Value $displayName -Label "$code displayName"
     Assert-NoMojibake -Value $nativeName -Label "$code nativeName"
-    Assert-NoMojibake -Value ([System.IO.File]::ReadAllText($languageFile.FullName, [System.Text.Encoding]::UTF8)) -Label $languageFile.Name
+    $languageText = [System.IO.File]::ReadAllText($languageFile.FullName, [System.Text.Encoding]::UTF8)
+    Assert-NoMojibake -Value $languageText -Label $languageFile.Name
+
+    $languageMap = Read-LanguageMap -Path $languageFile.FullName
+    $missingRequiredKeys = @($requiredLanguageKeys | Where-Object {
+        -not $languageMap.ContainsKey($_) -or [string]::IsNullOrWhiteSpace([string]$languageMap[$_])
+    })
+    $translationComplete = $missingRequiredKeys.Count -eq 0
+    if (-not $translationComplete) {
+        Write-Warning "$code is incomplete and will not be active in the release language index. Missing keys: $($missingRequiredKeys.Count)"
+    }
 
     $concept = Join-Path $conceptRoot $code
     if (Test-Path $concept) {
@@ -145,6 +187,10 @@ foreach ($languageFile in $languageFiles) {
     }
 
     Assert-NoMojibake -Value ([string]$result.displayName) -Label "$code compiled displayName"
+    $result | Add-Member -NotePropertyName translationComplete -NotePropertyValue $translationComplete
+    $result | Add-Member -NotePropertyName active -NotePropertyValue ($code -eq "eng" -or $translationComplete)
+    $result | Add-Member -NotePropertyName missingRequiredKeyCount -NotePropertyValue $missingRequiredKeys.Count
+    $result | Add-Member -NotePropertyName missingRequiredKeys -NotePropertyValue $missingRequiredKeys
 
     dotnet run --project $project --no-restore -- validate $outputPackage | Out-Host
     $results += $result
@@ -155,7 +201,7 @@ $results |
     Select-Object packageKey, languageCode, displayName, packageSha256, payloadSha256, entryCount,
         @{ Name = "fileName"; Expression = { [System.IO.Path]::GetFileName($_.outputPath) } },
         @{ Name = "downloadPath"; Expression = { "packages/languages/" + [System.IO.Path]::GetFileName($_.outputPath) } },
-        @{ Name = "active"; Expression = { $true } } |
+        active, translationComplete, missingRequiredKeyCount, missingRequiredKeys |
     ConvertTo-Json -Depth 5 |
     Set-Content -Encoding UTF8 $manifestPath
 
