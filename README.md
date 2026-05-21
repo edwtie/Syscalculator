@@ -15,6 +15,7 @@ Deze broncode werkt het NOD-systeem verder uit met:
 ```text
 Syscalculator 1.74 = VB6 onderhoudslijn voor NOD 1.0 legacy fixes
 Syscalculator 2.0 beta 1 (preview) = C#/.NET opvolger met NOD 1.0 compatibility en NOD 2.0 functies
+Syscalculator 2.0 beta 2 (coming soon) = eerste beta met New Language Pack workflow
 ```
 
 Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels voor de oude VB6-lijn.
@@ -43,6 +44,17 @@ Zie ook `docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg` voor de actuele Tiedragon Graph 
 Zie `docs/LANGUAGE_PACKAGE_DESIGN.md` en `docs/LANGUAGE_PACKAGE_TOOL.md` voor
 het Localization-hoofdstuk rond `.lngpdk`, basispackages en de zelfstandige
 Language Package toolchain.
+
+## New Language Pack
+
+New Language Pack is in voorbereiding voor Syscalculator 2.0 Beta 2. De daily-lijn
+bevat alvast de basis: `.lngpdk` packages, de zelfstandige Language Package
+compiler, ToolEditor voor help-HTML/media en release-gates voor encoding, links,
+afbeeldingen, toegestane JavaScript en vertaalkwaliteit.
+
+Voor release worden alleen complete talen actief gezet. Op dit moment zijn
+English en Nederlands actief; andere talen blijven beschikbaar voor inspectie en
+vertaling totdat ze geen Engelse fallback meer nodig hebben.
 
 ## Run demo
 
