@@ -3,6 +3,12 @@
 )
 
 $ErrorActionPreference = "Stop"
+
+# Encoding rule:
+# This script contains non-ASCII translation text, so the .ps1 file itself is
+# intentionally saved as UTF-8 with BOM for Windows PowerShell 5.1 parsing.
+# Language files written by this script remain UTF-8 without BOM.
+$Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptRoot
 $languageRoot = Join-Path $repoRoot $LanguageDirectory
@@ -52,7 +58,7 @@ function Add-MissingLanguageLines {
     $content += [Environment]::NewLine + [Environment]::NewLine
     $content += "# Beta 2 language-package coverage" + [Environment]::NewLine
     $content += ($toAppend -join [Environment]::NewLine) + [Environment]::NewLine
-    [System.IO.File]::WriteAllText($path, $content, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($path, $content, $Utf8NoBom)
     Write-Host "$Code appended $($toAppend.Count) keys."
 }
 

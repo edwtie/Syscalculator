@@ -9,6 +9,14 @@
 
 $ErrorActionPreference = "Stop"
 
+# Encoding rule:
+# - This .ps1 file is intentionally saved as UTF-8 with BOM because it contains
+#   non-ASCII translation text and must still parse correctly in Windows
+#   PowerShell 5.1.
+# - Generated package files are written as UTF-8 without BOM so package hashes
+#   remain stable across Windows PowerShell and PowerShell 7.
+$Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptRoot
 $languageRoot = Join-Path $repoRoot $LanguageDirectory
@@ -92,6 +100,15 @@ function Copy-DirectoryContent {
         New-Item -ItemType Directory -Path (Split-Path -Parent $targetPath) -Force | Out-Null
         Copy-Item $_.FullName $targetPath -Force
     }
+}
+
+function Write-Utf8NoBomText {
+    param(
+        [string]$Path,
+        [string]$Text
+    )
+
+    [System.IO.File]::WriteAllText($Path, $Text, $script:Utf8NoBom)
 }
 
 function Read-LanguageMap {
@@ -186,10 +203,9 @@ function Set-ToolEditorHelpContent {
 
     if ($localizedPages.ContainsKey($LanguageCode)) {
         foreach ($page in $localizedPages[$LanguageCode].GetEnumerator()) {
-            [System.IO.File]::WriteAllText(
-                (Join-Path $toolEditorRoot $page.Key),
-                $page.Value.Trim() + [Environment]::NewLine,
-                [System.Text.UTF8Encoding]::new($false))
+            Write-Utf8NoBomText `
+                -Path (Join-Path $toolEditorRoot $page.Key) `
+                -Text ($page.Value.Trim() + [Environment]::NewLine)
         }
 
         return
@@ -296,10 +312,9 @@ function Set-ToolEditorHelpContent {
     }
 
     foreach ($page in $pages.GetEnumerator()) {
-        [System.IO.File]::WriteAllText(
-            (Join-Path $toolEditorRoot $page.Key),
-            $page.Value.Trim() + [Environment]::NewLine,
-            [System.Text.UTF8Encoding]::new($false))
+        Write-Utf8NoBomText `
+            -Path (Join-Path $toolEditorRoot $page.Key) `
+            -Text ($page.Value.Trim() + [Environment]::NewLine)
     }
 }
 
@@ -362,7 +377,9 @@ foreach ($languageFile in $languageFiles) {
         packageVersion = $PackageVersion
         fallbackLanguage = "eng"
     }
-    $manifest | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 (Join-Path $concept "manifest.json")
+    Write-Utf8NoBomText `
+        -Path (Join-Path $concept "manifest.json") `
+        -Text (($manifest | ConvertTo-Json -Depth 5) + [Environment]::NewLine)
 
     $outputPackage = Join-Path $outputRoot ("Syscalculator.Language." + $code + ".lngpdk")
     $json = dotnet run --project $project --no-restore -- agent-compile $concept $outputPackage
@@ -382,13 +399,13 @@ foreach ($languageFile in $languageFiles) {
 }
 
 $manifestPath = Join-Path $outputRoot "language-packages.json"
-$results |
+$indexJson = $results |
     Select-Object packageKey, languageCode, displayName, packageSha256, payloadSha256, entryCount,
         @{ Name = "fileName"; Expression = { [System.IO.Path]::GetFileName($_.outputPath) } },
         @{ Name = "downloadPath"; Expression = { "packages/languages/" + [System.IO.Path]::GetFileName($_.outputPath) } },
         active, translationComplete, missingRequiredKeyCount, missingRequiredKeys |
-    ConvertTo-Json -Depth 5 |
-    Set-Content -Encoding UTF8 $manifestPath
+    ConvertTo-Json -Depth 5
+Write-Utf8NoBomText -Path $manifestPath -Text ($indexJson + [Environment]::NewLine)
 
 Write-Host "Generated $($results.Count) language packages in $outputRoot"
 Write-Host "Manifest: $manifestPath"
