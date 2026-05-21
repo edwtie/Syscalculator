@@ -127,6 +127,7 @@ internal static class Program
 
         Console.WriteLine("created: " + outputPath);
         Console.WriteLine("key: " + manifest.PackageKey);
+        Console.WriteLine("packageSha256: " + ComputeSha256(File.ReadAllBytes(outputPath)));
         Console.WriteLine("payloadSha256: " + payloadHash);
         return 0;
     }
@@ -152,6 +153,8 @@ internal static class Program
         Console.WriteLine("key: " + manifest.PackageKey);
         Console.WriteLine("language: " + manifest.LanguageCode);
         Console.WriteLine("wrapped: " + inspection.IsWrapped);
+        Console.WriteLine("packageSha256: " + inspection.PackageSha256);
+        Console.WriteLine("payloadSha256: " + ComputeSha256(inspection.Payload));
         return 0;
     }
 
@@ -169,8 +172,9 @@ internal static class Program
 
         Console.WriteLine("file: " + packagePath);
         Console.WriteLine("wrapped: " + inspection.IsWrapped);
+        Console.WriteLine("packageSha256: " + inspection.PackageSha256);
         Console.WriteLine("payloadBytes: " + inspection.Payload.Length);
-        Console.WriteLine("payloadSha256: " + Convert.ToHexString(SHA256.HashData(inspection.Payload)).ToLowerInvariant());
+        Console.WriteLine("payloadSha256: " + ComputeSha256(inspection.Payload));
         if (inspection.Header is not null)
         {
             Console.WriteLine("softwareId: " + inspection.Header.SoftwareId);
@@ -242,10 +246,16 @@ internal static class Program
             throw new FileNotFoundException(packagePath);
 
         var bytes = File.ReadAllBytes(packagePath);
+        var packageSha256 = ComputeSha256(bytes);
         if (!TryUnwrap(bytes, out var header, out var payload))
             payload = bytes;
 
-        return new PackageInspection(header is not null, header, payload);
+        return new PackageInspection(header is not null, header, packageSha256, payload);
+    }
+
+    private static string ComputeSha256(byte[] bytes)
+    {
+        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     }
 
     private static bool TryUnwrap(byte[] packageBytes, out LanguagePackageContainerHeader? header, out byte[] payload)
@@ -438,6 +448,7 @@ internal static class Program
 internal sealed record PackageInspection(
     bool IsWrapped,
     LanguagePackageContainerHeader? Header,
+    string PackageSha256,
     byte[] Payload);
 
 internal sealed class LanguagePackageManifest

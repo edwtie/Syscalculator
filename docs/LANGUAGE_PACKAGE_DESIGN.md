@@ -95,7 +95,10 @@ Header JSON:
 ```
 
 The reader verifies `softwareId`, `packageType`, payload size and
-`payloadSha256` before reading content from the payload archive.
+`payloadSha256` before reading content from the payload archive. Release and
+update metadata should also publish the SHA-256 checksum of the whole `.lngpdk`
+file as `packageSha256`; that value is external to the package because adding it
+inside the file would change the file hash.
 
 Example:
 
@@ -299,6 +302,7 @@ Responsibilities:
 - read `manifest.json`;
 - read and validate the optional `SYSCALC-LNGPDK` wrapper header;
 - verify the payload SHA-256 hash when present;
+- print the whole package SHA-256 checksum for release/update metadata;
 - validate package paths;
 - read language packages directly from `.lngpdk` archives, including ZIP and
   7z-compatible containers;

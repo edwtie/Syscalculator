@@ -62,6 +62,11 @@ The header contains `softwareId`, `packageType`, `payloadFormat` and
 `payloadSha256`. The payload is currently written as ZIP, while the app reader
 can read ZIP and 7z-compatible payloads through the same `.lngpdk` extension.
 
+The tool also prints `packageSha256`, the SHA-256 checksum of the complete
+`.lngpdk` file. Use this value in release manifests, updater metadata or manual
+checksum lists. `payloadSha256` protects the archive inside the wrapper;
+`packageSha256` protects the distributed package file itself.
+
 ## Validation
 
 The tool checks:
@@ -73,4 +78,5 @@ The tool checks:
 - blocked executable/script extensions;
 - unsafe paths such as absolute paths or `..`;
 - maximum file count and file sizes;
-- wrapper payload SHA-256.
+- wrapper payload SHA-256;
+- whole-package SHA-256 checksum reporting.
