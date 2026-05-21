@@ -430,9 +430,7 @@ public sealed class ToolEditorForm : Form
 
         var pageNameMap = helpFiles.ToDictionary(
             path => Path.GetFileName(path),
-            path => Path.GetFileName(path).Equals("index_nl.htm", StringComparison.OrdinalIgnoreCase)
-                ? "index.html"
-                : Path.GetFileNameWithoutExtension(path) + ".html",
+            path => BuildDutchHelpPackageFileName(Path.GetFileName(path)),
             StringComparer.OrdinalIgnoreCase);
 
         var mediaNameMap = AddDutchHelpMedia(helpDirectory);
@@ -443,6 +441,17 @@ public sealed class ToolEditorForm : Form
             html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
             AddDocument("manual/" + packageName, html, file);
         }
+    }
+
+    private static string BuildDutchHelpPackageFileName(string fileName)
+    {
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        if (name.Equals("index_nl", StringComparison.OrdinalIgnoreCase))
+            return "index.html";
+
+        name = Regex.Replace(name, @"^(help|manual)[_-]+(nl|ned)[_-]+", "", RegexOptions.IgnoreCase);
+        name = Regex.Replace(name, @"^(nl|ned)[_-]+", "", RegexOptions.IgnoreCase);
+        return name + ".html";
     }
 
     private void AddNodHelpDocuments()
