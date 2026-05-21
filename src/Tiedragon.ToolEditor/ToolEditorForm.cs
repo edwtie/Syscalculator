@@ -371,8 +371,8 @@ public sealed class ToolEditorForm : Form
     private void NewLanguagePackageTemplate()
     {
         _manifestText = BuildManifestTemplate();
-        AddDocument("language/ned.lng", "app.title=Syscalculator\r\n", null);
-        AddDocument("manual/index.html", BuildHtmlTemplate(), null);
+        AddDocument("language/ned.lng", LoadDutchLanguageText(), null);
+        AddDutchHelpDocuments();
     }
 
     private static string BuildManifestTemplate()
@@ -397,10 +397,116 @@ public sealed class ToolEditorForm : Form
     private static string BuildHtmlTemplate()
     {
         return """
-        <h1>Tiedragon language package</h1>
-        <p>Write package help, manual text or release notes here.</p>
-        <div class="notice">This page is previewed through the ToolEditor HTML viewer.</div>
+        <h1>Syscalculator Help</h1>
+        <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
+        <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
         """;
+    }
+
+    private void AddDutchHelpDocuments()
+    {
+        var helpDirectory = FindRepositoryPath("legacy/Syscalculator174.VB6/help");
+        if (helpDirectory is null)
+        {
+            AddDocument("manual/index.html", BuildHtmlTemplate(), null);
+            return;
+        }
+
+        var helpFiles = Directory.GetFiles(helpDirectory, "*.htm")
+            .Where(path => Path.GetFileName(path).Equals("index_nl.htm", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetFileName(path).StartsWith("help_nl_", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(path => Path.GetFileName(path).Equals("index_nl.htm", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (helpFiles.Count == 0)
+        {
+            AddDocument("manual/index.html", BuildHtmlTemplate(), null);
+            return;
+        }
+
+        var pageNameMap = helpFiles.ToDictionary(
+            path => Path.GetFileName(path),
+            path => Path.GetFileName(path).Equals("index_nl.htm", StringComparison.OrdinalIgnoreCase)
+                ? "index.html"
+                : Path.GetFileNameWithoutExtension(path) + ".html",
+            StringComparer.OrdinalIgnoreCase);
+
+        var mediaNameMap = AddDutchHelpMedia(helpDirectory);
+        foreach (var file in helpFiles)
+        {
+            var packageName = pageNameMap[Path.GetFileName(file)];
+            var html = File.ReadAllText(file, Encoding.Latin1);
+            html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
+            AddDocument("manual/" + packageName, html, file);
+        }
+    }
+
+    private Dictionary<string, string> AddDutchHelpMedia(string helpDirectory)
+    {
+        var media = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in Directory.GetFiles(helpDirectory)
+                     .Where(IsImagePath)
+                     .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
+        {
+            var name = Path.GetFileName(file);
+            var packagePath = "assets/" + name;
+            media[name] = packagePath;
+            AddImageDocument(packagePath, File.ReadAllBytes(file), file);
+        }
+
+        return media;
+    }
+
+    private static string ConvertDutchHelpHtml(string html, IReadOnlyDictionary<string, string> pageNameMap, IReadOnlyDictionary<string, string> mediaNameMap)
+    {
+        html = html.Replace("charset=windows-1252", "charset=utf-8", StringComparison.OrdinalIgnoreCase);
+        html = html.Replace("Syscalculator 1.74", "Syscalculator", StringComparison.OrdinalIgnoreCase);
+        foreach (var item in pageNameMap)
+            html = ReplaceQuotedPath(html, item.Key, item.Value);
+        foreach (var item in mediaNameMap)
+            html = ReplaceQuotedPath(html, item.Key, item.Value);
+
+        return html;
+    }
+
+    private static string ReplaceQuotedPath(string html, string from, string to)
+    {
+        return Regex.Replace(
+            html,
+            "(?<quote>[\"'])" + Regex.Escape(from) + "\\k<quote>",
+            match => match.Groups["quote"].Value + to + match.Groups["quote"].Value,
+            RegexOptions.IgnoreCase);
+    }
+
+    private static string LoadDutchLanguageText()
+    {
+        var path = FindRepositoryPath("src/syscalculator/ned.lng");
+        if (path is not null)
+            return File.ReadAllText(path, Encoding.UTF8);
+
+        return """
+        # Syscalculator 2.0 taalbestand
+        # Formaat: key=waarde
+
+        language.name=Nederlands
+        menu.tools.tool_editor=ToolEditor
+        status.ready=Gereed
+        """;
+    }
+
+    private static string? FindRepositoryPath(string relativePath)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var path = Path.Combine(directory.FullName, relativePath);
+            if (File.Exists(path) || Directory.Exists(path))
+                return path;
+
+            directory = directory.Parent;
+        }
+
+        return null;
     }
 
     private void OpenDocument()
