@@ -1,6 +1,8 @@
 #nullable enable
+using System.IO.Compression;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -18,6 +20,46 @@ namespace Tiedragon.ToolEditor;
 // document tabs, source editor and HTML preview.
 public sealed class ToolEditorForm : Form
 {
+    private const string LanguagePackageMagicText = "SYSCALC-LNGPDK";
+    private const int LanguagePackageContainerFormat = 1;
+    private const string LanguagePackageSoftwareId = "tiedragon.syscalculator";
+    private const string LanguagePackageType = "language";
+    private const int MaxPackageHeaderBytes = 64 * 1024;
+    private const long MaxPackagePayloadBytes = 192L * 1024 * 1024;
+
+    private static readonly byte[] LanguagePackageMagic = Encoding.ASCII.GetBytes(LanguagePackageMagicText);
+    private static readonly JsonSerializerOptions LanguagePackageJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = true,
+    };
+
+    private static readonly HashSet<string> AllowedPackageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".css",
+        ".html",
+        ".jpg",
+        ".jpeg",
+        ".json",
+        ".lng",
+        ".png",
+        ".svg",
+        ".webp",
+    };
+
+    private static readonly HashSet<string> BlockedPackageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".bat",
+        ".cmd",
+        ".com",
+        ".dll",
+        ".exe",
+        ".msi",
+        ".ps1",
+        ".scr",
+        ".vbs",
+    };
+
     private static readonly Regex HtmlCommentRegex = new("<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HtmlTagRegex = new("</?[a-zA-Z][^>]*?>", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HtmlAttributeRegex = new(@"\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?=\s*=)", RegexOptions.Compiled);
@@ -302,6 +344,10 @@ public sealed class ToolEditorForm : Form
         package.DropDownItems.Add("Media vervangen...", null, (_, _) => ReplaceCurrentMedia());
         package.DropDownItems.Add("Geselecteerd bestand verwijderen", null, (_, _) => DeleteCurrentDocument());
         package.DropDownItems.Add("HTML-links controleren", null, (_, _) => ValidatePackageLinks(showMessage: true));
+        package.DropDownItems.Add(new ToolStripSeparator());
+        package.DropDownItems.Add("Pakket compileren...", null, async (_, _) => await CompileLanguagePackageAsync());
+        package.DropDownItems.Add("SHA-256 berekenen...", null, (_, _) => ShowPackageSha256());
+        package.DropDownItems.Add("Encryptie...", null, (_, _) => ShowEncryptionStatus());
         package.DropDownItems.Add(new ToolStripSeparator());
         package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
 
@@ -2106,6 +2152,286 @@ public sealed class ToolEditorForm : Form
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Ontbrekende links", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
+    private async Task CompileLanguagePackageAsync()
+    {
+        await SyncHtmlEditorToSourceAsync();
+
+        var errors = new List<string>();
+        ValidatePackageForCompile(errors);
+        if (errors.Count > 0)
+        {
+            SetStatus("Package niet gecompileerd: " + errors[0], isError: true);
+            MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Package compileren", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var manifest = ReadManifestProperties(_manifestText);
+        using var dialog = new SaveFileDialog
+        {
+            Title = "Language package compileren",
+            FileName = "Syscalculator-" + SanitizeFileName(manifest.LanguageCode) + ".lngpdk",
+            Filter = "Tiedragon language package (*.lngpdk)|*.lngpdk",
+            OverwritePrompt = true,
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        var outputPath = Path.GetFullPath(dialog.FileName);
+        if (!Path.GetExtension(outputPath).Equals(".lngpdk", StringComparison.OrdinalIgnoreCase))
+            outputPath += ".lngpdk";
+
+        var tempFolder = Path.Combine(Path.GetTempPath(), "Tiedragon.ToolEditor", "compile", Guid.NewGuid().ToString("N"));
+        try
+        {
+            WritePackageSourceFolder(tempFolder);
+            var result = BuildLanguagePackage(tempFolder, outputPath);
+            SetStatus("Package gecompileerd. SHA-256: " + result.PackageSha256, isError: false);
+            MessageBox.Show(
+                this,
+                "Package gecompileerd:\r\n" + outputPath +
+                "\r\n\r\nPackage SHA-256:\r\n" + result.PackageSha256 +
+                "\r\n\r\nPayload SHA-256:\r\n" + result.PayloadSha256 +
+                "\r\n\r\nEncryptie: uit (reader weigert encrypted packages nog fail-closed).",
+                "Package compileren",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException)
+        {
+            SetStatus("Package compile mislukt: " + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, "Package compileren", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempFolder))
+                    Directory.Delete(tempFolder, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+    }
+
+    private void ShowPackageSha256()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "SHA-256 berekenen",
+            Filter = "Tiedragon language package (*.lngpdk)|*.lngpdk|Alle bestanden (*.*)|*.*",
+            CheckFileExists = true,
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        try
+        {
+            var hash = ComputeSha256File(dialog.FileName);
+            SetStatus("SHA-256: " + hash, isError: false);
+            MessageBox.Show(this, dialog.FileName + "\r\n\r\nSHA-256:\r\n" + hash, "SHA-256", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SetStatus("SHA-256 mislukt: " + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, "SHA-256", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void ShowEncryptionStatus()
+    {
+        MessageBox.Show(
+            this,
+            "De `.lngpdk` compile gebruikt nu een strikte container met dubbele SHA-256-controle:\r\n\r\n" +
+            "- package SHA-256 voor het volledige bestand\r\n" +
+            "- payload SHA-256 in de containerheader\r\n\r\n" +
+            "Encryptie staat bewust nog uit. Syscalculator weigert encrypted packages nu fail-closed, zodat er geen half ondersteunde package kan laden. De container heeft het veld `Encrypted`, dus AES-encryptie kan later veilig worden toegevoegd.",
+            "Encryptie",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
+    }
+
+    private void ValidatePackageForCompile(List<string> errors)
+    {
+        ValidateJson(_manifestText, errors);
+        if (errors.Count > 0)
+            return;
+
+        using var json = JsonDocument.Parse(_manifestText);
+        var root = json.RootElement;
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            errors.Add("manifest.json moet een JSON-object zijn.");
+            return;
+        }
+
+        if (!root.TryGetProperty("format", out var format) ||
+            format.ValueKind != JsonValueKind.Number ||
+            !format.TryGetInt32(out var manifestFormat) ||
+            manifestFormat != 1)
+        {
+            errors.Add("manifest.json mist format 1.");
+        }
+
+        var manifest = ReadManifestProperties(_manifestText);
+        if (!manifest.Producer.Equals("Tiedragon", StringComparison.OrdinalIgnoreCase))
+            errors.Add("manifest.json producer moet Tiedragon zijn.");
+        if (!manifest.Product.Equals("Syscalculator", StringComparison.OrdinalIgnoreCase))
+            errors.Add("manifest.json product moet Syscalculator zijn.");
+        if (!manifest.SoftwareId.Equals(LanguagePackageSoftwareId, StringComparison.OrdinalIgnoreCase))
+            errors.Add("manifest.json softwareId moet " + LanguagePackageSoftwareId + " zijn.");
+        if (!IsSafePackageToken(manifest.LanguageCode))
+            errors.Add("manifest.json languageCode is ongeldig.");
+        if (string.IsNullOrWhiteSpace(manifest.DisplayName))
+            errors.Add("manifest.json displayName ontbreekt.");
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var document in _documents)
+        {
+            ValidatePackageEntryPath(document.PackagePath, document.ImageBytes is not null, errors);
+            if (!seen.Add(NormalizePackagePath(document.PackagePath)))
+                errors.Add("Dubbel packagepad: " + document.PackagePath);
+
+            errors.AddRange(ValidateDocument(document));
+            AddMissingMediaLinkErrors(document, errors);
+            AddMissingInternalLinkErrors(document, errors);
+        }
+
+        if (!string.IsNullOrWhiteSpace(manifest.LanguageCode))
+        {
+            var languagePath = "language/" + manifest.LanguageCode + ".lng";
+            if (!_documents.Any(document => document.PackagePath.Equals(languagePath, StringComparison.OrdinalIgnoreCase)))
+                errors.Add(languagePath + " ontbreekt.");
+        }
+    }
+
+    private static void ValidatePackageEntryPath(string packagePath, bool isImage, List<string> errors)
+    {
+        var path = NormalizePackagePath(packagePath);
+        if (string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path) || path.Split('/').Any(part => part == ".."))
+        {
+            errors.Add("Ongeldig packagepad: " + packagePath);
+            return;
+        }
+
+        var extension = Path.GetExtension(path);
+        if (BlockedPackageExtensions.Contains(extension) || !AllowedPackageExtensions.Contains(extension))
+            errors.Add("Bestandstype is niet toegestaan: " + packagePath);
+
+        if (isImage && !path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
+            errors.Add("Media hoort onder assets/: " + packagePath);
+    }
+
+    private void WritePackageSourceFolder(string rootFolder)
+    {
+        Directory.CreateDirectory(rootFolder);
+        File.WriteAllText(GetSafePackageFilePath(rootFolder, "manifest.json"), _manifestText, Encoding.UTF8);
+
+        foreach (var document in _documents.OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
+        {
+            var packagePath = NormalizePackagePath(document.PackagePath);
+            if (IsManifestPath(packagePath))
+                continue;
+
+            var filePath = GetSafePackageFilePath(rootFolder, packagePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            if (document.ImageBytes is not null)
+                File.WriteAllBytes(filePath, document.ImageBytes);
+            else
+                File.WriteAllText(filePath, document.Editor.Text, Encoding.UTF8);
+        }
+    }
+
+    private static LanguagePackageCompileResult BuildLanguagePackage(string sourceFolder, string outputPath)
+    {
+        var payload = BuildZipPayload(sourceFolder);
+        var payloadSha256 = ComputeSha256Bytes(payload);
+        var header = new LanguagePackageContainerHeader(
+            LanguagePackageContainerFormat,
+            LanguagePackageSoftwareId,
+            LanguagePackageType,
+            "zip",
+            payloadSha256,
+            Encrypted: false,
+            Signed: false);
+
+        var headerBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(header, LanguagePackageJsonOptions));
+        if (headerBytes.Length > MaxPackageHeaderBytes)
+            throw new InvalidDataException("Packageheader is te groot.");
+        if (payload.Length > MaxPackagePayloadBytes)
+            throw new InvalidDataException("Packagepayload is te groot.");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+        using (var output = File.Create(outputPath))
+        {
+            output.Write(LanguagePackageMagic);
+            using var writer = new BinaryWriter(output, Encoding.UTF8, leaveOpen: true);
+            writer.Write(LanguagePackageContainerFormat);
+            writer.Write(headerBytes.Length);
+            writer.Write(headerBytes);
+            writer.Write(payload);
+        }
+
+        return new LanguagePackageCompileResult(outputPath, ComputeSha256File(outputPath), payloadSha256);
+    }
+
+    private static byte[] BuildZipPayload(string sourceFolder)
+    {
+        using var memory = new MemoryStream();
+        using (var archive = new ZipArchive(memory, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var file in Directory.GetFiles(sourceFolder, "*", SearchOption.AllDirectories).OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+            {
+                var relative = Path.GetRelativePath(sourceFolder, file).Replace('\\', '/');
+                var entry = archive.CreateEntry(relative, CompressionLevel.Optimal);
+                using var entryStream = entry.Open();
+                using var source = File.OpenRead(file);
+                source.CopyTo(entryStream);
+            }
+        }
+
+        return memory.ToArray();
+    }
+
+    private static string GetSafePackageFilePath(string rootFolder, string packagePath)
+    {
+        var root = Path.GetFullPath(rootFolder);
+        var fullPath = Path.GetFullPath(Path.Combine(root, NormalizePackagePath(packagePath).Replace('/', Path.DirectorySeparatorChar)));
+        var rootPrefix = root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
+        if (!fullPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Packagepad valt buiten tijdelijke map: " + packagePath);
+
+        return fullPath;
+    }
+
+    private static string ComputeSha256Bytes(byte[] bytes)
+    {
+        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+    }
+
+    private static string ComputeSha256File(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+    }
+
+    private static bool IsSafePackageToken(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+            value.All(character => char.IsLetterOrDigit(character) || character is '-' or '_');
+    }
+
+    private static string SanitizeFileName(string value)
+    {
+        var cleaned = new string(value.Where(character => char.IsLetterOrDigit(character) || character is '-' or '_').ToArray());
+        return string.IsNullOrWhiteSpace(cleaned) ? "language" : cleaned;
+    }
+
     private void AddMissingMediaLinkErrors(ToolEditorDocument document, List<string> errors)
     {
         if (document.ImageBytes is not null || !IsHtmlDocument(document))
@@ -2384,6 +2710,12 @@ public sealed class ToolEditorForm : Form
         {
             using var json = JsonDocument.Parse(text);
             var root = json.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                errors.Add("JSON root must be an object.");
+                return;
+            }
+
             RequireString(root, "producer", "Tiedragon", errors);
             RequireString(root, "product", "Syscalculator", errors);
             RequireString(root, "softwareId", "tiedragon.syscalculator", errors);
@@ -3199,6 +3531,20 @@ public sealed class ToolEditorForm : Form
         string NativeName,
         string PackageVersion,
         string FallbackLanguage);
+
+    private sealed record LanguagePackageContainerHeader(
+        int Format,
+        string SoftwareId,
+        string PackageType,
+        string PayloadFormat,
+        string PayloadSha256,
+        bool Encrypted,
+        bool Signed);
+
+    private sealed record LanguagePackageCompileResult(
+        string OutputPath,
+        string PackageSha256,
+        string PayloadSha256);
 
     private sealed class LineNumberPanel : Panel
     {
