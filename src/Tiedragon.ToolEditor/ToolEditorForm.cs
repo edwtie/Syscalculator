@@ -121,7 +121,7 @@ public sealed class ToolEditorForm : Form
         _tabStrip = ToolEditorTabsApi.CreateStrip();
         _tabStrip.Dock = DockStyle.Fill;
         _tabStrip.WrapContents = false;
-        _tabStrip.AutoScroll = true;
+        _tabStrip.AutoScroll = false;
         _tabStrip.BackColor = Color.White;
         _tabStrip.Padding = new Padding(0, 2, 0, 0);
         _tabStrip.Margin = Padding.Empty;
@@ -1121,13 +1121,15 @@ public sealed class ToolEditorForm : Form
 
     private RichTextBox CreateTextEditor(string text, ToolEditorDocument document)
     {
+        var isLanguageDocument = document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase);
         var lineNumbers = new LineNumberPanel();
         var editor = new RichTextBox
         {
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.FixedSingle,
             Font = new Font("Consolas", 10),
-            WordWrap = false,
+            WordWrap = isLanguageDocument,
+            ScrollBars = isLanguageDocument ? RichTextBoxScrollBars.ForcedVertical : RichTextBoxScrollBars.Both,
             AcceptsTab = true,
             HideSelection = false,
             Text = text
