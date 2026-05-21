@@ -87,6 +87,7 @@ public sealed class ToolEditorForm : Form
     private string _manifestText = "";
     private string? _pendingHtml;
     private string? _pendingHtmlEditor;
+    private string? _conceptFolder;
     private bool _browserFailed;
     private bool _htmlEditorFailed;
     private bool _loadingHtmlEditor;
@@ -108,13 +109,18 @@ public sealed class ToolEditorForm : Form
 
         var menu = BuildMenu();
         var toolbar = ToolEditorApi.CreateToolbar();
-        _saveButton = ToolEditorApi.CreateButton("Save", ToolEditorIcon.Save, (_, _) => SaveCurrent(), "Save current document");
+        toolbar.Items.Add(ToolEditorApi.CreateButton("Nieuw package", ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), "Nieuw basispackage op basis van Engels"));
+        toolbar.Items.Add(ToolEditorApi.CreateButton("Open", ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), "Open taalpackage of concept"));
+        toolbar.Items.Add(new ToolStripSeparator());
+        _saveButton = ToolEditorApi.CreateButton("Save concept", ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), "Save concept taalpackage");
         _validateButton = ToolEditorApi.CreateButton("Validate", ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), "Validate current document");
         _previewButton = ToolEditorApi.CreateButton("Preview", ToolEditorIcon.Test, (_, _) => UpdatePreview(), "Refresh HTML preview");
+        var compileButton = ToolEditorApi.CreateButton("Compileer", ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), "Compileer taalpackage naar .lngpdk");
         toolbar.Items.Add(_saveButton);
         toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(_validateButton);
         toolbar.Items.Add(_previewButton);
+        toolbar.Items.Add(compileButton);
 
         _fileTree = new TreeView
         {
@@ -320,7 +326,12 @@ public sealed class ToolEditorForm : Form
         };
 
         var file = new ToolStripMenuItem("Bestand");
-        file.DropDownItems.Add(CreateMenuItem("Opslaan", Keys.Control | Keys.S, (_, _) => SaveCurrent()));
+        file.DropDownItems.Add(CreateMenuItem("Nieuw package", Keys.Control | Keys.N, async (_, _) => await NewLanguagePackageAsync()));
+        file.DropDownItems.Add(CreateMenuItem("Open taalpackage...", Keys.Control | Keys.O, async (_, _) => await OpenLanguagePackageAsync()));
+        file.DropDownItems.Add(new ToolStripSeparator());
+        file.DropDownItems.Add(CreateMenuItem("Save concept taalpackage", Keys.Control | Keys.S, async (_, _) => await SaveConceptLanguagePackageAsync()));
+        file.DropDownItems.Add("Opslaan huidig document", null, (_, _) => SaveCurrent());
+        file.DropDownItems.Add("Compileer taalpackage...", null, async (_, _) => await CompileLanguagePackageAsync());
         file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add("Sluiten", null, (_, _) => Close());
 
@@ -420,31 +431,45 @@ public sealed class ToolEditorForm : Form
 
     private void NewLanguagePackageTemplate()
     {
-        _manifestText = BuildManifestTemplate();
-        var languageDocument = AddDocument("language/ned.lng", LoadDutchLanguageText(), null);
-        AddDutchHelpDocuments();
+        _conceptFolder = null;
+        _manifestText = BuildManifestTemplate("eng", "English", "English");
+        var languageDocument = AddDocument("language/eng.lng", LoadLanguageText("eng", "English"), null);
+        AddEnglishHelpDocuments();
         AddNodHelpDocuments();
         AddFormulaCardDocuments();
         SelectDocument(languageDocument);
     }
 
-    private static string BuildManifestTemplate()
+    private async Task NewLanguagePackageAsync()
     {
-        return """
+        if (!await ConfirmResetPackageAsync())
+            return;
+
+        ClearPackageDocuments();
+        NewLanguagePackageTemplate();
+        RefreshFileTree();
+        RefreshDocumentList();
+        SetStatus("Nieuw basispackage gemaakt op basis van Engels.", isError: false);
+    }
+
+    private static string BuildManifestTemplate(string languageCode, string displayName, string nativeName)
+    {
+        var manifest = new Dictionary<string, object?>
         {
-          "format": 1,
-          "key": "ned",
-          "id": "tiedragon.language.ned",
-          "producer": "Tiedragon",
-          "product": "Syscalculator",
-          "softwareId": "tiedragon.syscalculator",
-          "languageCode": "ned",
-          "displayName": "Nederlands",
-          "nativeName": "Nederlands",
-          "packageVersion": "2026.05.21.001",
-          "fallbackLanguage": "eng"
-        }
-        """;
+            ["format"] = 1,
+            ["key"] = languageCode,
+            ["id"] = "tiedragon.language." + languageCode,
+            ["producer"] = "Tiedragon",
+            ["product"] = "Syscalculator",
+            ["softwareId"] = "tiedragon.syscalculator",
+            ["languageCode"] = languageCode,
+            ["displayName"] = displayName,
+            ["nativeName"] = nativeName,
+            ["packageVersion"] = DateTime.Now.ToString("yyyy.MM.dd.001"),
+            ["fallbackLanguage"] = "eng",
+        };
+
+        return JsonSerializer.Serialize(manifest, LanguagePackageJsonOptions);
     }
 
     private static string BuildHtmlTemplate()
@@ -458,28 +483,38 @@ public sealed class ToolEditorForm : Form
 
     private void AddDutchHelpDocuments()
     {
+        AddLegacyHelpDocuments("nl", BuildHtmlTemplate);
+    }
+
+    private void AddEnglishHelpDocuments()
+    {
+        AddLegacyHelpDocuments("en", BuildEnglishHtmlTemplate);
+    }
+
+    private void AddLegacyHelpDocuments(string languagePrefix, Func<string> fallbackFactory)
+    {
         var helpDirectory = FindRepositoryPath("legacy/Syscalculator174.VB6/help");
         if (helpDirectory is null)
         {
-            AddDocument("manual/index.html", BuildHtmlTemplate(), null);
+            AddDocument("manual/index.html", fallbackFactory(), null);
             return;
         }
 
         var helpFiles = Directory.GetFiles(helpDirectory, "*.htm")
-            .Where(path => Path.GetFileName(path).Equals("index_nl.htm", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetFileName(path).StartsWith("help_nl_", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(path => Path.GetFileName(path).Equals("index_nl.htm", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase)
+            .Where(path => Path.GetFileName(path).Equals("index_" + languagePrefix + ".htm", StringComparison.OrdinalIgnoreCase) ||
+                Path.GetFileName(path).StartsWith("help_" + languagePrefix + "_", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(path => Path.GetFileName(path).Equals("index_" + languagePrefix + ".htm", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         if (helpFiles.Count == 0)
         {
-            AddDocument("manual/index.html", BuildHtmlTemplate(), null);
+            AddDocument("manual/index.html", fallbackFactory(), null);
             return;
         }
 
         var pageNameMap = helpFiles.ToDictionary(
             path => Path.GetFileName(path),
-            path => BuildDutchHelpPackageFileName(Path.GetFileName(path)),
+            path => BuildLegacyHelpPackageFileName(Path.GetFileName(path), languagePrefix),
             StringComparer.OrdinalIgnoreCase);
 
         var mediaNameMap = AddDutchHelpMedia(helpDirectory);
@@ -492,15 +527,24 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string BuildDutchHelpPackageFileName(string fileName)
+    private static string BuildLegacyHelpPackageFileName(string fileName, string languagePrefix)
     {
         var name = Path.GetFileNameWithoutExtension(fileName);
-        if (name.Equals("index_nl", StringComparison.OrdinalIgnoreCase))
+        if (name.Equals("index_" + languagePrefix, StringComparison.OrdinalIgnoreCase))
             return "index.html";
 
-        name = Regex.Replace(name, @"^(help|manual)[_-]+(nl|ned)[_-]+", "", RegexOptions.IgnoreCase);
-        name = Regex.Replace(name, @"^(nl|ned)[_-]+", "", RegexOptions.IgnoreCase);
+        name = Regex.Replace(name, @"^(help|manual)[_-]+" + Regex.Escape(languagePrefix) + @"[_-]+", "", RegexOptions.IgnoreCase);
+        name = Regex.Replace(name, @"^" + Regex.Escape(languagePrefix) + @"[_-]+", "", RegexOptions.IgnoreCase);
         return name + ".html";
+    }
+
+    private static string BuildEnglishHtmlTemplate()
+    {
+        return """
+        <h1>Syscalculator Help</h1>
+        <p>This starter language package contains the editable package structure for Syscalculator help, NOD help, formula cards, translations and media.</p>
+        <div class="help-info">Use this English base package as the source for a new translation package.</div>
+        """;
     }
 
     private void AddNodHelpDocuments()
@@ -701,12 +745,28 @@ public sealed class ToolEditorForm : Form
             RegexOptions.IgnoreCase);
     }
 
-    private static string LoadDutchLanguageText()
+    private static string LoadLanguageText(string languageCode, string displayName)
     {
-        var path = FindRepositoryPath("src/syscalculator/ned.lng");
+        var path = FindRepositoryPath("src/syscalculator/" + languageCode + ".lng");
         if (path is not null)
             return File.ReadAllText(path, Encoding.UTF8);
 
+        return "# Syscalculator 2.0 language file\r\n" +
+            "# Format: key=value\r\n\r\n" +
+            "language.name=" + displayName + "\r\n" +
+            """
+            menu.tools.tool_editor=ToolEditor
+            status.ready=Ready
+            """;
+    }
+
+    private static string LoadDutchLanguageText()
+    {
+        return LoadLanguageText("ned", "Nederlands");
+    }
+
+    private static string LoadFallbackLanguageText()
+    {
         return """
         # Syscalculator 2.0 taalbestand
         # Formaat: key=waarde
@@ -755,6 +815,266 @@ public sealed class ToolEditorForm : Form
             SelectDocument(AddDocument(packagePath, File.ReadAllText(dialog.FileName), dialog.FileName));
         else
             RejectUnsupportedPackageFile(dialog.FileName);
+    }
+
+    private async Task OpenLanguagePackageAsync()
+    {
+        if (!await ConfirmResetPackageAsync())
+            return;
+
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Open taalpackage",
+            Filter = "Taalpackage (*.lngpdk;*.zip;manifest.json)|*.lngpdk;*.zip;manifest.json|Alle bestanden (*.*)|*.*",
+            CheckFileExists = true,
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        try
+        {
+            if (Path.GetFileName(dialog.FileName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+                LoadPackageSourceFolder(Path.GetDirectoryName(dialog.FileName)!);
+            else
+                LoadLanguagePackageArchive(dialog.FileName);
+
+            RefreshFileTree();
+            RefreshDocumentList();
+            var firstDocument = _documents.FirstOrDefault(document => document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase)) ?? _documents.FirstOrDefault();
+            if (firstDocument is not null)
+                SelectDocument(firstDocument);
+            SetStatus("Taalpackage geopend: " + dialog.FileName, isError: false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or JsonException)
+        {
+            SetStatus("Open taalpackage mislukt: " + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, "Open taalpackage", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private async Task SaveConceptLanguagePackageAsync()
+    {
+        await SyncHtmlEditorToSourceAsync();
+
+        var targetFolder = _conceptFolder;
+        if (string.IsNullOrWhiteSpace(targetFolder))
+        {
+            using var dialog = new FolderBrowserDialog
+            {
+                Description = "Kies map voor concept taalpackage",
+                UseDescriptionForTitle = true,
+                SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            targetFolder = dialog.SelectedPath;
+        }
+
+        try
+        {
+            ValidatePackageSourcePaths();
+            WritePackageSourceFolder(targetFolder);
+            _conceptFolder = targetFolder;
+            foreach (var document in _documents)
+            {
+                document.FilePath = GetSafePackageFilePath(_conceptFolder, document.PackagePath);
+                SetDirty(document, false);
+            }
+
+            SetStatus("Concept taalpackage opgeslagen: " + _conceptFolder, isError: false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException)
+        {
+            SetStatus("Save concept mislukt: " + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, "Save concept taalpackage", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void LoadPackageSourceFolder(string sourceFolder)
+    {
+        var manifestPath = Path.Combine(sourceFolder, "manifest.json");
+        if (!File.Exists(manifestPath))
+            throw new FileNotFoundException("manifest.json ontbreekt.", manifestPath);
+
+        ClearPackageDocuments();
+        _conceptFolder = sourceFolder;
+        _manifestText = File.ReadAllText(manifestPath, Encoding.UTF8);
+
+        foreach (var file in Directory.GetFiles(sourceFolder, "*", SearchOption.AllDirectories)
+                     .OrderBy(path => Path.GetRelativePath(sourceFolder, path), StringComparer.OrdinalIgnoreCase))
+        {
+            var packagePath = Path.GetRelativePath(sourceFolder, file).Replace('\\', '/');
+            if (IsManifestPath(packagePath))
+                continue;
+
+            AddPackageFileFromDisk(packagePath, file);
+        }
+    }
+
+    private void LoadLanguagePackageArchive(string packagePath)
+    {
+        ClearPackageDocuments();
+        _conceptFolder = null;
+        var payload = ReadLanguagePackagePayload(packagePath);
+        using var memory = new MemoryStream(payload);
+        using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
+        var entries = archive.Entries
+            .Where(entry => !string.IsNullOrWhiteSpace(entry.Name))
+            .OrderBy(entry => entry.FullName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var manifestEntry = entries.FirstOrDefault(entry => NormalizePackagePath(entry.FullName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)) ??
+            throw new InvalidDataException("manifest.json ontbreekt.");
+        using (var stream = manifestEntry.Open())
+        using (var reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            _manifestText = reader.ReadToEnd();
+        }
+
+        foreach (var entry in entries)
+        {
+            var entryName = NormalizePackagePath(entry.FullName);
+            if (IsManifestPath(entryName))
+                continue;
+
+            ValidatePackageEntryPathOrThrow(entryName, IsImagePath(entryName));
+            using var stream = entry.Open();
+            if (IsImagePath(entryName))
+            {
+                using var buffer = new MemoryStream();
+                stream.CopyTo(buffer);
+                AddImageDocument(entryName, buffer.ToArray(), null);
+            }
+            else
+            {
+                using var reader = new StreamReader(stream, Encoding.UTF8);
+                AddDocument(entryName, reader.ReadToEnd(), null);
+            }
+        }
+    }
+
+    private void AddPackageFileFromDisk(string packagePath, string file)
+    {
+        ValidatePackageEntryPathOrThrow(packagePath, IsImagePath(packagePath));
+        if (IsImagePath(packagePath))
+            AddImageDocument(packagePath, File.ReadAllBytes(file), file);
+        else
+            AddDocument(packagePath, File.ReadAllText(file, Encoding.UTF8), file);
+    }
+
+    private void ValidatePackageSourcePaths()
+    {
+        var errors = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var document in _documents)
+        {
+            ValidatePackageEntryPath(document.PackagePath, document.ImageBytes is not null, errors);
+            if (!seen.Add(NormalizePackagePath(document.PackagePath)))
+                errors.Add("Dubbel packagepad: " + document.PackagePath);
+        }
+
+        if (errors.Count > 0)
+            throw new InvalidDataException(errors[0]);
+    }
+
+    private static void ValidatePackageEntryPathOrThrow(string packagePath, bool isImage)
+    {
+        var errors = new List<string>();
+        ValidatePackageEntryPath(packagePath, isImage, errors);
+        if (errors.Count > 0)
+            throw new InvalidDataException(errors[0]);
+    }
+
+    private async Task<bool> ConfirmResetPackageAsync()
+    {
+        if (!_documents.Any(document => document.Dirty && !document.ReadOnly))
+            return true;
+
+        var result = MessageBox.Show(
+            this,
+            "Het huidige taalpackage heeft niet-opgeslagen wijzigingen.\r\n\r\nSave concept voordat je verdergaat?",
+            "Taalpackage",
+            MessageBoxButtons.YesNoCancel,
+            MessageBoxIcon.Warning);
+
+        if (result == DialogResult.Cancel)
+            return false;
+        if (result == DialogResult.No)
+            return true;
+
+        await SaveConceptLanguagePackageAsync();
+        return !_documents.Any(document => document.Dirty && !document.ReadOnly);
+    }
+
+    private void ClearPackageDocuments()
+    {
+        _documents.Clear();
+        _tabStrip.Controls.Clear();
+        _editorContent.Controls.Clear();
+        _current = null;
+        _pendingHtml = null;
+        _pendingHtmlEditor = null;
+        _manifestText = "";
+        _contentSplit.Panel2Collapsed = true;
+        _previewButton.Enabled = false;
+        RefreshTabStrip();
+        RefreshFileTree();
+        RefreshDocumentList();
+        UpdateUiState();
+    }
+
+    private static byte[] ReadLanguagePackagePayload(string packagePath)
+    {
+        var bytes = File.ReadAllBytes(packagePath);
+        if (bytes.Length < LanguagePackageMagic.Length + sizeof(int) + sizeof(int) ||
+            !bytes.Take(LanguagePackageMagic.Length).SequenceEqual(LanguagePackageMagic))
+        {
+            return bytes;
+        }
+
+        using var memory = new MemoryStream(bytes);
+        memory.Position = LanguagePackageMagic.Length;
+        using var reader = new BinaryReader(memory, Encoding.UTF8, leaveOpen: true);
+        var format = reader.ReadInt32();
+        if (format != LanguagePackageContainerFormat)
+            throw new InvalidDataException("Onbekend taalpackage containerformaat: " + format);
+
+        var headerLength = reader.ReadInt32();
+        if (headerLength <= 0 || headerLength > MaxPackageHeaderBytes)
+            throw new InvalidDataException("Packageheader is ongeldig.");
+
+        var headerBytes = reader.ReadBytes(headerLength);
+        if (headerBytes.Length != headerLength)
+            throw new InvalidDataException("Packageheader is incompleet.");
+
+        var header = JsonSerializer.Deserialize<LanguagePackageContainerHeader>(
+            Encoding.UTF8.GetString(headerBytes),
+            LanguagePackageJsonOptions) ?? throw new InvalidDataException("Packageheader is ongeldig.");
+        ValidateLanguagePackageHeader(header);
+
+        var payload = reader.ReadBytes((int)(memory.Length - memory.Position));
+        if (!string.IsNullOrWhiteSpace(header.PayloadSha256) &&
+            !ComputeSha256Bytes(payload).Equals(header.PayloadSha256.Trim().ToLowerInvariant(), StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("Payload SHA-256 klopt niet.");
+        }
+
+        return payload;
+    }
+
+    private static void ValidateLanguagePackageHeader(LanguagePackageContainerHeader header)
+    {
+        if (header.Format != LanguagePackageContainerFormat)
+            throw new InvalidDataException("Packageheader formaat wordt niet ondersteund.");
+        if (!LanguagePackageSoftwareId.Equals(header.SoftwareId, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Package is niet bedoeld voor Syscalculator.");
+        if (!LanguagePackageType.Equals(header.PackageType, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Package is geen taalpackage.");
+        if (header.Encrypted)
+            throw new InvalidDataException("Encrypted taalpackages worden nog niet geopend.");
     }
 
     private void ShowManifestDialog()
@@ -3422,7 +3742,7 @@ public sealed class ToolEditorForm : Form
     private void UpdateUiState()
     {
         var hasDocument = _current is not null;
-        _saveButton.Enabled = hasDocument && _current?.ReadOnly != true;
+        _saveButton.Enabled = hasDocument;
         _validateButton.Enabled = hasDocument;
         UpdateHtmlToolbarState(_current);
     }
