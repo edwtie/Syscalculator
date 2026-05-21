@@ -120,6 +120,14 @@ else {
     "daily-$($installVersion -replace '^2\.0\.', '')-installer-001"
 }
 
+$publishedUpdateStatePath = Join-Path $publishDir 'update-state.cfg'
+[System.IO.File]::WriteAllText(
+    $publishedUpdateStatePath,
+    "# Installed update package marker.`r`n" +
+    "# Used by the updater and About dialog to detect the installed release channel.`r`n" +
+    "packageId=$env:SYSCALC_PACKAGE_ID`r`n",
+    [System.Text.UTF8Encoding]::new($false))
+
 if (-not (Test-Path $updatesDir)) {
     New-Item -ItemType Directory -Path $updatesDir | Out-Null
 }
