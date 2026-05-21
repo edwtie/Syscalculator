@@ -375,6 +375,8 @@ public sealed class ToolEditorForm : Form
 
         var help = new ToolStripMenuItem("Help");
         help.DropDownItems.Add(CreateMenuItem("ToolEditor help", Keys.F1, (_, _) => ShowToolEditorHelp()));
+        help.DropDownItems.Add(new ToolStripSeparator());
+        help.DropDownItems.Add("About Syscalculator", null, (_, _) => ShowAboutSyscalculator());
 
         menu.Items.Add(file);
         menu.Items.Add(edit);
@@ -401,6 +403,16 @@ public sealed class ToolEditorForm : Form
             BuildToolEditorHelpPages(),
             "overview",
             new HelpNavigationLabels("Start", "Vorige", "Volgende")));
+    }
+
+    private void ShowAboutSyscalculator()
+    {
+        MessageBox.Show(
+            this,
+            "Syscalculator 2.0\r\n\r\nToolEditor is onderdeel van de Syscalculator language-package workflow.",
+            "About Syscalculator",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
     }
 
     private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages()
