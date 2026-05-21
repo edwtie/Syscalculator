@@ -282,6 +282,7 @@ packages.
 Current code:
 
 ```text
+src/Syscalculator.PackageTool
 src/syscalculator/LanguagePackageService.cs
 src/syscalculator/LanguageCatalog.cs
 src/syscalculator/LanguageSelectionForm.cs
@@ -297,6 +298,8 @@ Responsibilities:
 - read language packages directly from `.lngpdk` archives, including ZIP and
   7z-compatible containers;
 - enforce package size, file count and per-file limits;
+- build, inspect and validate `.lngpdk` packages through
+  `Syscalculator.PackageTool`;
 - keep extracted language package folders compatible;
 - block package code files such as `.exe`, `.dll`, `.bat`, `.cmd`, `.ps1`;
 - return the active `.lng` content;
