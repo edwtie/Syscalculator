@@ -3846,13 +3846,20 @@ public sealed class ToolEditorForm : Form
         {
             control.MouseDown += (_, e) =>
             {
-                if (e.Button == MouseButtons.Right && !ReferenceEquals(document, _current))
-                    SelectDocument(document);
-            };
-            control.MouseUp += (_, e) =>
-            {
-                if (e.Button == MouseButtons.Right)
-                    menu.Show(control, e.Location);
+                if (e.Button != MouseButtons.Right)
+                    return;
+
+                var screenLocation = control.PointToScreen(e.Location);
+                BeginInvoke(() =>
+                {
+                    if (IsDisposed || menu.IsDisposed)
+                        return;
+
+                    var target = document.HeaderPanel is { IsDisposed: false, Visible: true }
+                        ? document.HeaderPanel
+                        : _tabStrip;
+                    menu.Show(target, target.PointToClient(screenLocation));
+                });
             };
         }
     }
