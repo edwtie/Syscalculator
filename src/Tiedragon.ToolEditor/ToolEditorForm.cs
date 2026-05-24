@@ -172,7 +172,7 @@ public sealed class ToolEditorForm : Form
     private bool _webViewInitializationStarted;
     private bool _htmlEditorInitializationStarted;
     private bool _starterPackageInitializationStarted;
-    private bool _suspendNavigationRefresh;
+    private int _suspendNavigationRefresh;
     private bool _previewPaneClosedByUser;
     private bool _preferredHtmlEditMode;
     private bool _htmlEditorContentDirty;
@@ -2048,15 +2048,21 @@ public sealed class ToolEditorForm : Form
         _conceptPackagePath = null;
         _manifestText = File.ReadAllText(manifestPath, Encoding.UTF8);
 
-        foreach (var file in Directory.GetFiles(sourceFolder, "*", SearchOption.AllDirectories)
-                     .OrderBy(path => Path.GetRelativePath(sourceFolder, path), StringComparer.OrdinalIgnoreCase))
+        using (SuspendNavigationRefresh())
         {
-            var packagePath = Path.GetRelativePath(sourceFolder, file).Replace('\\', '/');
-            if (IsManifestPath(packagePath))
-                continue;
+            foreach (var file in Directory.GetFiles(sourceFolder, "*", SearchOption.AllDirectories)
+                         .OrderBy(path => Path.GetRelativePath(sourceFolder, path), StringComparer.OrdinalIgnoreCase))
+            {
+                var packagePath = Path.GetRelativePath(sourceFolder, file).Replace('\\', '/');
+                if (IsManifestPath(packagePath))
+                    continue;
 
-            AddPackageFileFromDisk(packagePath, file);
+                AddPackageFileFromDisk(packagePath, file);
+            }
         }
+
+        RefreshFileTree();
+        RefreshDocumentList();
     }
 
     private void LoadLanguagePackageArchive(string packagePath)
@@ -2108,32 +2114,38 @@ public sealed class ToolEditorForm : Form
         }
         ToolEditorDebugger.Log(logScope + ": manifest read.");
 
-        var entryIndex = 0;
-        foreach (var entry in entries)
+        using (SuspendNavigationRefresh())
         {
-            entryIndex++;
-            var entryName = NormalizePackagePath(entry.FullName);
-            if (IsManifestPath(entryName))
-                continue;
+            var entryIndex = 0;
+            foreach (var entry in entries)
+            {
+                entryIndex++;
+                var entryName = NormalizePackagePath(entry.FullName);
+                if (IsManifestPath(entryName))
+                    continue;
 
-            if (entryIndex == 1 || entryIndex % 25 == 0)
-                ToolEditorDebugger.Log(logScope + ": entry " + entryIndex.ToString("N0") + "/" + entries.Count.ToString("N0") + " " + entryName);
-            ValidatePackageEntryPathOrThrow(entryName, IsImagePath(entryName));
-            using var stream = entry.Open();
-            if (IsImagePath(entryName))
-            {
-                using var buffer = new MemoryStream();
-                stream.CopyTo(buffer);
-                var document = AddImageDocument(entryName, buffer.ToArray(), null);
-                document.LastModified = entry.LastWriteTime;
-            }
-            else
-            {
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-                var document = AddDocument(entryName, reader.ReadToEnd(), null);
-                document.LastModified = entry.LastWriteTime;
+                if (entryIndex == 1 || entryIndex % 25 == 0)
+                    ToolEditorDebugger.Log(logScope + ": entry " + entryIndex.ToString("N0") + "/" + entries.Count.ToString("N0") + " " + entryName);
+                ValidatePackageEntryPathOrThrow(entryName, IsImagePath(entryName));
+                using var stream = entry.Open();
+                if (IsImagePath(entryName))
+                {
+                    using var buffer = new MemoryStream();
+                    stream.CopyTo(buffer);
+                    var document = AddImageDocument(entryName, buffer.ToArray(), null);
+                    document.LastModified = entry.LastWriteTime;
+                }
+                else
+                {
+                    using var reader = new StreamReader(stream, Encoding.UTF8);
+                    var document = AddDocument(entryName, reader.ReadToEnd(), null);
+                    document.LastModified = entry.LastWriteTime;
+                }
             }
         }
+
+        RefreshFileTree();
+        RefreshDocumentList();
         ToolEditorDebugger.Log(logScope + ": completed; documents=" + _documents.Count.ToString("N0"));
     }
 
@@ -2999,13 +3011,13 @@ public sealed class ToolEditorForm : Form
 
     private IDisposable SuspendNavigationRefresh()
     {
-        _suspendNavigationRefresh = true;
+        _suspendNavigationRefresh++;
         return new NavigationRefreshScope(this);
     }
 
     private void RefreshNavigationIfNeeded()
     {
-        if (_suspendNavigationRefresh)
+        if (_suspendNavigationRefresh > 0)
             return;
 
         RefreshFileTree();
@@ -6963,7 +6975,7 @@ public sealed class ToolEditorForm : Form
                 return;
 
             _disposed = true;
-            _owner._suspendNavigationRefresh = false;
+            _owner._suspendNavigationRefresh = Math.Max(0, _owner._suspendNavigationRefresh - 1);
         }
     }
 
