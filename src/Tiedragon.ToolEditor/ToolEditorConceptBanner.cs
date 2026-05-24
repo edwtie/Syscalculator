@@ -136,8 +136,8 @@ internal sealed class ToolEditorConceptBanner : ToolEditorWorkBoardBanner
         _signedIcon.BackColor = backColor;
         _signedIcon.Visible = signed;
         _closeSlot.BackColor = backColor;
-        _closeSlot.Visible = !signed;
-        _closeSlot.Width = signed ? 0 : 48;
+        _closeSlot.Visible = true;
+        _closeSlot.Width = 48;
         SignedBackColor = _signedBackColor;
         SignedBorderColor = _signedBorderColor;
     }
