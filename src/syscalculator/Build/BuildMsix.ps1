@@ -55,6 +55,23 @@ function Find-MakeAppx {
     throw 'makeappx.exe was not found. Install the Windows SDK first.'
 }
 
+function Get-Sha256Hash {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $hashBytes = $sha256.ComputeHash($stream)
+        return -join ($hashBytes | ForEach-Object { $_.ToString('x2') })
+    }
+    finally {
+        $stream.Dispose()
+        $sha256.Dispose()
+    }
+}
+
 function New-MsixLogo {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -193,7 +210,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "makeappx pack failed with exit code $LASTEXITCODE."
 }
 
-$hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $packagePath).Hash
+$hash = Get-Sha256Hash -Path $packagePath
 Write-Host "MSIX created: $packagePath"
 Write-Host "MSIX version: $PackageVersion"
 Write-Host "MSIX sha256: $hash"
