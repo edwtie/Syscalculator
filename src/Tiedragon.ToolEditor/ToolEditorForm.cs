@@ -173,6 +173,7 @@ public sealed class ToolEditorForm : Form
     private bool _starterPackageInitializationStarted;
     private bool _suspendNavigationRefresh;
     private bool _previewPaneClosedByUser;
+    private bool _preferredHtmlEditMode;
     private bool _loadingDocumentText;
     private bool _pendingPreviewInitialize;
     private bool _openedPackageSigned;
@@ -3069,6 +3070,7 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        _preferredHtmlEditMode = editMode;
         if (editMode && IsGeneratedPlaceholderHtmlDocument(_current))
         {
             _current.Editor.Text = BuildRenderedSourceText(_current);
@@ -3262,9 +3264,17 @@ public sealed class ToolEditorForm : Form
         lineNumbers.Attach(document.Editor);
     }
 
-    private void SelectDocument(ToolEditorDocument document)
+    private async void SelectDocument(ToolEditorDocument document)
     {
+        if (_current is not null &&
+            !ReferenceEquals(_current, document) &&
+            _current.HtmlEditMode)
+        {
+            await SyncHtmlEditorToSourceAsync();
+        }
+
         EnsureDocumentTextLoaded(document, ensureEditorUi: true);
+        ApplyPreferredHtmlEditMode(document);
         EnsureDocumentTabOpen(document);
         _current = document;
         SelectDocumentInTree(document);
@@ -3337,6 +3347,23 @@ public sealed class ToolEditorForm : Form
         UpdateDocumentStatus(document);
         ScheduleSyntaxHighlight(document);
         QueueFocusActiveEditor();
+    }
+
+    private void ApplyPreferredHtmlEditMode(ToolEditorDocument document)
+    {
+        if (!GetHtmlViewState(document).CanUseVisualEditor)
+        {
+            document.HtmlEditMode = false;
+            return;
+        }
+
+        if (_preferredHtmlEditMode && IsGeneratedPlaceholderHtmlDocument(document))
+        {
+            document.Editor.Text = BuildRenderedSourceText(document);
+            SetDirty(document, true);
+        }
+
+        document.HtmlEditMode = _preferredHtmlEditMode;
     }
 
     private string BuildRenderedSourceText(ToolEditorDocument document)
