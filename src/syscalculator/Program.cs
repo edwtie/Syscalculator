@@ -24,6 +24,7 @@ internal static class Program
                 return;
             }
 
+            ApplySystemColorMode();
             ApplicationConfiguration.Initialize();
 
             if (ShouldOpenNodTool(args, out var editorPath, out var openTemplateWizard))
@@ -63,6 +64,13 @@ internal static class Program
             SyscalculatorDebugger.ReportException("Fatal Syscalculator exception", ex, showDialog: true);
             throw;
         }
+    }
+
+    private static void ApplySystemColorMode()
+    {
+#pragma warning disable WFO5001
+        Application.SetColorMode(SystemColorMode.System);
+#pragma warning restore WFO5001
     }
 
     private static bool ShouldOpenNodTool(string[] args, out string? editorPath, out bool openTemplateWizard)

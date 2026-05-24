@@ -13,6 +13,7 @@ internal static class Program
         ToolEditorDebugger.Initialize();
         try
         {
+            ApplySystemColorMode();
             ApplicationConfiguration.Initialize();
             ToolEditorDebugger.Log("Startup mode: Standalone ToolEditor.");
             Application.Run(new ToolEditorForm());
@@ -22,5 +23,12 @@ internal static class Program
             ToolEditorDebugger.ReportException("Fatal ToolEditor exception", ex, showDialog: true);
             throw;
         }
+    }
+
+    private static void ApplySystemColorMode()
+    {
+#pragma warning disable WFO5001
+        Application.SetColorMode(SystemColorMode.System);
+#pragma warning restore WFO5001
     }
 }
