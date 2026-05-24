@@ -158,6 +158,7 @@ public sealed class ToolEditorForm : Form
     private string? _pendingHtmlEditor;
     private string? _conceptFolder;
     private string? _conceptPackagePath;
+    private ToolEditorLanguageInfo? _cachedConfiguredToolEditorLanguage;
     private string? _cachedToolEditorHelpLanguageCode;
     private string? _cachedToolEditorHelpSourceText;
     private Dictionary<string, string>? _cachedToolEditorHelpTexts;
@@ -174,6 +175,7 @@ public sealed class ToolEditorForm : Form
     private bool _suspendNavigationRefresh;
     private bool _previewPaneClosedByUser;
     private bool _preferredHtmlEditMode;
+    private bool _htmlEditorContentDirty;
     private bool _loadingDocumentText;
     private bool _pendingPreviewInitialize;
     private bool _openedPackageSigned;
@@ -303,6 +305,7 @@ public sealed class ToolEditorForm : Form
         _htmlEditor.NavigationCompleted += (_, _) =>
         {
             _loadingHtmlEditor = false;
+            _htmlEditorContentDirty = false;
             FocusActiveEditor();
         };
 
@@ -666,9 +669,14 @@ public sealed class ToolEditorForm : Form
         dialog.ShowDialog(this);
     }
 
+    private ToolEditorLanguageInfo GetConfiguredToolEditorLanguage()
+    {
+        return _cachedConfiguredToolEditorLanguage ??= ReadConfiguredToolEditorLanguage();
+    }
+
     private string TToolEditor(string key, string fallback)
     {
-        var language = ReadConfiguredToolEditorLanguage();
+        var language = GetConfiguredToolEditorLanguage();
         var texts = LoadToolEditorHelpTexts(language);
         return texts.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
             ? DecodeToolEditorText(value)
@@ -684,7 +692,7 @@ public sealed class ToolEditorForm : Form
 
     private void ShowToolEditorHelp()
     {
-        var language = ReadConfiguredToolEditorLanguage();
+        var language = GetConfiguredToolEditorLanguage();
         var texts = LoadToolEditorHelpTexts(language);
         string? ResolveText(string key) => texts.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
             ? value
@@ -1013,7 +1021,7 @@ public sealed class ToolEditorForm : Form
     private void NewLanguagePackageTemplate(bool loadConfiguredPackage)
     {
         ToolEditorDebugger.Log("NewLanguagePackageTemplate: reading configured language.");
-        var language = ReadConfiguredToolEditorLanguage();
+        var language = GetConfiguredToolEditorLanguage();
         ToolEditorDebugger.Log("NewLanguagePackageTemplate: language=" + language.Code +
             "; package=" + (string.IsNullOrWhiteSpace(language.PackagePath) ? "(none)" : language.PackagePath));
         if (loadConfiguredPackage && !string.IsNullOrWhiteSpace(language.PackagePath))
@@ -3268,7 +3276,8 @@ public sealed class ToolEditorForm : Form
     {
         if (_current is not null &&
             !ReferenceEquals(_current, document) &&
-            _current.HtmlEditMode)
+            _current.HtmlEditMode &&
+            _htmlEditorContentDirty)
         {
             await SyncHtmlEditorToSourceAsync();
         }
@@ -5777,6 +5786,7 @@ public sealed class ToolEditorForm : Form
     private void SetHtmlEditorHtml(string html)
     {
         _loadingHtmlEditor = true;
+        _htmlEditorContentDirty = false;
         _pendingHtmlEditor = html;
         StartHtmlEditorInitialization();
         ShowPendingHtmlEditorIfReady();
@@ -5814,7 +5824,7 @@ public sealed class ToolEditorForm : Form
 
     private async Task SyncHtmlEditorToSourceAsync()
     {
-        if (_current is null || !_current.HtmlEditMode || _loadingHtmlEditor || _htmlEditor.CoreWebView2 is null)
+        if (_current is null || !_current.HtmlEditMode || !_htmlEditorContentDirty || _loadingHtmlEditor || _htmlEditor.CoreWebView2 is null)
             return;
 
         try
@@ -5832,6 +5842,7 @@ public sealed class ToolEditorForm : Form
 
             var cleaned = StripToolEditorConceptBanners(Regex.Replace(html, @"\s*<script>[\s\S]*?</script>\s*$", "", RegexOptions.IgnoreCase).Trim());
             _current.Editor.Text = cleaned;
+            _htmlEditorContentDirty = false;
         }
         catch (COMException)
         {
@@ -6185,7 +6196,7 @@ public sealed class ToolEditorForm : Form
             var root = json.RootElement;
             var code = NormalizeLanguageCode(GetManifestString(root, "languageCode"));
             if (string.IsNullOrWhiteSpace(code))
-                return ReadConfiguredToolEditorLanguage();
+                return GetConfiguredToolEditorLanguage();
 
             var key = GetManifestString(root, "key");
             if (string.IsNullOrWhiteSpace(key))
@@ -6201,7 +6212,7 @@ public sealed class ToolEditorForm : Form
         }
         catch (JsonException)
         {
-            return ReadConfiguredToolEditorLanguage();
+            return GetConfiguredToolEditorLanguage();
         }
     }
 
@@ -6393,7 +6404,10 @@ public sealed class ToolEditorForm : Form
         }
 
         if (message.Equals("changed", StringComparison.Ordinal) && _current is not null && _current.HtmlEditMode)
+        {
+            _htmlEditorContentDirty = true;
             SetDirty(_current, true);
+        }
     }
 
     private void HandlePreviewMessage(CoreWebView2WebMessageReceivedEventArgs args)
