@@ -43,6 +43,9 @@ Official Microsoft references:
 - Channel: `production`
 - Do not submit Daily packages.
 - Submit Beta MSIX only when using a deliberate tester/private-audience submission.
+- Keep Appx/MSIX capabilities minimal. The UWP manifest declares no capabilities until code needs them.
+- The WinForms MSIX generator keeps `internetClient` because updater and feedback use HTTPS.
+- The WinForms MSIX generator keeps `runFullTrust` because `Syscalculator.exe` starts through `Windows.FullTrustApplication`; removing it creates a package that cannot run as the desktop app.
 - Use a versioned HTTPS installer URL, not a mutable generic file name.
 - Keep the installer version date-only when possible, for example `2.0.2026.05.17`.
 - Keep Store release notes user-facing and short.
