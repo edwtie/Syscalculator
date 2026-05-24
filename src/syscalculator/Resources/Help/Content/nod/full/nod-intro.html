@@ -1,7 +1,1 @@
-<h2>What is NOD?</h2><p><b>NOD</b> is the text format Syscalculator uses to describe a converter. A NOD file tells the program the converter name, visible input and output labels, symbols near values, and the rules that transform the value.</p><h2>The basic idea</h2><p>A NOD file reads like a small recipe. First comes the name, then labels, optional symbols and introduction text, then the rules for calculation or text conversion. The last line is usually <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</p><h2>Why plain text?</h2><p>Because the knowledge stays visible. A Celsius/Fahrenheit rule, a euro rate or an old phone renumbering rule is not hidden in program code; it remains readable in the file.</p><h2>Mini example</h2><pre>Name Celsius to Fahrenheit
-input1 Celsius
-input2 Fahrenheit
-format ##.00
-math ans * 1.8
-math ans + 32
-end</pre><p>Read this from top to bottom: the converter gets a name, shows two labels, chooses number formatting and runs two calculation steps with <code>ans</code> as the current value.</p>
+[editor.nod_help.full.intro]

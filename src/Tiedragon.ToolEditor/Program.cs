@@ -10,7 +10,17 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
-        ApplicationConfiguration.Initialize();
-        Application.Run(new ToolEditorForm());
+        ToolEditorDebugger.Initialize();
+        try
+        {
+            ApplicationConfiguration.Initialize();
+            ToolEditorDebugger.Log("Startup mode: Standalone ToolEditor.");
+            Application.Run(new ToolEditorForm());
+        }
+        catch (Exception ex)
+        {
+            ToolEditorDebugger.ReportException("Fatal ToolEditor exception", ex, showDialog: true);
+            throw;
+        }
     }
 }

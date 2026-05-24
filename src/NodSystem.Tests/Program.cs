@@ -16,7 +16,6 @@ De tests controleren:
 - data field math
 */
 
-using Tiedragon.Graph;
 using Tiedragon.Graph.G2D;
 using Tiedragon.Graph.G3D;
 using Tiedragon.NodSystem.Core;
@@ -1274,14 +1273,15 @@ Test("formula card catalog includes education and export fields", () =>
         throw new Exception("Expected at least six default formula cards.");
 
     var vector = cards.First(card => card.Id == "vector-2d-arrow");
-    if (!vector.LevelTags.Contains("2D graph"))
-        throw new Exception("2D vector card should be tagged for 2D graph.");
-    if (!vector.LevelTags.Contains("Limited vector"))
-        throw new Exception("2D vector card should be tagged as limited vector.");
+    if (!vector.LevelTags.Contains("2D grafiek"))
+        throw new Exception("2D vector card should be tagged for 2D grafiek.");
+    if (!vector.LevelTags.Contains("Beperkte vector"))
+        throw new Exception("2D vector card should be tagged as beperkte vector.");
     if (!vector.Latex.Contains(@"\vec"))
         throw new Exception("2D vector card should include LaTeX vector notation.");
     if (!vector.MathMl.Contains("&#x2192;"))
         throw new Exception("2D vector card should include MathML arrow notation.");
+    MathMlParser.Parse(vector.MathMl);
     if (vector.ExampleNod.Contains("input z"))
         throw new Exception("2D vector card should not use input z.");
 
@@ -1294,17 +1294,18 @@ Test("formula card catalog includes education and export fields", () =>
     var matrix = cards.First(card => card.Id == "matrix-2x2-determinant");
     if (!matrix.LevelTags.Contains("PWS"))
         throw new Exception("Matrix card should be tagged for PWS.");
-    if (!matrix.LevelTags.Contains("Limited matrix"))
-        throw new Exception("Matrix card should be tagged as limited matrix.");
+    if (!matrix.LevelTags.Contains("Beperkte matrix"))
+        throw new Exception("Matrix card should be tagged as beperkte matrix.");
     if (!matrix.Latex.Contains(@"\det"))
         throw new Exception("Matrix card should include LaTeX determinant.");
     if (!matrix.MathMl.Contains("<mtable"))
         throw new Exception("Matrix card should include MathML matrix table.");
+    MathMlParser.Parse(matrix.MathMl);
     if (matrix.ExampleNod.Contains("input z"))
         throw new Exception("Matrix 2x2 card should not use input z or imply 3x3/3D support.");
 
     var doc = NodParser.Parse(matrix.ExampleNod);
-    AssertText("2x2 matrix determinant notitie", doc.Name ?? "");
+    AssertText("2x2 matrixdeterminant notitie", doc.Name ?? "");
     AssertDecimal(1m, doc.Inputs.Count);
     AssertText("text", doc.Inputs[0].Name);
     AssertText("text", doc.Inputs[0].Kind ?? "");
@@ -1318,6 +1319,7 @@ Test("formula card closed line integral works as education card", () =>
         throw new Exception("Closed line integral card should include LaTeX oint.");
     if (!card.MathMl.Contains("&oint;"))
         throw new Exception("Closed line integral card should include MathML oint.");
+    MathMlParser.Parse(card.MathMl);
     if (!card.LevelTags.Contains("Wiskunde D verdieping"))
         throw new Exception("Closed line integral card should be tagged for Wiskunde D verdieping.");
     if (!card.LevelTags.Contains("Propedeuse"))
@@ -1369,6 +1371,7 @@ Test("formula card catalog covers havo vwo formula table topics", () =>
 
         if (string.IsNullOrWhiteSpace(card.MathMl) || !card.MathMl.Contains("<math"))
             throw new Exception($"Formula card '{id}' should include MathML.");
+        MathMlParser.Parse(card.MathMl);
         if (string.IsNullOrWhiteSpace(card.Latex))
             throw new Exception($"Formula card '{id}' should include LaTeX.");
         if (card.LevelTags.Count == 0)

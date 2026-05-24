@@ -11,6 +11,7 @@
     <Product>Tiedragon.ToolEditor</Product>
     <Company>Tiedragon</Company>
     <Version>0.1.0</Version>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,9 +21,27 @@
   <ItemGroup>
     <ProjectReference Include="..\Tiedragon.NodSystem.Core\Tiedragon.NodSystem.Core.csproj" />
     <ProjectReference Include="..\Tiedragon.Help\Tiedragon.Help.csproj" />
+    <ProjectReference Include="..\Tiedragon.Graph.Image\Tiedragon.Graph.Image.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Tiedragon.LanguagePackage\LanguagePackagePolicy.cs" Link="LanguagePackagePolicy.cs" />
+    <Compile Include="..\Tiedragon.LanguagePackage\LanguagePackageSignatureVerifier.cs" Link="LanguagePackageSignatureVerifier.cs" />
+    <None Include="..\Tiedragon.LanguagePackage\language-package-policy.ini" Link="language-package-policy.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Tiedragon.LanguagePackage\language-package-trusted-keys.json" Link="language-package-trusted-keys.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Assets\About\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\syscalculator\*.lng" LinkBase="Resources\Languages">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

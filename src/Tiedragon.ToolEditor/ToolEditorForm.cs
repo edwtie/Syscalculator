@@ -1,4 +1,7 @@
 #nullable enable
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -6,9 +9,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.WinForms;
+using Tiedragon.Graph.Image;
 using Tiedragon.Help;
+using Tiedragon.LanguagePackage;
 using Tiedragon.NodSystem.Core;
 
 namespace Tiedragon.ToolEditor;
@@ -24,48 +27,88 @@ public sealed class ToolEditorForm : Form
     private const int LanguagePackageContainerFormat = 1;
     private const string LanguagePackageSoftwareId = "tiedragon.syscalculator";
     private const string LanguagePackageType = "language";
+    private const string ObjectPackageExtension = ".objpdk";
+    private const string CompiledPackageExtension = ".lngpdk";
     private const int MaxPackageHeaderBytes = 64 * 1024;
     private const long MaxPackagePayloadBytes = 192L * 1024 * 1024;
+    private const int MaxLanguageSyntaxHighlightChars = 180_000;
+    private const int MaxSourceSyntaxHighlightChars = 90_000;
+    private const int MaxLanguagePreviewRows = 500;
+    private const int WmSetRedraw = 0x000B;
+    private const string FormulaIndexPackageTemplate = """
+        <h1>{{title}}</h1>
+        <p>{{intro}}</p>
+        <table>
+          <thead><tr><th>{{column_formula}}</th><th>{{column_category}}</th><th>{{column_tags}}</th><th>{{column_description}}</th></tr></thead>
+          <tbody>
+        {{rows}}  </tbody>
+        </table>
+        """;
+
+    private const string FormulaCardPackageTemplate = """
+        <h1>{{title}}</h1>
+        <div class="notice">{{tags}}</div>
+        <p>{{description}}</p>
+
+        <h2>{{section_formula}}</h2>
+        <p><code>{{formula_text}}</code></p>
+        <div class="formula">{{mathml_card}}</div>
+
+        <h2>{{section_text}}</h2>
+        <pre>{{plain_text}}</pre>
+
+        <h2>{{section_latex}}</h2>
+        <pre>{{latex}}</pre>
+
+        <h2>{{section_mathml}}</h2>
+        <pre>{{mathml_pre}}</pre>
+
+        <h2>{{section_example_nod}}</h2>
+        <pre>{{example_nod}}</pre>
+        """;
+
+    private const string NodFullPagePackageTemplate = """
+        <h1>{{title}}</h1>
+        <p>{{intro}}</p>
+
+        <h2>{{section_title}}</h2>
+        <p>{{section_body}}</p>
+        """;
+
+    private const string NodCommandPagePackageTemplate = """
+        <h1>{{command}}</h1>
+        <p>{{summary}}</p>
+
+        <div class="notice"><b>{{syntax_label}}</b> <code>{{syntax}}</code></div>
+
+        <h2>{{example_title}}</h2>
+        <pre>{{example_nod}}</pre>
+        """;
+
+    private const string NodPopupPackageTemplate = """
+        <div class="title">{{command}}</div>
+        <div class="syntax">{{syntax}}</div>
+        <div><b>{{meaning_label}}</b> {{meaning}}</div>
+        <div><b>{{example_label}}</b> <code>{{example}}</code></div>
+        """;
+
+    private const string NodSnippetPackageTemplate = """
+        <div class="topic-grid">
+          {{items}}
+        </div>
+        """;
+    private static readonly Color SyntaxDefaultColor = Color.FromArgb(31, 41, 55);
+    private static readonly Color SyntaxKeywordColor = Color.FromArgb(0, 74, 173);
+    private static readonly Color SyntaxAttributeColor = Color.FromArgb(170, 72, 20);
+    private static readonly Color SyntaxStringColor = Color.FromArgb(126, 82, 0);
+    private static readonly Color SyntaxCommentColor = Color.FromArgb(47, 128, 67);
+    private static readonly Color SyntaxSelectorColor = Color.FromArgb(96, 64, 160);
 
     private static readonly byte[] LanguagePackageMagic = Encoding.ASCII.GetBytes(LanguagePackageMagicText);
     private static readonly JsonSerializerOptions LanguagePackageJsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         WriteIndented = true,
-    };
-
-    private static readonly HashSet<string> AllowedPackageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".css",
-        ".html",
-        ".jpg",
-        ".jpeg",
-        ".js",
-        ".json",
-        ".lng",
-        ".png",
-        ".svg",
-        ".webp",
-    };
-
-    private static readonly HashSet<string> BlockedPackageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".bat",
-        ".cmd",
-        ".com",
-        ".dll",
-        ".exe",
-        ".msi",
-        ".ps1",
-        ".scr",
-        ".vbs",
-    };
-
-    private static readonly HashSet<string> AllowedPackageScriptFiles = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "basis.js",
-        "formula.js",
-        "nod.js",
     };
 
     private static readonly Regex HtmlCommentRegex = new("<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
@@ -75,9 +118,14 @@ public sealed class ToolEditorForm : Form
     private static readonly Regex JsonPropertyRegex = new("\"[^\"\\r\\n]*\"(?=\\s*:)", RegexOptions.Compiled);
     private static readonly Regex CssSelectorRegex = new(@"(^|\})([^{]+)(?=\{)", RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex LanguageKeyRegex = new(@"^[^#;\r\n=]+(?=\=)", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex LanguageCommentRegex = new(@"^[ \t]*[#;].*$", RegexOptions.Multiline | RegexOptions.Compiled);
+    private static readonly Regex JavaScriptCommentRegex = new(@"//.*?$|/\*.*?\*/", RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex JavaScriptKeywordRegex = new(@"\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|from|async|await|true|false|null|undefined|document|window)\b", RegexOptions.Compiled);
     private static readonly Regex HtmlHrefLinkRegex = new("href\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+)\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex HtmlMediaLinkRegex = new("(?<attr>src|href)\\s*=\\s*(?<quote>[\"'])(?<path>[^\"']+\\.(?:png|jpg|jpeg|svg|webp|gif|bmp))\\k<quote>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex ConceptBannerRegex = new("<div\\s+class=\"concept-banner\"[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex LanguagePlaceholderRegex = new(@"\[[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+\]", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex HeadingPlaceholderRegex = new(@"<h(?<level>[12])[^>]*>\s*(?<placeholder>\[[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+\])\s*</h\k<level>>", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly Regex LegacyConceptWarningRegex = new("<div\\s+class=\"help-warning\"><b>Concept:</b>[\\s\\S]*?</div>\\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly TreeView _fileTree;
@@ -85,11 +133,22 @@ public sealed class ToolEditorForm : Form
     private readonly FlowLayoutPanel _tabStrip;
     private readonly ToolStrip _htmlToolbar;
     private readonly RowStyle _htmlToolbarRow;
+    private readonly ToolStripButton _sourceModeButton;
+    private readonly ToolStripButton _editModeButton;
     private readonly Panel _editorContent;
+    private readonly TableLayoutPanel _htmlEditHost;
     private readonly WebView2 _htmlEditor;
     private readonly WebView2 _preview;
+    private readonly Label _previewCloseButton;
+    private readonly ToolEditorConceptBanner _previewConceptBanner;
+    private readonly ToolEditorConceptBanner _editConceptBanner;
+    private readonly RowStyle _previewConceptRow;
+    private readonly RowStyle _editConceptRow;
+    private readonly System.Windows.Forms.Timer _previewConceptAnimationTimer;
+    private readonly System.Windows.Forms.Timer _previewRefreshTimer;
     private readonly SplitContainer _contentSplit;
     private readonly Label _statusLabel;
+    private readonly Label _statusInfoLabel;
     private readonly ToolStripButton _saveButton;
     private readonly ToolStripButton _validateButton;
     private readonly ToolStripButton _previewButton;
@@ -98,41 +157,66 @@ public sealed class ToolEditorForm : Form
     private string? _pendingHtml;
     private string? _pendingHtmlEditor;
     private string? _conceptFolder;
+    private string? _conceptPackagePath;
+    private string? _cachedToolEditorHelpLanguageCode;
+    private string? _cachedToolEditorHelpSourceText;
+    private Dictionary<string, string>? _cachedToolEditorHelpTexts;
     private bool _browserFailed;
     private bool _htmlEditorFailed;
     private bool _loadingHtmlEditor;
     private bool _updatingNavigation;
     private bool _conceptBannerDismissed;
+    private bool _closeConfirmed;
+    private bool _closePromptActive;
+    private bool _webViewInitializationStarted;
+    private bool _htmlEditorInitializationStarted;
+    private bool _starterPackageInitializationStarted;
+    private bool _suspendNavigationRefresh;
+    private bool _previewPaneClosedByUser;
+    private bool _loadingDocumentText;
+    private bool _pendingPreviewInitialize;
+    private bool _openedPackageSigned;
+    private string _openedPackageSignatureAlgorithm = "";
+    private string _openedPackageSignatureKeyId = "";
     private ToolEditorDocument? _current;
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
     public ToolEditorForm()
     {
-        Text = "Tiedragon ToolEditor";
+        ToolEditorDebugger.InitializeEmbedded();
+        ToolEditorDebugger.Log("ToolEditorForm constructor started.");
+        Text = TToolEditor("tool_editor.window.title", "Tiedragon ToolEditor");
         Width = 1180;
         Height = 760;
         MinimumSize = new Size(900, 560);
         StartPosition = FormStartPosition.CenterParent;
         KeyPreview = true;
         KeyDown += ToolEditorForm_KeyDown;
+        FormClosing += ToolEditorForm_FormClosing;
+        FormClosed += ToolEditorForm_FormClosed;
         AllowDrop = true;
         DragEnter += ToolEditorForm_DragEnter;
         DragDrop += ToolEditorForm_DragDrop;
 
+        ToolEditorDebugger.Log("ToolEditorForm building menu and toolbar.");
         var menu = BuildMenu();
         var toolbar = ToolEditorApi.CreateToolbar();
-        toolbar.Items.Add(ToolEditorApi.CreateButton("Nieuw package", ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), "Nieuw basispackage op basis van Engels"));
-        toolbar.Items.Add(ToolEditorApi.CreateButton("Open", ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), "Open taalpackage of concept"));
+        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.new_package", "New package"), ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.new_package.tip", "Create a package from the configured Syscalculator language")));
+        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.open", "Open"), ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.open.tip", "Open language package or concept")));
         toolbar.Items.Add(new ToolStripSeparator());
-        _saveButton = ToolEditorApi.CreateButton("Save concept", ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), "Save concept taalpackage");
-        _validateButton = ToolEditorApi.CreateButton("Validate", ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), "Validate current document");
-        _previewButton = ToolEditorApi.CreateButton("Preview", ToolEditorIcon.Test, (_, _) => UpdatePreview(), "Refresh HTML preview");
-        var compileButton = ToolEditorApi.CreateButton("Compileer", ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), "Compileer taalpackage naar .lngpdk");
+        _saveButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.save_concept", "Save concept"), ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.save_concept.tip", "Save concept language package"));
+        _validateButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.validate", "Validate"), ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), TToolEditor("tool_editor.toolbar.validate.tip", "Validate current document"));
+        _previewButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.preview", "Preview"), ToolEditorIcon.Test, (_, _) => ShowPreviewPane(), TToolEditor("tool_editor.toolbar.preview.tip", "Refresh HTML preview"));
+        var compileButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.compile", "Compile"), ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.compile.tip", "Compile language package to .lngpdk"));
         toolbar.Items.Add(_saveButton);
         toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(_validateButton);
         toolbar.Items.Add(_previewButton);
         toolbar.Items.Add(compileButton);
 
+        ToolEditorDebugger.Log("ToolEditorForm building navigation controls.");
         _fileTree = new TreeView
         {
             Dock = DockStyle.Fill,
@@ -172,9 +256,9 @@ public sealed class ToolEditorForm : Form
             BackColor = Color.White,
             ForeColor = Color.FromArgb(31, 41, 55)
         };
-        _documentList.Columns.Add("Soort", 150);
-        _documentList.Columns.Add("Onderwerp", 240);
-        _documentList.Columns.Add("Pakketpad", 360);
+        _documentList.Columns.Add(TToolEditor("tool_editor.document.column.type", "Type"), 150);
+        _documentList.Columns.Add(TToolEditor("tool_editor.document.column.topic", "Topic"), 240);
+        _documentList.Columns.Add(TToolEditor("tool_editor.media.column.package_path", "Package path"), 360);
         _documentList.SelectedIndexChanged += DocumentList_SelectedIndexChanged;
         _documentList.AllowDrop = true;
         _documentList.DragEnter += ToolEditorForm_DragEnter;
@@ -188,9 +272,12 @@ public sealed class ToolEditorForm : Form
         _tabStrip.Padding = new Padding(0, 2, 0, 0);
         _tabStrip.Margin = Padding.Empty;
 
+        _sourceModeButton = CreateHtmlModeButton("Source", "HTML-broncode bewerken", (_, _) => SetHtmlEditMode(false));
+        _editModeButton = CreateHtmlModeButton("Edit", "Visuele HTML-editor", (_, _) => SetHtmlEditMode(true));
         _htmlToolbar = CreateHtmlToolbar();
         _htmlToolbar.Visible = false;
 
+        ToolEditorDebugger.Log("ToolEditorForm building WebView controls.");
         _htmlEditor = new WebView2
         {
             Dock = DockStyle.Fill,
@@ -217,14 +304,26 @@ public sealed class ToolEditorForm : Form
             _loadingHtmlEditor = false;
             FocusActiveEditor();
         };
-        _ = InitializeHtmlEditorAsync();
 
+        ToolEditorDebugger.Log("ToolEditorForm building editor layout.");
         _editorContent = new Panel
         {
             Dock = DockStyle.Fill,
             BackColor = Color.White,
             Padding = new Padding(1, 0, 1, 1)
         };
+        _htmlEditHost = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            BackColor = Color.White,
+            Padding = Padding.Empty
+        };
+        _editConceptRow = new RowStyle(SizeType.Absolute, 0);
+        _htmlEditHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        _htmlEditHost.RowStyles.Add(_editConceptRow);
+        _htmlEditHost.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var editorHost = new TableLayoutPanel
         {
@@ -236,7 +335,7 @@ public sealed class ToolEditorForm : Form
         };
         _htmlToolbarRow = new RowStyle(SizeType.Absolute, 0);
         editorHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        editorHost.RowStyles.Add(new RowStyle(SizeType.Absolute, 27));
+        editorHost.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
         editorHost.RowStyles.Add(_htmlToolbarRow);
         editorHost.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         editorHost.Controls.Add(_tabStrip, 0, 0);
@@ -246,6 +345,7 @@ public sealed class ToolEditorForm : Form
         _preview = new WebView2
         {
             Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
             AllowExternalDrop = false,
             CreationProperties = new CoreWebView2CreationProperties
             {
@@ -264,31 +364,123 @@ public sealed class ToolEditorForm : Form
             _preview.CoreWebView2.WebMessageReceived += (_, args) => HandlePreviewMessage(args);
             ShowPendingHtmlIfReady();
         };
-        _ = InitializeBrowserAsync();
 
-        var previewHost = new Panel
+        var previewHost = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(203, 213, 225),
-            Padding = new Padding(1)
+            ColumnCount = 1,
+            RowCount = 3,
+            BackColor = Color.FromArgb(226, 232, 240),
+            Padding = Padding.Empty
         };
-        previewHost.Controls.Add(_preview);
+        previewHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        _previewConceptRow = new RowStyle(SizeType.Absolute, 0);
+        previewHost.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
+        previewHost.RowStyles.Add(_previewConceptRow);
+        previewHost.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var previewHeader = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Height = 24,
+            Margin = Padding.Empty,
+            BackColor = Color.FromArgb(226, 232, 240),
+            Padding = new Padding(8, 1, 8, 1)
+        };
+        var previewHeaderLine = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 1,
+            BackColor = Color.FromArgb(203, 213, 225),
+            Margin = Padding.Empty
+        };
+
+        var previewWebHost = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            BackColor = Color.White
+        };
+
+        var previewTitle = new Label
+        {
+            AutoSize = true,
+            Text = TToolEditor("tool_editor.preview.title", "Preview"),
+            ForeColor = Color.FromArgb(71, 85, 105),
+            Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
+            Location = new Point(8, 3)
+        };
+        _previewCloseButton = new Label
+        {
+            Text = "×",
+            Dock = DockStyle.Right,
+            Width = 30,
+            BackColor = Color.FromArgb(226, 232, 240),
+            ForeColor = Color.FromArgb(51, 65, 85),
+            Font = new Font("Segoe UI", 11f, FontStyle.Regular),
+            Padding = Padding.Empty,
+            Margin = Padding.Empty,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Cursor = Cursors.Hand
+        };
+        _previewCloseButton.MouseEnter += (_, _) => _previewCloseButton.BackColor = Color.FromArgb(203, 213, 225);
+        _previewCloseButton.MouseLeave += (_, _) => _previewCloseButton.BackColor = Color.FromArgb(226, 232, 240);
+        _previewCloseButton.Click += (_, _) => ClosePreviewPane();
+
+        _previewConceptBanner = new ToolEditorConceptBanner
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Visible = false
+        };
+        _previewConceptBanner.CloseRequested += (_, _) => DismissConceptBanner();
+        _editConceptBanner = new ToolEditorConceptBanner
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Visible = false
+        };
+        _editConceptBanner.CloseRequested += (_, _) => DismissConceptBanner();
+        _previewConceptAnimationTimer = new System.Windows.Forms.Timer { Interval = 55 };
+        _previewConceptAnimationTimer.Tick += (_, _) =>
+        {
+            if (_previewConceptBanner.Visible)
+                _previewConceptBanner.AdvanceStripe();
+            if (_editConceptBanner.Visible)
+                _editConceptBanner.AdvanceStripe();
+        };
+        _previewRefreshTimer = new System.Windows.Forms.Timer { Interval = 140 };
+        _previewRefreshTimer.Tick += PreviewRefreshTimer_Tick;
+
+        previewHeader.Controls.Add(previewHeaderLine);
+        previewHeader.Controls.Add(_previewCloseButton);
+        previewHeader.Controls.Add(previewTitle);
+        _previewCloseButton.BringToFront();
+        previewWebHost.Controls.Add(_preview);
+        previewHost.Controls.Add(previewHeader, 0, 0);
+        previewHost.Controls.Add(_previewConceptBanner, 0, 1);
+        previewHost.Controls.Add(previewWebHost, 0, 2);
 
         _contentSplit = new SplitContainer
         {
             Dock = DockStyle.Fill,
             Orientation = Orientation.Horizontal,
             BorderStyle = BorderStyle.None,
-            SplitterWidth = 5,
+            SplitterWidth = 1,
             BackColor = Color.FromArgb(226, 232, 240),
             Panel1MinSize = 1,
             Panel2MinSize = 1
         };
         _contentSplit.Panel1.Controls.Add(editorHost);
-        _contentSplit.Panel2.Padding = new Padding(0, 4, 0, 0);
+        _contentSplit.Panel2.Padding = Padding.Empty;
         _contentSplit.Panel2.Controls.Add(previewHost);
-        _contentSplit.SizeChanged += (_, _) => ClampSplitter(_contentSplit, 390);
-        Shown += (_, _) => ClampSplitter(_contentSplit, 390);
+        _contentSplit.SizeChanged += (_, _) => ClampPreviewSplitter(_contentSplit, 240);
+        Shown += (_, _) =>
+        {
+            ClampPreviewSplitter(_contentSplit, 240);
+            QueueStarterPackageInitialization();
+        };
 
         var split = new SplitContainer
         {
@@ -304,29 +496,94 @@ public sealed class ToolEditorForm : Form
         split.Panel1.Controls.Add(fileTreeHost);
         split.Panel2.Controls.Add(_contentSplit);
         split.SizeChanged += (_, _) => ClampSplitter(split, 270);
-        Shown += (_, _) => ClampSplitter(split, 270);
+        Shown += (_, _) =>
+        {
+            ClampSplitter(split, 270);
+            QueueStarterPackageInitialization();
+        };
 
-        _statusLabel = new Label
+        var statusBar = new Panel
         {
             Dock = DockStyle.Bottom,
             Height = 24,
+            BackColor = Color.FromArgb(248, 250, 252)
+        };
+        _statusInfoLabel = new Label
+        {
+            Dock = DockStyle.Right,
+            Width = 520,
+            TextAlign = ContentAlignment.MiddleRight,
+            Padding = new Padding(8, 0, 8, 0),
+            BackColor = Color.FromArgb(248, 250, 252),
+            ForeColor = Color.FromArgb(71, 85, 105),
+            Text = ""
+        };
+        _statusLabel = new Label
+        {
+            Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(8, 0, 8, 0),
             BackColor = Color.FromArgb(248, 250, 252),
             ForeColor = Color.FromArgb(31, 41, 55),
-            Text = "Ready"
+            Text = TToolEditor("tool_editor.status.ready", "Ready")
         };
+        statusBar.Controls.Add(_statusLabel);
+        statusBar.Controls.Add(_statusInfoLabel);
 
         Controls.Add(split);
-        Controls.Add(_statusLabel);
+        Controls.Add(statusBar);
         Controls.Add(toolbar);
         Controls.Add(menu);
         MainMenuStrip = menu;
 
-        NewLanguagePackageTemplate();
-        RefreshFileTree();
-        RefreshDocumentList();
         UpdateUiState();
+        ToolEditorDebugger.Log("ToolEditorForm constructor completed.");
+    }
+
+    private void QueueStarterPackageInitialization()
+    {
+        if (_starterPackageInitializationStarted)
+            return;
+
+        _starterPackageInitializationStarted = true;
+        BeginInvoke(new Action(StartStarterPackageInitialization));
+    }
+
+    private void StartStarterPackageInitialization()
+    {
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            ToolEditorDebugger.Log("ToolEditorForm loading starter package.");
+            NewLanguagePackageTemplate(loadConfiguredPackage: false);
+            UpdateUiState();
+            ToolEditorDebugger.Log("ToolEditorForm starter package loaded in " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
+        }
+        catch (Exception ex)
+        {
+            ToolEditorDebugger.ReportException("ToolEditor starter package failed", ex, showDialog: true);
+            SetStatus(TToolEditor("tool_editor.status.starter_failed", "Starter package failed to load: ") + ex.Message, isError: true);
+        }
+    }
+
+    private void StartWebViewInitialization()
+    {
+        if (_webViewInitializationStarted)
+            return;
+
+        _webViewInitializationStarted = true;
+        ToolEditorDebugger.Log("ToolEditorForm starting preview WebView2 initialization.");
+        _ = InitializeBrowserAsync();
+    }
+
+    private void StartHtmlEditorInitialization()
+    {
+        if (_htmlEditorInitializationStarted)
+            return;
+
+        _htmlEditorInitializationStarted = true;
+        ToolEditorDebugger.Log("ToolEditorForm starting HTML editor WebView2 initialization.");
+        _ = InitializeHtmlEditorAsync();
     }
 
     private MenuStrip BuildMenu()
@@ -336,52 +593,58 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Top
         };
 
-        var file = new ToolStripMenuItem("Bestand");
-        file.DropDownItems.Add(CreateMenuItem("Nieuw package", Keys.Control | Keys.N, async (_, _) => await NewLanguagePackageAsync()));
-        file.DropDownItems.Add(CreateMenuItem("Open taalpackage...", Keys.Control | Keys.O, async (_, _) => await OpenLanguagePackageAsync()));
+        var file = new ToolStripMenuItem(TToolEditor("tool_editor.menu.file", "File"));
+        file.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.file.new_package", "New package"), Keys.Control | Keys.N, async (_, _) => await NewLanguagePackageAsync()));
+        file.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.file.open_package", "Open language package..."), Keys.Control | Keys.O, async (_, _) => await OpenLanguagePackageAsync()));
         file.DropDownItems.Add(new ToolStripSeparator());
-        file.DropDownItems.Add(CreateMenuItem("Save concept taalpackage", Keys.Control | Keys.S, async (_, _) => await SaveConceptLanguagePackageAsync()));
-        file.DropDownItems.Add("Opslaan huidig document", null, (_, _) => SaveCurrent());
-        file.DropDownItems.Add("Compileer taalpackage...", null, async (_, _) => await CompileLanguagePackageAsync());
+        file.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.file.save_concept", "Save concept language package"), Keys.Control | Keys.S, async (_, _) => await SaveConceptLanguagePackageAsync()));
+        file.DropDownItems.Add(TToolEditor("tool_editor.menu.file.save_current", "Save current document"), null, (_, _) => SaveCurrent());
+        file.DropDownItems.Add(TToolEditor("tool_editor.menu.file.compile", "Compile language package..."), null, async (_, _) => await CompileLanguagePackageAsync());
         file.DropDownItems.Add(new ToolStripSeparator());
-        file.DropDownItems.Add("Sluiten", null, (_, _) => Close());
+        file.DropDownItems.Add(TToolEditor("tool_editor.menu.file.close", "Close"), null, (_, _) => Close());
 
-        var edit = new ToolStripMenuItem("Bewerken");
-        edit.DropDownItems.Add(CreateMenuItem("Ongedaan maken", Keys.Control | Keys.Z, (_, _) => _current?.Editor.Undo()));
-        edit.DropDownItems.Add(CreateMenuItem("Knippen", Keys.Control | Keys.X, (_, _) => _current?.Editor.Cut()));
-        edit.DropDownItems.Add(CreateMenuItem("Kopieren", Keys.Control | Keys.C, (_, _) => _current?.Editor.Copy()));
-        edit.DropDownItems.Add(CreateMenuItem("Plakken", Keys.Control | Keys.V, (_, _) => _current?.Editor.Paste()));
-        edit.DropDownItems.Add(CreateMenuItem("Alles selecteren", Keys.Control | Keys.A, (_, _) => _current?.Editor.SelectAll()));
+        var edit = new ToolStripMenuItem(TToolEditor("tool_editor.menu.edit", "Edit"));
+        edit.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.edit.undo", "Undo"), Keys.Control | Keys.Z, (_, _) => _current?.Editor.Undo()));
+        edit.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.edit.cut", "Cut"), Keys.Control | Keys.X, (_, _) => _current?.Editor.Cut()));
+        edit.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.edit.copy", "Copy"), Keys.Control | Keys.C, (_, _) => _current?.Editor.Copy()));
+        edit.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.edit.paste", "Paste"), Keys.Control | Keys.V, (_, _) => _current?.Editor.Paste()));
+        edit.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.edit.select_all", "Select all"), Keys.Control | Keys.A, (_, _) => _current?.Editor.SelectAll()));
 
-        var view = new ToolStripMenuItem("Beeld");
-        view.DropDownItems.Add(CreateMenuItem("Preview verversen", Keys.F5, (_, _) => UpdatePreview()));
-        view.DropDownItems.Add("Valideren", null, (_, _) => ValidateCurrent(showMessage: true));
+        var view = new ToolStripMenuItem(TToolEditor("tool_editor.menu.view", "View"));
+        view.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.view.refresh_preview", "Refresh preview"), Keys.F5, (_, _) => ShowPreviewPane()));
+        view.DropDownItems.Add(TToolEditor("tool_editor.menu.view.validate", "Validate"), null, (_, _) => ValidateCurrent(showMessage: true));
 
-        var package = new ToolStripMenuItem("Pakket");
-        package.DropDownItems.Add("Mediabestanden tonen", null, (_, _) => ShowMediaFileListDialog());
+        var package = new ToolStripMenuItem(TToolEditor("tool_editor.menu.package", "Package"));
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.show_media", "Show media files"), null, (_, _) => ShowMediaFileListDialog());
         package.DropDownItems.Add(new ToolStripSeparator());
-        package.DropDownItems.Add("Manifest tonen", null, (_, _) => ShowManifestDialog());
-        package.DropDownItems.Add("Manifest valideren", null, (_, _) => ValidateManifest(showMessage: true));
-        package.DropDownItems.Add("Media toevoegen...", null, (_, _) => OpenMediaDocument());
-        package.DropDownItems.Add("Media vervangen...", null, (_, _) => ReplaceCurrentMedia());
-        package.DropDownItems.Add("Geselecteerd bestand verwijderen", null, (_, _) => DeleteCurrentDocument());
-        package.DropDownItems.Add("HTML-links controleren", null, (_, _) => ValidatePackageLinks(showMessage: true));
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.show_manifest", "Show manifest"), null, (_, _) => ShowManifestDialog());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.validate_manifest", "Validate manifest"), null, (_, _) => ValidateManifest(showMessage: true));
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.add_media", "Add media..."), null, (_, _) => OpenMediaDocument());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.replace_media", "Replace media..."), null, (_, _) => ReplaceCurrentMedia());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.delete_selected", "Delete selected file"), null, (_, _) => DeleteCurrentDocument());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.check_links", "Check HTML links"), null, (_, _) => ValidatePackageLinks(showMessage: true));
         package.DropDownItems.Add(new ToolStripSeparator());
-        package.DropDownItems.Add("Pakket compileren...", null, async (_, _) => await CompileLanguagePackageAsync());
-        package.DropDownItems.Add("SHA-256 berekenen...", null, (_, _) => ShowPackageSha256());
-        package.DropDownItems.Add("Encryptie...", null, (_, _) => ShowEncryptionStatus());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.compile", "Compile package..."), null, async (_, _) => await CompileLanguagePackageAsync());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.sha256", "Calculate SHA-256..."), null, (_, _) => ShowPackageSha256());
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.encryption", "Encryption..."), null, (_, _) => ShowEncryptionStatus());
         package.DropDownItems.Add(new ToolStripSeparator());
-        package.DropDownItems.Add("Media bekijken", null, (_, _) => SelectFirstGroup("Media en afbeeldingen"));
+        package.DropDownItems.Add(TToolEditor("tool_editor.menu.package.view_media", "View media"), null, (_, _) => SelectFirstGroup(TreeLabel("media", "Media en afbeeldingen")));
 
-        var help = new ToolStripMenuItem("Help");
-        help.DropDownItems.Add(CreateMenuItem("ToolEditor help", Keys.F1, (_, _) => ShowToolEditorHelp()));
+        var extra = new ToolStripMenuItem(TToolEditor("tool_editor.menu.extra", "Extra"));
+        extra.DropDownItems.Add(TToolEditor("tool_editor.security.menu", "Security settings..."), null, (_, _) => ShowSecurityOptions());
+        if (ToolEditorDebugger.IsEnabled)
+            extra.DropDownItems.Add(TToolEditor("tool_editor.menu.extra.open_debug_log", "Open debug log"), null, (_, _) => ToolEditorDebugger.OpenLogFolder());
+
+        var help = new ToolStripMenuItem(TToolEditor("tool_editor.menu.help", "Help"));
+        help.DropDownItems.Add(CreateMenuItem(TToolEditor("tool_editor.menu.help.open", "ToolEditor help"), Keys.F1, (_, _) => ShowToolEditorHelp()));
         help.DropDownItems.Add(new ToolStripSeparator());
-        help.DropDownItems.Add("About Syscalculator", null, (_, _) => ShowAboutSyscalculator());
+        help.DropDownItems.Add(TToolEditor("tool_editor.menu.help.about", "About Syscalculator"), null, (_, _) => ShowAboutSyscalculator());
 
         menu.Items.Add(file);
         menu.Items.Add(edit);
         menu.Items.Add(view);
         menu.Items.Add(package);
+        menu.Items.Add(extra);
         menu.Items.Add(help);
         return menu;
     }
@@ -396,13 +659,45 @@ public sealed class ToolEditorForm : Form
         return item;
     }
 
+    private void ShowSecurityOptions()
+    {
+        using var dialog = new ToolEditorSecurityOptionsForm(TToolEditor);
+        dialog.ShowDialog(this);
+    }
+
+    private string TToolEditor(string key, string fallback)
+    {
+        var language = ReadConfiguredToolEditorLanguage();
+        var texts = LoadToolEditorHelpTexts(language);
+        return texts.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? DecodeToolEditorText(value)
+            : fallback;
+    }
+
+    private static string DecodeToolEditorText(string value)
+    {
+        return value
+            .Replace("\\r\\n", "\r\n", StringComparison.Ordinal)
+            .Replace("\\n", "\n", StringComparison.Ordinal);
+    }
+
     private void ShowToolEditorHelp()
     {
+        var language = ReadConfiguredToolEditorLanguage();
+        var texts = LoadToolEditorHelpTexts(language);
+        string? ResolveText(string key) => texts.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
+        string T(string key, string fallback) => HelpApi.Text(ResolveText, key, fallback);
+
         HelpApi.ShowDialog(this, new HelpDialogOptions(
-            "ToolEditor help",
-            BuildToolEditorHelpPages(),
+            T("tool_editor.help.title", "ToolEditor help"),
+            BuildToolEditorHelpPages(language.Code, ResolveText, fileName => ResolveToolEditorHelpContent(language, fileName)),
             "overview",
-            new HelpNavigationLabels("Start", "Vorige", "Volgende")));
+            new HelpNavigationLabels(
+                T("help.nav.home", "Start"),
+                T("help.nav.previous", "Vorige"),
+                T("help.nav.next", "Volgende"))));
     }
 
     private void ShowAboutSyscalculator()
@@ -411,32 +706,50 @@ public sealed class ToolEditorForm : Form
         form.ShowDialog(this);
     }
 
-    private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages()
+    private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages(
+        string languageCode,
+        HelpTextResolver resolveText,
+        HelpContentResolver resolveContent)
     {
         return
         [
-            BuildToolEditorHelpPage("overview", "ToolEditor gebruiken", "overview.html", BuildToolEditorOverviewFallback()),
-            BuildToolEditorHelpPage("package", "Taalpakket workflow", "package-workflow.html", BuildToolEditorPackageFallback()),
-            BuildToolEditorHelpPage("html", "HTML bewerken", "html-editor.html", BuildToolEditorHtmlFallback()),
-            BuildToolEditorHelpPage("media", "Media en afbeeldingen", "media.html", BuildToolEditorMediaFallback()),
-            BuildToolEditorHelpPage("compile", "Valideren en compileren", "compile.html", BuildToolEditorCompileFallback())
+            BuildToolEditorHelpPage(languageCode, resolveText, resolveContent, "overview", "tool_editor.help.page.overview", "ToolEditor gebruiken", "overview.html", BuildToolEditorOverviewFallback()),
+            BuildToolEditorHelpPage(languageCode, resolveText, resolveContent, "package", "tool_editor.help.page.package", "Taalpakket workflow", "package-workflow.html", BuildToolEditorPackageFallback()),
+            BuildToolEditorHelpPage(languageCode, resolveText, resolveContent, "html", "tool_editor.help.page.html", "HTML bewerken", "html-editor.html", BuildToolEditorHtmlFallback()),
+            BuildToolEditorHelpPage(languageCode, resolveText, resolveContent, "media", "tool_editor.help.page.media", "Media en afbeeldingen", "media.html", BuildToolEditorMediaFallback()),
+            BuildToolEditorHelpPage(languageCode, resolveText, resolveContent, "compile", "tool_editor.help.page.compile", "Valideren en compileren", "compile.html", BuildToolEditorCompileFallback())
         ];
     }
 
-    private static NodHelpPage BuildToolEditorHelpPage(string id, string title, string fileName, string fallback)
+    private static NodHelpPage BuildToolEditorHelpPage(
+        string languageCode,
+        HelpTextResolver resolveText,
+        HelpContentResolver resolveContent,
+        string id,
+        string titleKey,
+        string fallbackTitle,
+        string fileName,
+        string fallback)
     {
-        var body = HelpHtml.Content("tool-editor/" + fileName, fallback);
+        var title = HelpApi.Text(resolveText, titleKey, fallbackTitle);
+        var body = HelpApi.Content(
+            languageCode,
+            resolveText,
+            "tool_editor.help.content." + id,
+            "tool-editor/" + fileName,
+            fallback,
+            resolveContent);
         return new NodHelpPage(id, title, HelpHtml.WrapTopicPage(title, body, HelpApi.NodHelpCss(), ToolEditorHelpPreviewScript()));
     }
 
     private static string BuildToolEditorOverviewFallback()
     {
         return """
-        <p>ToolEditor bewerkt Tiedragon language packages: vertaling, help, NOD-documentatie, formulekaart en media.</p>
+        <p>ToolEditor bewerkt Tiedragon-taalpakketten: vertaling, help, NOD-documentatie, formulekaart en media.</p>
         <ul>
           <li>Links staat de vaste pakketstructuur.</li>
           <li>Boven werk je aan de actieve tab.</li>
-          <li>Bij source-weergave toont de rechterzijde of onderzijde de HTML-preview.</li>
+          <li>Bij bronweergave toont de rechterzijde of onderzijde de HTML-voorbeeldweergave.</li>
         </ul>
         """;
     }
@@ -444,14 +757,14 @@ public sealed class ToolEditorForm : Form
     private static string BuildToolEditorPackageFallback()
     {
         return """
-        <p>Gebruik <b>Nieuw package</b> voor een basispakket, <b>Save concept taalpackage</b> voor werkbestanden en <b>Compileer taalpackage</b> voor een gecontroleerd .lngpdk-bestand.</p>
+        <p>Gebruik <b>Nieuw pakket</b> voor een basispakket, <b>Concept opslaan</b> voor werkbestanden en <b>Taalpakket compileren</b> voor een gecontroleerd .lngpdk-bestand.</p>
         """;
     }
 
     private static string BuildToolEditorHtmlFallback()
     {
         return """
-        <p>HTML-documenten hebben twee standen: <b>Source</b> voor broncode en <b>Edit</b> voor directe bewerking.</p>
+        <p>HTML-documenten hebben twee standen: <b>Bron</b> voor broncode en <b>Bewerken</b> voor directe bewerking.</p>
         <p>De knoppen H1, H2, P, Info, Tip, Warn, Code en Kbd voegen standaard helpblokken in.</p>
         """;
     }
@@ -459,15 +772,129 @@ public sealed class ToolEditorForm : Form
     private static string BuildToolEditorMediaFallback()
     {
         return """
-        <p>Media bevat alleen toegestane afbeeldingen zoals png, jpg en svg. Sleep en zoom in de afbeeldingpreview om details te controleren.</p>
+        <p>Media bevat alleen toegestane afbeeldingen zoals png, jpg, svg, webp, gif en bmp. Sleep en zoom in de afbeeldingpreview om details te controleren.</p>
         """;
     }
 
     private static string BuildToolEditorCompileFallback()
     {
         return """
-        <p>Validate controleert structuur, links, media en scripts. Compile maakt een .lngpdk met checksum en strikte bestandslijst.</p>
+        <p>Valideren controleert structuur, links, media en scripts. Compileren maakt een .lngpdk met checksum en strikte bestandslijst.</p>
         """;
+    }
+
+    private Dictionary<string, string> LoadToolEditorHelpTexts(ToolEditorLanguageInfo language)
+    {
+        string sourceText;
+        if (TryReadLanguageTextFromOpenPackage(language.Code, out var openPackageText))
+            sourceText = openPackageText;
+        else if (!string.IsNullOrWhiteSpace(language.PackagePath) &&
+            TryReadPackageTextEntry(language.PackagePath, "language/" + language.Code + ".lng", out var packageText))
+        {
+            sourceText = packageText;
+        }
+        else
+            sourceText = LoadLanguageText(language.Code, language.DisplayName);
+
+        if (_cachedToolEditorHelpTexts is not null &&
+            string.Equals(_cachedToolEditorHelpLanguageCode, language.Code, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(_cachedToolEditorHelpSourceText, sourceText, StringComparison.Ordinal))
+        {
+            return _cachedToolEditorHelpTexts;
+        }
+
+        _cachedToolEditorHelpLanguageCode = language.Code;
+        _cachedToolEditorHelpSourceText = sourceText;
+        _cachedToolEditorHelpTexts = ReadLanguageText(sourceText);
+        return _cachedToolEditorHelpTexts;
+    }
+
+    private bool TryReadLanguageTextFromOpenPackage(string languageCode, out string text)
+    {
+        var packagePath = "language/" + NormalizeLanguageCode(languageCode) + ".lng";
+        var document = _documents.FirstOrDefault(document =>
+            NormalizePackagePath(document.PackagePath).Equals(packagePath, StringComparison.OrdinalIgnoreCase));
+        if (document is not null)
+        {
+            text = document.Editor.Text;
+            return true;
+        }
+
+        text = "";
+        return false;
+    }
+
+    private string? ResolveToolEditorHelpContent(ToolEditorLanguageInfo language, string fileName)
+    {
+        var normalized = NormalizePackagePath(fileName);
+        var packagePath = "help/content/" + normalized;
+        var openDocument = _documents.FirstOrDefault(document =>
+            NormalizePackagePath(document.PackagePath).Equals(packagePath, StringComparison.OrdinalIgnoreCase));
+        if (openDocument is not null)
+            return openDocument.Editor.Text;
+
+        if (!string.IsNullOrWhiteSpace(language.PackagePath) &&
+            TryReadPackageTextEntry(language.PackagePath, packagePath, out var packageContent))
+        {
+            return packageContent;
+        }
+
+        return null;
+    }
+
+    private static bool TryReadPackageTextEntry(string packagePath, string entryName, out string content)
+    {
+        content = "";
+        try
+        {
+            var normalizedEntryName = NormalizePackagePath(entryName);
+            var payload = ReadLanguagePackagePayload(packagePath);
+            using var memory = new MemoryStream(payload);
+            using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
+            var entry = archive.Entries.FirstOrDefault(entry =>
+                NormalizePackagePath(entry.FullName).Equals(normalizedEntryName, StringComparison.OrdinalIgnoreCase));
+            if (entry is null)
+                return false;
+
+            using var stream = entry.Open();
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            content = reader.ReadToEnd();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static Dictionary<string, string> ReadLanguageText(string content)
+    {
+        var texts = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var rawLine in content.Split(["\r\n", "\n"], StringSplitOptions.None))
+        {
+            var line = rawLine.Trim();
+            if (line.Length == 0 || line.StartsWith('#') || line.StartsWith(';'))
+                continue;
+
+            var separator = line.IndexOf('=');
+            if (separator <= 0)
+                continue;
+
+            var key = line[..separator].Trim();
+            var value = DecodeLanguageValue(line[(separator + 1)..].Trim());
+            if (key.Length > 0)
+                texts[key] = value;
+        }
+
+        return texts;
+    }
+
+    private static string DecodeLanguageValue(string value)
+    {
+        return value
+            .Replace("\\r\\n", "\n", StringComparison.Ordinal)
+            .Replace("\\n", "\n", StringComparison.Ordinal)
+            .Replace("\\t", "\t", StringComparison.Ordinal);
     }
 
     private ToolStrip CreateHtmlToolbar()
@@ -481,26 +908,66 @@ public sealed class ToolEditorForm : Form
             RenderMode = ToolStripRenderMode.System
         };
 
-        toolbar.Items.Add(CreateHtmlButton("Source", "HTML-broncode bewerken", (_, _) => SetHtmlEditMode(false)));
-        toolbar.Items.Add(CreateHtmlButton("Edit", "Visuele HTML-editor", (_, _) => SetHtmlEditMode(true)));
+        toolbar.Items.Add(_sourceModeButton);
+        toolbar.Items.Add(_editModeButton);
         toolbar.Items.Add(new ToolStripSeparator());
-        toolbar.Items.Add(CreateHtmlButton("H1", "Kop 1 invoegen", (_, _) => WrapHtmlSelection("h1", "Kop")));
-        toolbar.Items.Add(CreateHtmlButton("H2", "Kop 2 invoegen", (_, _) => WrapHtmlSelection("h2", "Kop")));
-        toolbar.Items.Add(CreateHtmlButton("P", "Paragraaf invoegen", (_, _) => WrapHtmlSelection("p", "Tekst")));
+        toolbar.Items.Add(CreateHtmlDropDown("Paragraph", "Teksttype", [
+            ("Paragraph", "Paragraaf invoegen", () => WrapHtmlSelection("p", "Tekst")),
+            ("Heading 1", "Kop 1 invoegen", () => WrapHtmlSelection("h1", "Kop")),
+            ("Heading 2", "Kop 2 invoegen", () => WrapHtmlSelection("h2", "Kop")),
+            ("Code block", "Codeblok invoegen", () => InsertHtmlSnippet("<pre><code>code</code></pre>"))
+        ]));
         toolbar.Items.Add(new ToolStripSeparator());
-        toolbar.Items.Add(CreateHtmlButton("B", "Vet", (_, _) => WrapHtmlSelection("strong", "tekst")));
-        toolbar.Items.Add(CreateHtmlButton("I", "Cursief", (_, _) => WrapHtmlSelection("em", "tekst")));
+        toolbar.Items.Add(CreateHtmlButton("B", "Vet", (_, _) => ApplyHtmlInlineCommand("bold", "strong", "tekst")));
+        toolbar.Items.Add(CreateHtmlButton("I", "Cursief", (_, _) => ApplyHtmlInlineCommand("italic", "em", "tekst")));
+        toolbar.Items.Add(CreateHtmlDropDown("A", "Tekstkleur", [
+            ("Blauw", "Blauwe tekst", () => ApplyHtmlColor("#003f8f")),
+            ("Groen", "Groene tekst", () => ApplyHtmlColor("#17633a")),
+            ("Rood", "Rode tekst", () => ApplyHtmlColor("#b42318")),
+            ("Standaard", "Standaard tekstkleur", () => WrapHtmlSelection("span", "tekst"))
+        ]));
         toolbar.Items.Add(CreateHtmlButton("Link", "Link invoegen", (_, _) => InsertHtmlLink()));
-        toolbar.Items.Add(CreateHtmlButton("Img", "Afbeelding uit media invoegen", (_, _) => InsertHtmlImage()));
+        toolbar.Items.Add(CreateHtmlButton("Quote", "Citaat invoegen", (_, _) => InsertHtmlSnippet("<blockquote>Citaat</blockquote>")));
+        toolbar.Items.Add(CreateHtmlButton("Cite", "Bronvermelding invoegen", (_, _) => WrapHtmlSelection("cite", "Bron")));
+        toolbar.Items.Add(CreateHtmlDropDown("List", "Lijst invoegen", [
+            ("Bullets", "Opsomming invoegen", () => InsertHtmlSnippet("<ul>\r\n  <li>Item</li>\r\n</ul>")),
+            ("Numbers", "Genummerde lijst invoegen", () => InsertHtmlSnippet("<ol>\r\n  <li>Item</li>\r\n</ol>"))
+        ]));
         toolbar.Items.Add(new ToolStripSeparator());
-        toolbar.Items.Add(CreateHtmlButton("UL", "Lijst invoegen", (_, _) => InsertHtmlSnippet("<ul>\r\n  <li>Item</li>\r\n</ul>")));
-        toolbar.Items.Add(CreateHtmlButton("Info", "Infoblok invoegen", (_, _) => InsertHtmlSnippet("<div class=\"help-info\">Informatie</div>")));
-        toolbar.Items.Add(CreateHtmlButton("Tip", "Tipblok invoegen", (_, _) => InsertHtmlSnippet("<div class=\"help-tip\">Tip</div>")));
-        toolbar.Items.Add(CreateHtmlButton("Warn", "Waarschuwing invoegen", (_, _) => InsertHtmlSnippet("<div class=\"help-warning\">Waarschuwing</div>")));
-        toolbar.Items.Add(CreateHtmlButton("Code", "Codeblok invoegen", (_, _) => InsertHtmlSnippet("<pre><code>code</code></pre>")));
-        toolbar.Items.Add(CreateHtmlButton("Kbd", "Toets/keyboard invoegen", (_, _) => InsertHtmlSnippet("<kbd>Ctrl</kbd>")));
-        toolbar.Items.Add(CreateHtmlButton("BR", "Regeleinde invoegen", (_, _) => InsertHtmlSnippet("<br>")));
+        toolbar.Items.Add(CreateHtmlDropDown("Insert", "Invoegen", [
+            ("Image", "Afbeelding uit media invoegen", InsertHtmlImage),
+            ("Info", "Infoblok invoegen", () => InsertHtmlSnippet("<div class=\"help-info\">Informatie</div>")),
+            ("Tip", "Tipblok invoegen", () => InsertHtmlSnippet("<div class=\"help-tip\">Tip</div>")),
+            ("Warn", "Waarschuwing invoegen", () => InsertHtmlSnippet("<div class=\"help-warning\">Waarschuwing</div>")),
+            ("Keyboard", "Toets/keyboard invoegen", () => InsertHtmlSnippet("<kbd>Ctrl</kbd>")),
+            ("Line break", "Regeleinde invoegen", () => InsertHtmlSnippet("<br>"))
+        ]));
+        toolbar.Items.Add(CreateHtmlDropDown("Symbol", "Speciale tekens", [
+            ("Omega", "Omega invoegen", () => InsertHtmlSnippet("Ω")),
+            ("Multiply", "Vermenigvuldigingsteken invoegen", () => InsertHtmlSnippet("×")),
+            ("Divide", "Deelteken invoegen", () => InsertHtmlSnippet("÷")),
+            ("Plus minus", "Plusminus invoegen", () => InsertHtmlSnippet("±")),
+            ("Square root", "Wortelteken invoegen", () => InsertHtmlSnippet("√")),
+            ("Arrow", "Pijl invoegen", () => InsertHtmlSnippet("→"))
+        ]));
         return toolbar;
+    }
+
+    private static ToolStripButton CreateHtmlModeButton(string text, string tooltip, EventHandler click)
+    {
+        var button = new ToolStripButton(text)
+        {
+            DisplayStyle = ToolStripItemDisplayStyle.Text,
+            AutoSize = false,
+            Width = 68,
+            Height = 26,
+            CheckOnClick = false,
+            ToolTipText = tooltip,
+            Padding = new Padding(6, 1, 6, 1),
+            Margin = new Padding(1, 1, 1, 1)
+        };
+        button.Click += click;
+        return button;
     }
 
     private static ToolStripButton CreateHtmlButton(string text, string tooltip, EventHandler click)
@@ -516,15 +983,161 @@ public sealed class ToolEditorForm : Form
         return button;
     }
 
-    private void NewLanguagePackageTemplate()
+    private static ToolStripDropDownButton CreateHtmlDropDown(
+        string text,
+        string tooltip,
+        IEnumerable<(string Text, string Tooltip, Action Action)> items)
     {
+        var button = new ToolStripDropDownButton(text)
+        {
+            DisplayStyle = ToolStripItemDisplayStyle.Text,
+            AutoSize = true,
+            ToolTipText = tooltip,
+            Padding = new Padding(4, 1, 4, 1)
+        };
+
+        foreach (var item in items)
+        {
+            var menuItem = new ToolStripMenuItem(item.Text)
+            {
+                ToolTipText = item.Tooltip
+            };
+            menuItem.Click += (_, _) => item.Action();
+            button.DropDownItems.Add(menuItem);
+        }
+
+        return button;
+    }
+
+    private void NewLanguagePackageTemplate(bool loadConfiguredPackage)
+    {
+        ToolEditorDebugger.Log("NewLanguagePackageTemplate: reading configured language.");
+        var language = ReadConfiguredToolEditorLanguage();
+        ToolEditorDebugger.Log("NewLanguagePackageTemplate: language=" + language.Code +
+            "; package=" + (string.IsNullOrWhiteSpace(language.PackagePath) ? "(none)" : language.PackagePath));
+        if (loadConfiguredPackage && !string.IsNullOrWhiteSpace(language.PackagePath))
+        {
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: loading configured language package archive.");
+            LoadLanguagePackageArchive(language.PackagePath);
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: configured archive loaded; documents=" + _documents.Count.ToString("N0"));
+            var packageLanguageDocument = _documents.FirstOrDefault(document =>
+                    document.PackagePath.Equals("language/" + language.Code + ".lng", StringComparison.OrdinalIgnoreCase)) ??
+                _documents.FirstOrDefault(document => document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase)) ??
+                _documents.FirstOrDefault();
+            if (packageLanguageDocument is not null)
+                SelectDocument(packageLanguageDocument);
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: configured package selected.");
+            return;
+        }
+
+        if (!loadConfiguredPackage && !string.IsNullOrWhiteSpace(language.PackagePath))
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: configured package is active, but startup uses editable starter concept.");
+
         _conceptFolder = null;
-        _manifestText = BuildManifestTemplate("eng", "English", "English");
-        var languageDocument = AddDocument("language/eng.lng", LoadLanguageText("eng", "English"), null);
-        AddEnglishHelpDocuments();
-        AddNodHelpDocuments();
-        AddFormulaCardDocuments();
+        ToolEditorDocument languageDocument;
+        using (SuspendNavigationRefresh())
+        {
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: building manifest and language document.");
+            _manifestText = BuildManifestTemplate(language.Code, language.DisplayName, language.NativeName);
+            languageDocument = AddDocument("language/" + language.Code + ".lng", LoadLanguageText(language.Code, language.DisplayName), null);
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding HTML templates.");
+            AddHtmlTemplateDocuments();
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding Help runtime documents.");
+            AddHelpRuntimeDocuments();
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding main help documents.");
+            AddMainHelpMediaDocuments();
+            AddMainHelpDocuments(language.Code);
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding NOD help documents.");
+            AddNodHelpDocuments();
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding formula card documents.");
+            AddFormulaCardDocuments();
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding ToolEditor help documents.");
+            AddToolEditorHelpDocuments();
+            ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding legal documents.");
+            AddLegalDocuments(language.Code);
+        }
+
+        RefreshFileTree();
+        RefreshDocumentList();
         SelectDocument(languageDocument);
+        ToolEditorDebugger.Log("NewLanguagePackageTemplate: starter package selected; documents=" + _documents.Count.ToString("N0"));
+    }
+
+    private void AddHtmlTemplateDocuments()
+    {
+        AddDocument("source/templates/formula/index.html", FormulaIndexPackageTemplate, null);
+        AddDocument("source/templates/formula/card.html", FormulaCardPackageTemplate, null);
+        AddDocument("source/templates/nod/full-page.html", NodFullPagePackageTemplate, null);
+        AddDocument("source/templates/nod/command-page.html", NodCommandPagePackageTemplate, null);
+        AddDocument("source/templates/nod/popup.html", NodPopupPackageTemplate, null);
+        AddDocument("source/templates/nod/snippet.html", NodSnippetPackageTemplate, null);
+    }
+
+    private void AddHelpRuntimeDocuments()
+    {
+        foreach (var fileName in new[]
+                 {
+                     "basis.js",
+                     "formula.js",
+                     "nod.js",
+                     "main-help.js",
+                     "nod-popup.js",
+                     "main-help.css",
+                     "nod-popup.css",
+                     "formula-film.css",
+                     "document-body.html",
+                     "document-topic.html",
+                     "formula-card.html",
+                     "formula-film.html"
+                 })
+        {
+            AddHelpRootResourceDocument(fileName);
+        }
+
+        AddHelpApiReferenceDocuments();
+    }
+
+    private void AddHelpRootResourceDocument(string fileName)
+    {
+        var sourcePath = FindToolEditorResourcePath("Resources/Help/" + fileName) ??
+            FindRepositoryPath("src/syscalculator/Resources/Help/" + fileName);
+        if (sourcePath is null)
+            return;
+
+        AddLazyDocument("help/" + fileName, () => File.ReadAllText(sourcePath, Encoding.UTF8), sourcePath);
+    }
+
+    private void AddHelpApiReferenceDocuments()
+    {
+        var helpApiRoot = FindToolEditorResourcePath("Resources/Help/Content/HelpApi") ??
+            FindRepositoryPath("src/syscalculator/Resources/Help/Content/HelpApi");
+        if (helpApiRoot is null)
+            return;
+
+        foreach (var file in Directory.GetFiles(helpApiRoot, "*.html")
+                     .OrderBy(path => HelpApiReferenceSortKey(Path.GetFileName(path)), StringComparer.OrdinalIgnoreCase))
+        {
+            AddLazyDocument("help/content/HelpApi/" + Path.GetFileName(file), () => File.ReadAllText(file, Encoding.UTF8), file);
+        }
+    }
+
+    private static string HelpApiReferenceSortKey(string fileName)
+    {
+        return fileName.ToLowerInvariant() switch
+        {
+            "readme.html" => "0",
+            "javascript-css.html" => "1",
+            "notice.html" => "2",
+            "warning.html" => "3",
+            "details.html" => "4",
+            "code.html" => "5",
+            "table.html" => "6",
+            "screenshot.html" => "7",
+            "command-link.html" => "8",
+            "example-card.html" => "9",
+            "dont.html" => "99",
+            _ => "50-" + fileName
+        };
     }
 
     private async Task NewLanguagePackageAsync()
@@ -533,10 +1146,8 @@ public sealed class ToolEditorForm : Form
             return;
 
         ClearPackageDocuments();
-        NewLanguagePackageTemplate();
-        RefreshFileTree();
-        RefreshDocumentList();
-        SetStatus("Nieuw basispackage gemaakt op basis van Engels.", isError: false);
+        NewLanguagePackageTemplate(loadConfiguredPackage: false);
+        SetStatus(TToolEditor("tool_editor.status.new_package_created", "New base package created from the configured Syscalculator language."), isError: false);
     }
 
     private static string BuildManifestTemplate(string languageCode, string displayName, string nativeName)
@@ -559,70 +1170,165 @@ public sealed class ToolEditorForm : Form
         return JsonSerializer.Serialize(manifest, LanguagePackageJsonOptions);
     }
 
-    private static string BuildHtmlTemplate()
+    private static ToolEditorLanguageInfo ReadConfiguredToolEditorLanguage()
     {
-        return """
-        <h1>Syscalculator Help</h1>
-        <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
-        <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
-        """;
-    }
-
-    private void AddDutchHelpDocuments()
-    {
-        AddLegacyHelpDocuments("nl", BuildHtmlTemplate);
-    }
-
-    private void AddEnglishHelpDocuments()
-    {
-        AddLegacyHelpDocuments("en", BuildEnglishHtmlTemplate);
-    }
-
-    private void AddLegacyHelpDocuments(string languagePrefix, Func<string> fallbackFactory)
-    {
-        var helpDirectory = FindRepositoryPath("legacy/Syscalculator174.VB6/help");
-        if (helpDirectory is null)
+        var code = "eng";
+        string? packageKey = null;
+        var configPath = Path.Combine(AppContext.BaseDirectory, "language.cfg");
+        if (File.Exists(configPath))
         {
-            AddDocument("manual/index.html", fallbackFactory(), null);
-            return;
+            foreach (var rawLine in File.ReadAllLines(configPath))
+            {
+                var line = rawLine.Trim();
+                if (line.Length == 0 || line.StartsWith('#') || line.StartsWith(';'))
+                    continue;
+
+                var separator = line.IndexOf('=');
+                if (separator <= 0)
+                    continue;
+
+                var key = line[..separator].Trim();
+                var value = line[(separator + 1)..].Trim();
+                if (key.Equals("language", StringComparison.OrdinalIgnoreCase))
+                {
+                    code = Path.GetFileNameWithoutExtension(value);
+                    continue;
+                }
+
+                if (key.Equals("languagePackage", StringComparison.OrdinalIgnoreCase) && value.Length > 0)
+                    packageKey = value;
+            }
         }
 
-        var helpFiles = Directory.GetFiles(helpDirectory, "*.htm")
-            .Where(path => Path.GetFileName(path).Equals("index_" + languagePrefix + ".htm", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetFileName(path).StartsWith("help_" + languagePrefix + "_", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(path => Path.GetFileName(path).Equals("index_" + languagePrefix + ".htm", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        if (helpFiles.Count == 0)
+        if (!string.IsNullOrWhiteSpace(packageKey) &&
+            TryFindConfiguredLanguagePackage(packageKey, out var packageLanguage))
         {
-            AddDocument("manual/index.html", fallbackFactory(), null);
-            return;
+            return packageLanguage;
         }
 
-        var pageNameMap = helpFiles.ToDictionary(
-            path => Path.GetFileName(path),
-            path => BuildLegacyHelpPackageFileName(Path.GetFileName(path), languagePrefix),
-            StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(code))
+            code = "eng";
 
-        var mediaNameMap = AddDutchHelpMedia(helpDirectory);
-        foreach (var file in helpFiles)
+        code = NormalizeLanguageCode(code);
+        return new ToolEditorLanguageInfo(code, LanguageDisplayName(code), LanguageNativeName(code), null, null);
+    }
+
+    private static bool TryFindConfiguredLanguagePackage(string packageKey, out ToolEditorLanguageInfo language)
+    {
+        language = null!;
+        foreach (var directory in EnumerateLanguagePackageDirectories())
         {
-            var packageName = pageNameMap[Path.GetFileName(file)];
-            var html = File.ReadAllText(file, Encoding.Latin1);
-            html = ConvertDutchHelpHtml(html, pageNameMap, mediaNameMap);
-            AddDocument("manual/" + packageName, html, file);
+            if (!Directory.Exists(directory))
+                continue;
+
+            foreach (var packagePath in Directory.GetFiles(directory, "*.lngpdk").Concat(Directory.GetFiles(directory, "*.zip")))
+            {
+                if (TryReadLanguagePackageInfo(packagePath, out var candidate) &&
+                    string.Equals(candidate.PackageKey, packageKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    language = candidate;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> EnumerateLanguagePackageDirectories()
+    {
+        yield return Path.Combine(AppContext.BaseDirectory, "LanguagePackages");
+        yield return Path.Combine(AppContext.BaseDirectory, "LanguagePackages", "Cache");
+
+        var webPackages = FindRepositoryPath("web/packages/languages");
+        if (webPackages is not null)
+            yield return webPackages;
+    }
+
+    private static bool TryReadLanguagePackageInfo(string packagePath, out ToolEditorLanguageInfo language)
+    {
+        language = null!;
+        try
+        {
+            var payload = ReadLanguagePackagePayload(packagePath);
+            using var memory = new MemoryStream(payload);
+            using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
+            var entry = archive.Entries.FirstOrDefault(entry =>
+                NormalizePackagePath(entry.FullName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
+            if (entry is null)
+                return false;
+
+            using var stream = entry.Open();
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            using var json = JsonDocument.Parse(reader.ReadToEnd());
+            var root = json.RootElement;
+            var code = NormalizeLanguageCode(GetManifestString(root, "languageCode"));
+            if (string.IsNullOrWhiteSpace(code))
+                return false;
+
+            var key = GetManifestString(root, "key");
+            if (string.IsNullOrWhiteSpace(key))
+                key = GetManifestString(root, "id");
+            if (string.IsNullOrWhiteSpace(key))
+                return false;
+
+            var displayName = GetManifestString(root, "displayName");
+            var nativeName = GetManifestString(root, "nativeName");
+            language = new ToolEditorLanguageInfo(
+                code,
+                string.IsNullOrWhiteSpace(displayName) ? LanguageDisplayName(code) : displayName,
+                string.IsNullOrWhiteSpace(nativeName) ? LanguageNativeName(code) : nativeName,
+                key,
+                packagePath);
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
-    private static string BuildLegacyHelpPackageFileName(string fileName, string languagePrefix)
+    private static string NormalizeLanguageCode(string code)
     {
-        var name = Path.GetFileNameWithoutExtension(fileName);
-        if (name.Equals("index_" + languagePrefix, StringComparison.OrdinalIgnoreCase))
-            return "index.html";
+        return code.ToLowerInvariant() switch
+        {
+            "nl" or "nl-nl" => "ned",
+            "en" or "en-us" or "en-gb" => "eng",
+            "de" => "deu",
+            "fr" => "fra",
+            "es" or "esp" => "spa",
+            "it" => "ita",
+            "pt" => "por",
+            "id" => "ind",
+            "zh" or "zh-cn" or "zh-tw" => "zho",
+            _ => code.ToLowerInvariant()
+        };
+    }
 
-        name = Regex.Replace(name, @"^(help|manual)[_-]+" + Regex.Escape(languagePrefix) + @"[_-]+", "", RegexOptions.IgnoreCase);
-        name = Regex.Replace(name, @"^" + Regex.Escape(languagePrefix) + @"[_-]+", "", RegexOptions.IgnoreCase);
-        return name + ".html";
+    private static string LanguageDisplayName(string code)
+    {
+        return code.ToLowerInvariant() switch
+        {
+            "ned" => "Nederlands",
+            "eng" => "English",
+            "deu" => "Deutsch",
+            "fra" => "Français",
+            "spa" => "Español",
+            "ita" => "Italiano",
+            "por" => "Português",
+            "ind" => "Indonesia",
+            "zho" => "中文",
+            _ => code.ToUpperInvariant()
+        };
+    }
+
+    private static string LanguageNativeName(string code)
+    {
+        return code.ToLowerInvariant() switch
+        {
+            "ind" => "Bahasa Indonesia",
+            _ => LanguageDisplayName(code)
+        };
     }
 
     private static string BuildEnglishHtmlTemplate()
@@ -634,12 +1340,92 @@ public sealed class ToolEditorForm : Form
         """;
     }
 
+    private void AddMainHelpMediaDocuments()
+    {
+        AddMainHelpMediaDocument("WizardExpressHelp.png");
+        AddMainHelpMediaDocument("NodEditorHelp.svg");
+    }
+
+    private void AddMainHelpMediaDocument(string fileName)
+    {
+        var sourcePath = FindToolEditorResourcePath("Resources/" + fileName) ??
+            FindRepositoryPath("src/syscalculator/Resources/" + fileName);
+        if (sourcePath is null)
+            return;
+
+        AddImageDocument("assets/" + fileName, File.ReadAllBytes(sourcePath), sourcePath);
+    }
+
+    private void AddMainHelpDocuments(string languageCode)
+    {
+        var pages = new (string BodyKey, string ResourceName)[]
+        {
+            ("help.main.page.intro.body", "intro.html"),
+            ("help.main.page.main.body", "main.html"),
+            ("help.main.page.fields.body", "fields.html"),
+            ("help.main.page.wizard.body", "wizard.html"),
+            ("help.main.page.calculator.body", "calculator.html"),
+            ("help.main.page.applications.body", "applications.html"),
+            ("help.main.page.configuration.body", "configuration.html"),
+            ("help.main.page.updater.body", "updater.html"),
+            ("help.main.page.window.body", "window.html"),
+            ("help.main.page.nodfiles.body", "nodfiles.html"),
+            ("help.main.page.nodeditor.body", "nodeditor.html"),
+            ("help.main.page.support.body", "support.html")
+        };
+
+        foreach (var page in pages)
+        {
+            var sourcePath = FindToolEditorResourcePath("Resources/Help/Content/main/" + page.ResourceName) ??
+                FindRepositoryPath("src/syscalculator/Resources/Help/Content/main/" + page.ResourceName);
+            AddLazyDocument(
+                "help/content/main/" + page.ResourceName,
+                () => BuildMainHelpDocumentSource(languageCode, page.BodyKey, page.ResourceName, sourcePath),
+                sourcePath);
+        }
+    }
+
+    private string BuildMainHelpDocumentSource(string languageCode, string bodyKey, string resourceName, string? sourcePath)
+    {
+        var languageMap = GetCurrentLanguageMap();
+        string? ResolveText(string key) => languageMap.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
+
+        var fallback = sourcePath is null ? BuildEnglishHtmlTemplate() : File.ReadAllText(sourcePath, Encoding.UTF8);
+        var html = HelpApi.Content(
+            languageCode,
+            ResolveText,
+            bodyKey,
+            "main/" + resourceName,
+            fallback);
+        html = HelpHtml.ApplyContentPlaceholders(html, new Dictionary<string, string?>
+        {
+            ["NodEditorScreenshot"] = BuildPackageScreenshotImage(
+                "assets/NodEditorHelp.svg",
+                ResolveText("help.main.page.nodeditor.screenshot_alt") ?? "Screenshot of the NOD Editor with toolbar, code editor and command tip.") ?? HelpApi.ScreenshotImage(
+                languageCode,
+                ResolveText,
+                "NodEditorHelp.svg",
+                ResolveText("help.main.page.nodeditor.screenshot_alt") ?? "Screenshot of the NOD Editor with toolbar, code editor and command tip."),
+            ["WizardExpressScreenshot"] = BuildPackageScreenshotImage(
+                "assets/WizardExpressHelp.png",
+                ResolveText("help.main.page.wizard.screenshot_alt") ?? "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.") ?? HelpApi.ScreenshotImage(
+                languageCode,
+                ResolveText,
+                "WizardExpressHelp.png",
+                ResolveText("help.main.page.wizard.screenshot_alt") ?? "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.")
+        });
+        return FormatGeneratedHelpSource(html);
+    }
+
     private static string BuildConceptHelpBanner(string languagePrefix)
     {
         if (languagePrefix.Equals("nl", StringComparison.OrdinalIgnoreCase))
         {
             return """
             <div class="concept-banner" role="note" aria-label="Conceptwaarschuwing">
+              <span class="concept-banner-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M10 14a6 6 0 1 1 12 0c0 2.1-1 3.3-2 4.6-.8 1-1.5 1.9-1.7 3.4h-4.6c-.2-1.5-.9-2.4-1.7-3.4-1-1.3-2-2.5-2-4.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M13 25h6M14 28h4M16 2v3M5 14H2M30 14h-3M7.5 5.5l2.1 2.1M24.5 5.5l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
               <span><b>Concept:</b> deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiele Syscalculator-help.</span>
               <button class="concept-banner-close" type="button" title="Sluiten" aria-label="Sluiten">x</button>
             </div>
@@ -649,6 +1435,7 @@ public sealed class ToolEditorForm : Form
 
         return """
         <div class="concept-banner" role="note" aria-label="Concept warning">
+          <span class="concept-banner-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M10 14a6 6 0 1 1 12 0c0 2.1-1 3.3-2 4.6-.8 1-1.5 1.9-1.7 3.4h-4.6c-.2-1.5-.9-2.4-1.7-3.4-1-1.3-2-2.5-2-4.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M13 25h6M14 28h4M16 2v3M5 14H2M30 14h-3M7.5 5.5l2.1 2.1M24.5 5.5l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
           <span><b>Concept:</b> this help information is package draft material and is not official Syscalculator help yet.</span>
           <button class="concept-banner-close" type="button" title="Close" aria-label="Close">x</button>
         </div>
@@ -675,8 +1462,53 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
+        var languageMap = GetCurrentLanguageMap();
+        string? ResolveText(string key) => languageMap.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
+
         foreach (var file in helpFiles)
-            AddDocument(BuildNodHelpPackagePath(nodRoot, file), File.ReadAllText(file, Encoding.UTF8), file);
+        {
+            AddLazyDocument(
+                BuildNodHelpPackagePath(nodRoot, file),
+                () =>
+                {
+                    var html = File.ReadAllText(file, Encoding.UTF8);
+                    html = HelpApi.ApplyLanguagePlaceholders(ResolveText, html);
+                    html = HelpHtml.ApplyContentPlaceholders(html, new Dictionary<string, string?>
+                    {
+                        ["WarningBoardSvg"] = WarningBoardSvg()
+                    });
+                    return FormatGeneratedHelpSource(html);
+                },
+                file);
+        }
+    }
+
+    private static string FormatGeneratedHelpSource(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+            return html;
+
+        var formatted = html.Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace("\r", "\n", StringComparison.Ordinal);
+        formatted = Regex.Replace(
+            formatted,
+            @">\s*(?=<(h[1-6]|p|div|table|thead|tbody|tr|ul|ol|li|pre|details|summary)\b)",
+            ">" + Environment.NewLine,
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        formatted = Regex.Replace(
+            formatted,
+            @"</(h[1-6]|p|div|table|thead|tbody|tr|ul|ol|li|pre|details|summary)>\s*",
+            match => match.Value.TrimEnd() + Environment.NewLine,
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        formatted = Regex.Replace(
+            formatted,
+            @"\n{3,}",
+            Environment.NewLine + Environment.NewLine,
+            RegexOptions.CultureInvariant);
+
+        return EnsureTrailingEndLine(formatted.Trim());
     }
 
     private static string BuildNodHelpSortKey(string nodRoot, string file)
@@ -699,10 +1531,43 @@ public sealed class ToolEditorForm : Form
 
     private void AddFormulaCardDocuments()
     {
+        var languageMap = GetCurrentLanguageMap();
         var cards = FormulaCardCatalog.GetDefaultCards();
-        AddDocument("formula/index.html", BuildFormulaIndexHtml(cards), null);
-        foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
-            AddDocument(BuildFormulaCardPackagePath(card), BuildFormulaCardHtml(card), null);
+        var localizedCards = cards.Select(card => LocalizeFormulaCard(card, languageMap)).ToArray();
+        AddLazyDocument(
+            "formula/index.html",
+            () =>
+            {
+                var currentLanguageMap = GetCurrentLanguageMap();
+                var currentCards = FormulaCardCatalog.GetDefaultCards()
+                    .Select(card => LocalizeFormulaCard(card, currentLanguageMap))
+                    .ToArray();
+                var indexTemplate = FindTemplateText("source/templates/formula/index.html", "templates/formula-index.html", FormulaIndexPackageTemplate);
+                return BuildFormulaIndexHtml(currentCards, currentLanguageMap, indexTemplate);
+            },
+            null);
+        foreach (var card in localizedCards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
+        {
+            var source = card.Source;
+            AddLazyDocument(
+                BuildFormulaCardPackagePath(source),
+                () =>
+                {
+                    var currentLanguageMap = GetCurrentLanguageMap();
+                    var cardTemplate = FindTemplateText("source/templates/formula/card.html", "templates/formula-card.html", FormulaCardPackageTemplate);
+                    return BuildFormulaCardHtml(LocalizeFormulaCard(source, currentLanguageMap), currentLanguageMap, cardTemplate);
+                },
+                null);
+        }
+    }
+
+    private string FindTemplateText(string packagePath, string legacyPackagePath, string fallback)
+    {
+        var template = _documents.FirstOrDefault(document =>
+            document.PackagePath.Equals(packagePath, StringComparison.OrdinalIgnoreCase)) ??
+            _documents.FirstOrDefault(document =>
+                document.PackagePath.Equals(legacyPackagePath, StringComparison.OrdinalIgnoreCase));
+        return template is null ? fallback : template.Editor.Text;
     }
 
     private static string BuildNodHelpFallback()
@@ -714,34 +1579,62 @@ public sealed class ToolEditorForm : Form
         """;
     }
 
-    private static string BuildFormulaIndexHtml(IReadOnlyList<FormulaCard> cards)
+    private static LocalizedFormulaCard LocalizeFormulaCard(FormulaCard card, IReadOnlyDictionary<string, string> languageMap)
+    {
+        var key = "formula_card.card." + card.Id + ".";
+        return new LocalizedFormulaCard(
+            card,
+            T(languageMap, key + "title", card.Title),
+            T(languageMap, key + "formula_text", card.Formula),
+            T(languageMap, key + "plain_text", card.PlainText),
+            SplitFormulaTags(T(languageMap, key + "tags", string.Join("|", card.LevelTags))),
+            T(languageMap, key + "description", card.Description),
+            T(languageMap, key + "example_nod", card.ExampleNod));
+    }
+
+    private static IReadOnlyList<string> SplitFormulaTags(string value)
+    {
+        return value
+            .Split(['|', ','], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .ToArray();
+    }
+
+    private static string T(IReadOnlyDictionary<string, string> languageMap, string key, string fallback)
+    {
+        return languageMap.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : fallback;
+    }
+
+    private static string BuildFormulaIndexHtml(IReadOnlyList<LocalizedFormulaCard> cards, IReadOnlyDictionary<string, string> languageMap, string template)
     {
         var rows = new StringBuilder();
         foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
         {
-            rows.Append("<tr><td><a href=\"")
-                .Append(WebUtility.HtmlEncode(BuildFormulaCardRelativeLink(card)))
+            rows.Append("            <tr><td><a href=\"")
+                .Append(WebUtility.HtmlEncode(BuildFormulaCardRelativeLink(card.Source)))
                 .Append("\">")
                 .Append(WebUtility.HtmlEncode(card.Title))
                 .Append("</a></td><td>")
-                .Append(WebUtility.HtmlEncode(FriendlyFormulaCategory(BuildFormulaCardCategory(card))))
+                .Append(WebUtility.HtmlEncode(FriendlyFormulaCategory(BuildFormulaCardCategory(card.Source))))
                 .Append("</td><td>")
-                .Append(WebUtility.HtmlEncode(string.Join(", ", card.LevelTags)))
+                .Append(WebUtility.HtmlEncode(string.Join(", ", card.Tags)))
                 .Append("</td><td>")
                 .Append(WebUtility.HtmlEncode(card.Description))
-                .Append("</td></tr>");
+                .Append("</td></tr>")
+                .AppendLine();
         }
 
-        return """
-        <h1>Formulekaart</h1>
-        <p>De formulekaart bundelt wiskundige basisregels, MathML, LaTeX en voorbeeld-NOD voor gebruik in Syscalculator.</p>
-        <table>
-          <thead><tr><th>Formule</th><th>Categorie</th><th>Tags</th><th>Uitleg</th></tr></thead>
-          <tbody>
-        """ + rows + """
-          </tbody>
-        </table>
-        """;
+        return ApplyFormulaTemplate(template, new Dictionary<string, string?>
+        {
+            ["title"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.index.title", "Formulekaart")),
+            ["intro"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.index.intro", "De formulekaart bundelt wiskundige basisregels, MathML, LaTeX en voorbeeld-NOD voor gebruik in Syscalculator.")),
+            ["column_formula"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.index.column.formula", "Formule")),
+            ["column_category"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.index.column.category", "Categorie")),
+            ["column_tags"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.index.column.tags", "Tags")),
+            ["column_description"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.index.column.description", "Uitleg")),
+            ["rows"] = rows.ToString()
+        });
     }
 
     private static string BuildFormulaCardPackagePath(FormulaCard card)
@@ -773,29 +1666,122 @@ public sealed class ToolEditorForm : Form
         return "basis";
     }
 
-    private static string BuildFormulaCardHtml(FormulaCard card)
+    private void AddToolEditorHelpDocuments()
     {
-        return $$"""
-        <h1>{{WebUtility.HtmlEncode(card.Title)}}</h1>
-        <div class="notice">{{WebUtility.HtmlEncode(string.Join(", ", card.LevelTags))}}</div>
-        <p>{{RenderFormulaCardDescription(card.Description)}}</p>
+        var toolEditorRoot = FindToolEditorResourcePath("Resources/Help/Content/tool-editor") ??
+            FindRepositoryPath("src/syscalculator/Resources/Help/Content/tool-editor");
+        if (toolEditorRoot is not null)
+        {
+            foreach (var file in Directory.GetFiles(toolEditorRoot, "*.html")
+                         .OrderBy(path => ToolEditorHelpSortKey(Path.GetFileName(path)), StringComparer.OrdinalIgnoreCase))
+            {
+                AddLazyDocument("help/content/tool-editor/" + Path.GetFileName(file), () => File.ReadAllText(file, Encoding.UTF8), file);
+            }
 
-        <h2>Formule</h2>
-        <p><code>{{WebUtility.HtmlEncode(card.Formula)}}</code></p>
-        <div class="formula">{{card.MathMl}}</div>
+            return;
+        }
 
-        <h2>Tekst</h2>
-        <pre>{{WebUtility.HtmlEncode(card.PlainText)}}</pre>
+        AddDocument("help/content/tool-editor/overview.html", BuildToolEditorOverviewFallback(), null);
+        AddDocument("help/content/tool-editor/package-workflow.html", BuildToolEditorPackageFallback(), null);
+        AddDocument("help/content/tool-editor/html-editor.html", BuildToolEditorHtmlFallback(), null);
+        AddDocument("help/content/tool-editor/media.html", BuildToolEditorMediaFallback(), null);
+        AddDocument("help/content/tool-editor/compile.html", BuildToolEditorCompileFallback(), null);
+    }
 
-        <h2>LaTeX</h2>
-        <pre>{{WebUtility.HtmlEncode(card.Latex)}}</pre>
+    private void AddLegalDocuments(string languageCode)
+    {
+        var languageMap = GetCurrentLanguageMap();
+        string? ResolveText(string key) => languageMap.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
 
-        <h2>MathML</h2>
-        <pre>{{WebUtility.HtmlEncode(card.MathMl)}}</pre>
+        AddLegalDocument(
+            languageCode,
+            ResolveText,
+            "legal.license.title",
+            "License Agreement",
+            "license-agreement.html");
+        AddLegalDocument(
+            languageCode,
+            ResolveText,
+            "legal.privacy.title",
+            "Privacy Statement",
+            "privacy-statement.html");
+    }
 
-        <h2>Voorbeeld-NOD</h2>
-        <pre>{{WebUtility.HtmlEncode(card.ExampleNod)}}</pre>
-        """;
+    private void AddLegalDocument(
+        string languageCode,
+        HelpTextResolver resolveText,
+        string titleKey,
+        string fallbackTitle,
+        string fileName)
+    {
+        var title = HelpApi.Text(resolveText, titleKey, fallbackTitle);
+        var sourcePath = FindToolEditorResourcePath("Resources/Help/Content/legal/" + fileName) ??
+            FindRepositoryPath("src/syscalculator/Resources/Help/Content/legal/" + fileName);
+        var body = HelpApi.Content(
+            languageCode,
+            resolveText,
+            titleKey,
+            "legal/" + fileName,
+            sourcePath is null ? "" : File.ReadAllText(sourcePath, Encoding.UTF8));
+
+        AddLazyDocument(
+            "help/content/legal/" + fileName,
+            () => HelpHtml.WrapTopicPage(title, body, HelpApi.MainHelpCss()),
+            sourcePath);
+    }
+
+    private IReadOnlyDictionary<string, string> GetCurrentLanguageMap()
+    {
+        return ReadLanguageText(
+            _documents.FirstOrDefault(document =>
+                    document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase) &&
+                    document.PackagePath.EndsWith(".lng", StringComparison.OrdinalIgnoreCase))
+                ?.Editor.Text ?? "");
+    }
+
+    private static string ToolEditorHelpSortKey(string fileName)
+    {
+        return fileName.ToLowerInvariant() switch
+        {
+            "overview.html" => "0",
+            "package-workflow.html" => "1",
+            "html-editor.html" => "2",
+            "media.html" => "3",
+            "compile.html" => "4",
+            _ => "9-" + fileName
+        };
+    }
+
+    private static string BuildFormulaCardHtml(LocalizedFormulaCard card, IReadOnlyDictionary<string, string> languageMap, string template)
+    {
+        return ApplyFormulaTemplate(template, new Dictionary<string, string?>
+        {
+            ["title"] = WebUtility.HtmlEncode(card.Title),
+            ["tags"] = WebUtility.HtmlEncode(string.Join(", ", card.Tags)),
+            ["description"] = RenderFormulaCardDescription(card.Description),
+            ["section_formula"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.section.formula", "Formule")),
+            ["formula_text"] = WebUtility.HtmlEncode(card.FormulaText),
+            ["mathml_card"] = card.Source.MathMl,
+            ["section_text"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.section.text", "Tekst")),
+            ["plain_text"] = WebUtility.HtmlEncode(card.PlainText),
+            ["section_latex"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.section.latex", "LaTeX")),
+            ["latex"] = WebUtility.HtmlEncode(card.Source.Latex),
+            ["section_mathml"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.section.mathml", "MathML")),
+            ["mathml_pre"] = WebUtility.HtmlEncode(card.Source.MathMl),
+            ["section_example_nod"] = WebUtility.HtmlEncode(T(languageMap, "formula_card.section.example_nod", "Voorbeeld-NOD")),
+            ["example_nod"] = WebUtility.HtmlEncode(card.ExampleNod)
+        });
+    }
+
+    private static string ApplyFormulaTemplate(string template, IReadOnlyDictionary<string, string?> values)
+    {
+        var result = template;
+        foreach (var (key, value) in values)
+            result = result.Replace("{{" + key + "}}", value ?? "", StringComparison.Ordinal);
+
+        return result;
     }
 
     private static string RenderFormulaCardDescription(string description)
@@ -811,48 +1797,6 @@ public sealed class ToolEditorForm : Form
         }
 
         return html;
-    }
-
-    private Dictionary<string, string> AddDutchHelpMedia(string helpDirectory)
-    {
-        var media = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var file in Directory.GetFiles(helpDirectory)
-                     .Where(IsImagePath)
-                     .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
-        {
-            var name = Path.GetFileName(file);
-            var packagePath = "assets/" + name;
-            media[name] = packagePath;
-            AddImageDocument(packagePath, File.ReadAllBytes(file), file);
-        }
-
-        return media;
-    }
-
-    private static string ConvertDutchHelpHtml(string html, IReadOnlyDictionary<string, string> pageNameMap, IReadOnlyDictionary<string, string> mediaNameMap)
-    {
-        html = html.Replace("charset=windows-1252", "charset=utf-8", StringComparison.OrdinalIgnoreCase);
-        html = html.Replace("Syscalculator 1.74", "Syscalculator", StringComparison.OrdinalIgnoreCase);
-        html = Regex.Replace(
-            html,
-            @"\s*<div\s+class\s*=\s*[""']nav[""']>\s*<a\s+href\s*=\s*[""']index_nl\.htm[""']>\s*Nederlandse help\s*</a>\s*</div>\s*",
-            Environment.NewLine,
-            RegexOptions.IgnoreCase);
-        foreach (var item in pageNameMap)
-            html = ReplaceQuotedPath(html, item.Key, item.Value);
-        foreach (var item in mediaNameMap)
-            html = ReplaceQuotedPath(html, item.Key, item.Value);
-
-        return html;
-    }
-
-    private static string ReplaceQuotedPath(string html, string from, string to)
-    {
-        return Regex.Replace(
-            html,
-            "(?<quote>[\"'])" + Regex.Escape(from) + "\\k<quote>",
-            match => match.Groups["quote"].Value + to + match.Groups["quote"].Value,
-            RegexOptions.IgnoreCase);
     }
 
     private static string LoadLanguageText(string languageCode, string displayName)
@@ -912,104 +1856,175 @@ public sealed class ToolEditorForm : Form
         return null;
     }
 
-    private void OpenDocument()
+    private async void OpenDocument()
     {
         using var dialog = new OpenFileDialog
         {
-            Title = "Open ToolEditor document",
-            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+            Title = TToolEditor("tool_editor.dialog.open_document.title", "Open ToolEditor document"),
+            Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
 
-        if (Path.GetFileName(dialog.FileName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
-        {
-            _manifestText = File.ReadAllText(dialog.FileName);
-            SetStatus("Manifest geladen als pakketinfo.", isError: false);
-            ShowManifestDialog();
-        }
-        else if (IsImagePath(dialog.FileName))
-            AddOrReplaceImageDocument("assets/" + Path.GetFileName(dialog.FileName), File.ReadAllBytes(dialog.FileName), dialog.FileName, markDirty: false);
-        else if (TryBuildImportPackagePath(dialog.FileName, out var packagePath))
-            SelectDocument(AddDocument(packagePath, File.ReadAllText(dialog.FileName), dialog.FileName));
-        else
-            RejectUnsupportedPackageFile(dialog.FileName);
+        await ExecuteOpenFilePipelineAsync(ToolEditorOpenRequest.SingleFile(dialog.FileName));
     }
 
     private async Task OpenLanguagePackageAsync()
     {
-        if (!await ConfirmResetPackageAsync())
-            return;
-
         using var dialog = new OpenFileDialog
         {
-            Title = "Open taalpackage",
-            Filter = "Taalpackage (*.lngpdk;*.zip;manifest.json)|*.lngpdk;*.zip;manifest.json|Alle bestanden (*.*)|*.*",
+            Title = TToolEditor("tool_editor.dialog.open_package.title", "Open language package"),
+            Filter = TToolEditor("tool_editor.dialog.open_package.filter", "Tiedragon language packages (*.objpdk;*.lngpdk)|*.objpdk;*.lngpdk|Source manifest (manifest.json)|manifest.json|Legacy zip (*.zip)|*.zip|All files (*.*)|*.*"),
             CheckFileExists = true,
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
             return;
 
+        var extension = Path.GetExtension(dialog.FileName);
+        var request = Path.GetFileName(dialog.FileName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)
+            ? ToolEditorOpenRequest.PackageSourceFolder(Path.GetDirectoryName(dialog.FileName)!)
+            : extension.Equals(ObjectPackageExtension, StringComparison.OrdinalIgnoreCase)
+                ? ToolEditorOpenRequest.ObjectPackage(dialog.FileName)
+                : ToolEditorOpenRequest.PackageArchive(dialog.FileName);
+        await ExecuteOpenFilePipelineAsync(request);
+    }
+
+    private async Task ExecuteOpenFilePipelineAsync(ToolEditorOpenRequest request)
+    {
+        if (request.ResetPackage && !await ConfirmResetPackageAsync())
+            return;
+
         try
         {
-            if (Path.GetFileName(dialog.FileName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
-                LoadPackageSourceFolder(Path.GetDirectoryName(dialog.FileName)!);
-            else
-                LoadLanguagePackageArchive(dialog.FileName);
+            ToolEditorDebugger.Log("Open pipeline: " + request.Kind + " " + request.Path);
+            ToolEditorDocument? selectedDocument = null;
+            using (SuspendNavigationRefresh())
+            {
+                selectedDocument = ExecuteOpenFilePipelineStep(request);
+            }
 
             RefreshFileTree();
             RefreshDocumentList();
-            var firstDocument = _documents.FirstOrDefault(document => document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase)) ?? _documents.FirstOrDefault();
-            if (firstDocument is not null)
-                SelectDocument(firstDocument);
-            SetStatus("Taalpackage geopend: " + dialog.FileName, isError: false);
+            selectedDocument ??= request.SelectPreferredDocument ? FindPreferredOpenDocument() : null;
+            if (selectedDocument is not null)
+                SelectDocument(selectedDocument);
+
+            if (request.ShowManifestDialog)
+                ShowManifestDialog();
+
+            SetStatus(TToolEditor(request.SuccessStatusKey, request.SuccessStatusFallback) + request.Path, isError: false);
+            ToolEditorDebugger.Log("Open pipeline completed: documents=" + _documents.Count.ToString("N0"));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException or JsonException)
         {
-            SetStatus("Open taalpackage mislukt: " + ex.Message, isError: true);
-            MessageBox.Show(this, ex.Message, "Open taalpackage", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            SetStatus(TToolEditor(request.ErrorStatusKey, request.ErrorStatusFallback) + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, TToolEditor(request.DialogTitleKey, request.DialogTitleFallback), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private ToolEditorDocument? ExecuteOpenFilePipelineStep(ToolEditorOpenRequest request)
+    {
+        return request.Kind switch
+        {
+            ToolEditorOpenKind.SingleFile => OpenSinglePackageFile(request.Path),
+            ToolEditorOpenKind.PackageSourceFolder => OpenPackageSourceFolder(request.Path),
+            ToolEditorOpenKind.ObjectPackage => OpenObjectPackage(request.Path),
+            ToolEditorOpenKind.PackageArchive => OpenPackageArchive(request.Path),
+            _ => throw new InvalidOperationException("Onbekende open-pipeline stap.")
+        };
+    }
+
+    private ToolEditorDocument? OpenSinglePackageFile(string fileName)
+    {
+        if (Path.GetFileName(fileName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+        {
+            _manifestText = File.ReadAllText(fileName, Encoding.UTF8);
+            return null;
+        }
+
+        if (IsImagePath(fileName))
+            return AddOrReplaceImageDocument("assets/" + Path.GetFileName(fileName), File.ReadAllBytes(fileName), fileName, markDirty: false, selectDocument: false);
+
+        if (TryBuildImportPackagePath(fileName, out var packagePath))
+            return AddDocument(packagePath, File.ReadAllText(fileName, Encoding.UTF8), fileName);
+
+        RejectUnsupportedPackageFile(fileName);
+        return null;
+    }
+
+    private ToolEditorDocument? OpenPackageSourceFolder(string sourceFolder)
+    {
+        LoadPackageSourceFolder(sourceFolder);
+        return FindPreferredOpenDocument();
+    }
+
+    private ToolEditorDocument? OpenObjectPackage(string packagePath)
+    {
+        LoadObjectPackageArchive(packagePath);
+        return FindPreferredOpenDocument();
+    }
+
+    private ToolEditorDocument? OpenPackageArchive(string packagePath)
+    {
+        LoadLanguagePackageArchive(packagePath);
+        return FindPreferredOpenDocument();
+    }
+
+    private ToolEditorDocument? FindPreferredOpenDocument()
+    {
+        return _documents.FirstOrDefault(document => document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase)) ??
+            _documents.FirstOrDefault(document => document.ImageBytes is null) ??
+            _documents.FirstOrDefault();
     }
 
     private async Task SaveConceptLanguagePackageAsync()
     {
         await SyncHtmlEditorToSourceAsync();
 
-        var targetFolder = _conceptFolder;
-        if (string.IsNullOrWhiteSpace(targetFolder))
+        var targetPath = _conceptPackagePath;
+        if (string.IsNullOrWhiteSpace(targetPath))
         {
-            using var dialog = new FolderBrowserDialog
+            var manifest = ReadManifestProperties(_manifestText);
+            using var dialog = new SaveFileDialog
             {
-                Description = "Kies map voor concept taalpackage",
-                UseDescriptionForTitle = true,
-                SelectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                Title = TToolEditor("tool_editor.dialog.save_concept.title", "Save concept language package"),
+                FileName = "Syscalculator.Language." + SanitizeFileName(manifest.LanguageCode) + ObjectPackageExtension,
+                Filter = "Tiedragon object package (*.objpdk)|*.objpdk",
+                OverwritePrompt = true,
             };
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
                 return;
 
-            targetFolder = dialog.SelectedPath;
+            targetPath = Path.GetFullPath(dialog.FileName);
         }
+
+        if (!Path.GetExtension(targetPath).Equals(ObjectPackageExtension, StringComparison.OrdinalIgnoreCase))
+            targetPath += ObjectPackageExtension;
 
         try
         {
             ValidatePackageSourcePaths();
-            WritePackageSourceFolder(targetFolder);
-            _conceptFolder = targetFolder;
+            WriteObjectPackageArchive(targetPath);
+            _conceptPackagePath = targetPath;
+            _conceptFolder = null;
+            _openedPackageSigned = false;
+            _openedPackageSignatureAlgorithm = "";
+            _openedPackageSignatureKeyId = "";
             foreach (var document in _documents)
             {
-                document.FilePath = GetSafePackageFilePath(_conceptFolder, document.PackagePath);
+                document.FilePath = null;
                 SetDirty(document, false);
             }
 
-            SetStatus("Concept taalpackage opgeslagen: " + _conceptFolder, isError: false);
+            SetStatus(TToolEditor("tool_editor.status.concept_saved", "Concept language package saved: ") + _conceptPackagePath, isError: false);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException)
         {
-            SetStatus("Save concept mislukt: " + ex.Message, isError: true);
-            MessageBox.Show(this, ex.Message, "Save concept taalpackage", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            SetStatus(TToolEditor("tool_editor.status.concept_save_failed", "Save concept failed: ") + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, TToolEditor("tool_editor.menu.file.save_concept", "Save concept language package"), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -1021,6 +2036,7 @@ public sealed class ToolEditorForm : Form
 
         ClearPackageDocuments();
         _conceptFolder = sourceFolder;
+        _conceptPackagePath = null;
         _manifestText = File.ReadAllText(manifestPath, Encoding.UTF8);
 
         foreach (var file in Directory.GetFiles(sourceFolder, "*", SearchOption.AllDirectories)
@@ -1036,44 +2052,80 @@ public sealed class ToolEditorForm : Form
 
     private void LoadLanguagePackageArchive(string packagePath)
     {
+        ToolEditorDebugger.Log("LoadLanguagePackageArchive: start " + packagePath);
+        ClearPackageDocuments();
+        ToolEditorDebugger.Log("LoadLanguagePackageArchive: documents cleared.");
+        _conceptFolder = null;
+        _conceptPackagePath = null;
+        var payload = ReadLanguagePackagePayload(packagePath, out var header);
+        _openedPackageSigned = header?.Signed == true;
+        _openedPackageSignatureAlgorithm = header?.SignatureAlgorithm ?? "";
+        _openedPackageSignatureKeyId = header?.SignatureKeyId ?? "";
+        ToolEditorDebugger.Log("LoadLanguagePackageArchive: payload bytes=" + payload.Length.ToString("N0"));
+        LoadPackageZipPayload(payload, "LoadLanguagePackageArchive");
+    }
+
+    private void LoadObjectPackageArchive(string packagePath)
+    {
+        ToolEditorDebugger.Log("LoadObjectPackageArchive: start " + packagePath);
         ClearPackageDocuments();
         _conceptFolder = null;
-        var payload = ReadLanguagePackagePayload(packagePath);
+        _conceptPackagePath = Path.GetFullPath(packagePath);
+        _openedPackageSigned = false;
+        _openedPackageSignatureAlgorithm = "";
+        _openedPackageSignatureKeyId = "";
+        LoadPackageZipPayload(File.ReadAllBytes(packagePath), "LoadObjectPackageArchive");
+    }
+
+    private void LoadPackageZipPayload(byte[] payload, string logScope)
+    {
+        ToolEditorDebugger.Log(logScope + ": payload bytes=" + payload.Length.ToString("N0"));
         using var memory = new MemoryStream(payload);
         using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
+        ToolEditorDebugger.Log(logScope + ": zip opened.");
         var entries = archive.Entries
             .Where(entry => !string.IsNullOrWhiteSpace(entry.Name))
             .OrderBy(entry => entry.FullName, StringComparer.OrdinalIgnoreCase)
             .ToList();
+        ToolEditorDebugger.Log(logScope + ": entries=" + entries.Count.ToString("N0"));
 
         var manifestEntry = entries.FirstOrDefault(entry => NormalizePackagePath(entry.FullName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase)) ??
             throw new InvalidDataException("manifest.json ontbreekt.");
+        ToolEditorDebugger.Log(logScope + ": reading manifest.");
         using (var stream = manifestEntry.Open())
         using (var reader = new StreamReader(stream, Encoding.UTF8))
         {
             _manifestText = reader.ReadToEnd();
         }
+        ToolEditorDebugger.Log(logScope + ": manifest read.");
 
+        var entryIndex = 0;
         foreach (var entry in entries)
         {
+            entryIndex++;
             var entryName = NormalizePackagePath(entry.FullName);
             if (IsManifestPath(entryName))
                 continue;
 
+            if (entryIndex == 1 || entryIndex % 25 == 0)
+                ToolEditorDebugger.Log(logScope + ": entry " + entryIndex.ToString("N0") + "/" + entries.Count.ToString("N0") + " " + entryName);
             ValidatePackageEntryPathOrThrow(entryName, IsImagePath(entryName));
             using var stream = entry.Open();
             if (IsImagePath(entryName))
             {
                 using var buffer = new MemoryStream();
                 stream.CopyTo(buffer);
-                AddImageDocument(entryName, buffer.ToArray(), null);
+                var document = AddImageDocument(entryName, buffer.ToArray(), null);
+                document.LastModified = entry.LastWriteTime;
             }
             else
             {
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                AddDocument(entryName, reader.ReadToEnd(), null);
+                var document = AddDocument(entryName, reader.ReadToEnd(), null);
+                document.LastModified = entry.LastWriteTime;
             }
         }
+        ToolEditorDebugger.Log(logScope + ": completed; documents=" + _documents.Count.ToString("N0"));
     }
 
     private void AddPackageFileFromDisk(string packagePath, string file)
@@ -1115,8 +2167,8 @@ public sealed class ToolEditorForm : Form
 
         var result = MessageBox.Show(
             this,
-            "Het huidige taalpackage heeft niet-opgeslagen wijzigingen.\r\n\r\nSave concept voordat je verdergaat?",
-            "Taalpackage",
+            TToolEditor("tool_editor.confirm_reset.message", "The current language package has unsaved changes.\r\n\r\nSave concept before continuing?"),
+            TToolEditor("tool_editor.confirm_reset.title", "Language package"),
             MessageBoxButtons.YesNoCancel,
             MessageBoxIcon.Warning);
 
@@ -1129,6 +2181,60 @@ public sealed class ToolEditorForm : Form
         return !_documents.Any(document => document.Dirty && !document.ReadOnly);
     }
 
+    private async void ToolEditorForm_FormClosing(object? sender, FormClosingEventArgs e)
+    {
+        if (_closeConfirmed)
+            return;
+
+        if (_closePromptActive)
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        if (!_documents.Any(document => document.Dirty && !document.ReadOnly))
+            return;
+
+        e.Cancel = true;
+        _closePromptActive = true;
+        try
+        {
+            if (!await ConfirmResetPackageAsync())
+                return;
+
+            _closeConfirmed = true;
+            BeginInvoke(Close);
+        }
+        finally
+        {
+            _closePromptActive = false;
+        }
+    }
+
+    private void ToolEditorForm_FormClosed(object? sender, FormClosedEventArgs e)
+    {
+        ToolEditorDebugger.Log("ToolEditorForm closed; disposing WebView2 controls.");
+        _previewConceptAnimationTimer.Stop();
+        _previewConceptAnimationTimer.Dispose();
+        _previewRefreshTimer.Stop();
+        _previewRefreshTimer.Dispose();
+        DisposeWebView(_htmlEditor, "HTML editor WebView2");
+        DisposeWebView(_preview, "Preview WebView2");
+    }
+
+    private static void DisposeWebView(WebView2 webView, string name)
+    {
+        try
+        {
+            if (!webView.IsDisposed)
+                webView.Dispose();
+        }
+        catch (Exception ex)
+        {
+            ToolEditorDebugger.ReportException("Failed to dispose " + name, ex, showDialog: false);
+        }
+    }
+
     private void ClearPackageDocuments()
     {
         _documents.Clear();
@@ -1137,7 +2243,14 @@ public sealed class ToolEditorForm : Form
         _current = null;
         _pendingHtml = null;
         _pendingHtmlEditor = null;
+        _pendingPreviewInitialize = false;
+        _previewRefreshTimer.Stop();
         _manifestText = "";
+        _conceptFolder = null;
+        _conceptPackagePath = null;
+        _openedPackageSigned = false;
+        _openedPackageSignatureAlgorithm = "";
+        _openedPackageSignatureKeyId = "";
         _conceptBannerDismissed = false;
         _contentSplit.Panel2Collapsed = true;
         _previewButton.Enabled = false;
@@ -1149,7 +2262,13 @@ public sealed class ToolEditorForm : Form
 
     private static byte[] ReadLanguagePackagePayload(string packagePath)
     {
+        return ReadLanguagePackagePayload(packagePath, out _);
+    }
+
+    private static byte[] ReadLanguagePackagePayload(string packagePath, out LanguagePackageContainerHeader? header)
+    {
         var bytes = File.ReadAllBytes(packagePath);
+        header = null;
         if (bytes.Length < LanguagePackageMagic.Length + sizeof(int) + sizeof(int) ||
             !bytes.Take(LanguagePackageMagic.Length).SequenceEqual(LanguagePackageMagic))
         {
@@ -1171,7 +2290,7 @@ public sealed class ToolEditorForm : Form
         if (headerBytes.Length != headerLength)
             throw new InvalidDataException("Packageheader is incompleet.");
 
-        var header = JsonSerializer.Deserialize<LanguagePackageContainerHeader>(
+        header = JsonSerializer.Deserialize<LanguagePackageContainerHeader>(
             Encoding.UTF8.GetString(headerBytes),
             LanguagePackageJsonOptions) ?? throw new InvalidDataException("Packageheader is ongeldig.");
         ValidateLanguagePackageHeader(header);
@@ -1182,6 +2301,17 @@ public sealed class ToolEditorForm : Form
         {
             throw new InvalidDataException("Payload SHA-256 klopt niet.");
         }
+
+        LanguagePackageSignatureVerifier.VerifyOrThrow(
+            header.Signed,
+            header.SignatureAlgorithm,
+            header.SignatureKeyId,
+            header.Signature,
+            payload,
+            header.PayloadSha256,
+            header.SoftwareId,
+            header.PackageType,
+            header.PayloadFormat);
 
         return payload;
     }
@@ -1196,6 +2326,13 @@ public sealed class ToolEditorForm : Form
             throw new InvalidDataException("Package is geen taalpackage.");
         if (header.Encrypted)
             throw new InvalidDataException("Encrypted taalpackages worden nog niet geopend.");
+        if (!header.Signed &&
+            (!string.IsNullOrWhiteSpace(header.SignatureAlgorithm) ||
+             !string.IsNullOrWhiteSpace(header.SignatureKeyId) ||
+             !string.IsNullOrWhiteSpace(header.Signature)))
+        {
+            throw new InvalidDataException("Signature-velden zijn aanwezig maar Signed staat uit.");
+        }
     }
 
     private void ShowManifestDialog()
@@ -1203,7 +2340,7 @@ public sealed class ToolEditorForm : Form
         var properties = ReadManifestProperties(_manifestText);
         using var dialog = new Form
         {
-            Text = "Eigenschappen van taalpakket",
+            Text = TToolEditor("tool_editor.manifest.properties.title", "Language package properties"),
             Width = 560,
             Height = 420,
             StartPosition = FormStartPosition.CenterParent,
@@ -1223,19 +2360,19 @@ public sealed class ToolEditorForm : Form
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170));
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-        AddManifestPropertyRow(content, "Naam", properties.DisplayName);
-        AddManifestPropertyRow(content, "Taalcode", properties.LanguageCode);
-        AddManifestPropertyRow(content, "Native naam", properties.NativeName);
-        AddManifestPropertyRow(content, "Pakketversie", properties.PackageVersion);
-        AddManifestPropertyRow(content, "Fallback taal", properties.FallbackLanguage);
-        AddManifestPropertyRow(content, "Producent", properties.Producer);
-        AddManifestPropertyRow(content, "Product", properties.Product);
-        AddManifestPropertyRow(content, "Software-id", properties.SoftwareId);
-        AddManifestPropertyRow(content, "Package-id", properties.Id);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.name", "Name"), properties.DisplayName);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.language_code", "Language code"), properties.LanguageCode);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.native_name", "Native name"), properties.NativeName);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.package_version", "Package version"), properties.PackageVersion);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.fallback_language", "Fallback language"), properties.FallbackLanguage);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.producer", "Producer"), properties.Producer);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.product", "Product"), properties.Product);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.software_id", "Software ID"), properties.SoftwareId);
+        AddManifestPropertyRow(content, TToolEditor("tool_editor.manifest.property.package_id", "Package ID"), properties.Id);
 
         var close = new Button
         {
-            Text = "Sluiten",
+            Text = TToolEditor("tool_editor.button.close", "Close"),
             Dock = DockStyle.Right,
             Width = 96
         };
@@ -1309,7 +2446,7 @@ public sealed class ToolEditorForm : Form
     {
         using var dialog = new Form
         {
-            Text = "Mediabestanden",
+            Text = TToolEditor("tool_editor.media.files.title", "Media files"),
             Width = 760,
             Height = 420,
             StartPosition = FormStartPosition.CenterParent,
@@ -1320,6 +2457,10 @@ public sealed class ToolEditorForm : Form
 
         var list = CreateMediaFileList();
         list.Dock = DockStyle.Fill;
+        list.AllowDrop = true;
+        list.DragEnter += ToolEditorForm_DragEnter;
+        list.DragDrop += MediaList_DragDrop;
+        AttachMediaListContextMenu(list);
         list.DoubleClick += (_, _) =>
         {
             if (list.SelectedItems.Count == 0)
@@ -1334,7 +2475,7 @@ public sealed class ToolEditorForm : Form
 
         var open = new Button
         {
-            Text = "Openen",
+            Text = TToolEditor("tool_editor.button.open", "Open"),
             Dock = DockStyle.Right,
             Width = 96
         };
@@ -1352,7 +2493,7 @@ public sealed class ToolEditorForm : Form
 
         var close = new Button
         {
-            Text = "Sluiten",
+            Text = TToolEditor("tool_editor.button.close", "Close"),
             Dock = DockStyle.Right,
             Width = 96
         };
@@ -1385,17 +2526,24 @@ public sealed class ToolEditorForm : Form
             BackColor = Color.White,
             ForeColor = Color.FromArgb(31, 41, 55)
         };
-        list.Columns.Add("Bestand", 220);
+        list.Columns.Add(TToolEditor("tool_editor.media.column.file", "File"), 220);
         list.Columns.Add("Type", 90);
-        list.Columns.Add("Grootte", 110);
-        list.Columns.Add("Pakketpad", 300);
+        list.Columns.Add(TToolEditor("tool_editor.media.column.dimensions", "Dimensions"), 100);
+        list.Columns.Add(TToolEditor("tool_editor.media.column.size", "Size"), 110);
+        list.Columns.Add(TToolEditor("tool_editor.media.column.date", "Date"), 150);
+        list.Columns.Add(TToolEditor("tool_editor.media.column.source", "Source"), 170);
+        list.Columns.Add(TToolEditor("tool_editor.media.column.package_path", "Package path"), 300);
 
         foreach (var document in _documents.Where(document => document.ImageBytes is not null)
                      .OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
         {
             var item = new ListViewItem(Path.GetFileName(document.PackagePath));
+            var metadata = ReadMediaMetadata(document);
             item.SubItems.Add(Path.GetExtension(document.PackagePath).TrimStart('.').ToUpperInvariant());
+            item.SubItems.Add(FormatMediaDimensions(metadata));
             item.SubItems.Add((document.ImageBytes?.Length ?? 0).ToString("N0") + " bytes");
+            item.SubItems.Add(FormatDocumentDate(document, metadata));
+            item.SubItems.Add(string.IsNullOrWhiteSpace(metadata.Source) ? "-" : metadata.Source);
             item.SubItems.Add(document.PackagePath);
             item.Tag = document;
             list.Items.Add(item);
@@ -1404,13 +2552,28 @@ public sealed class ToolEditorForm : Form
         return list;
     }
 
+    private static string FormatDocumentDate(ToolEditorDocument document, GraphImageMetadata? metadata = null)
+    {
+        metadata ??= ReadMediaMetadata(document);
+        if (metadata.DateTaken is not null)
+            return metadata.DateTaken.Value.ToString("yyyy-MM-dd HH:mm");
+
+        if (document.LastModified is not null)
+            return document.LastModified.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm");
+
+        if (!string.IsNullOrWhiteSpace(document.FilePath) && File.Exists(document.FilePath))
+            return File.GetLastWriteTime(document.FilePath).ToString("yyyy-MM-dd HH:mm");
+
+        return "-";
+    }
+
     private void OpenMediaDocument()
     {
         using var dialog = new OpenFileDialog
         {
-            Title = "Media toevoegen aan language package",
+            Title = TToolEditor("tool_editor.media.add.title", "Add media to language package"),
             Multiselect = true,
-            Filter = "Media (*.png;*.jpg;*.jpeg;*.svg)|*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+            Filter = "Media (*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1423,14 +2586,14 @@ public sealed class ToolEditorForm : Form
     {
         if (_current?.ImageBytes is null)
         {
-            SetStatus("Selecteer eerst een media-bestand.", isError: true);
+            SetStatus(TToolEditor("tool_editor.status.select_media_first", "Select a media file first."), isError: true);
             return;
         }
 
         using var dialog = new OpenFileDialog
         {
-            Title = "Media vervangen",
-            Filter = "Media (*.png;*.jpg;*.jpeg;*.svg)|*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+            Title = TToolEditor("tool_editor.media.replace.title", "Replace media"),
+            Filter = "Media (*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp|All files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1447,7 +2610,7 @@ public sealed class ToolEditorForm : Form
         RefreshFileTree();
         RefreshDocumentList();
         UpdatePreview();
-        SetStatus("Media vervangen: " + _current.PackagePath, isError: false);
+        SetStatus(TToolEditor("tool_editor.status.media_replaced", "Media replaced: ") + _current.PackagePath, isError: false);
     }
 
     private void DeleteCurrentDocument()
@@ -1455,18 +2618,23 @@ public sealed class ToolEditorForm : Form
         if (_current is null)
             return;
 
-        if (_current.ReadOnly)
+        DeletePackageDocument(_current);
+    }
+
+    private void DeletePackageDocument(ToolEditorDocument document)
+    {
+        if (document.ReadOnly)
         {
-            SetStatus("Alleen tonen: " + _current.DisplayName, isError: true);
+            SetStatus(TToolEditor("tool_editor.status.readonly", "Read-only: ") + document.DisplayName, isError: true);
             return;
         }
 
-        if (IsProtectedPackageDocument(_current.PackagePath))
+        if (IsProtectedPackageDocument(document.PackagePath))
         {
-            SetStatus("Taalpakket-onderdeel kan niet worden verwijderd: " + BuildTabTitle(_current), isError: true);
+            SetStatus(TToolEditor("tool_editor.status.package_part_cannot_delete", "Package part cannot be deleted: ") + BuildTabTitle(document), isError: true);
             MessageBox.Show(
                 this,
-                "Dit onderdeel hoort bij de vaste taalpakket-structuur en kan niet worden verwijderd.\r\n\r\nGebruik het kruisje op de tab om alleen de tab te sluiten.",
+                TToolEditor("tool_editor.delete.protected.message", "This item belongs to the fixed language package structure and cannot be deleted.\r\n\r\nUse the tab close button to close only the tab."),
                 "ToolEditor",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -1475,31 +2643,126 @@ public sealed class ToolEditorForm : Form
 
         var result = MessageBox.Show(
             this,
-            "Verwijder dit bestand uit het language package?\r\n\r\nHet bronbestand op schijf wordt niet verwijderd.",
+            TToolEditor("tool_editor.delete.confirm.message", "Delete this file from the language package?\r\n\r\nThe source file on disk will not be deleted."),
             "ToolEditor",
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Warning);
         if (result != DialogResult.Yes)
             return;
 
-        var removedPath = _current.PackagePath;
-        RemoveDocumentFromPackage(_current);
-        SetStatus("Uit pakket verwijderd: " + removedPath, isError: false);
+        var removedPath = document.PackagePath;
+        RemoveDocumentFromPackage(document);
+        SetStatus(TToolEditor("tool_editor.status.removed_from_package", "Removed from package: ") + removedPath, isError: false);
     }
 
-    private void ImportMediaFiles(IEnumerable<string> fileNames)
+    private void RenameMediaDocument(ToolEditorDocument document)
+    {
+        if (document.ImageBytes is null)
+            return;
+
+        var currentName = Path.GetFileName(document.PackagePath);
+        using var dialog = new Form
+        {
+            Text = TToolEditor("tool_editor.media.rename.title", "Rename media"),
+            Width = 430,
+            Height = 150,
+            StartPosition = FormStartPosition.CenterParent,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            ShowIcon = false
+        };
+
+        var input = new TextBox
+        {
+            Dock = DockStyle.Top,
+            Text = currentName,
+            Margin = new Padding(0, 4, 0, 0)
+        };
+        var label = new Label
+        {
+            Dock = DockStyle.Top,
+            Text = TToolEditor("tool_editor.media.rename.new_name", "New file name:"),
+            Height = 24,
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        var ok = new Button
+        {
+            Text = TToolEditor("tool_editor.button.ok", "OK"),
+            DialogResult = DialogResult.OK,
+            Dock = DockStyle.Right,
+            Width = 90
+        };
+        var cancel = new Button
+        {
+            Text = TToolEditor("tool_editor.button.cancel", "Cancel"),
+            DialogResult = DialogResult.Cancel,
+            Dock = DockStyle.Right,
+            Width = 100
+        };
+        var buttons = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 42,
+            Padding = new Padding(8)
+        };
+        buttons.Controls.Add(ok);
+        buttons.Controls.Add(cancel);
+        var content = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(12)
+        };
+        content.Controls.Add(input);
+        content.Controls.Add(label);
+        dialog.Controls.Add(content);
+        dialog.Controls.Add(buttons);
+        dialog.AcceptButton = ok;
+        dialog.CancelButton = cancel;
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        var newName = Path.GetFileName(input.Text.Trim());
+        if (string.IsNullOrWhiteSpace(newName) || !IsImagePath(newName))
+        {
+            MessageBox.Show(this, TToolEditor("tool_editor.media.rename.invalid_name", "Use a valid image name: png, jpg, jpeg, svg, webp, gif or bmp."), TToolEditor("tool_editor.media.rename.title", "Rename media"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var newPackagePath = NormalizePackagePath("assets/" + newName);
+        if (_documents.Any(item => !ReferenceEquals(item, document) && item.PackagePath.Equals(newPackagePath, StringComparison.OrdinalIgnoreCase)))
+        {
+            MessageBox.Show(this, TToolEditor("tool_editor.media.rename.exists", "A media file with this name already exists."), TToolEditor("tool_editor.media.rename.title", "Rename media"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        document.DisplayName = newPackagePath;
+        document.PackagePath = newPackagePath;
+        document.FilePath = null;
+        document.Editor.Text = BuildImageInfoText(document);
+        ApplyDocumentLabels(document);
+        SetDirty(document, true);
+        RefreshFileTree();
+        RefreshDocumentList();
+        RefreshTabStrip();
+        SelectDocument(document);
+        SetStatus(TToolEditor("tool_editor.status.media_renamed", "Media renamed: ") + newPackagePath, isError: false);
+    }
+
+    private void ImportMediaFiles(IEnumerable<string> fileNames, bool selectImported = true)
     {
         var imported = 0;
         foreach (var fileName in fileNames.Where(IsImagePath))
         {
-            AddOrReplaceImageDocument("assets/" + Path.GetFileName(fileName), File.ReadAllBytes(fileName), fileName, markDirty: true);
+            AddOrReplaceImageDocument("assets/" + Path.GetFileName(fileName), File.ReadAllBytes(fileName), fileName, markDirty: true, selectDocument: selectImported);
             imported++;
         }
 
         if (imported == 0)
-            SetStatus("Geen ondersteunde media gevonden.", isError: true);
+            SetStatus(TToolEditor("tool_editor.status.no_supported_media", "No supported media found."), isError: true);
         else
-            SetStatus(imported.ToString("N0") + " media-bestand(en) toegevoegd.", isError: false);
+            SetStatus(imported.ToString("N0") + " " + TToolEditor("tool_editor.status.media_added_suffix", "media file(s) added."), isError: false);
     }
 
     private static bool TryBuildImportPackagePath(string fileName, out string packagePath)
@@ -1523,7 +2786,7 @@ public sealed class ToolEditorForm : Form
             extension.Equals(".js", StringComparison.OrdinalIgnoreCase))
         {
             if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
-                !AllowedPackageScriptFiles.Contains(name))
+                !LanguagePackagePolicy.Current.IsAllowedScriptFile(name))
             {
                 packagePath = "";
                 return false;
@@ -1539,10 +2802,10 @@ public sealed class ToolEditorForm : Form
 
     private void RejectUnsupportedPackageFile(string fileName)
     {
-        var message = "Dit bestand hoort niet in de language package-structuur:\r\n\r\n" +
+        var message = TToolEditor("tool_editor.reject_file.message_prefix", "This file does not belong in the language package structure:\r\n\r\n") +
             Path.GetFileName(fileName) +
-            "\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS/JS, en media png/jpg/jpeg/svg.";
-        SetStatus("Bestand geweigerd: " + Path.GetFileName(fileName), isError: true);
+            TToolEditor("tool_editor.reject_file.message_suffix", "\r\n\r\nAllowed: manifest.json, language/*.lng, manual/help/NOD/formula HTML/CSS/JS, and media png/jpg/jpeg/svg/webp/gif/bmp.");
+        SetStatus(TToolEditor("tool_editor.status.file_rejected", "File rejected: ") + Path.GetFileName(fileName), isError: true);
         MessageBox.Show(this, message, "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
@@ -1558,7 +2821,7 @@ public sealed class ToolEditorForm : Form
     {
         if (document.ReadOnly)
         {
-            SetStatus("Alleen tonen: " + document.DisplayName, isError: true);
+            SetStatus(TToolEditor("tool_editor.status.readonly", "Read-only: ") + document.DisplayName, isError: true);
             return false;
         }
 
@@ -1572,7 +2835,7 @@ public sealed class ToolEditorForm : Form
             {
                 Title = "Save ToolEditor document",
                 FileName = document.DisplayName.Replace('/', Path.DirectorySeparatorChar),
-                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg|All files (*.*)|*.*"
+                Filter = "Language package files (*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp)|*.html;*.json;*.lng;*.css;*.js;*.png;*.jpg;*.jpeg;*.svg;*.webp;*.gif;*.bmp|All files (*.*)|*.*"
             };
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -1591,23 +2854,33 @@ public sealed class ToolEditorForm : Form
         if (document.ImageBytes is not null)
             File.WriteAllBytes(path, document.ImageBytes);
         else
-            File.WriteAllText(path, document.Editor.Text, Encoding.UTF8);
+            File.WriteAllText(path, GetDocumentTextForStorage(document), Encoding.UTF8);
         SetDirty(document, false);
-        SetStatus("Saved: " + path, isError: false);
+        SetStatus(TToolEditor("tool_editor.status.saved", "Saved: ") + path, isError: false);
         return true;
     }
 
     private ToolEditorDocument AddDocument(string displayName, string text, string? filePath)
     {
+        return AddDocument(displayName, text, filePath, createLineNumbers: true);
+    }
+
+    private ToolEditorDocument AddLazyDocument(string displayName, Func<string> textFactory, string? filePath)
+    {
+        var document = AddDocument(displayName, "", filePath, createLineNumbers: false);
+        document.LazyTextFactory = textFactory;
+        document.LazyTextLoaded = false;
+        return document;
+    }
+
+    private ToolEditorDocument AddDocument(string displayName, string text, string? filePath, bool createLineNumbers)
+    {
         var page = new TabPage(displayName);
         var document = new ToolEditorDocument(page, displayName, NormalizePackagePath(displayName), filePath);
-        if (Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase))
-        {
-            text = StripToolEditorConceptBanners(text);
-            text = EnsureHtmlDocumentMarkup(text);
-        }
+        ApplyFileMetadata(document);
+        text = PrepareDocumentText(document, text);
 
-        var editor = CreateTextEditor(text, document);
+        var editor = CreateTextEditor(text, document, createLineNumbers);
         if (IsManifestPath(document.PackagePath))
         {
             document.ReadOnly = true;
@@ -1626,9 +2899,47 @@ public sealed class ToolEditorForm : Form
         document.HeaderTitle = header.Title;
         AttachTabContextMenu(document, header.Panel, header.Title, header.CloseButton);
         _documents.Add(document);
-        RefreshFileTree();
-        RefreshDocumentList();
+        RefreshNavigationIfNeeded();
         return document;
+    }
+
+    private static string PrepareDocumentText(ToolEditorDocument document, string text)
+    {
+        if (!Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase))
+            return text;
+
+        text = StripToolEditorConceptBanners(text);
+        text = EnsureHtmlDocumentMarkup(text);
+        return EnsureTrailingEndLine(text);
+    }
+
+    private void EnsureDocumentTextLoaded(ToolEditorDocument document, bool ensureEditorUi = false)
+    {
+        if (ensureEditorUi && document.ImageBytes is null)
+            EnsureLineNumbersAttached(document);
+
+        if (document.LazyTextLoaded || document.LazyTextFactory is null)
+            return;
+
+        var text = PrepareDocumentText(document, document.LazyTextFactory());
+        document.LazyTextLoaded = true;
+        _loadingDocumentText = true;
+        try
+        {
+            document.Editor.Text = text;
+            document.SyntaxHighlightVersion = null;
+            SetDirty(document, false);
+        }
+        finally
+        {
+            _loadingDocumentText = false;
+        }
+    }
+
+    private void EnsureAllLazyDocumentsLoaded()
+    {
+        foreach (var document in _documents)
+            EnsureDocumentTextLoaded(document);
     }
 
     private static string StripToolEditorConceptBanners(string html)
@@ -1644,6 +2955,13 @@ public sealed class ToolEditorForm : Form
         return "<h1>" + WebUtility.HtmlEncode(html.Trim()) + "</h1>" + Environment.NewLine;
     }
 
+    private static string EnsureTrailingEndLine(string text)
+    {
+        return string.IsNullOrEmpty(text) || text.EndsWith('\n')
+            ? text
+            : text + Environment.NewLine;
+    }
+
     private ToolEditorDocument AddImageDocument(string displayName, byte[] bytes, string? filePath)
     {
         var page = new TabPage(displayName);
@@ -1651,6 +2969,7 @@ public sealed class ToolEditorForm : Form
         {
             ImageBytes = bytes
         };
+        ApplyFileMetadata(document);
         var editor = CreateTextEditor(BuildImageInfoText(document), document);
         editor.ReadOnly = true;
         editor.BackColor = Color.FromArgb(248, 250, 252);
@@ -1665,12 +2984,32 @@ public sealed class ToolEditorForm : Form
         document.HeaderTitle = header.Title;
         AttachTabContextMenu(document, header.Panel, header.Title, header.CloseButton);
         _documents.Add(document);
-        RefreshFileTree();
-        RefreshDocumentList();
+        RefreshNavigationIfNeeded();
         return document;
     }
 
-    private void AddOrReplaceImageDocument(string displayName, byte[] bytes, string? filePath, bool markDirty)
+    private IDisposable SuspendNavigationRefresh()
+    {
+        _suspendNavigationRefresh = true;
+        return new NavigationRefreshScope(this);
+    }
+
+    private void RefreshNavigationIfNeeded()
+    {
+        if (_suspendNavigationRefresh)
+            return;
+
+        RefreshFileTree();
+        RefreshDocumentList();
+    }
+
+    private static void ApplyFileMetadata(ToolEditorDocument document)
+    {
+        if (!string.IsNullOrWhiteSpace(document.FilePath) && File.Exists(document.FilePath))
+            document.LastModified = File.GetLastWriteTime(document.FilePath);
+    }
+
+    private ToolEditorDocument AddOrReplaceImageDocument(string displayName, byte[] bytes, string? filePath, bool markDirty, bool selectDocument = true)
     {
         var packagePath = NormalizePackagePath(displayName);
         var document = _documents.FirstOrDefault(document => document.ImageBytes is not null &&
@@ -1680,8 +3019,9 @@ public sealed class ToolEditorForm : Form
             document = AddImageDocument(displayName, bytes, filePath);
             if (markDirty)
                 SetDirty(document, true);
-            SelectDocument(document);
-            return;
+            if (selectDocument)
+                SelectDocument(document);
+            return document;
         }
 
         document.ImageBytes = bytes;
@@ -1691,24 +3031,49 @@ public sealed class ToolEditorForm : Form
         SetDirty(document, markDirty);
         RefreshFileTree();
         RefreshDocumentList();
-        SelectDocument(document);
+        if (selectDocument)
+            SelectDocument(document);
+        return document;
     }
 
-    private static string BuildImageInfoText(ToolEditorDocument document)
+    private string BuildImageInfoText(ToolEditorDocument document)
     {
         var bytes = document.ImageBytes?.Length ?? 0;
-        return "Media preview\r\n\r\n" +
-            "Bestand: " + Path.GetFileName(document.PackagePath) + "\r\n" +
-            "Pakketpad: " + document.PackagePath + "\r\n" +
-            "Grootte: " + bytes.ToString("N0") + " bytes\r\n";
+        var metadata = ReadMediaMetadata(document);
+        return TToolEditor("tool_editor.media.preview.title", "Media preview") + "\r\n\r\n" +
+            TToolEditor("tool_editor.media.preview.file", "File: ") + Path.GetFileName(document.PackagePath) + "\r\n" +
+            TToolEditor("tool_editor.media.preview.package_path", "Package path: ") + document.PackagePath + "\r\n" +
+            TToolEditor("tool_editor.media.preview.dimensions", "Dimensions: ") + FormatMediaDimensions(metadata) + "\r\n" +
+            TToolEditor("tool_editor.media.preview.size", "Size: ") + bytes.ToString("N0") + " bytes\r\n" +
+            TToolEditor("tool_editor.media.preview.date", "Date: ") + FormatDocumentDate(document, metadata) + "\r\n" +
+            TToolEditor("tool_editor.media.preview.source", "Source: ") + (string.IsNullOrWhiteSpace(metadata.Source) ? "-" : metadata.Source) + "\r\n";
+    }
+
+    private static GraphImageMetadata ReadMediaMetadata(ToolEditorDocument document)
+    {
+        return GraphImageMetadataReader.Read(document.PackagePath, document.ImageBytes);
+    }
+
+    private static string FormatMediaDimensions(GraphImageMetadata metadata)
+    {
+        return metadata.Width is not null && metadata.Height is not null
+            ? metadata.Width.Value.ToString("N0") + " x " + metadata.Height.Value.ToString("N0")
+            : "-";
     }
 
     private async void SetHtmlEditMode(bool editMode)
     {
-        if (_current is null || _current.ImageBytes is not null || !IsHtmlDocument(_current))
+        if (_current is null || !GetHtmlViewState(_current).CanUseVisualEditor)
         {
-            SetStatus("Selecteer eerst een HTML-document.", isError: true);
+            SetStatus(TToolEditor("tool_editor.status.select_html_first", "Select an HTML document first."), isError: true);
             return;
+        }
+
+        if (editMode && IsGeneratedPlaceholderHtmlDocument(_current))
+        {
+            _current.Editor.Text = BuildRenderedSourceText(_current);
+            SetDirty(_current, true);
+            SetStatus(TToolEditor("tool_editor.status.generated_help_converted", "Generated help was converted to editable HTML."), isError: false);
         }
 
         if (!editMode && _current.HtmlEditMode)
@@ -1719,13 +3084,18 @@ public sealed class ToolEditorForm : Form
         QueueFocusActiveEditor();
     }
 
-    private void WrapHtmlSelection(string tag, string fallbackText)
+    private void WrapHtmlSelection(string tag, string fallbackText, string attributes = "")
     {
         if (!CanEditCurrentHtml())
             return;
 
         if (_current!.HtmlEditMode)
-            ExecuteHtmlEditorCommand("formatBlock", "<" + tag + ">");
+        {
+            if (string.IsNullOrEmpty(attributes))
+                ExecuteHtmlEditorCommand("formatBlock", "<" + tag + ">");
+            else
+                ExecuteHtmlEditorInsertHtml("<" + tag + attributes + ">" + WebUtility.HtmlEncode(fallbackText) + "</" + tag + ">");
+        }
         else
         {
             var editor = _current.Editor;
@@ -1733,11 +3103,40 @@ public sealed class ToolEditorForm : Form
             if (string.IsNullOrEmpty(selected))
                 selected = fallbackText;
 
+            editor.SelectedText = "<" + tag + attributes + ">" + selected + "</" + tag + ">";
+            editor.Focus();
+        }
+
+        UpdatePreview();
+    }
+
+    private void ApplyHtmlInlineCommand(string command, string tag, string fallbackText)
+    {
+        if (!CanEditCurrentHtml())
+            return;
+
+        if (_current!.HtmlEditMode)
+            ExecuteHtmlEditorCommand(command, "");
+        else
+        {
+            var editor = _current.Editor;
+            var selected = string.IsNullOrEmpty(editor.SelectedText) ? fallbackText : editor.SelectedText;
             editor.SelectedText = "<" + tag + ">" + selected + "</" + tag + ">";
             editor.Focus();
         }
 
         UpdatePreview();
+    }
+
+    private void ApplyHtmlColor(string color)
+    {
+        if (!CanEditCurrentHtml())
+            return;
+
+        if (_current!.HtmlEditMode)
+            ExecuteHtmlEditorCommand("foreColor", color);
+        else
+            WrapHtmlSelection("span", "tekst", " style=\"color:" + color + "\"");
     }
 
     private void InsertHtmlLink()
@@ -1813,14 +3212,13 @@ public sealed class ToolEditorForm : Form
         if (_current is not null && _current.ImageBytes is null && IsHtmlDocument(_current))
             return true;
 
-        SetStatus("Selecteer eerst een HTML-document.", isError: true);
+        SetStatus(TToolEditor("tool_editor.status.select_html_first", "Select an HTML document first."), isError: true);
         return false;
     }
 
-    private RichTextBox CreateTextEditor(string text, ToolEditorDocument document)
+    private RichTextBox CreateTextEditor(string text, ToolEditorDocument document, bool createLineNumbers = true)
     {
         var isLanguageDocument = document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase);
-        var lineNumbers = new LineNumberPanel();
         var editor = new RichTextBox
         {
             Dock = DockStyle.Fill,
@@ -1833,24 +3231,40 @@ public sealed class ToolEditorForm : Form
             Text = text
         };
         document.Editor = editor;
-        document.LineNumbers = lineNumbers;
-        lineNumbers.Attach(editor);
+        if (createLineNumbers)
+            EnsureLineNumbersAttached(document);
         editor.TextChanged += (_, _) =>
         {
-            if (_current?.Editor == editor && !document.ReadOnly && !document.Highlighting)
+            if (_current?.Editor == editor && !document.ReadOnly && !document.Highlighting && !_loadingDocumentText)
                 SetDirty(_current, true);
 
             document.LineNumbers?.Invalidate();
-            ScheduleSyntaxHighlight(document);
+            document.SyntaxHighlightVersion = null;
+            if (ReferenceEquals(_current, document))
+            {
+                UpdateStatusMetrics(document);
+                ScheduleSyntaxHighlight(document);
+            }
+            document.LineNumbers?.RefreshMetrics();
         };
         editor.VScroll += (_, _) => document.LineNumbers?.Invalidate();
         editor.Resize += (_, _) => document.LineNumbers?.Invalidate();
-        ScheduleSyntaxHighlight(document);
         return editor;
+    }
+
+    private static void EnsureLineNumbersAttached(ToolEditorDocument document)
+    {
+        if (document.LineNumbers is not null)
+            return;
+
+        var lineNumbers = new LineNumberPanel();
+        document.LineNumbers = lineNumbers;
+        lineNumbers.Attach(document.Editor);
     }
 
     private void SelectDocument(ToolEditorDocument document)
     {
+        EnsureDocumentTextLoaded(document, ensureEditorUi: true);
         EnsureDocumentTabOpen(document);
         _current = document;
         SelectDocumentInTree(document);
@@ -1858,10 +3272,46 @@ public sealed class ToolEditorForm : Form
         UpdateHtmlToolbarState(document);
         _editorContent.SuspendLayout();
         _editorContent.Controls.Clear();
-        if (document.HtmlEditMode && document.ImageBytes is null && IsHtmlDocument(document))
+        UpdateEditConceptBannerState(document);
+        var viewState = GetHtmlViewState(document);
+        if (viewState.EditIsPreview)
         {
-            _editorContent.Controls.Add(_htmlEditor);
+            _htmlEditHost.SuspendLayout();
+            _htmlEditHost.Controls.Clear();
+            _htmlEditHost.Controls.Add(_editConceptBanner, 0, 0);
+            _htmlEditHost.Controls.Add(_htmlEditor, 0, 1);
+            _editConceptBanner.BringToFront();
+            _htmlEditHost.ResumeLayout();
+            _editorContent.Controls.Add(_htmlEditHost);
             SetHtmlEditor(document.Editor.Text);
+        }
+        else if (IsGeneratedPlaceholderHtmlDocument(document))
+        {
+            var renderedEditor = new RichTextBox
+            {
+                Dock = DockStyle.Fill,
+                BorderStyle = BorderStyle.FixedSingle,
+                Font = new Font("Consolas", 10),
+                WordWrap = false,
+                ScrollBars = RichTextBoxScrollBars.Both,
+                HideSelection = false,
+                ReadOnly = true,
+                BackColor = Color.White,
+                Text = BuildRenderedSourceText(document)
+            };
+            var lineNumbers = new LineNumberPanel();
+            lineNumbers.Attach(renderedEditor);
+            renderedEditor.VScroll += (_, _) => lineNumbers.Invalidate();
+            renderedEditor.Resize += (_, _) => lineNumbers.Invalidate();
+            ApplySyntaxHighlight(renderedEditor, document.PackagePath);
+            var host = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White
+            };
+            host.Controls.Add(renderedEditor);
+            host.Controls.Add(lineNumbers);
+            _editorContent.Controls.Add(host);
         }
         else if (document.LineNumbers is not null && document.ImageBytes is null)
         {
@@ -1881,10 +3331,214 @@ public sealed class ToolEditorForm : Form
 
         _editorContent.ResumeLayout();
         RefreshTabStrip();
-        UpdatePreview();
+        UpdatePreviewPaneState(document);
+        UpdatePreview(initializePreview: _webViewInitializationStarted);
         UpdateUiState();
         UpdateDocumentStatus(document);
+        ScheduleSyntaxHighlight(document);
         QueueFocusActiveEditor();
+    }
+
+    private string BuildRenderedSourceText(ToolEditorDocument document)
+    {
+        var expanded = ApplyToolEditorHelpPlaceholders(document.Editor.Text);
+        return StripToolEditorConceptBanners(expanded);
+    }
+
+    private static bool IsGeneratedPlaceholderHtmlDocument(ToolEditorDocument document)
+    {
+        return document.ImageBytes is null &&
+            IsHtmlDocument(document) &&
+            LanguagePlaceholderRegex.IsMatch(document.Editor.Text);
+    }
+
+    private void SelectMediaManager()
+    {
+        _current = null;
+        UpdateHtmlToolbarState(null);
+        _editorContent.SuspendLayout();
+        _editorContent.Controls.Clear();
+        _editorContent.Controls.Add(BuildMediaManagerView());
+        _editorContent.ResumeLayout();
+        RefreshTabStrip();
+        SetStatus(TToolEditor("tool_editor.tree.media", "Media and images") + ": " + _documents.Count(document => document.ImageBytes is not null).ToString("N0") + " " + TToolEditor("tool_editor.status.files", "files"), isError: false);
+        UpdateStatusMetrics(null);
+    }
+
+    private Control BuildMediaManagerView()
+    {
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            BackColor = Color.White,
+            Padding = new Padding(12)
+        };
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var title = new Label
+        {
+            Dock = DockStyle.Fill,
+            Text = TToolEditor("tool_editor.tree.media", "Media and images"),
+            Font = new Font("Segoe UI", 15, FontStyle.Bold),
+            ForeColor = Color.FromArgb(0, 65, 170),
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+
+        var list = CreateMediaFileList();
+        list.Dock = DockStyle.Fill;
+        list.AllowDrop = true;
+        list.DragEnter += ToolEditorForm_DragEnter;
+        list.DragDrop += MediaList_DragDrop;
+        AttachMediaListContextMenu(list);
+        list.DoubleClick += (_, _) =>
+        {
+            if (list.SelectedItems.Count > 0 && list.SelectedItems[0].Tag is ToolEditorDocument document)
+                SelectDocument(document);
+        };
+
+        layout.Controls.Add(title, 0, 0);
+        layout.Controls.Add(list, 0, 1);
+        return layout;
+    }
+
+    private void AttachMediaListContextMenu(ListView list)
+    {
+        var menu = new ContextMenuStrip();
+        var open = menu.Items.Add(TToolEditor("tool_editor.button.open", "Open"));
+        var copy = menu.Items.Add(TToolEditor("tool_editor.menu.edit.copy", "Copy"));
+        var cut = menu.Items.Add(TToolEditor("tool_editor.menu.edit.cut", "Cut"));
+        var paste = menu.Items.Add(TToolEditor("tool_editor.menu.edit.paste", "Paste"));
+        menu.Items.Add(new ToolStripSeparator());
+        var rename = menu.Items.Add(TToolEditor("tool_editor.media.rename.title", "Rename media") + "...");
+        var delete = menu.Items.Add(TToolEditor("tool_editor.menu.package.delete_selected", "Delete selected file"));
+
+        ToolEditorDocument? SelectedMediaDocument()
+        {
+            return list.SelectedItems.Count > 0
+                ? list.SelectedItems[0].Tag as ToolEditorDocument
+                : null;
+        }
+
+        menu.Opening += (_, e) =>
+        {
+            var document = SelectedMediaDocument();
+            var enabled = document?.ImageBytes is not null;
+            open.Enabled = enabled;
+            copy.Enabled = enabled;
+            cut.Enabled = enabled;
+            paste.Enabled = ClipboardContainsSupportedMediaFiles();
+            rename.Enabled = enabled;
+            delete.Enabled = enabled;
+            if (!enabled && !ClipboardContainsSupportedMediaFiles())
+                e.Cancel = true;
+        };
+
+        open.Click += (_, _) =>
+        {
+            if (SelectedMediaDocument() is { } document)
+                SelectDocument(document);
+        };
+        copy.Click += (_, _) =>
+        {
+            if (SelectedMediaDocument() is { } document)
+                CopyMediaDocumentToWindowsClipboard(document);
+        };
+        cut.Click += (_, _) =>
+        {
+            if (SelectedMediaDocument() is { } document)
+                CutMediaDocumentToWindowsClipboard(document);
+        };
+        paste.Click += (_, _) => PasteMediaFilesFromWindowsClipboard();
+        rename.Click += (_, _) =>
+        {
+            if (SelectedMediaDocument() is { } document)
+                RenameMediaDocument(document);
+        };
+        delete.Click += (_, _) =>
+        {
+            if (SelectedMediaDocument() is { } document)
+                DeletePackageDocument(document);
+        };
+
+        list.ContextMenuStrip = menu;
+    }
+
+    private void CopyMediaDocumentToWindowsClipboard(ToolEditorDocument document)
+    {
+        if (document.ImageBytes is null)
+            return;
+
+        var file = ExportMediaDocumentToClipboardFile(document);
+        var files = new System.Collections.Specialized.StringCollection { file };
+        Clipboard.SetFileDropList(files);
+        SetStatus(TToolEditor("tool_editor.status.media_copied_clipboard", "Media copied to Windows clipboard: ") + Path.GetFileName(file), isError: false);
+    }
+
+    private void CutMediaDocumentToWindowsClipboard(ToolEditorDocument document)
+    {
+        CopyMediaDocumentToWindowsClipboard(document);
+        DeletePackageDocument(document);
+    }
+
+    private void PasteMediaFilesFromWindowsClipboard()
+    {
+        if (!ClipboardContainsSupportedMediaFiles())
+        {
+            SetStatus(TToolEditor("tool_editor.status.no_clipboard_media", "No supported media on the Windows clipboard."), isError: true);
+            return;
+        }
+
+        ImportMediaFiles(Clipboard.GetFileDropList().Cast<string>(), selectImported: false);
+        SelectMediaManager();
+    }
+
+    private static bool ClipboardContainsSupportedMediaFiles()
+    {
+        return Clipboard.ContainsFileDropList() &&
+            Clipboard.GetFileDropList().Cast<string>().Any(IsImagePath);
+    }
+
+    private static string ExportMediaDocumentToClipboardFile(ToolEditorDocument document)
+    {
+        if (document.ImageBytes is null)
+            throw new InvalidOperationException("Document is not media.");
+
+        var folder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Syscalculator",
+            "ToolEditor",
+            "Clipboard");
+        Directory.CreateDirectory(folder);
+        var target = Path.Combine(folder, Path.GetFileName(document.PackagePath));
+        if (File.Exists(target))
+            target = Path.Combine(folder, Path.GetFileNameWithoutExtension(document.PackagePath) + "-" + Guid.NewGuid().ToString("N")[..8] + Path.GetExtension(document.PackagePath));
+
+        File.WriteAllBytes(target, document.ImageBytes);
+        return target;
+    }
+
+    private string GetAvailableMediaPackagePath(string preferredPackagePath, ToolEditorDocument? ignoreDocument = null)
+    {
+        var normalized = NormalizePackagePath(preferredPackagePath);
+        var directory = GetPackageDirectory(normalized);
+        if (string.IsNullOrWhiteSpace(directory))
+            directory = "assets";
+
+        var baseName = Path.GetFileNameWithoutExtension(normalized);
+        var extension = Path.GetExtension(normalized);
+        var candidate = NormalizePackagePath(directory + "/" + baseName + extension);
+        var index = 2;
+        while (_documents.Any(document => !ReferenceEquals(document, ignoreDocument) &&
+            document.PackagePath.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
+        {
+            candidate = NormalizePackagePath(directory + "/" + baseName + " copy " + index.ToString() + extension);
+            index++;
+        }
+
+        return candidate;
     }
 
     private void QueueFocusActiveEditor()
@@ -1908,7 +3562,7 @@ public sealed class ToolEditorForm : Form
             if (!_htmlEditor.IsDisposed)
             {
                 _htmlEditor.Focus();
-                _ = _htmlEditor.CoreWebView2?.ExecuteScriptAsync("document.body && document.body.focus();");
+                _ = _htmlEditor.CoreWebView2?.ExecuteScriptAsync("window.toolEditorFocusBody && window.toolEditorFocusBody();");
             }
 
             return;
@@ -1922,28 +3576,148 @@ public sealed class ToolEditorForm : Form
     {
         if (document.ImageBytes is not null)
         {
-            SetStatus("Media: " + document.PackagePath + " (" + document.ImageBytes.Length.ToString("N0") + " bytes)", isError: false);
+            SetStatus(TToolEditor("tool_editor.status.media", "Media") + ": " + document.PackagePath + " (" + document.ImageBytes.Length.ToString("N0") + " bytes)", isError: false);
+            UpdateStatusMetrics(document);
             return;
         }
 
-        SetStatus("Geselecteerd: " + BuildTabTitle(document), isError: false);
+        SetStatus(TToolEditor("tool_editor.status.selected", "Selected: ") + BuildTabTitle(document), isError: false);
+        UpdateStatusMetrics(document);
     }
 
     private void UpdateHtmlToolbarState(ToolEditorDocument? document)
     {
-        var visible = document is not null && document.ImageBytes is null && IsHtmlDocument(document);
+        var visible = document is not null && GetHtmlViewState(document).CanUseHtmlToolbar;
         _htmlToolbar.Visible = visible;
         _htmlToolbarRow.Height = visible ? 32 : 0;
+        UpdateHtmlModeButtons(document);
         UpdatePreviewPaneState(document);
+    }
+
+    private void UpdateHtmlModeButtons(ToolEditorDocument? document)
+    {
+        var editMode = document?.HtmlEditMode == true;
+        _sourceModeButton.Checked = !editMode;
+        _editModeButton.Checked = editMode;
+        StyleHtmlModeButton(_sourceModeButton, !editMode);
+        StyleHtmlModeButton(_editModeButton, editMode);
+    }
+
+    private static void StyleHtmlModeButton(ToolStripButton button, bool active)
+    {
+        button.Font = active
+            ? new Font(button.Font, FontStyle.Bold)
+            : new Font(button.Font, FontStyle.Regular);
+        button.BackColor = active ? Color.FromArgb(222, 235, 255) : Color.FromArgb(248, 250, 252);
+        button.ForeColor = active ? Color.FromArgb(0, 63, 143) : Color.FromArgb(15, 23, 42);
+        button.DisplayStyle = ToolStripItemDisplayStyle.Text;
     }
 
     private void UpdatePreviewPaneState(ToolEditorDocument? document)
     {
-        var showPreview = document is not null && !document.HtmlEditMode;
-        _contentSplit.Panel2Collapsed = !showPreview;
-        _previewButton.Enabled = showPreview;
-        if (showPreview)
-            ClampSplitter(_contentSplit, 390);
+        var viewState = document is null
+            ? default
+            : GetHtmlViewState(document);
+        _contentSplit.Panel2Collapsed = !viewState.ShowPreviewPane;
+        _previewButton.Enabled = viewState.CanUsePreviewPane;
+        UpdatePreviewConceptBannerState(viewState.ShowPreviewPane ? document : null);
+        UpdateEditConceptBannerState(document);
+        if (viewState.ShowPreviewPane)
+            ClampPreviewSplitter(_contentSplit, 240);
+    }
+
+    private void UpdatePreviewConceptBannerState(ToolEditorDocument? document = null)
+    {
+        document ??= _current;
+        var viewState = document is null
+            ? default
+            : GetHtmlViewState(document);
+        var canShowBanner = document is not null &&
+            !_previewPaneClosedByUser &&
+            viewState.ShowPreviewPane &&
+            !document.HtmlEditMode;
+        var showSignedBanner = canShowBanner && _openedPackageSigned;
+        var showConceptBanner = canShowBanner &&
+            !_openedPackageSigned &&
+            !_conceptBannerDismissed &&
+            viewState.PreviewKind == ToolEditorPreviewKind.Html;
+        var showBanner = showSignedBanner || showConceptBanner;
+
+        _previewConceptBanner.Kind = showSignedBanner ? ToolEditorBannerKind.Signed : ToolEditorBannerKind.Concept;
+        _previewConceptBanner.Visible = showBanner;
+        _previewConceptRow.Height = showBanner ? (showSignedBanner ? 48 : 72) : 0;
+        UpdateConceptAnimationTimer();
+
+        if (!showBanner)
+            return;
+
+        _previewConceptBanner.Message = showSignedBanner ? GetSignedBannerText() : GetConceptBannerText();
+    }
+
+    private void UpdateEditConceptBannerState(ToolEditorDocument? document = null)
+    {
+        document ??= _current;
+        var canShowBanner = document is not null && GetHtmlViewState(document).EditIsPreview;
+        var showSignedBanner = canShowBanner && _openedPackageSigned;
+        var showConceptBanner = canShowBanner && !_openedPackageSigned && !_conceptBannerDismissed;
+        var showBanner = showSignedBanner || showConceptBanner;
+
+        _editConceptBanner.Kind = showSignedBanner ? ToolEditorBannerKind.Signed : ToolEditorBannerKind.Concept;
+        _editConceptBanner.Visible = showBanner;
+        _editConceptRow.Height = showBanner ? (showSignedBanner ? 48 : 72) : 0;
+        UpdateConceptAnimationTimer();
+
+        if (!showBanner)
+            return;
+
+        _editConceptBanner.Message = showSignedBanner ? GetSignedBannerText() : GetConceptBannerText();
+    }
+
+    private void UpdateConceptAnimationTimer()
+    {
+        var shouldAnimate =
+            (_previewConceptBanner.Visible && _previewConceptBanner.Kind == ToolEditorBannerKind.Concept) ||
+            (_editConceptBanner.Visible && _editConceptBanner.Kind == ToolEditorBannerKind.Concept);
+        if (shouldAnimate)
+        {
+            if (!_previewConceptAnimationTimer.Enabled)
+                _previewConceptAnimationTimer.Start();
+        }
+        else if (_previewConceptAnimationTimer.Enabled)
+        {
+            _previewConceptAnimationTimer.Stop();
+        }
+    }
+
+    private string GetConceptBannerText()
+    {
+        return CurrentConceptBannerLanguagePrefix().Equals("nl", StringComparison.OrdinalIgnoreCase)
+            ? "Concept: deze helpinformatie is werkmateriaal voor een taalpackage en is nog geen officiele Syscalculator-help."
+            : "Concept: this help information is package draft material and is not official Syscalculator help yet.";
+    }
+
+    private string GetSignedBannerText()
+    {
+        var details = string.IsNullOrWhiteSpace(_openedPackageSignatureKeyId)
+            ? ""
+            : " Key: " + _openedPackageSignatureKeyId.Trim() + ".";
+        if (!string.IsNullOrWhiteSpace(_openedPackageSignatureAlgorithm))
+            details += " Algoritme: " + _openedPackageSignatureAlgorithm.Trim() + ".";
+        return CurrentConceptBannerLanguagePrefix().Equals("nl", StringComparison.OrdinalIgnoreCase)
+            ? "Signed: dit taalpakket is digitaal ondertekend en geverifieerd. Bewerk via .objpdk en compileer/sign opnieuw." + details
+            : "Signed: this language package is digitally signed and verified. Edit through .objpdk and compile/sign again." + details;
+    }
+
+    private void ShowPreviewPane()
+    {
+        _previewPaneClosedByUser = false;
+        UpdatePreview(initializePreview: true);
+    }
+
+    private void ClosePreviewPane()
+    {
+        _previewPaneClosedByUser = true;
+        UpdatePreviewPaneState(_current);
     }
 
     private async void CloseDocument(ToolEditorDocument document)
@@ -2189,7 +3963,7 @@ public sealed class ToolEditorForm : Form
         _fileTree.BeginUpdate();
         _fileTree.SelectedNode = null;
         _fileTree.Nodes.Clear();
-        var root = new TreeNode("Language package")
+        var root = new TreeNode(TreeLabel("root", "Taalpakket"))
         {
             NodeFont = new Font(_fileTree.Font, FontStyle.Bold)
         };
@@ -2200,7 +3974,7 @@ public sealed class ToolEditorForm : Form
                      .ThenBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
             AddDocumentNode(root, document);
 
-        root.ExpandAll();
+        root.Expand();
         _fileTree.EndUpdate();
         try
         {
@@ -2213,13 +3987,13 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static void AddDocumentNode(TreeNode root, ToolEditorDocument document)
+    private void AddDocumentNode(TreeNode root, ToolEditorDocument document)
     {
-        var parts = BuildTreePath(document.PackagePath);
+        var parts = BuildDocumentTreePath(document);
         var parent = root;
         for (var i = 0; i < parts.Count; i++)
         {
-            var part = parts[i];
+            var part = LocalizeTreePart(parts[i]);
             var existing = FindChild(parent, part);
             if (existing is null)
             {
@@ -2232,6 +4006,73 @@ public sealed class ToolEditorForm : Form
 
         parent.Tag = document;
         parent.ToolTipText = BuildDocumentTooltip(document);
+    }
+
+    private static IReadOnlyList<string> BuildDocumentTreePath(ToolEditorDocument document)
+    {
+        var parts = BuildTreePath(document.PackagePath).ToList();
+        if (parts.Count > 0 &&
+            Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase) &&
+            TryGetDocumentHeading(document.Editor.Text, out var heading))
+        {
+            parts[^1] = heading;
+        }
+
+        return parts;
+    }
+
+    private static bool TryGetDocumentHeading(string text, out string heading)
+    {
+        heading = string.Empty;
+        var match = Regex.Match(text, @"<h[12][^>]*>(?<title>[\s\S]*?)</h[12]>", RegexOptions.IgnoreCase);
+        if (!match.Success)
+            return false;
+
+        var title = Regex.Replace(match.Groups["title"].Value, "<[^>]+>", "", RegexOptions.IgnoreCase);
+        title = WebUtility.HtmlDecode(title).Trim();
+        if (title.Length == 0 || title.StartsWith('['))
+            return false;
+
+        heading = title;
+        return true;
+    }
+
+    private string LocalizeTreePart(string part)
+    {
+        if (part.StartsWith("Taal: ", StringComparison.OrdinalIgnoreCase))
+            return TreeLabel("language_prefix", "Taal: ") + part["Taal: ".Length..];
+
+        return part switch
+        {
+            "Vertaling" => TreeLabel("translation", "Vertaling"),
+            "Help voor gebruikers" => TreeLabel("user_help", "Help voor gebruikers"),
+            "NOD voor gebruikers" => TreeLabel("nod_users", "NOD voor gebruikers"),
+            "NOD voor ontwikkelaars" => TreeLabel("nod_developers", "NOD voor ontwikkelaars"),
+            "Belangrijke commands" => TreeLabel("important_commands", "Belangrijke commands"),
+            "Formulekaart" => TreeLabel("formula_card", "Formulekaart"),
+            "Taalmanager help" => TreeLabel("tool_editor_help", "Taalmanager help"),
+            "Juridische documenten" => TreeLabel("legal_documents", "Juridische documenten"),
+            "JavaScript documenten" => TreeLabel("javascript_documents", "JavaScript documenten"),
+            "CSS documenten" => TreeLabel("css_documents", "CSS documenten"),
+            "HTML templates" => TreeLabel("html_templates", "HTML-sjablonen"),
+            "Media en afbeeldingen" => TreeLabel("media", "Media en afbeeldingen"),
+            "Ongeldig pakketbestand" => TreeLabel("invalid_package_file", "Ongeldig pakketbestand"),
+            "Startpagina" => TreeLabel("start_page", "Startpagina"),
+            "Basis" => TreeLabel("base", "Basis"),
+            "Help" => TreeLabel("help", "Help"),
+            "Handleiding" => TreeLabel("manual", "Handleiding"),
+            "Overig" => TreeLabel("other", "Overig"),
+            "Overige scripts" => TreeLabel("other_scripts", "Overige scripts"),
+            "Overige stijlen" => TreeLabel("other_styles", "Overige stijlen"),
+            "NOD help" => TreeLabel("nod_help", "NOD help"),
+            "Snippets" => TreeLabel("snippets", "Snippets"),
+            _ => part
+        };
+    }
+
+    private string TreeLabel(string key, string fallback)
+    {
+        return TToolEditor("tool_editor.tree." + key, fallback);
     }
 
     private static int GetTreeSortGroup(string packagePath)
@@ -2260,10 +4101,37 @@ public sealed class ToolEditorForm : Form
             return 3;
         }
 
+        if (path.StartsWith("help/content/tool-editor/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/tool-editor/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("tool-editor/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 4;
+        }
+
+        if (path.StartsWith("help/content/legal/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/legal/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("legal/", StringComparison.OrdinalIgnoreCase))
+        {
+            return 5;
+        }
+
+        if (Path.GetExtension(path).Equals(".js", StringComparison.OrdinalIgnoreCase))
+            return 6;
+
+        if (Path.GetExtension(path).Equals(".css", StringComparison.OrdinalIgnoreCase))
+            return 7;
+
+        if (path.StartsWith("help/content/helpapi/", StringComparison.OrdinalIgnoreCase))
+            return 8;
+
+        if (path.StartsWith("source/templates/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("templates/", StringComparison.OrdinalIgnoreCase))
+            return 8;
+
         if (path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || IsImagePath(path))
             return 9;
 
-        return 8;
+        return 10;
     }
 
     private static string BuildDocumentTooltip(ToolEditorDocument document)
@@ -2287,17 +4155,53 @@ public sealed class ToolEditorForm : Form
             return ["Taal: " + FriendlyLanguageName(Path.GetFileNameWithoutExtension(fileName)), "Vertaling"];
 
         if (path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase))
-            return ["Help voor gebruikers", topic];
+            return IsUserNodHelpFile(fileName)
+                ? ["Help voor gebruikers", "NOD voor gebruikers", FriendlyUserNodHelpTopicName(fileName)]
+                : ["Help voor gebruikers", topic];
 
         if (path.StartsWith("help/content/main/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("help/main/", StringComparison.OrdinalIgnoreCase))
         {
-            return ["Help voor gebruikers", topic];
+            return IsUserNodHelpFile(fileName)
+                ? ["Help voor gebruikers", "NOD voor gebruikers", FriendlyUserNodHelpTopicName(fileName)]
+                : ["Help voor gebruikers", topic];
         }
 
         if (TryGetNodHelpRelativePath(path, out var nodRelativePath))
         {
             return BuildNodHelpTreePath(nodRelativePath, topic);
+        }
+
+        if (TryGetToolEditorHelpRelativePath(path, out var toolEditorRelativePath))
+        {
+            return ["Taalmanager help", FriendlyToolEditorTopicName(Path.GetFileName(toolEditorRelativePath))];
+        }
+
+        if (TryGetLegalDocumentRelativePath(path, out var legalRelativePath))
+        {
+            return ["Juridische documenten", FriendlyLegalDocumentName(Path.GetFileName(legalRelativePath))];
+        }
+
+        if (Path.GetExtension(path).Equals(".js", StringComparison.OrdinalIgnoreCase))
+            return BuildJavaScriptTreePath(fileName);
+
+        if (Path.GetExtension(path).Equals(".css", StringComparison.OrdinalIgnoreCase))
+            return BuildCssTreePath(path, fileName);
+
+        if (TryGetHelpApiReferenceRelativePath(path, out var helpApiRelativePath))
+        {
+            return ["HTML templates", "HelpApi", FriendlyHelpApiReferenceName(Path.GetFileName(helpApiRelativePath))];
+        }
+
+        if (TryGetHelpTemplateRelativePath(path, out var helpTemplateRelativePath))
+        {
+            return ["HTML templates", "Help", FriendlyHelpTemplateName(Path.GetFileName(helpTemplateRelativePath))];
+        }
+
+        if (path.StartsWith("source/templates/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("templates/", StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildTemplateTreePath(path, fileName);
         }
 
         if (path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase) ||
@@ -2316,6 +4220,185 @@ public sealed class ToolEditorForm : Form
             return ["Media en afbeeldingen", fileName];
 
         return ["Ongeldig pakketbestand", topic];
+    }
+
+    private static string FriendlyTemplateDocumentName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "index" or "formula-index" => "Index",
+            "card" or "formula-card" => "Kaartinhoud",
+            _ => FriendlyTopicName(fileName)
+        };
+    }
+
+    private static IReadOnlyList<string> BuildTemplateTreePath(string path, string fileName)
+    {
+        var normalized = NormalizePackagePath(path);
+        if (normalized.StartsWith("source/templates/formula/", StringComparison.OrdinalIgnoreCase) ||
+            normalized.StartsWith("templates/formula-", StringComparison.OrdinalIgnoreCase))
+        {
+            return ["HTML templates", "Formulekaart", FriendlyTemplateDocumentName(fileName)];
+        }
+
+        if (normalized.StartsWith("source/templates/nod/", StringComparison.OrdinalIgnoreCase))
+            return ["HTML templates", "NOD help", FriendlyTemplateDocumentName(fileName)];
+
+        if (normalized.StartsWith("source/templates/manual/", StringComparison.OrdinalIgnoreCase))
+            return ["HTML templates", "Handleiding", FriendlyTemplateDocumentName(fileName)];
+
+        if (normalized.StartsWith("source/templates/help/", StringComparison.OrdinalIgnoreCase))
+            return ["HTML templates", "Help", FriendlyTemplateDocumentName(fileName)];
+
+        return ["HTML templates", "Overig", FriendlyTemplateDocumentName(fileName)];
+    }
+
+    private static bool TryGetHelpTemplateRelativePath(string path, out string relativePath)
+    {
+        const string helpPrefix = "help/";
+
+        if (path.StartsWith(helpPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var rest = path[helpPrefix.Length..];
+            if (!rest.Contains('/') && Path.GetExtension(rest).Equals(".html", StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = rest;
+                return true;
+            }
+        }
+
+        relativePath = string.Empty;
+        return false;
+    }
+
+    private static string FriendlyHelpTemplateName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "document-body" => "Documentinhoud",
+            "document-topic" => "Documentonderwerp",
+            "formula-card" => "Formulekaart",
+            "formula-film" => "Formulefilm",
+            _ => FriendlyTemplateDocumentName(fileName)
+        };
+    }
+
+    private static bool TryGetHelpApiReferenceRelativePath(string path, out string relativePath)
+    {
+        const string prefix = "help/content/helpapi/";
+        if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[prefix.Length..];
+            return true;
+        }
+
+        relativePath = string.Empty;
+        return false;
+    }
+
+    private static string FriendlyHelpApiReferenceName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "readme" => "Overzicht",
+            "javascript-css" => "JavaScript en CSS",
+            "notice" => "Info blok",
+            "warning" => "Waarschuwing",
+            "details" => "Uitklapblok",
+            "code" => "Code",
+            "table" => "Tabel",
+            "screenshot" => "Afbeelding",
+            "command-link" => "Command-link",
+            "example-card" => "Voorbeeldkaart",
+            "dont" => "Niet doen",
+            _ => FriendlyTopicName(fileName)
+        };
+    }
+
+    private static bool TryGetLegalDocumentRelativePath(string path, out string relativePath)
+    {
+        const string contentPrefix = "help/content/legal/";
+        const string helpPrefix = "help/legal/";
+        const string legalPrefix = "legal/";
+
+        if (path.StartsWith(contentPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[contentPrefix.Length..];
+            return true;
+        }
+
+        if (path.StartsWith(helpPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[helpPrefix.Length..];
+            return true;
+        }
+
+        if (path.StartsWith(legalPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[legalPrefix.Length..];
+            return true;
+        }
+
+        relativePath = string.Empty;
+        return false;
+    }
+
+    private static string FriendlyLegalDocumentName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "license-agreement" => "Licentieovereenkomst",
+            "privacy-statement" => "Privacyverklaring",
+            _ => FriendlyTopicName(fileName)
+        };
+    }
+
+    private static string FriendlyJavaScriptDocumentName(string fileName)
+    {
+        return Path.GetFileName(fileName).ToLowerInvariant() switch
+        {
+            "basis.js" => "Basisweergave",
+            "main-help.js" => "Hoofdhelp",
+            "nod.js" => "NOD weergave",
+            "nod-popup.js" => "NOD popup tips",
+            "formula.js" => "Formulekaart weergave",
+            _ => FriendlyTopicName(fileName)
+        };
+    }
+
+    private static IReadOnlyList<string> BuildJavaScriptTreePath(string fileName)
+    {
+        return Path.GetFileName(fileName).ToLowerInvariant() switch
+        {
+            "basis.js" => ["JavaScript documenten", "Basis", "Basisweergave"],
+            "main-help.js" => ["JavaScript documenten", "Help voor gebruikers", "Hoofdhelp"],
+            "nod.js" => ["JavaScript documenten", "NOD help", "NOD weergave"],
+            "nod-popup.js" => ["JavaScript documenten", "NOD help", "NOD popup tips"],
+            "formula.js" => ["JavaScript documenten", "Formulekaart", "Formulekaart weergave"],
+            _ => ["JavaScript documenten", "Overige scripts", FriendlyJavaScriptDocumentName(fileName)]
+        };
+    }
+
+    private static string FriendlyCssDocumentName(string fileName)
+    {
+        return Path.GetFileName(fileName).ToLowerInvariant() switch
+        {
+            "main-help.css" => "Hoofdhelp",
+            "nod-popup.css" => "NOD popup tips",
+            _ => FriendlyTopicName(fileName)
+        };
+    }
+
+    private static IReadOnlyList<string> BuildCssTreePath(string path, string fileName)
+    {
+        var normalized = NormalizePackagePath(path);
+        return Path.GetFileName(fileName).ToLowerInvariant() switch
+        {
+            "main-help.css" => ["CSS documenten", "Help voor gebruikers", "Hoofdhelp"],
+            "nod-popup.css" => ["CSS documenten", "NOD help", "NOD popup tips"],
+            _ when normalized.StartsWith("help/", StringComparison.OrdinalIgnoreCase) => ["CSS documenten", "Help", FriendlyCssDocumentName(fileName)],
+            _ => ["CSS documenten", "Overige stijlen", FriendlyCssDocumentName(fileName)]
+        };
     }
 
     private static bool TryGetNodHelpRelativePath(string path, out string relativePath)
@@ -2344,6 +4427,47 @@ public sealed class ToolEditorForm : Form
 
         relativePath = string.Empty;
         return false;
+    }
+
+    private static bool TryGetToolEditorHelpRelativePath(string path, out string relativePath)
+    {
+        const string contentPrefix = "help/content/tool-editor/";
+        const string helpPrefix = "help/tool-editor/";
+        const string toolEditorPrefix = "tool-editor/";
+
+        if (path.StartsWith(contentPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[contentPrefix.Length..];
+            return true;
+        }
+
+        if (path.StartsWith(helpPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[helpPrefix.Length..];
+            return true;
+        }
+
+        if (path.StartsWith(toolEditorPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = path[toolEditorPrefix.Length..];
+            return true;
+        }
+
+        relativePath = string.Empty;
+        return false;
+    }
+
+    private static string FriendlyToolEditorTopicName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "overview" => "ToolEditor gebruiken",
+            "package-workflow" => "Taalpakket workflow",
+            "html-editor" => "HTML bewerken",
+            "media" => "Media en afbeeldingen",
+            "compile" => "Valideren en compileren",
+            _ => FriendlyTopicName(fileName)
+        };
     }
 
     private static string FriendlyNodHelpCategory(string category)
@@ -2452,17 +4576,17 @@ public sealed class ToolEditorForm : Form
         };
     }
 
-    private static (string Group, string Topic) BuildListLabels(string packagePath)
+    private (string Group, string Topic) BuildListLabels(ToolEditorDocument document)
     {
-        var path = BuildTreePath(packagePath);
+        var path = BuildDocumentTreePath(document);
         return path.Count >= 2
-            ? (path[0], path[^1])
-            : ("Ongeldig pakketbestand", path[0]);
+            ? (LocalizeTreePart(path[0]), LocalizeTreePart(path[^1]))
+            : (TreeLabel("invalid_package_file", "Ongeldig pakketbestand"), LocalizeTreePart(path[0]));
     }
 
-    private static void ApplyDocumentLabels(ToolEditorDocument document)
+    private void ApplyDocumentLabels(ToolEditorDocument document)
     {
-        var labels = BuildListLabels(document.PackagePath);
+        var labels = BuildListLabels(document);
         document.TreeGroup = labels.Group;
         document.TreeTopic = labels.Topic;
     }
@@ -2560,6 +4684,12 @@ public sealed class ToolEditorForm : Form
         if (_updatingNavigation)
             return;
 
+        if (e.Node?.Tag is null && e.Node?.Text.Equals("Media en afbeeldingen", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            SelectMediaManager();
+            return;
+        }
+
         if (e.Node?.Tag is ToolEditorDocument document && !ReferenceEquals(document, _current))
             SelectDocument(document);
     }
@@ -2569,6 +4699,7 @@ public sealed class ToolEditorForm : Form
         if (_current is null)
             return;
 
+        EnsureDocumentTextLoaded(_current, ensureEditorUi: true);
         await SyncHtmlEditorToSourceAsync();
 
         var errors = ValidateDocument(_current);
@@ -2576,13 +4707,13 @@ public sealed class ToolEditorForm : Form
         AddMissingInternalLinkErrors(_current, errors);
         if (errors.Count == 0)
         {
-            SetStatus("Validation passed: " + _current.DisplayName, isError: false);
+            SetStatus(TToolEditor("tool_editor.status.validation_passed", "Validation passed: ") + _current.DisplayName, isError: false);
             if (showMessage)
-                MessageBox.Show(this, "Validation passed.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, TToolEditor("tool_editor.validation.passed", "Validation passed."), "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
-        SetStatus("Validation failed: " + errors[0], isError: true);
+        SetStatus(TToolEditor("tool_editor.status.validation_failed", "Validation failed: ") + errors[0], isError: true);
         if (showMessage)
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "ToolEditor validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
@@ -2593,19 +4724,20 @@ public sealed class ToolEditorForm : Form
         ValidateJson(_manifestText, errors);
         if (errors.Count == 0)
         {
-            SetStatus("Manifest is geldig.", isError: false);
+            SetStatus(TToolEditor("tool_editor.status.manifest_valid", "Manifest is valid."), isError: false);
             if (showMessage)
-                MessageBox.Show(this, "Manifest is geldig.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, TToolEditor("tool_editor.manifest.valid", "Manifest is valid."), "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
-        SetStatus("Manifest ongeldig: " + errors[0], isError: true);
+        SetStatus(TToolEditor("tool_editor.status.manifest_invalid", "Manifest invalid: ") + errors[0], isError: true);
         if (showMessage)
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Manifest", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     private void ValidatePackageLinks(bool showMessage)
     {
+        EnsureAllLazyDocumentsLoaded();
         var errors = new List<string>();
         foreach (var document in _documents)
         {
@@ -2615,19 +4747,20 @@ public sealed class ToolEditorForm : Form
 
         if (errors.Count == 0)
         {
-            SetStatus("Alle HTML-links verwijzen naar bestaande package-documenten en media.", isError: false);
+            SetStatus(TToolEditor("tool_editor.status.links_valid", "All HTML links point to existing package documents and media."), isError: false);
             if (showMessage)
-                MessageBox.Show(this, "Alle HTML-links zijn gevonden in het package.", "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, TToolEditor("tool_editor.links.valid", "All HTML links were found in the package."), "ToolEditor", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
-        SetStatus("HTML-link ontbreekt: " + errors[0], isError: true);
+        SetStatus(TToolEditor("tool_editor.status.link_missing", "HTML link missing: ") + errors[0], isError: true);
         if (showMessage)
             MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Ontbrekende links", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     private async Task CompileLanguagePackageAsync()
     {
+        EnsureAllLazyDocumentsLoaded();
         await SyncHtmlEditorToSourceAsync();
 
         var errors = new List<string>();
@@ -2638,15 +4771,15 @@ public sealed class ToolEditorForm : Form
             .ToList();
         if (errors.Count > 0)
         {
-            SetStatus("Package niet gecompileerd: " + errors[0], isError: true);
-            MessageBox.Show(this, string.Join(Environment.NewLine, errors), "Package compileren", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            SetStatus(TToolEditor("tool_editor.status.package_not_compiled", "Package not compiled: ") + errors[0], isError: true);
+            MessageBox.Show(this, string.Join(Environment.NewLine, errors), TToolEditor("tool_editor.compile.title", "Compile package"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         var manifest = ReadManifestProperties(_manifestText);
         using var dialog = new SaveFileDialog
         {
-            Title = "Language package compileren",
+            Title = TToolEditor("tool_editor.compile.title", "Compile package"),
             FileName = "Syscalculator-" + SanitizeFileName(manifest.LanguageCode) + ".lngpdk",
             Filter = "Tiedragon language package (*.lngpdk)|*.lngpdk",
             OverwritePrompt = true,
@@ -2662,24 +4795,25 @@ public sealed class ToolEditorForm : Form
         var tempFolder = Path.Combine(Path.GetTempPath(), "Tiedragon.ToolEditor", "compile", Guid.NewGuid().ToString("N"));
         try
         {
-            WritePackageSourceFolder(tempFolder);
-            var result = BuildLanguagePackage(tempFolder, outputPath);
-            SetStatus("Package gecompileerd. SHA-256: " + result.PackageSha256, isError: false);
+            Directory.CreateDirectory(tempFolder);
+            var objectPackagePath = Path.Combine(tempFolder, "source" + ObjectPackageExtension);
+            WriteObjectPackageArchive(objectPackagePath);
+            var result = BuildLanguagePackage(objectPackagePath, outputPath);
+            SetStatus(TToolEditor("tool_editor.status.package_compiled", "Package compiled. SHA-256: ") + result.PackageSha256, isError: false);
             MessageBox.Show(
                 this,
-                "Package gecompileerd:\r\n" + outputPath +
+                TToolEditor("tool_editor.compile.success.path", "Package compiled:\r\n") + outputPath +
                 "\r\n\r\nPackage SHA-256:\r\n" + result.PackageSha256 +
                 "\r\n\r\nPayload SHA-256:\r\n" + result.PayloadSha256 +
-                "\r\n\r\nEncryptie: nog niet actief\r\n" +
-                "De reader accepteert voorlopig alleen niet-versleutelde packages.",
-                "Package compileren",
+                "\r\n\r\n" + TToolEditor("tool_editor.compile.success.encryption", "Encryption: not active yet\r\nThe reader currently accepts only unencrypted packages."),
+                TToolEditor("tool_editor.compile.title", "Compile package"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or InvalidOperationException)
         {
-            SetStatus("Package compile mislukt: " + ex.Message, isError: true);
-            MessageBox.Show(this, ex.Message, "Package compileren", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            SetStatus(TToolEditor("tool_editor.status.package_compile_failed", "Package compile failed: ") + ex.Message, isError: true);
+            MessageBox.Show(this, ex.Message, TToolEditor("tool_editor.menu.package.compile", "Compile package..."), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -2701,8 +4835,8 @@ public sealed class ToolEditorForm : Form
     {
         using var dialog = new OpenFileDialog
         {
-            Title = "SHA-256 berekenen",
-            Filter = "Tiedragon language package (*.lngpdk)|*.lngpdk|Alle bestanden (*.*)|*.*",
+            Title = TToolEditor("tool_editor.sha256.title", "Calculate SHA-256"),
+            Filter = TToolEditor("tool_editor.sha256.filter", "Tiedragon language package (*.lngpdk)|*.lngpdk|All files (*.*)|*.*"),
             CheckFileExists = true,
         };
 
@@ -2712,12 +4846,12 @@ public sealed class ToolEditorForm : Form
         try
         {
             var hash = ComputeSha256File(dialog.FileName);
-            SetStatus("SHA-256: " + hash, isError: false);
+            SetStatus(TToolEditor("tool_editor.status.sha256", "SHA-256: ") + hash, isError: false);
             MessageBox.Show(this, dialog.FileName + "\r\n\r\nSHA-256:\r\n" + hash, "SHA-256", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            SetStatus("SHA-256 mislukt: " + ex.Message, isError: true);
+            SetStatus(TToolEditor("tool_editor.status.sha256_failed", "SHA-256 failed: ") + ex.Message, isError: true);
             MessageBox.Show(this, ex.Message, "SHA-256", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
@@ -2726,17 +4860,15 @@ public sealed class ToolEditorForm : Form
     {
         MessageBox.Show(
             this,
-            "De `.lngpdk` compile gebruikt nu een strikte container met dubbele SHA-256-controle:\r\n\r\n" +
-            "- package SHA-256 voor het volledige bestand\r\n" +
-            "- payload SHA-256 in de containerheader\r\n\r\n" +
-            "Encryptie staat bewust nog uit. Syscalculator weigert encrypted packages nu fail-closed, zodat er geen half ondersteunde package kan laden. De container heeft het veld `Encrypted`, dus AES-encryptie kan later veilig worden toegevoegd.",
-            "Encryptie",
+            TToolEditor("tool_editor.security.info.message", "The `.lngpdk` compile uses a strict container with double SHA-256 checks:\r\n\r\n- package SHA-256 for the full file\r\n- payload SHA-256 in the container header\r\n\r\nEncryption is intentionally disabled for now. Syscalculator refuses encrypted packages fail-closed until support is complete.\r\n\r\nSigning uses RSA-PSS-SHA256. If `Signed` is enabled, the reader verifies against language-package-trusted-keys.json and refuses fail-closed without a trusted public key."),
+            TToolEditor("tool_editor.security.info.title", "Package security"),
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }
 
     private void ValidatePackageForCompile(List<string> errors)
     {
+        EnsureAllLazyDocumentsLoaded();
         ValidateJson(_manifestText, errors);
         if (errors.Count > 0)
             return;
@@ -2798,14 +4930,8 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
-        var extension = Path.GetExtension(path);
-        if (BlockedPackageExtensions.Contains(extension) || !AllowedPackageExtensions.Contains(extension))
-            errors.Add("Bestandstype is niet toegestaan: " + packagePath);
-        if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase) &&
-            !AllowedPackageScriptFiles.Contains(Path.GetFileName(path)))
-        {
-            errors.Add("Scriptbestand is niet toegestaan: " + packagePath);
-        }
+        if (!LanguagePackagePolicy.Current.IsAllowedPackagePath(path))
+            errors.Add("Package path is not allowed: " + packagePath);
 
         if (isImage && !path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase))
             errors.Add("Media hoort onder assets/: " + packagePath);
@@ -2813,13 +4939,17 @@ public sealed class ToolEditorForm : Form
 
     private void WritePackageSourceFolder(string rootFolder)
     {
+        EnsureAllLazyDocumentsLoaded();
         Directory.CreateDirectory(rootFolder);
         File.WriteAllText(GetSafePackageFilePath(rootFolder, "manifest.json"), _manifestText, Encoding.UTF8);
+        var explicitEntries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var document in _documents.OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
         {
             var packagePath = NormalizePackagePath(document.PackagePath);
-            if (IsManifestPath(packagePath))
+            if (IsManifestPath(packagePath) || IsCompileSourceOnlyDocument(packagePath))
+                continue;
+            if (IsGeneratedFormulaHtmlDocument(packagePath) && !document.Dirty)
                 continue;
 
             var filePath = GetSafePackageFilePath(rootFolder, packagePath);
@@ -2827,13 +4957,124 @@ public sealed class ToolEditorForm : Form
             if (document.ImageBytes is not null)
                 File.WriteAllBytes(filePath, document.ImageBytes);
             else
-                File.WriteAllText(filePath, document.Editor.Text, Encoding.UTF8);
+                File.WriteAllText(filePath, GetDocumentTextForStorage(document), Encoding.UTF8);
+            explicitEntries.Add(packagePath);
+        }
+
+        foreach (var entry in BuildGeneratedFormulaDocumentsForCompile())
+        {
+            if (explicitEntries.Contains(entry.Key))
+                continue;
+
+            var filePath = GetSafePackageFilePath(rootFolder, entry.Key);
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            File.WriteAllText(filePath, entry.Value, Encoding.UTF8);
         }
     }
 
-    private static LanguagePackageCompileResult BuildLanguagePackage(string sourceFolder, string outputPath)
+    private void WriteObjectPackageArchive(string outputPath)
     {
-        var payload = BuildZipPayload(sourceFolder);
+        EnsureAllLazyDocumentsLoaded();
+        var fullOutputPath = Path.GetFullPath(outputPath);
+        var outputDirectory = Path.GetDirectoryName(fullOutputPath) ??
+            throw new InvalidOperationException("Outputpad is ongeldig.");
+        Directory.CreateDirectory(outputDirectory);
+
+        var tempPath = Path.Combine(outputDirectory, Path.GetFileName(fullOutputPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+        try
+        {
+            using (var file = File.Create(tempPath))
+            using (var archive = new ZipArchive(file, ZipArchiveMode.Create))
+            {
+                WriteObjectPackageEntry(archive, "manifest.json", Encoding.UTF8.GetBytes(_manifestText));
+
+                foreach (var document in _documents.OrderBy(document => document.PackagePath, StringComparer.OrdinalIgnoreCase))
+                {
+                    var packagePath = NormalizePackagePath(document.PackagePath);
+                    if (IsManifestPath(packagePath))
+                        continue;
+
+                    var bytes = document.ImageBytes ?? Encoding.UTF8.GetBytes(GetDocumentTextForStorage(document));
+                    WriteObjectPackageEntry(archive, packagePath, bytes);
+                }
+            }
+
+            File.Move(tempPath, fullOutputPath, overwrite: true);
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+    }
+
+    private static void WriteObjectPackageEntry(ZipArchive archive, string packagePath, byte[] bytes)
+    {
+        var normalizedPath = NormalizePackagePath(packagePath);
+        ValidatePackageEntryPathOrThrow(normalizedPath, IsImagePath(normalizedPath));
+        var entry = archive.CreateEntry(normalizedPath, CompressionLevel.Optimal);
+        using var stream = entry.Open();
+        stream.Write(bytes);
+    }
+
+    private IReadOnlyDictionary<string, string> BuildGeneratedFormulaDocumentsForCompile()
+    {
+        var languageMap = ReadLanguageText(
+            _documents.FirstOrDefault(document =>
+                    document.PackagePath.StartsWith("language/", StringComparison.OrdinalIgnoreCase) &&
+                    document.PackagePath.EndsWith(".lng", StringComparison.OrdinalIgnoreCase))
+                ?.Editor.Text ?? "");
+        var indexTemplate = FindTemplateText("source/templates/formula/index.html", "templates/formula-index.html", FormulaIndexPackageTemplate);
+        var cardTemplate = FindTemplateText("source/templates/formula/card.html", "templates/formula-card.html", FormulaCardPackageTemplate);
+        var cards = FormulaCardCatalog.GetDefaultCards()
+            .Select(card => LocalizeFormulaCard(card, languageMap))
+            .ToArray();
+        var entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["formula/index.html"] = BuildFormulaIndexHtml(cards, languageMap, indexTemplate)
+        };
+
+        foreach (var card in cards.OrderBy(card => card.Title, StringComparer.CurrentCultureIgnoreCase))
+            entries[BuildFormulaCardPackagePath(card.Source)] = BuildFormulaCardHtml(card, languageMap, cardTemplate);
+
+        return entries;
+    }
+
+    private static bool IsCompileSourceOnlyDocument(string packagePath)
+    {
+        var path = NormalizePackagePath(packagePath);
+        return path.StartsWith("source/templates/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("templates/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsGeneratedFormulaHtmlDocument(string packagePath)
+    {
+        var path = NormalizePackagePath(packagePath);
+        return path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase) &&
+            Path.GetExtension(path).Equals(".html", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetDocumentTextForStorage(ToolEditorDocument document)
+    {
+        var text = document.Editor.Text;
+        return Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase)
+            ? EnsureTrailingEndLine(text)
+            : text;
+    }
+
+    private static LanguagePackageCompileResult BuildLanguagePackage(string sourcePath, string outputPath)
+    {
+        using var preparedSource = PreparePackageSourceFolder(sourcePath);
+        var payload = BuildZipPayload(preparedSource.Folder);
         var payloadSha256 = ComputeSha256Bytes(payload);
         var header = new LanguagePackageContainerHeader(
             LanguagePackageContainerFormat,
@@ -2862,6 +5103,47 @@ public sealed class ToolEditorForm : Form
         }
 
         return new LanguagePackageCompileResult(outputPath, ComputeSha256File(outputPath), payloadSha256);
+    }
+
+    private static PreparedPackageSourceFolder PreparePackageSourceFolder(string sourcePath)
+    {
+        var fullPath = Path.GetFullPath(sourcePath);
+        if (Directory.Exists(fullPath))
+            return new PreparedPackageSourceFolder(fullPath, null);
+
+        if (File.Exists(fullPath) && Path.GetExtension(fullPath).Equals(ObjectPackageExtension, StringComparison.OrdinalIgnoreCase))
+        {
+            var tempFolder = Path.Combine(Path.GetTempPath(), "Tiedragon.ToolEditor", "objpdk", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempFolder);
+            ExtractObjectPackageArchive(fullPath, tempFolder);
+            return new PreparedPackageSourceFolder(tempFolder, tempFolder);
+        }
+
+        throw new InvalidDataException("Compilebron moet een map of .objpdk zijn: " + sourcePath);
+    }
+
+    private static void ExtractObjectPackageArchive(string archivePath, string targetFolder)
+    {
+        var root = Path.GetFullPath(targetFolder);
+        using var file = File.OpenRead(archivePath);
+        using var archive = new ZipArchive(file, ZipArchiveMode.Read);
+        foreach (var entry in archive.Entries)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Name))
+                continue;
+
+            var packagePath = NormalizePackagePath(entry.FullName);
+            ValidatePackageEntryPathOrThrow(packagePath, IsImagePath(packagePath));
+            var outputPath = Path.GetFullPath(Path.Combine(root, packagePath.Replace('/', Path.DirectorySeparatorChar)));
+            var rootPrefix = root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
+            if (!outputPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Packagepad valt buiten tijdelijke map: " + packagePath);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+            using var input = entry.Open();
+            using var output = File.Create(outputPath);
+            input.CopyTo(output);
+        }
     }
 
     private static byte[] BuildZipPayload(string sourceFolder)
@@ -2921,7 +5203,7 @@ public sealed class ToolEditorForm : Form
         if (document.ImageBytes is not null || !IsHtmlDocument(document))
             return;
 
-        foreach (Match match in HtmlMediaLinkRegex.Matches(document.Editor.Text))
+        foreach (Match match in HtmlMediaLinkRegex.Matches(GetDocumentEngineHtml(document)))
         {
             var link = match.Groups["path"].Value;
             if (!MediaExists(link))
@@ -2934,7 +5216,7 @@ public sealed class ToolEditorForm : Form
         if (document.ImageBytes is not null || !IsHtmlDocument(document))
             return;
 
-        foreach (Match match in HtmlHrefLinkRegex.Matches(document.Editor.Text))
+        foreach (Match match in HtmlHrefLinkRegex.Matches(GetDocumentEngineHtml(document)))
         {
             var link = match.Groups["path"].Value;
             if (!ShouldValidateInternalLink(link))
@@ -2964,7 +5246,7 @@ public sealed class ToolEditorForm : Form
             cleaned.EndsWith(".html", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static List<string> ValidateDocument(ToolEditorDocument document)
+    private List<string> ValidateDocument(ToolEditorDocument document)
     {
         var errors = new List<string>();
         if (document.ImageBytes is not null)
@@ -2973,6 +5255,9 @@ public sealed class ToolEditorForm : Form
         var name = document.DisplayName;
         var extension = Path.GetExtension(name);
         var text = document.Editor.Text;
+        var engineText = extension.Equals(".html", StringComparison.OrdinalIgnoreCase)
+            ? GetDocumentEngineHtml(document)
+            : text;
 
         if (!IsAllowedPackageDocumentPath(document.PackagePath))
             errors.Add("Package path is not allowed: " + document.PackagePath);
@@ -2983,13 +5268,31 @@ public sealed class ToolEditorForm : Form
             ValidateJson(text, errors);
         else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
             ValidateLanguageFile(text, errors);
-        else if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) && !text.Contains('<'))
-            errors.Add(document.PackagePath + ": HTML document does not contain markup.");
+        else if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!engineText.Contains('<'))
+                errors.Add(document.PackagePath + ": HTML document does not contain markup.");
+
+            AddMathMlValidationErrors(document.PackagePath, engineText, errors);
+        }
 
         if (string.IsNullOrWhiteSpace(text))
             errors.Add("Document is empty.");
 
         return errors;
+    }
+
+    private static void AddMathMlValidationErrors(string packagePath, string html, List<string> errors)
+    {
+        foreach (var error in MathMlParser.ValidateFragments(html))
+            errors.Add(packagePath + ": " + error);
+    }
+
+    private string GetDocumentEngineHtml(ToolEditorDocument document)
+    {
+        return IsHtmlDocument(document)
+            ? ApplyToolEditorHelpPlaceholders(document.Editor.Text)
+            : document.Editor.Text;
     }
 
     private static void ValidateNoMojibake(string text, List<string> errors)
@@ -3015,24 +5318,8 @@ public sealed class ToolEditorForm : Form
     private static bool IsAllowedPackageDocumentPath(string packagePath)
     {
         var path = NormalizePackagePath(packagePath);
-        if (IsManifestPath(path))
-            return true;
-        if (path.StartsWith("language/", StringComparison.OrdinalIgnoreCase) &&
-            Path.GetExtension(path).Equals(".lng", StringComparison.OrdinalIgnoreCase))
-            return true;
-        if ((path.StartsWith("manual/", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("help/content/main/", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("help/main/", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
-             path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase)) &&
-            IsHelpTextPath(path))
-        {
-            return true;
-        }
-
-        return false;
+        return LanguagePackagePolicy.Current.IsAllowedPackagePath(path) &&
+            !LanguagePackagePolicy.Current.IsImagePath(path);
     }
 
     private static bool IsProtectedPackageDocument(string packagePath)
@@ -3045,6 +5332,11 @@ public sealed class ToolEditorForm : Form
             path.StartsWith("help/content/nod/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("help/nod/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("nod/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/content/tool-editor/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("help/tool-editor/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("tool-editor/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("source/templates/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("templates/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("formula/", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -3060,26 +5352,40 @@ public sealed class ToolEditorForm : Form
 
     private static bool IsImagePath(string path)
     {
-        var extension = Path.GetExtension(path);
-        return extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".svg", StringComparison.OrdinalIgnoreCase);
+        return LanguagePackagePolicy.Current.IsImagePath(path);
     }
 
-    private static bool IsHelpTextPath(string path)
+    private static bool IsUserNodHelpFile(string fileName)
     {
-        var extension = Path.GetExtension(path);
-        return extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
-            extension.Equals(".js", StringComparison.OrdinalIgnoreCase);
+        var name = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant();
+        return name.Contains("nod", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string FriendlyUserNodHelpTopicName(string fileName)
+    {
+        return Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant() switch
+        {
+            "nodfiles" => "NOD-bestanden en Catalogus",
+            "nodeditor" => "NOD Editor gebruiksaanwijzing",
+            "nod_catalogus" or "nod_catalog" or "nod_catalogo" or "nod_cataleg" => "NOD Catalogus",
+            _ => FriendlyTopicName(fileName)
+        };
+    }
+
+    private ToolEditorHtmlViewState GetHtmlViewState(ToolEditorDocument document)
+    {
+        return ToolEditorHtmlViewApi.GetState(
+            document.PackagePath,
+            document.Editor.Text,
+            document.ImageBytes is not null,
+            document.HtmlEditMode,
+            _webViewInitializationStarted,
+            _previewPaneClosedByUser);
     }
 
     private static bool IsHtmlDocument(ToolEditorDocument document)
     {
-        return Path.GetExtension(document.PackagePath).Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-            document.Editor.Text.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
-            document.Editor.Text.Contains("<img", StringComparison.OrdinalIgnoreCase);
+        return ToolEditorHtmlViewApi.IsHtmlDocument(document.PackagePath, document.Editor.Text);
     }
 
     private bool MediaExists(string link)
@@ -3109,12 +5415,18 @@ public sealed class ToolEditorForm : Form
 
     private void ScheduleSyntaxHighlight(ToolEditorDocument document)
     {
-        if (document.Highlighting || document.Editor.IsDisposed)
+        if (!ReferenceEquals(_current, document) ||
+            document.Highlighting ||
+            document.Editor.IsDisposed ||
+            document.Editor.TextLength > GetSyntaxHighlightLimit(document.PackagePath) ||
+            !IsSyntaxHighlightedSource(document.PackagePath, out _))
+        {
             return;
+        }
 
         document.HighlightTimer ??= new System.Windows.Forms.Timer
         {
-            Interval = 180
+            Interval = 320
         };
         document.HighlightTimer.Stop();
         document.HighlightTimer.Tick -= HighlightTimer_Tick;
@@ -3136,33 +5448,23 @@ public sealed class ToolEditorForm : Form
     private static void ApplySyntaxHighlight(ToolEditorDocument document)
     {
         var editor = document.Editor;
-        if (editor.IsDisposed || document.Highlighting || document.ImageBytes is not null)
+        if (editor.IsDisposed ||
+            document.Highlighting ||
+            document.ImageBytes is not null ||
+            editor.TextLength > GetSyntaxHighlightLimit(document.PackagePath))
+        {
+            return;
+        }
+
+        var version = BuildSyntaxHighlightVersion(document);
+        if (string.Equals(document.SyntaxHighlightVersion, version, StringComparison.Ordinal))
             return;
 
         document.Highlighting = true;
         try
         {
-            var selectionStart = editor.SelectionStart;
-            var selectionLength = editor.SelectionLength;
-            var text = editor.Text;
-
-            editor.SuspendLayout();
-            editor.SelectAll();
-            editor.SelectionColor = Color.FromArgb(31, 41, 55);
-
-            var extension = Path.GetExtension(document.PackagePath);
-            if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase))
-                HighlightHtml(editor, text);
-            else if (extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
-                HighlightCss(editor, text);
-            else if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
-                HighlightJson(editor, text);
-            else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
-                HighlightLanguage(editor, text);
-
-            editor.Select(Math.Min(selectionStart, editor.TextLength), Math.Min(selectionLength, Math.Max(0, editor.TextLength - selectionStart)));
-            editor.SelectionColor = Color.FromArgb(31, 41, 55);
-            editor.ResumeLayout();
+            ApplySyntaxHighlight(editor, document.PackagePath);
+            document.SyntaxHighlightVersion = version;
         }
         finally
         {
@@ -3170,32 +5472,118 @@ public sealed class ToolEditorForm : Form
         }
     }
 
+    private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath)
+    {
+        if (editor.IsDisposed ||
+            editor.TextLength > GetSyntaxHighlightLimit(packagePath) ||
+            !IsSyntaxHighlightedSource(packagePath, out var extension))
+        {
+            return;
+        }
+
+        var selectionStart = editor.SelectionStart;
+        var selectionLength = editor.SelectionLength;
+        var text = editor.Text;
+
+        SetControlRedraw(editor, enabled: false);
+        try
+        {
+            editor.SuspendLayout();
+            editor.SelectAll();
+            editor.SelectionColor = SyntaxDefaultColor;
+
+            if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".htm", StringComparison.OrdinalIgnoreCase))
+                HighlightHtml(editor, text);
+            else if (extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
+                HighlightCss(editor, text);
+            else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
+                HighlightLanguage(editor, text);
+            else if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase))
+                HighlightJavaScript(editor, text);
+            else if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                HighlightJson(editor, text);
+
+            editor.Select(
+                Math.Min(selectionStart, editor.TextLength),
+                Math.Min(selectionLength, Math.Max(0, editor.TextLength - selectionStart)));
+        }
+        finally
+        {
+            editor.ResumeLayout();
+            SetControlRedraw(editor, enabled: true);
+        }
+    }
+
+    private static string BuildSyntaxHighlightVersion(ToolEditorDocument document)
+    {
+        var editor = document.Editor;
+        return document.PackagePath + "|" + editor.TextLength.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + editor.Text.GetHashCode().ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static bool IsSyntaxHighlightedSource(string packagePath, out string extension)
+    {
+        extension = Path.GetExtension(packagePath);
+        if (!LanguagePackagePolicy.Current.IsAllowedPackagePath(packagePath))
+            return false;
+
+        return extension.Equals(".lng", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".htm", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".css", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".js", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".json", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int GetSyntaxHighlightLimit(string packagePath)
+    {
+        return Path.GetExtension(packagePath).Equals(".lng", StringComparison.OrdinalIgnoreCase)
+            ? MaxLanguageSyntaxHighlightChars
+            : MaxSourceSyntaxHighlightChars;
+    }
+
     private static void HighlightHtml(RichTextBox editor, string text)
     {
-        ApplyMatches(editor, text, HtmlCommentRegex, Color.FromArgb(47, 128, 67));
-        ApplyMatches(editor, text, HtmlTagRegex, Color.FromArgb(0, 74, 173));
-        ApplyMatches(editor, text, HtmlAttributeRegex, Color.FromArgb(170, 72, 20), groupIndex: 1);
-        ApplyMatches(editor, text, QuotedStringRegex, Color.FromArgb(126, 82, 0));
+        ApplyMatches(editor, text, HtmlCommentRegex, SyntaxCommentColor);
+        ApplyMatches(editor, text, HtmlTagRegex, SyntaxKeywordColor);
+        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
     }
 
     private static void HighlightCss(RichTextBox editor, string text)
     {
-        ApplyMatches(editor, text, CssSelectorRegex, Color.FromArgb(96, 64, 160), groupIndex: 2);
-        ApplyMatches(editor, text, HtmlAttributeRegex, Color.FromArgb(170, 72, 20), groupIndex: 1);
-        ApplyMatches(editor, text, QuotedStringRegex, Color.FromArgb(126, 82, 0));
-    }
-
-    private static void HighlightJson(RichTextBox editor, string text)
-    {
-        ApplyMatches(editor, text, JsonPropertyRegex, Color.FromArgb(0, 74, 173));
-        ApplyMatches(editor, text, QuotedStringRegex, Color.FromArgb(126, 82, 0));
-        ApplyMatches(editor, text, JsonPropertyRegex, Color.FromArgb(0, 74, 173));
+        ApplyMatches(editor, text, CssSelectorRegex, SyntaxSelectorColor, groupIndex: 2);
+        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
     }
 
     private static void HighlightLanguage(RichTextBox editor, string text)
     {
-        ApplyMatches(editor, text, LanguageKeyRegex, Color.FromArgb(0, 74, 173));
-        ApplyMatches(editor, text, new Regex(@"^[ \t]*[#;].*$", RegexOptions.Multiline), Color.FromArgb(47, 128, 67));
+        ApplyMatches(editor, text, LanguageKeyRegex, SyntaxKeywordColor);
+        ApplyMatches(editor, text, LanguageCommentRegex, SyntaxCommentColor);
+    }
+
+    private static void HighlightJavaScript(RichTextBox editor, string text)
+    {
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
+        ApplyMatches(editor, text, JavaScriptKeywordRegex, SyntaxKeywordColor);
+        ApplyMatches(editor, text, JavaScriptCommentRegex, SyntaxCommentColor);
+    }
+
+    private static void HighlightJson(RichTextBox editor, string text)
+    {
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
+        ApplyMatches(editor, text, JsonPropertyRegex, SyntaxKeywordColor);
+    }
+
+    private static void SetControlRedraw(Control control, bool enabled)
+    {
+        if (!control.IsHandleCreated)
+            return;
+
+        SendMessage(control.Handle, WmSetRedraw, enabled ? 1 : 0, 0);
+        if (enabled)
+            control.Invalidate();
     }
 
     private static void ApplyMatches(RichTextBox editor, string text, Regex regex, Color color, int groupIndex = 0)
@@ -3261,11 +5649,59 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private async void UpdatePreview()
+    private void UpdatePreview(bool initializePreview = false)
     {
+        if (!_webViewInitializationStarted && !initializePreview)
+        {
+            UpdatePreviewPaneState(_current);
+            return;
+        }
+
+        if (_previewPaneClosedByUser && !initializePreview)
+        {
+            UpdatePreviewPaneState(_current);
+            return;
+        }
+
         if (_current is null)
         {
-            SetHtml(WrapHtml("ToolEditor", "<p>No document selected.</p>"));
+            SetHtml(WrapHtml("ToolEditor", "<p>No document selected.</p>"), initializePreview);
+            return;
+        }
+
+        if (_current.HtmlEditMode)
+            return;
+
+        _pendingPreviewInitialize |= initializePreview;
+        _previewRefreshTimer.Stop();
+        _previewRefreshTimer.Start();
+    }
+
+    private async void PreviewRefreshTimer_Tick(object? sender, EventArgs e)
+    {
+        _previewRefreshTimer.Stop();
+        var initializePreview = _pendingPreviewInitialize;
+        _pendingPreviewInitialize = false;
+        await RenderPreviewAsync(initializePreview);
+    }
+
+    private async Task RenderPreviewAsync(bool initializePreview)
+    {
+        if (!_webViewInitializationStarted && !initializePreview)
+        {
+            UpdatePreviewPaneState(_current);
+            return;
+        }
+
+        if (_previewPaneClosedByUser && !initializePreview)
+        {
+            UpdatePreviewPaneState(_current);
+            return;
+        }
+
+        if (_current is null)
+        {
+            SetHtml(WrapHtml("ToolEditor", "<p>No document selected.</p>"), initializePreview);
             return;
         }
 
@@ -3273,24 +5709,21 @@ public sealed class ToolEditorForm : Form
             return;
 
         await SyncHtmlEditorToSourceAsync();
-        SetHtml(BuildPreviewHtml(_current));
+        SetHtml(BuildPreviewHtml(_current), initializePreview);
     }
 
     private string BuildPreviewHtml(ToolEditorDocument document)
     {
-        var extension = Path.GetExtension(document.DisplayName);
-        if (document.ImageBytes is not null)
-            return WrapImageHtml(BuildImagePreview(document));
-
+        UpdatePreviewConceptBannerState(document);
         var text = document.Editor.Text;
-        if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) || text.Contains("<html", StringComparison.OrdinalIgnoreCase))
-            return WrapContentHtml(ResolveMediaLinksForPreview(StripToolEditorConceptBanners(text)), ShouldShowConceptBanner(), CurrentConceptBannerLanguagePrefix());
-        if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
-            return WrapHtml(document.DisplayName, BuildLanguagePreview(text));
-        if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
-            return WrapHtml(document.DisplayName, BuildJsonPreview(text));
-
-        return WrapHtml(document.DisplayName, "<pre>" + WebUtility.HtmlEncode(text) + "</pre>");
+        return GetHtmlViewState(document).PreviewKind switch
+        {
+            ToolEditorPreviewKind.Image => WrapImageHtml(BuildImagePreview(document)),
+            ToolEditorPreviewKind.Html => WrapContentHtml(ResolveMediaLinksForPreview(StripToolEditorConceptBanners(text))),
+            ToolEditorPreviewKind.Language => WrapHtml(document.DisplayName, BuildLanguagePreview(text)),
+            ToolEditorPreviewKind.Json => WrapHtml(document.DisplayName, BuildJsonPreview(text)),
+            _ => WrapHtml(document.DisplayName, "<pre>" + WebUtility.HtmlEncode(text) + "</pre>")
+        };
     }
 
     private string ResolveMediaLinksForPreview(string html)
@@ -3311,13 +5744,14 @@ public sealed class ToolEditorForm : Form
 
     private void SetHtmlEditor(string html)
     {
-        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(StripToolEditorConceptBanners(html)), ShouldShowConceptBanner(), CurrentConceptBannerLanguagePrefix()));
+        SetHtmlEditorHtml(BuildEditableHtml(ResolveMediaLinksForEditor(StripToolEditorConceptBanners(html))));
     }
 
     private void SetHtmlEditorHtml(string html)
     {
         _loadingHtmlEditor = true;
         _pendingHtmlEditor = html;
+        StartHtmlEditorInitialization();
         ShowPendingHtmlEditorIfReady();
     }
 
@@ -3342,13 +5776,11 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string BuildEditableHtml(string body, bool showConceptBanner, string conceptLanguagePrefix)
+    private string BuildEditableHtml(string body)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine +
             ToolEditorConceptBannerCss() + Environment.NewLine +
             "body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }";
-        if (showConceptBanner)
-            body = BuildConceptHelpBanner(conceptLanguagePrefix) + body;
 
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHtmlEditScript()));
     }
@@ -3430,6 +5862,9 @@ public sealed class ToolEditorForm : Form
         {
             ".jpg" or ".jpeg" => "image/jpeg",
             ".svg" => "image/svg+xml",
+            ".webp" => "image/webp",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
             _ => "image/png"
         };
     }
@@ -3460,11 +5895,19 @@ public sealed class ToolEditorForm : Form
     private static string BuildLanguagePreview(string text)
     {
         var rows = new StringBuilder();
+        var count = 0;
+        var skipped = 0;
         foreach (var line in text.Replace("\r\n", "\n").Split('\n'))
         {
             var trimmed = line.Trim();
             if (trimmed.Length == 0 || trimmed.StartsWith('#') || trimmed.StartsWith(';'))
                 continue;
+
+            if (count >= MaxLanguagePreviewRows)
+            {
+                skipped++;
+                continue;
+            }
 
             var index = trimmed.IndexOf('=');
             var key = index < 0 ? trimmed : trimmed[..index];
@@ -3474,14 +5917,20 @@ public sealed class ToolEditorForm : Form
                 .Append("</th><td>")
                 .Append(WebUtility.HtmlEncode(value))
                 .Append("</td></tr>");
+            count++;
         }
 
-        return rows.Length == 0
-            ? "<p>No language keys found.</p>"
-            : "<table>" + rows + "</table>";
+        if (rows.Length == 0)
+            return "<p>No language keys found.</p>";
+
+        var notice = skipped > 0
+            ? "<p class=\"help-info\">Preview toont de eerste " + MaxLanguagePreviewRows.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+              " sleutels. Er zijn nog " + skipped.ToString("N0") + " sleutels verborgen voor snelheid.</p>"
+            : "";
+        return notice + "<table>" + rows + "</table>";
     }
 
-    private static string WrapHtml(string title, string body)
+    private string WrapHtml(string title, string body)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine + """
         .media-meta { color: #334155; margin-bottom: 14px; }
@@ -3491,12 +5940,9 @@ public sealed class ToolEditorForm : Form
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapTopicPage(title, body, css, ToolEditorHelpPreviewScript()));
     }
 
-    private static string WrapContentHtml(string body, bool showConceptBanner, string conceptLanguagePrefix)
+    private string WrapContentHtml(string body)
     {
         var css = HelpApi.NodHelpCss() + Environment.NewLine + ToolEditorConceptBannerCss();
-        if (showConceptBanner)
-            body = BuildConceptHelpBanner(conceptLanguagePrefix) + body;
-
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHelpPreviewScript()));
     }
 
@@ -3528,10 +5974,15 @@ public sealed class ToolEditorForm : Form
     private static string ToolEditorConceptBannerCss()
     {
         return """
-        .concept-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 18px; padding: 10px 12px; border: 1px solid #f1c232; border-left: 5px solid #d69400; border-radius: 6px; background: #fff4bf; color: #3f2f12; box-shadow: 0 1px 2px rgba(15, 23, 42, .08); }
+        html, body { overflow-x: hidden; }
+        .concept-banner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-sizing: border-box; width: auto; max-width: none !important; min-height: 56px; margin: -24px -44px 22px -28px; padding: 12px 22px 10px 28px; border: 0; border-bottom: 1px solid #e0b800; border-radius: 0; background: #ffd400; color: #1f2937; box-shadow: none; overflow: hidden; }
+        .concept-banner::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 1px; background: #f3c600; }
+        .concept-banner span { color: #1f2937; }
+        .concept-banner-icon { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #fff9d6; color: #111827; border: 1px solid #d6a318; }
+        .concept-banner-icon svg { width: 25px; height: 25px; display: block; }
         .concept-banner b { color: #7a4a00; }
-        .concept-banner-close { flex: 0 0 auto; width: 24px; height: 24px; border: 1px solid #d6a318; border-radius: 50%; background: #fff9dc; color: #6b4500; font: 700 14px/20px "Segoe UI", Arial, sans-serif; cursor: pointer; }
-        .concept-banner-close:hover { background: #ffe98f; border-color: #b77900; }
+        .concept-banner-close { flex: 0 0 auto; width: 23px; height: 23px; border: 1px solid #dbe3ee; border-radius: 50%; background: #ffffff; color: #334155; font: 700 13px/19px "Segoe UI", Arial, sans-serif; cursor: pointer; }
+        .concept-banner-close:hover { background: #e2e8f0; border-color: #94a3b8; }
         """;
     }
 
@@ -3540,6 +5991,17 @@ public sealed class ToolEditorForm : Form
         return """
         <script>
         document.body.contentEditable = 'true';
+        document.body.tabIndex = 0;
+        window.toolEditorFocusBody = () => {
+          document.body.focus({ preventScroll: true });
+          const selection = window.getSelection();
+          if (!selection || selection.rangeCount > 0) return;
+          const range = document.createRange();
+          range.selectNodeContents(document.body);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        };
         document.addEventListener('click', event => {
           const close = event.target && event.target.closest ? event.target.closest('.concept-banner-close') : null;
           if (!close) return;
@@ -3558,7 +6020,7 @@ public sealed class ToolEditorForm : Form
           window.chrome.webview.postMessage('tooleditor:goto:' + link.getAttribute('href'));
         });
         document.body.addEventListener('input', () => window.chrome.webview.postMessage('changed'));
-        document.body.focus();
+        window.toolEditorFocusBody();
         </script>
         """;
     }
@@ -3586,11 +6048,134 @@ public sealed class ToolEditorForm : Form
         """;
     }
 
-    private static string ApplyToolEditorHelpPlaceholders(string html)
+    private string ApplyToolEditorHelpPlaceholders(string html)
     {
-        return html
-            .Replace("[menu.edit.copy]", "Kopieren", StringComparison.Ordinal)
-            .Replace("[help.copy.copied]", "Gekopieerd", StringComparison.Ordinal);
+        var language = ReadCurrentPackageLanguage();
+        var texts = LoadToolEditorHelpTexts(language);
+        string? ResolveText(string key) => texts.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : key switch
+            {
+                "menu.edit.copy" => "Kopieren",
+                "help.copy.copied" => "Gekopieerd",
+                _ => null
+            };
+
+        var languageCode = language.Code;
+        var prepared = HeadingPlaceholderRegex.Replace(html, match =>
+        {
+            var placeholder = match.Groups["placeholder"].Value;
+            var key = placeholder[1..^1];
+            var replacement = ResolveText(key);
+            return IsBlockHtml(replacement) ? replacement! : match.Value;
+        });
+        var expanded = HelpApi.ApplyLanguagePlaceholders(ResolveText, prepared);
+        return HelpHtml.ApplyContentPlaceholders(expanded, new Dictionary<string, string?>
+        {
+            ["WarningBoardSvg"] = BuildPackageInlineSvg("assets/warning_board.svg") ?? WarningBoardSvg(),
+            ["NodEditorScreenshot"] = BuildPackageScreenshotImage(
+                "assets/NodEditorHelp.svg",
+                ResolveText("help.main.page.nodeditor.screenshot_alt") ?? "Screenshot of the NOD Editor with toolbar, code editor and command tip.") ?? HelpApi.ScreenshotImage(
+                languageCode,
+                ResolveText,
+                "NodEditorHelp.svg",
+                ResolveText("help.main.page.nodeditor.screenshot_alt") ?? "Screenshot of the NOD Editor with toolbar, code editor and command tip."),
+            ["WizardExpressScreenshot"] = BuildPackageScreenshotImage(
+                "assets/WizardExpressHelp.png",
+                ResolveText("help.main.page.wizard.screenshot_alt") ?? "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.") ?? HelpApi.ScreenshotImage(
+                languageCode,
+                ResolveText,
+                "WizardExpressHelp.png",
+                ResolveText("help.main.page.wizard.screenshot_alt") ?? "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.")
+        });
+    }
+
+    private static bool IsBlockHtml(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+            return false;
+
+        var trimmed = html.TrimStart();
+        return trimmed.StartsWith("<h", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<p", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<div", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<table", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<details", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<ul", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<ol", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("<pre", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string? BuildPackageInlineSvg(string packagePath)
+    {
+        var media = FindMediaDocument(packagePath);
+        if (media?.ImageBytes is null)
+            return null;
+
+        try
+        {
+            return Encoding.UTF8.GetString(media.ImageBytes);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private string? BuildPackageScreenshotImage(string packagePath, string altText)
+    {
+        var media = FindMediaDocument(packagePath);
+        if (media?.ImageBytes is null)
+            return null;
+
+        var mime = ImageMimeType(media.PackagePath);
+        var base64 = Convert.ToBase64String(media.ImageBytes);
+        return "<div class=\"screenshot-frame\"><img src=\"data:" +
+            mime +
+            ";base64," +
+            base64 +
+            "\" alt=\"" +
+            WebUtility.HtmlEncode(altText) +
+            "\" /></div>";
+    }
+
+    private static string WarningBoardSvg()
+    {
+        return """
+        <svg class="warning-board" viewBox="0 0 52 48" aria-hidden="true" focusable="false">
+          <path d="M26 4 49 43H3L26 4Z" fill="#facc15" stroke="#b91c1c" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M26 17v13" stroke="#7f1d1d" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="26" cy="37" r="3" fill="#7f1d1d"/>
+        </svg>
+        """;
+    }
+
+    private ToolEditorLanguageInfo ReadCurrentPackageLanguage()
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(_manifestText);
+            var root = json.RootElement;
+            var code = NormalizeLanguageCode(GetManifestString(root, "languageCode"));
+            if (string.IsNullOrWhiteSpace(code))
+                return ReadConfiguredToolEditorLanguage();
+
+            var key = GetManifestString(root, "key");
+            if (string.IsNullOrWhiteSpace(key))
+                key = GetManifestString(root, "id");
+            var displayName = GetManifestString(root, "displayName");
+            var nativeName = GetManifestString(root, "nativeName");
+            return new ToolEditorLanguageInfo(
+                code,
+                string.IsNullOrWhiteSpace(displayName) ? LanguageDisplayName(code) : displayName,
+                string.IsNullOrWhiteSpace(nativeName) ? LanguageNativeName(code) : nativeName,
+                string.IsNullOrWhiteSpace(key) ? null : key,
+                null);
+        }
+        catch (JsonException)
+        {
+            return ReadConfiguredToolEditorLanguage();
+        }
     }
 
     private static string WrapImageHtml(string body)
@@ -3669,22 +6254,27 @@ public sealed class ToolEditorForm : Form
 
     private async Task InitializeBrowserAsync()
     {
+        var stopwatch = Stopwatch.StartNew();
         try
         {
             await _preview.EnsureCoreWebView2Async();
             ShowPendingHtmlIfReady();
+            ToolEditorDebugger.Log("Preview WebView2 initialized in " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
         }
         catch (COMException)
         {
             _browserFailed = true;
+            ToolEditorDebugger.Log("Preview WebView2 COM initialization failed after " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
         }
         catch (ObjectDisposedException)
         {
             _browserFailed = true;
+            ToolEditorDebugger.Log("Preview WebView2 disposed during initialization after " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
         }
         catch (Exception ex)
         {
             _browserFailed = true;
+            ToolEditorDebugger.ReportException("Preview WebView2 initialization failed", ex, showDialog: false);
             _preview.Controls.Add(new Label
             {
                 Dock = DockStyle.Fill,
@@ -3696,22 +6286,27 @@ public sealed class ToolEditorForm : Form
 
     private async Task InitializeHtmlEditorAsync()
     {
+        var stopwatch = Stopwatch.StartNew();
         try
         {
             await _htmlEditor.EnsureCoreWebView2Async();
             ShowPendingHtmlEditorIfReady();
+            ToolEditorDebugger.Log("HTML editor WebView2 initialized in " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
         }
         catch (COMException)
         {
             _htmlEditorFailed = true;
+            ToolEditorDebugger.Log("HTML editor WebView2 COM initialization failed after " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
         }
         catch (ObjectDisposedException)
         {
             _htmlEditorFailed = true;
+            ToolEditorDebugger.Log("HTML editor WebView2 disposed during initialization after " + stopwatch.ElapsedMilliseconds.ToString("N0") + " ms.");
         }
         catch (Exception ex)
         {
             _htmlEditorFailed = true;
+            ToolEditorDebugger.ReportException("HTML editor WebView2 initialization failed", ex, showDialog: false);
             _htmlEditor.Controls.Add(new Label
             {
                 Dock = DockStyle.Fill,
@@ -3721,9 +6316,13 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private void SetHtml(string html)
+    private void SetHtml(string html, bool initializePreview = false)
     {
         _pendingHtml = html;
+        if (initializePreview)
+            StartWebViewInitialization();
+
+        UpdatePreviewPaneState(_current);
         ShowPendingHtmlIfReady();
     }
 
@@ -3794,6 +6393,8 @@ public sealed class ToolEditorForm : Form
     private void DismissConceptBanner()
     {
         _conceptBannerDismissed = true;
+        UpdatePreviewConceptBannerState(_current);
+        UpdateEditConceptBannerState(_current);
         RemoveConceptBannersFromBrowsers();
     }
 
@@ -3824,11 +6425,11 @@ public sealed class ToolEditorForm : Form
                 target.HtmlEditMode = false;
 
             SelectDocument(target);
-            SetStatus("Link: " + link + " -> " + target.PackagePath, isError: false);
+            SetStatus(TToolEditor("tool_editor.status.link_target", "Link: ") + link + " -> " + target.PackagePath, isError: false);
             return;
         }
 
-        SetStatus("Linkdoel niet gevonden: " + link, isError: true);
+        SetStatus(TToolEditor("tool_editor.status.link_target_missing", "Link target not found: ") + link, isError: true);
     }
 
     private bool TryResolvePackageLink(string link, ToolEditorDocument? source, out ToolEditorDocument target)
@@ -3982,6 +6583,9 @@ public sealed class ToolEditorForm : Form
 
     private void SetDirty(ToolEditorDocument document, bool dirty)
     {
+        if (document.Dirty == dirty)
+            return;
+
         document.Dirty = dirty;
         RefreshTabStrip();
         UpdateUiState();
@@ -4020,6 +6624,39 @@ public sealed class ToolEditorForm : Form
     {
         _statusLabel.Text = text;
         _statusLabel.ForeColor = isError ? Color.FromArgb(170, 35, 35) : Color.FromArgb(31, 41, 55);
+        UpdateStatusMetrics(_current);
+    }
+
+    private void UpdateStatusMetrics(ToolEditorDocument? document)
+    {
+        if (_statusInfoLabel.IsDisposed)
+            return;
+
+        var documentCount = _documents.Count;
+        var openCount = _documents.Count(item => item.IsOpen);
+        var mediaCount = _documents.Count(item => item.ImageBytes is not null);
+        if (document is null)
+        {
+            _statusInfoLabel.Text = TToolEditor("tool_editor.status.pages", "Pages") + " " + documentCount.ToString("N0") +
+                "   " + TToolEditor("tool_editor.status.tabs", "Tabs") + " " + openCount.ToString("N0") +
+                "   " + TToolEditor("tool_editor.status.media", "Media") + " " + mediaCount.ToString("N0");
+            return;
+        }
+
+        var index = Math.Max(1, _documents.IndexOf(document) + 1);
+        if (document.ImageBytes is not null)
+        {
+            _statusInfoLabel.Text = TToolEditor("tool_editor.status.page", "Page") + " " + index.ToString("N0") + "/" + documentCount.ToString("N0") +
+                "   " + TToolEditor("tool_editor.status.media", "Media") + " " + mediaCount.ToString("N0") +
+                "   " + TToolEditor("tool_editor.status.size", "Size") + " " + document.ImageBytes.Length.ToString("N0") + " bytes";
+            return;
+        }
+
+        var lineCount = Math.Max(1, document.Editor.Lines.Length);
+        _statusInfoLabel.Text = TToolEditor("tool_editor.status.lines", "Lines") + " " + lineCount.ToString("N0") +
+            "   " + TToolEditor("tool_editor.status.characters", "Characters") + " " + document.Editor.TextLength.ToString("N0") +
+            "   " + TToolEditor("tool_editor.status.page", "Page") + " " + index.ToString("N0") + "/" + documentCount.ToString("N0") +
+            "   " + TToolEditor("tool_editor.status.tabs", "Tabs") + " " + openCount.ToString("N0");
     }
 
     private static string[] GetDroppedFiles(DragEventArgs e)
@@ -4036,6 +6673,12 @@ public sealed class ToolEditorForm : Form
     private void ToolEditorForm_DragDrop(object? sender, DragEventArgs e)
     {
         ImportMediaFiles(GetDroppedFiles(e));
+    }
+
+    private void MediaList_DragDrop(object? sender, DragEventArgs e)
+    {
+        ImportMediaFiles(GetDroppedFiles(e), selectImported: false);
+        SelectMediaManager();
     }
 
     private static void ClampSplitter(SplitContainer split, int? preferredDistance = null)
@@ -4061,6 +6704,29 @@ public sealed class ToolEditorForm : Form
         }
     }
 
+    private static void ClampPreviewSplitter(SplitContainer split, int preferredPreviewSize)
+    {
+        var length = split.Orientation == Orientation.Horizontal ? split.Height : split.Width;
+        if (length <= split.SplitterWidth + 2)
+            return;
+
+        var min = Math.Max(1, split.Panel1MinSize);
+        var max = length - split.SplitterWidth - Math.Max(1, split.Panel2MinSize);
+        if (max < min)
+            return;
+
+        var target = Math.Clamp(length - split.SplitterWidth - preferredPreviewSize, min, max);
+        try
+        {
+            if (split.SplitterDistance != target)
+                split.SplitterDistance = target;
+        }
+        catch (InvalidOperationException)
+        {
+            // WinForms can resize split containers before the final client size is stable.
+        }
+    }
+
     private void ToolEditorForm_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Control && e.KeyCode == Keys.S)
@@ -4072,7 +6738,7 @@ public sealed class ToolEditorForm : Form
 
         if (e.KeyCode == Keys.F5)
         {
-            UpdatePreview();
+            ShowPreviewPane();
             e.SuppressKeyPress = true;
             return;
         }
@@ -4089,6 +6755,125 @@ public sealed class ToolEditorForm : Form
         return _current?.Editor.Focused == true && _current.ImageBytes is null;
     }
 
+    private enum ToolEditorOpenKind
+    {
+        SingleFile,
+        PackageSourceFolder,
+        ObjectPackage,
+        PackageArchive
+    }
+
+    private sealed record ToolEditorOpenRequest(
+        ToolEditorOpenKind Kind,
+        string Path,
+        bool ResetPackage,
+        bool SelectPreferredDocument,
+        bool ShowManifestDialog,
+        string SuccessStatusKey,
+        string SuccessStatusFallback,
+        string ErrorStatusKey,
+        string ErrorStatusFallback,
+        string DialogTitleKey,
+        string DialogTitleFallback)
+    {
+        public static ToolEditorOpenRequest SingleFile(string path)
+        {
+            var isManifest = System.IO.Path.GetFileName(path).Equals("manifest.json", StringComparison.OrdinalIgnoreCase);
+            return new ToolEditorOpenRequest(
+                ToolEditorOpenKind.SingleFile,
+                path,
+                ResetPackage: false,
+                SelectPreferredDocument: false,
+                ShowManifestDialog: isManifest,
+                isManifest ? "tool_editor.status.manifest_loaded" : "tool_editor.status.file_opened",
+                isManifest ? "Manifest loaded: " : "File opened: ",
+                "tool_editor.status.open_file_failed",
+                "Open file failed: ",
+                "tool_editor.dialog.open_file.title",
+                "Open file");
+        }
+
+        public static ToolEditorOpenRequest PackageSourceFolder(string path)
+        {
+            return new ToolEditorOpenRequest(
+                ToolEditorOpenKind.PackageSourceFolder,
+                path,
+                ResetPackage: true,
+                SelectPreferredDocument: true,
+                ShowManifestDialog: false,
+                "tool_editor.status.concept_package_opened",
+                "Concept language package opened: ",
+                "tool_editor.status.open_package_failed",
+                "Open language package failed: ",
+                "tool_editor.dialog.open_package.title",
+                "Open language package");
+        }
+
+        public static ToolEditorOpenRequest ObjectPackage(string path)
+        {
+            return new ToolEditorOpenRequest(
+                ToolEditorOpenKind.ObjectPackage,
+                path,
+                ResetPackage: true,
+                SelectPreferredDocument: true,
+                ShowManifestDialog: false,
+                "tool_editor.status.concept_package_opened",
+                "Concept language package opened: ",
+                "tool_editor.status.open_concept_failed",
+                "Open concept language package failed: ",
+                "tool_editor.dialog.open_concept.title",
+                "Open concept language package");
+        }
+
+        public static ToolEditorOpenRequest PackageArchive(string path)
+        {
+            return new ToolEditorOpenRequest(
+                ToolEditorOpenKind.PackageArchive,
+                path,
+                ResetPackage: true,
+                SelectPreferredDocument: true,
+                ShowManifestDialog: false,
+                "tool_editor.status.language_package_opened",
+                "Language package opened: ",
+                "tool_editor.status.open_package_failed",
+                "Open language package failed: ",
+                "tool_editor.dialog.open_package.title",
+                "Open language package");
+        }
+    }
+
+    private sealed class PreparedPackageSourceFolder(string folder, string? temporaryFolder) : IDisposable
+    {
+        public string Folder { get; } = folder;
+
+        public void Dispose()
+        {
+            if (string.IsNullOrWhiteSpace(temporaryFolder))
+                return;
+
+            try
+            {
+                if (Directory.Exists(temporaryFolder))
+                    Directory.Delete(temporaryFolder, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+    }
+
+    private sealed record LocalizedFormulaCard(
+        FormulaCard Source,
+        string Title,
+        string FormulaText,
+        string PlainText,
+        IReadOnlyList<string> Tags,
+        string Description,
+        string ExampleNod);
+
     private sealed class ToolEditorDocument(TabPage page, string displayName, string packagePath, string? filePath)
     {
         public TabPage Page { get; } = page;
@@ -4097,17 +6882,48 @@ public sealed class ToolEditorForm : Form
         public string TreeGroup { get; set; } = "";
         public string TreeTopic { get; set; } = "";
         public string? FilePath { get; set; } = filePath;
+        public DateTimeOffset? LastModified { get; set; }
         public RichTextBox Editor { get; set; } = null!;
         public byte[]? ImageBytes { get; set; }
         public LineNumberPanel? LineNumbers { get; set; }
         public Panel HeaderPanel { get; set; } = null!;
         public Label HeaderTitle { get; set; } = null!;
         public System.Windows.Forms.Timer? HighlightTimer { get; set; }
+        public Func<string>? LazyTextFactory { get; set; }
         public bool Highlighting { get; set; }
+        public string? SyntaxHighlightVersion { get; set; }
+        public bool LazyTextLoaded { get; set; } = true;
         public bool Dirty { get; set; }
         public bool ReadOnly { get; set; }
         public bool IsOpen { get; set; }
         public bool HtmlEditMode { get; set; }
+    }
+
+    private sealed record ToolEditorLanguageInfo(
+        string Code,
+        string DisplayName,
+        string NativeName,
+        string? PackageKey,
+        string? PackagePath);
+
+    private sealed class NavigationRefreshScope : IDisposable
+    {
+        private readonly ToolEditorForm _owner;
+        private bool _disposed;
+
+        public NavigationRefreshScope(ToolEditorForm owner)
+        {
+            _owner = owner;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            _owner._suspendNavigationRefresh = false;
+        }
     }
 
     private sealed record ManifestProperties(
@@ -4128,7 +6944,10 @@ public sealed class ToolEditorForm : Form
         string PayloadFormat,
         string PayloadSha256,
         bool Encrypted,
-        bool Signed);
+        bool Signed,
+        string SignatureAlgorithm = "",
+        string SignatureKeyId = "",
+        string Signature = "");
 
     private sealed record LanguagePackageCompileResult(
         string OutputPath,
@@ -4137,12 +6956,15 @@ public sealed class ToolEditorForm : Form
 
     private sealed class LineNumberPanel : Panel
     {
+        private const int MinPanelWidth = 34;
+        private const int HorizontalPadding = 8;
         private RichTextBox? _editor;
+        private int _lineCount = 1;
 
         public LineNumberPanel()
         {
             Dock = DockStyle.Left;
-            Width = 52;
+            Width = MinPanelWidth;
             BackColor = Color.FromArgb(248, 250, 252);
             ForeColor = Color.FromArgb(100, 116, 139);
             DoubleBuffered = true;
@@ -4151,6 +6973,24 @@ public sealed class ToolEditorForm : Form
         public void Attach(RichTextBox editor)
         {
             _editor = editor;
+            RefreshMetrics();
+            Invalidate();
+        }
+
+        public void RefreshMetrics()
+        {
+            if (_editor is null || _editor.IsDisposed)
+                return;
+
+            var lineCount = Math.Max(1, _editor.GetLineFromCharIndex(_editor.TextLength) + 1);
+            if (_lineCount == lineCount)
+            {
+                Invalidate();
+                return;
+            }
+
+            _lineCount = lineCount;
+            UpdateWidth();
             Invalidate();
         }
 
@@ -4167,7 +7007,7 @@ public sealed class ToolEditorForm : Form
             var firstIndex = _editor.GetCharIndexFromPosition(new Point(0, 0));
             var firstLine = _editor.GetLineFromCharIndex(firstIndex);
             var lastIndex = _editor.GetCharIndexFromPosition(new Point(0, _editor.ClientSize.Height));
-            var lastLine = Math.Min(_editor.Lines.Length - 1, _editor.GetLineFromCharIndex(lastIndex) + 1);
+            var lastLine = Math.Min(_lineCount - 1, _editor.GetLineFromCharIndex(lastIndex) + 1);
 
             for (var line = firstLine; line <= lastLine; line++)
             {
@@ -4178,8 +7018,20 @@ public sealed class ToolEditorForm : Form
                 var position = _editor.GetPositionFromCharIndex(charIndex);
                 var text = (line + 1).ToString();
                 var size = e.Graphics.MeasureString(text, Font);
-                e.Graphics.DrawString(text, Font, brush, Width - size.Width - 7, position.Y);
+                e.Graphics.DrawString(text, Font, brush, Width - size.Width - HorizontalPadding, position.Y);
             }
+        }
+
+        private void UpdateWidth()
+        {
+            if (_editor is null || _editor.IsDisposed)
+                return;
+
+            var digits = _lineCount.ToString(System.Globalization.CultureInfo.InvariantCulture).Length;
+            var digitWidth = TextRenderer.MeasureText(new string('8', digits), Font).Width;
+            var desiredWidth = Math.Max(MinPanelWidth, digitWidth + HorizontalPadding + 4);
+            if (Width != desiredWidth)
+                Width = desiredWidth;
         }
     }
 }

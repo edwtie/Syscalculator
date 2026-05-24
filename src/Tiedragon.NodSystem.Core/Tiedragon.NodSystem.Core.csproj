@@ -8,5 +8,6 @@
     <Title>Tiedragon.NodSystem.Core</Title>
     <Product>Tiedragon.NodSystem.Core</Product>
     <Company>Tiedragon</Company>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 </Project>

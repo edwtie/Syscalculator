@@ -1,8 +1,9 @@
 #nullable enable
+using SharpCompress.Archives;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using SharpCompress.Archives;
+using Tiedragon.LanguagePackage;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -447,6 +448,17 @@ internal static class LanguagePackageService
                 throw new InvalidDataException("Language package payload hash does not match the header.");
         }
 
+        LanguagePackageSignatureVerifier.VerifyOrThrow(
+            header.Signed,
+            header.SignatureAlgorithm,
+            header.SignatureKeyId,
+            header.Signature,
+            payload,
+            header.PayloadSha256,
+            header.SoftwareId,
+            header.PackageType,
+            header.PayloadFormat);
+
         return true;
     }
 
@@ -462,6 +474,13 @@ internal static class LanguagePackageService
             throw new InvalidDataException("Encrypted language packages are not supported yet.");
         if (!string.IsNullOrWhiteSpace(header.PayloadSha256) && !IsSha256Hex(header.PayloadSha256))
             throw new InvalidDataException("Language package payload hash is invalid.");
+        if (!header.Signed &&
+            (!string.IsNullOrWhiteSpace(header.SignatureAlgorithm) ||
+             !string.IsNullOrWhiteSpace(header.SignatureKeyId) ||
+             !string.IsNullOrWhiteSpace(header.Signature)))
+        {
+            throw new InvalidDataException("Language package signature fields are present but signed is false.");
+        }
         if (!string.IsNullOrWhiteSpace(header.PayloadFormat) &&
             !header.PayloadFormat.Equals("zip", StringComparison.OrdinalIgnoreCase) &&
             !header.PayloadFormat.Equals("7z", StringComparison.OrdinalIgnoreCase) &&
@@ -590,4 +609,7 @@ internal sealed class LanguagePackageContainerHeader
     public string PayloadSha256 { get; set; } = "";
     public bool Encrypted { get; set; }
     public bool Signed { get; set; }
+    public string SignatureAlgorithm { get; set; } = "";
+    public string SignatureKeyId { get; set; } = "";
+    public string Signature { get; set; } = "";
 }

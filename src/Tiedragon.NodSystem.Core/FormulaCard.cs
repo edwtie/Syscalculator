@@ -287,7 +287,7 @@ public static class FormulaCardCatalog
             new FormulaCard(
                 "exact-trig-values",
                 "Exacte goniometrische waarden",
-                "0, 30, 45, 60, 90 degrees table",
+                "Tabel met 0, 30, 45, 60 en 90 graden",
                 "Bekende exacte waarden voor sin, cos en tan bij veelgebruikte hoeken.",
                 @"\theta\in\{0^\circ,30^\circ,45^\circ,60^\circ,90^\circ\}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>&#x03B8;</mi><mo>&#x2208;</mo><mo>{</mo><mn>0</mn><mo>&#x00B0;</mo><mo>,</mo><mn>30</mn><mo>&#x00B0;</mo><mo>,</mo><mn>45</mn><mo>&#x00B0;</mo><mo>,</mo><mn>60</mn><mo>&#x00B0;</mo><mo>,</mo><mn>90</mn><mo>&#x00B0;</mo><mo>}</mo></mrow></math>""",
@@ -532,7 +532,7 @@ public static class FormulaCardCatalog
             new FormulaCard(
                 "integral-definite-area",
                 "Bepaalde integraal als oppervlakte",
-                "integral from a to b f(x) dx = area",
+                "integraal van a tot b van f(x) dx = oppervlakte",
                 "Een bepaalde integraal geeft de getekende oppervlakte tussen grafiek en x-as.",
                 @"\int_a^b f(x)\,dx",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msubsup><mo>&#x222B;</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi></mrow></math>""",
@@ -541,7 +541,7 @@ public static class FormulaCardCatalog
                 """
                 Name Bepaalde integraal oppervlakte notitie
                 input text Functie en grenzen a b
-                output area Oppervlakte
+                output oppervlakte Oppervlakte
                 end
                 """),
 
@@ -552,32 +552,32 @@ public static class FormulaCardCatalog
                 "2D vector van de oorsprong naar punt (x,y)",
                 @"\vec{v}=(x,y),\quad |\vec{v}|=\sqrt{x^2+y^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
-                new[] { "VWO D", "PWS", "Vectoren", "2D graph", "Limited vector" },
-                "Een 2D vector is een pijl vanaf de oorsprong naar (x,y); length(vec(...)) is de lengte van die pijl. Voor 3D-visualisatie gebruik je Graph 3D; geometry mode is beschikbaar voor X/Y/Z en NOD math.",
+                new[] { "VWO D", "PWS", "Vectoren", "2D grafiek", "Beperkte vector" },
+                "Een 2D vector is een pijl vanaf de oorsprong naar (x,y); length(vec(...)) berekent de lengte van die pijl. Voor 3D-visualisatie gebruik je Graph 3D; de geometrie-modus is beschikbaar voor X/Y/Z en NOD-wiskunde.",
                 """
                 Name 2D vectorpijl notitie
                 input x X component
                 input y Y component
-                output arrow Grafiekpijl
+                output pijl Grafiekpijl
                 end
                 """),
 
             new FormulaCard(
                 "vector-length-3d",
-                "3D vector length",
+                "3D vectorlengte",
                 "v = (x,y,z), |v| = sqrt(x^2 + y^2 + z^2)",
-                "Length of a 3D vector.",
+                "Lengte van een 3D-vector.",
                 @"\vec{v}=(x,y,z),\quad |\vec{v}|=\sqrt{x^2+y^2+z^2}",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>=</mo><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>z</mi><mo>)</mo><mo>,</mo><mo>|</mo><mover><mi>v</mi><mo>&#x2192;</mo></mover><mo>|</mo><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup></mrow></msqrt></mrow></math>""",
-                new[] { "VWO D", "PWS", "Vectoren", "3D", "Limited vector" },
-                "3D vector length is the length of the arrow from the origin to (x,y,z). Graph 3D shows the full XYZ arrow; Graph 2D can show the same vector as a perspective projection with (x/z,y/z), or as a plain X/Y arrow when z is zero.",
+                new[] { "VWO D", "PWS", "Vectoren", "3D", "Beperkte vector" },
+                "De 3D vectorlengte is de lengte van de pijl vanaf de oorsprong naar (x,y,z). Graph 3D toont de volledige XYZ-pijl; Graph 2D kan dezelfde vector tonen als perspectiefprojectie met (x/z,y/z), of als gewone X/Y-pijl wanneer z nul is.",
                 """
-                Name 3D vector length
+                Name 3D vectorlengte
                 mode geometry
                 input x X component
                 input y Y component
                 input z Z component
-                output length Lengte
+                output lengte Lengte
                 math length(vec(x,y,z))
                 end
                 """),
@@ -607,7 +607,7 @@ public static class FormulaCardCatalog
                 "2D georienteerde oppervlakte via de z-component van het 3D-kruisproduct.",
                 @"(a\times b)_z=a_xb_y-a_yb_x",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><msub><mrow><mo>(</mo><mi>a</mi><mo>&#x00D7;</mo><mi>b</mi><mo>)</mo></mrow><mi>z</mi></msub><mo>=</mo><msub><mi>a</mi><mi>x</mi></msub><msub><mi>b</mi><mi>y</mi></msub><mo>-</mo><msub><mi>a</mi><mi>y</mi></msub><msub><mi>b</mi><mi>x</mi></msub></mrow></math>""",
-                new[] { "VWO D", "Vectoren", "Meetkunde", "PWS", "Limited vector" },
+                new[] { "VWO D", "Vectoren", "Meetkunde", "PWS", "Beperkte vector" },
                 "Handig voor orientatie en oppervlakte. NOD geeft een vector terug, dus gebruik x/y/z voor een component.",
                 """
                 Name Kruisproduct z component
@@ -635,15 +635,15 @@ public static class FormulaCardCatalog
 
             new FormulaCard(
                 "matrix-2x2-determinant",
-                "2x2 matrix determinant",
+                "2x2 matrixdeterminant",
                 "det([[a,b],[c,d]]) = a*d - b*c",
                 "Determinant van een 2x2 matrix is a*d - b*c.",
                 @"\det\begin{pmatrix}a&b\\c&d\end{pmatrix}=ad-bc",
                 """<math xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mi>det</mi><mo>(</mo><mfenced><mtable><mtr><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mi>d</mi></mtd></mtr></mtable></mfenced><mo>)</mo><mo>=</mo><mi>a</mi><mi>d</mi><mo>-</mo><mi>b</mi><mi>c</mi></mrow></math>""",
-                new[] { "VWO D", "PWS", "Lineaire algebra", "Limited matrix" },
-                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices werken in NOD math met mat3(...), det(...), trace(...) en mget(...); Graph 3D is beschikbaar voor visualisatie.",
+                new[] { "VWO D", "PWS", "Lineaire algebra", "Beperkte matrix" },
+                "Matrix-onderwerp voor 2x2 matrices. 3x3 matrices werken in NOD-wiskunde met mat3(...), det(...), trace(...) en mget(...); Graph 3D is beschikbaar voor visualisatie.",
                 """
-                Name 2x2 matrix determinant notitie
+                Name 2x2 matrixdeterminant notitie
                 input text Matrixwaarden a,b,c,d
                 output det Determinant
                 end

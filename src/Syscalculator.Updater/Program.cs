@@ -11,11 +11,15 @@ internal static class Program
     private static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
+        UpdaterLog.Start();
+        UpdaterLog.Info("Syscalculator updater started.");
 
         var options = UpdateOptions.Parse(args);
+        UpdaterLog.Info("Options: " + options.ToLogText());
         var language = UpdaterLanguage.Load(options.InstallDirectory);
         if (!options.IsValid)
         {
+            UpdaterLog.Error("Invalid update options. The updater cannot continue.");
             MessageBox.Show(
                 language.Text("updater.invalid_options", "The update cannot start because update information is missing."),
                 language.Text("updater.title", "Syscalculator updater"),
@@ -25,6 +29,7 @@ internal static class Program
         }
 
         Application.Run(new UpdaterForm(options, language));
+        UpdaterLog.Info("Syscalculator updater closed.");
     }
 }
 
@@ -89,22 +94,28 @@ internal sealed class UpdaterForm : Form
             await RunUpdateAsync(_cancellation.Token);
             _cancelButton.Enabled = false;
             _statusLabel.Text = T("updater.completed", "Update completed. Starting Syscalculator...");
+            UpdaterLog.Info("Update completed. Starting Syscalculator.");
             RestartSyscalculator();
             Close();
         }
         catch (OperationCanceledException)
         {
+            UpdaterLog.Info("Update canceled by user.");
             _statusLabel.Text = T("updater.canceled", "Update canceled.");
             Close();
         }
         catch (Exception ex)
         {
+            UpdaterLog.Error("Update failed.", ex);
             _cancelButton.Text = T("updater.close", "Close");
             _cancelButton.Enabled = true;
             _cancelButton.Click += (_, _) => Close();
             MessageBox.Show(
                 this,
-                string.Format(T("updater.failed", "The update failed.\n\n{0}"), ex.Message),
+                string.Format(
+                    T("updater.failed", "The update failed.\n\n{0}"),
+                    ex.Message + Environment.NewLine + Environment.NewLine +
+                    string.Format(T("updater.log_file", "Log file: {0}"), UpdaterLog.Path)),
                 T("updater.title", "Syscalculator updater"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -118,21 +129,28 @@ internal sealed class UpdaterForm : Form
 
         try
         {
+            UpdaterLog.Info("Temporary package path: " + packagePath);
+            UpdaterLog.Info("Temporary extract path: " + extractPath);
             await DownloadPackageAsync(packagePath, cancellationToken);
             VerifyPackage(packagePath);
 
             _statusLabel.Text = T("updater.extracting", "Extracting update...");
+            UpdaterLog.Info("Extracting package.");
             Directory.CreateDirectory(extractPath);
             ZipFile.ExtractToDirectory(packagePath, extractPath, overwriteFiles: true);
+            UpdaterLog.Info("Package extracted.");
 
             await WaitForSyscalculatorToExitAsync(cancellationToken);
 
             _statusLabel.Text = T("updater.copying", "Updating files...");
             _progressBar.IsMarquee = true;
+            UpdaterLog.Info("Copying extracted files to install directory: " + _options.InstallDirectory);
             CopyDirectory(extractPath, _options.InstallDirectory);
+            UpdaterLog.Info("Files copied.");
         }
         finally
         {
+            UpdaterLog.Info("Cleaning temporary update files.");
             TryDeleteFile(packagePath);
             TryDeleteDirectory(extractPath);
         }
@@ -143,14 +161,17 @@ internal sealed class UpdaterForm : Form
         _statusLabel.Text = T("updater.downloading", "Downloading update...");
         _progressBar.IsMarquee = false;
         _progressBar.Value = 0;
+        UpdaterLog.Info("Downloading package: " + _options.PackageUrl);
 
         using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("SyscalculatorUpdater", "2.0"));
 
         using var response = await client.GetAsync(_options.PackageUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        UpdaterLog.Info("HTTP response: " + (int)response.StatusCode + " " + response.ReasonPhrase);
         response.EnsureSuccessStatusCode();
 
         var totalBytes = response.Content.Headers.ContentLength;
+        UpdaterLog.Info("Expected download size: " + (totalBytes?.ToString() ?? "unknown") + " bytes.");
         await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
         await using var output = File.Create(packagePath);
 
@@ -175,6 +196,8 @@ internal sealed class UpdaterForm : Form
 
         if (totalBytes is > 0)
             await CompleteDownloadProgressAsync(cancellationToken);
+
+        UpdaterLog.Info("Download finished. Bytes downloaded: " + downloaded + ".");
     }
 
     private async Task CompleteDownloadProgressAsync(CancellationToken cancellationToken)
@@ -193,36 +216,49 @@ internal sealed class UpdaterForm : Form
             return;
 
         _statusLabel.Text = T("updater.verifying", "Verifying update...");
+        UpdaterLog.Info("Verifying package SHA-256.");
         using var stream = File.OpenRead(packagePath);
         var hash = Convert.ToHexString(SHA256.HashData(stream));
+        UpdaterLog.Info("Expected SHA-256: " + _options.Sha256);
+        UpdaterLog.Info("Actual SHA-256:   " + hash);
         if (!hash.Equals(_options.Sha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException(T("updater.hash_mismatch", "The update package has a different checksum than expected."));
+
+        UpdaterLog.Info("Package SHA-256 verified.");
     }
 
     private async Task WaitForSyscalculatorToExitAsync(CancellationToken cancellationToken)
     {
         if (_options.ProcessId <= 0)
+        {
+            UpdaterLog.Info("No Syscalculator process id supplied; continuing without wait.");
             return;
+        }
 
         try
         {
             var process = Process.GetProcessById(_options.ProcessId);
             _statusLabel.Text = T("updater.waiting_for_exit", "Waiting for Syscalculator to close...");
+            UpdaterLog.Info("Waiting for Syscalculator process to exit: " + _options.ProcessId);
 
             while (!process.HasExited)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await Task.Delay(250, cancellationToken);
             }
+
+            UpdaterLog.Info("Syscalculator process exited.");
         }
         catch (ArgumentException)
         {
+            UpdaterLog.Info("Syscalculator process was already closed: " + _options.ProcessId);
         }
     }
 
     private static void CopyDirectory(string sourceDirectory, string targetDirectory)
     {
         Directory.CreateDirectory(targetDirectory);
+        var copiedFiles = 0;
 
         foreach (var directory in Directory.GetDirectories(sourceDirectory, "*", SearchOption.AllDirectories))
         {
@@ -236,14 +272,21 @@ internal sealed class UpdaterForm : Form
             var target = Path.Combine(targetDirectory, relative);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             File.Copy(file, target, overwrite: true);
+            copiedFiles++;
         }
+
+        UpdaterLog.Info("Copied files: " + copiedFiles + ".");
     }
 
     private void RestartSyscalculator()
     {
         if (string.IsNullOrWhiteSpace(_options.RestartPath) || !File.Exists(_options.RestartPath))
+        {
+            UpdaterLog.Info("Restart skipped. Restart path is missing: " + _options.RestartPath);
             return;
+        }
 
+        UpdaterLog.Info("Starting Syscalculator: " + _options.RestartPath);
         Process.Start(new ProcessStartInfo
         {
             FileName = _options.RestartPath,
@@ -259,8 +302,9 @@ internal sealed class UpdaterForm : Form
             if (File.Exists(path))
                 File.Delete(path);
         }
-        catch
+        catch (Exception ex)
         {
+            UpdaterLog.Error("Could not delete temporary file: " + path, ex);
         }
     }
 
@@ -271,12 +315,70 @@ internal sealed class UpdaterForm : Form
             if (Directory.Exists(path))
                 Directory.Delete(path, recursive: true);
         }
-        catch
+        catch (Exception ex)
         {
+            UpdaterLog.Error("Could not delete temporary directory: " + path, ex);
         }
     }
 
     private string T(string key, string fallback) => _language.Text(key, fallback);
+}
+
+internal static class UpdaterLog
+{
+    private static readonly object Gate = new();
+    private static string _path = "";
+
+    public static string Path => _path;
+
+    public static void Start()
+    {
+        try
+        {
+            var directory = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Syscalculator",
+                "Updater",
+                "Logs");
+            Directory.CreateDirectory(directory);
+            _path = System.IO.Path.Combine(directory, "updater-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".log");
+            File.WriteAllText(_path, "");
+            Info("Log file: " + _path);
+        }
+        catch
+        {
+            _path = "";
+        }
+    }
+
+    public static void Info(string message) => Write("INFO", message, null);
+
+    public static void Error(string message, Exception? exception = null) => Write("ERROR", message, exception);
+
+    private static void Write(string level, string message, Exception? exception)
+    {
+        if (string.IsNullOrWhiteSpace(_path))
+            return;
+
+        try
+        {
+            lock (Gate)
+            {
+                using var writer = new StreamWriter(_path, append: true);
+                writer.Write(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                writer.Write(" [");
+                writer.Write(level);
+                writer.Write("] ");
+                writer.WriteLine(message);
+                if (exception is not null)
+                    writer.WriteLine(exception);
+            }
+        }
+        catch
+        {
+            // Logging must never block the updater itself.
+        }
+    }
 }
 
 internal sealed class UpdaterProgressBar : Control
@@ -506,5 +608,14 @@ internal sealed class UpdateOptions
     private static string Get(Dictionary<string, string> values, string key)
     {
         return values.TryGetValue(key, out var value) ? value : "";
+    }
+
+    public string ToLogText()
+    {
+        return "PackageUrl=" + (PackageUrl?.ToString() ?? "") +
+            "; InstallDirectory=" + InstallDirectory +
+            "; RestartPath=" + RestartPath +
+            "; Sha256=" + Sha256 +
+            "; ProcessId=" + ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }

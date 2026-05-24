@@ -5,7 +5,6 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Globalization;
-using Tiedragon.Graph;
 
 namespace Tiedragon.Graph.G2D;
 

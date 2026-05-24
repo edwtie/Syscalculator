@@ -1,7 +1,6 @@
 #nullable enable
 
 using System.Globalization;
-using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 

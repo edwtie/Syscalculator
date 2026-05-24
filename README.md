@@ -4,6 +4,11 @@ Syscalculator is de nieuwe C#/.NET lijn van de oude Syscalculator/NOD software. 
 
 De daily-lijn is bedoeld als actieve ontwikkelbron voor Beta 2. Belangrijke onderdelen zijn al beschikbaar, maar daily blijft een testkanaal.
 
+Historisch loopt de lijn terug naar Tiedos/Nodelistomzetter, Nodomzet en
+Hong-technologie uit 1997: gegevens converteren of omzetten als kernidee. Zie
+`docs/SYSCALCULATOR_HISTORY.md` voor de teruggevonden Wayback-bron en de relatie
+met MoneyCalculator, Syscalculator 1.74 en Syscalculator 2.0.
+
 ## Wat zit erin
 
 - NOD 1.0 compatibility voor bestaande converters, zoals `chg`, `trans` en `math ans + - * /`.
@@ -49,6 +54,7 @@ De actuele architectuur staat in:
 
 - `docs/TECHNICAL_DETAILS.md`
 - `docs/ARCHITECTURE_INDEX.md`
+- `docs/SYSCALCULATOR_HISTORY.md`
 - `docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg`
 - `docs/LANGUAGE_PACKAGE_DESIGN.md`
 - `docs/LANGUAGE_PACKAGE_TOOL.md`
@@ -69,7 +75,19 @@ Graph3D is in daily beschikbaar als foundation voor 3D-geometrie. Echte surface 
 
 ## Language Package 1.0
 
-De oude losse `.lng` aanpak groeit door naar `.lngpdk` packages. Een package bevat taalteksten, HTML-help, NOD-help, formulekaarten, toegestane media en package metadata. Daily publiceert deze packages mee onder `LanguagePackages`, zodat Syscalculator direct de packageversie kan gebruiken.
+De oude losse `.lng` aanpak groeit door naar `.objpdk` bronpackages en `.lngpdk` distributiepackages. Een package bevat taalteksten, HTML-help, NOD-help, formulekaarten, toegestane media en package metadata. Daily publiceert de gecompileerde `.lngpdk` mee onder `LanguagePackages`, zodat Syscalculator direct de packageversie kan gebruiken.
+
+Kort verschil:
+
+- `.lng` is een los tekstbestand met alleen vertaalregels in `key=value` vorm, bijvoorbeeld menu's, knoppen en korte UI-teksten.
+- `.objpdk` is het bewerkbare bronpakket voor ToolEditor, generatoren en AI-agenten. Hierin zitten templates, HTML-bronnen, media en conceptwerk.
+- `.lngpdk` is het gecompileerde taalpakket. Het bevat `language/<code>.lng` plus definitieve HTML-help, NOD-help, formulekaarten, media, manifestmetadata, SHA-256-controles en eventueel signing.
+- `.lng` blijft fallback en snelle handmatige compatibiliteit. `.objpdk` is authoring. `.lngpdk` is de releasevorm voor Daily/Beta met validatie en quality gates.
+
+Voordelen/nadelen:
+
+- `.lng` is eenvoudig te lezen en snel handmatig te corrigeren, maar bevat geen help, media, metadata of sterke distributiecontrole. Grote teksten en HTML-help worden in `.lng` lastig te onderhouden, omdat je dan lange regels, escaping en losse link/media-afspraken krijgt.
+- `.objpdk` houdt help, templates en media onderhoudbaar, maar is geen releasebestand. `.lngpdk` houdt alles bij elkaar en voorkomt ontbrekende help/media door validatie, maar vraagt een compileerstap en wordt geweigerd als de package niet klopt.
 
 De package toolchain controleert onder andere:
 
@@ -78,7 +96,8 @@ De package toolchain controleert onder andere:
 - geen losse concepttekst in release-help;
 - werkende interne links;
 - bestaande en previewbare afbeeldingen;
-- alleen allowlisted JavaScript: `basis.js`, `nod.js`, `formula.js`;
+- alleen allowlisted JavaScript: `basis.js`, `main-help.js`, `nod.js`,
+  `nod-popup.js`, `formula.js`;
 - SHA-256 checks voor package en payload.
 
 Alle gegenereerde taalpackages in `web/packages/languages` zijn nu compleet en actief:

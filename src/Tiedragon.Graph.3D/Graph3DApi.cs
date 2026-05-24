@@ -2,8 +2,6 @@
 
 // Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Central entry point for Graph3D camera, grid, projection, and drawing helpers.
-using Tiedragon.Graph;
-
 namespace Tiedragon.Graph.G3D;
 
 /// <summary>

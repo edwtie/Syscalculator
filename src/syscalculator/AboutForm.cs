@@ -1,11 +1,11 @@
 #nullable enable
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Win32;
 using Tiedragon.Help;
 
 namespace Syscalculator.UI.WinForms;
@@ -174,7 +174,7 @@ internal sealed class AboutForm : Form
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 114));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-      
+
         panel.Controls.Add(BuildVersionSection(), 0, 0);
         panel.Controls.Add(BuildCopyrightSection(), 0, 1);
         panel.Controls.Add(BuildDescriptionSection(), 0, 2);
@@ -398,7 +398,9 @@ internal sealed class AboutForm : Form
             title,
             [new NodHelpPage(pageId, title, html)],
             SelectedPageId: pageId,
-            Navigation: GetHelpNavigationLabels()));
+            Navigation: GetHelpNavigationLabels(),
+            OkOnly: true,
+            ShowTopics: false));
     }
 
     private HelpNavigationLabels GetHelpNavigationLabels()

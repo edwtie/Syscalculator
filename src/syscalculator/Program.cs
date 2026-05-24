@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices;
 using System.IO.Pipes;
+using System.Runtime.InteropServices;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -13,38 +13,56 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        if (args.Any(IsHelpSwitch))
+        SyscalculatorDebugger.Initialize(args);
+
+        try
         {
-            ShowCommandLineHelp();
-            return;
+            if (args.Any(IsHelpSwitch))
+            {
+                SyscalculatorDebugger.Log("Startup mode: CommandLineHelp");
+                ShowCommandLineHelp();
+                return;
+            }
+
+            ApplicationConfiguration.Initialize();
+
+            if (ShouldOpenNodTool(args, out var editorPath, out var openTemplateWizard))
+            {
+                SyscalculatorDebugger.Log(
+                    "Startup mode: " + (openTemplateWizard ? "NodTemplateWizard" : "NodEditor") +
+                    "; file=" + (string.IsNullOrWhiteSpace(editorPath) ? "(none)" : editorPath));
+                WindowsShellIntegration.SetCurrentAppUserModelId(
+                    openTemplateWizard
+                        ? WindowsShellIntegration.NodTemplateWizardAppUserModelId
+                        : WindowsShellIntegration.NodEditorAppUserModelId);
+                Application.Run(new NodEditorForm(editorPath, openTemplateWizard));
+                return;
+            }
+
+            WindowsShellIntegration.SetCurrentAppUserModelId(WindowsShellIntegration.MainAppUserModelId);
+            var startInTray = args.Any(IsTraySwitch);
+            var startupNodPath = args.FirstOrDefault(arg => !IsToolSwitch(arg) && !IsWizardToolSwitch(arg) && !IsTraySwitch(arg));
+            SyscalculatorDebugger.Log(
+                "Startup mode: MainForm; tray=" + startInTray +
+                "; startupNod=" + (string.IsNullOrWhiteSpace(startupNodPath) ? "(none)" : startupNodPath));
+
+            using var singleInstance = SingleInstanceController.Create();
+            if (!singleInstance.IsFirstInstance)
+            {
+                SyscalculatorDebugger.Log("Second instance detected; signaling first instance.");
+                singleInstance.SignalFirstInstance(startupNodPath);
+                return;
+            }
+
+            var mainForm = new MainForm(startupNodPath, startInTray);
+            singleInstance.StartListening(mainForm);
+            Application.Run(mainForm);
         }
-
-        ApplicationConfiguration.Initialize();
-
-        if (ShouldOpenNodTool(args, out var editorPath, out var openTemplateWizard))
+        catch (Exception ex)
         {
-            WindowsShellIntegration.SetCurrentAppUserModelId(
-                openTemplateWizard
-                    ? WindowsShellIntegration.NodTemplateWizardAppUserModelId
-                    : WindowsShellIntegration.NodEditorAppUserModelId);
-            Application.Run(new NodEditorForm(editorPath, openTemplateWizard));
-            return;
+            SyscalculatorDebugger.ReportException("Fatal Syscalculator exception", ex, showDialog: true);
+            throw;
         }
-
-        WindowsShellIntegration.SetCurrentAppUserModelId(WindowsShellIntegration.MainAppUserModelId);
-        var startInTray = args.Any(IsTraySwitch);
-        var startupNodPath = args.FirstOrDefault(arg => !IsToolSwitch(arg) && !IsWizardToolSwitch(arg) && !IsTraySwitch(arg));
-
-        using var singleInstance = SingleInstanceController.Create();
-        if (!singleInstance.IsFirstInstance)
-        {
-            singleInstance.SignalFirstInstance(startupNodPath);
-            return;
-        }
-
-        var mainForm = new MainForm(startupNodPath, startInTray);
-        singleInstance.StartListening(mainForm);
-        Application.Run(mainForm);
     }
 
     private static bool ShouldOpenNodTool(string[] args, out string? editorPath, out bool openTemplateWizard)

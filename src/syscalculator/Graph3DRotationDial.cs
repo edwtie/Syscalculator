@@ -23,7 +23,7 @@ internal sealed class Graph3DRotationDial : Control
         Width = 82;
         Height = 82;
         BackColor = Color.White;
-        Cursor = Cursors.SizeAll;
+        Cursor = Cursors.Hand;
         TabStop = false;
         _toolTip.SetToolTip(this, "Drag to rotate like a compass. Double-click to reset.");
     }
@@ -54,7 +54,7 @@ internal sealed class Graph3DRotationDial : Control
     {
         _hover = false;
         if (!_dragging)
-            Cursor = Cursors.SizeAll;
+            Cursor = Cursors.Hand;
         Invalidate();
         base.OnMouseLeave(e);
     }
@@ -120,3 +120,4 @@ internal sealed class Graph3DRotationDial : Control
         Graph3DCompass.DrawCompass(e.Graphics, ClientRectangle, _camera, _hover, _dragging);
     }
 }
+

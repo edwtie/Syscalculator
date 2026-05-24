@@ -1,9 +1,8 @@
+using Microsoft.Win32;
 using System.Drawing.Drawing2D;
 using System.Globalization;
-using Microsoft.Win32;
-using Tiedragon.NodSystem.Core;
-using System.IO;
 using Tiedragon.Help;
+using Tiedragon.NodSystem.Core;
 using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
@@ -113,17 +112,17 @@ public sealed class MainForm : Form
     private bool _updatingText;
     private int _defaultDecimals;
 
-private readonly string? _startupNodPath;
-private readonly bool _startInTray;
+    private readonly string? _startupNodPath;
+    private readonly bool _startInTray;
 
-// Zoek/commentaar: Constructor: maakt en initialiseert MainForm.
-public MainForm(string? startupNodPath = null, bool startInTray = false)
-{
-    _startupNodPath = startupNodPath;
-    _startInTray = startInTray;
+    // Zoek/commentaar: Constructor: maakt en initialiseert MainForm.
+    public MainForm(string? startupNodPath = null, bool startInTray = false)
+    {
+        _startupNodPath = startupNodPath;
+        _startInTray = startInTray;
 
-    Text = AppVersionInfo.DisplayVersion;
-    AppWindowIcon.ApplyTo(this);
+        Text = AppVersionInfo.DisplayVersion;
+        AppWindowIcon.ApplyTo(this);
         Width = 450;
         Height = 280;
         FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -286,15 +285,15 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
         config.DropDownItems.Add(_showIntroductionsMenuItem);
         var liveConvertItem = new ToolStripMenuItem(T("menu.config.live_convert", "Live convert"))
         {
-             CheckOnClick = true,
-                Checked = _liveConvertEnabled
+            CheckOnClick = true,
+            Checked = _liveConvertEnabled
         };
 
         liveConvertItem.CheckedChanged += (_, _) =>
-        {   
-             _liveConvertEnabled = liveConvertItem.Checked;
+        {
+            _liveConvertEnabled = liveConvertItem.Checked;
 
-             if (_liveConvertCheckBox is not null)
+            if (_liveConvertCheckBox is not null)
                 _liveConvertCheckBox.Checked = liveConvertItem.Checked;
         };
 
@@ -721,12 +720,12 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
 
         _toolbarFileLabel = new Label
         {
-         Text = fileLabelText,
-         AutoSize = false,
-         Width = fileLabelWidth,
-         Anchor = AnchorStyles.Left | AnchorStyles.Right,
-         Margin = new Padding(0),
-         TextAlign = ContentAlignment.MiddleLeft
+            Text = fileLabelText,
+            AutoSize = false,
+            Width = fileLabelWidth,
+            Anchor = AnchorStyles.Left | AnchorStyles.Right,
+            Margin = new Padding(0),
+            TextAlign = ContentAlignment.MiddleLeft
         };
 
         strip.Controls.Add(_toolbarFileLabel, 4, 0);
@@ -845,13 +844,13 @@ public MainForm(string? startupNodPath = null, bool startInTray = false)
     ScheduleLiveConvertFromInput();
 };
 
-_outputTextBox.TextChanged += (_, _) =>
-{
-    if (!_updatingText)
-        _outputTextBox.Tag = null;
+        _outputTextBox.TextChanged += (_, _) =>
+        {
+            if (!_updatingText)
+                _outputTextBox.Tag = null;
 
-    ScheduleLiveConvertFromOutput();
-};
+            ScheduleLiveConvertFromOutput();
+        };
         body.Controls.Add(_inputLabel, 3, 0);
         body.Controls.Add(_inputRadio, 0, 1);
         body.Controls.Add(_inputPrefixLabel, 1, 1);
@@ -940,223 +939,223 @@ _outputTextBox.TextChanged += (_, _) =>
 
     // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateSymbolLabel.
     private static Label CreateSymbolLabel()
-{
-    return new Label
     {
-        Text = "",
-        AutoSize = false,
-        Anchor = AnchorStyles.Left,
-        TextAlign = ContentAlignment.MiddleLeft,
-        Margin = new Padding(0)
-    };
-}
-
-// Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateClassicTextBox.
-private static TextBox CreateClassicTextBox()
-{
-    return new TextBox
-    {
-        Width = 220,
-        Anchor = AnchorStyles.Left,
-        TextAlign = HorizontalAlignment.Left
-    };
-}
-
-private void ApplyTextBoxContextMenu(TextBox textBox)
-{
-    if (UsesImeInputLanguage())
-        return;
-
-    var menu = new ContextMenuStrip();
-    var cut = menu.Items.Add(T("menu.edit.cut", "Cut"));
-    var copy = menu.Items.Add(T("menu.edit.copy", "Copy"));
-    var paste = menu.Items.Add(T("menu.edit.paste", "Paste"));
-    var delete = menu.Items.Add(T("menu.edit.delete", "Delete"));
-    menu.Items.Add(new ToolStripSeparator());
-    var selectAll = menu.Items.Add(T("menu.edit.select_all", "Select all"));
-
-    cut.Click += (_, _) => textBox.Cut();
-    copy.Click += (_, _) => textBox.Copy();
-    paste.Click += (_, _) => textBox.Paste();
-    delete.Click += (_, _) =>
-    {
-        if (textBox.SelectionLength > 0)
+        return new Label
         {
-            textBox.SelectedText = string.Empty;
-            return;
-        }
-
-        if (textBox.SelectionStart < textBox.TextLength)
-        {
-            var selectionStart = textBox.SelectionStart;
-            textBox.Text = textBox.Text.Remove(selectionStart, 1);
-            textBox.SelectionStart = selectionStart;
-        }
-    };
-    selectAll.Click += (_, _) => textBox.SelectAll();
-    menu.Opening += (_, e) =>
-    {
-        var hasSelection = textBox.SelectionLength > 0;
-        var hasText = textBox.TextLength > 0;
-        cut.Enabled = hasSelection;
-        copy.Enabled = hasSelection;
-        paste.Enabled = Clipboard.ContainsText();
-        delete.Enabled = hasSelection || textBox.SelectionStart < textBox.TextLength;
-        selectAll.Enabled = hasText;
-        e.Cancel = !hasText && !paste.Enabled;
-    };
-
-    textBox.ContextMenuStrip = menu;
-}
-
-private static bool UsesImeInputLanguage()
-{
-    var language = InputLanguage.CurrentInputLanguage.Culture.TwoLetterISOLanguageName;
-    return language is "zh" or "ja" or "ko";
-}
-// Zoek/commentaar: Past groottes/kolommen aan voor ResizeConverterTextColumns.
-private void ResizeConverterTextColumns()
-{
-    if (_converterBody is null)
-        return;
-
-    const int totalTextAndSuffixWidth = 250;
-    const int minimumTextBoxWidth = 125;
-    const int maximumTextBoxWidth = 220;
-    const int minimumSymbolWidth = 12;
-    const int symbolPadding = 14;
-
-    var prefixWidth = Math.Max(
-        minimumSymbolWidth,
-        Math.Max(MeasureLabelWidth(_inputPrefixLabel), MeasureLabelWidth(_outputPrefixLabel)) + symbolPadding);
-
-    var suffixWidth = Math.Max(
-        minimumSymbolWidth,
-        Math.Max(MeasureLabelWidth(_inputSuffixLabel), MeasureLabelWidth(_outputSuffixLabel)) + symbolPadding);
-
-    var textBoxWidth = Math.Clamp(
-        totalTextAndSuffixWidth - suffixWidth,
-        minimumTextBoxWidth,
-        maximumTextBoxWidth);
-
-    suffixWidth = Math.Max(suffixWidth, totalTextAndSuffixWidth - textBoxWidth);
-
-    _converterBody.SuspendLayout();
-
-    _converterBody.ColumnStyles[1].Width = prefixWidth;
-    _converterBody.ColumnStyles[3].Width = textBoxWidth;
-    _converterBody.ColumnStyles[4].Width = suffixWidth;
-
-    _inputPrefixLabel.Size = new Size(prefixWidth, 23);
-    _outputPrefixLabel.Size = new Size(prefixWidth, 23);
-
-    _inputSuffixLabel.Size = new Size(suffixWidth, 23);
-    _outputSuffixLabel.Size = new Size(suffixWidth, 23);
-
-    _inputTextBox.Width = textBoxWidth;
-    _outputTextBox.Width = textBoxWidth;
-
-    _converterBody.ResumeLayout(true);
-}
-
-// Zoek/commentaar: Meet tekst of UI-afmetingen voor MeasureLabelWidth.
-private static int MeasureLabelWidth(Label label)
-{
-    return MeasureTextWidth(label.Text, label.Font);
-}
-
-// Zoek/commentaar: Meet tekst of UI-afmetingen voor MeasureTextWidth.
-private static int MeasureTextWidth(string text, Font font)
-{
-    if (string.IsNullOrWhiteSpace(text))
-        return 0;
-
-    return TextRenderer.MeasureText(text, font).Width;
-}
-
-// Zoek/commentaar: Past een regel, instelling of bewerking toe voor ApplyLanguageImmediately.
-private void ApplyLanguageImmediately()
-{
-    RebuildMainMenu();
-    UpdateCalculatorAvailability();
-
-    _digitGroupCheckBox.Text = T("option.digit_group", "Digit group");
-    _decimalsCheckBox.Text = T("option.decimals", "Decimals");
-    _liveConvertCheckBox.Text = T("option.live_convert", "Live convert");
-
-    ResizeToolbarLanguageColumns();
-    ResizeConverterTextColumns();
-
-    RebuildTrayMenu();
-
-    SetStatus(T("status.language_changed", "Language changed."));
-}
-
-// Zoek/commentaar: Bouwt dit UI-onderdeel opnieuw op voor RebuildMainMenu.
-private void RebuildMainMenu()
-{
-    var oldMenu = MainMenuStrip;
-
-    if (oldMenu is not null)
-    {
-        Controls.Remove(oldMenu);
-        MainMenuStrip = null;
-        oldMenu.Dispose();
+            Text = "",
+            AutoSize = false,
+            Anchor = AnchorStyles.Left,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0)
+        };
     }
 
-    BuildMenu();
-}
-
-// Zoek/commentaar: Past groottes/kolommen aan voor ResizeToolbarLanguageColumns.
-private void ResizeToolbarLanguageColumns()
-{
-    if (_toolbarStrip is null || _toolbarFileLabel is null || _converterCombo is null)
-        return;
-
-    var fileLabelText = T("toolbar.file", "File:");
-    var fileLabelWidth = Math.Max(34, MeasureTextWidth(fileLabelText, Font) + 8);
-    var comboColumnWidth = Math.Max(160, 264 - fileLabelWidth);
-
-    _toolbarStrip.SuspendLayout();
-
-    _toolbarFileLabel.Text = fileLabelText;
-    _toolbarFileLabel.Width = fileLabelWidth;
-
-    _toolbarStrip.ColumnStyles[4].Width = fileLabelWidth;
-    _toolbarStrip.ColumnStyles[5].Width = comboColumnWidth;
-
-    _converterCombo.Width = Math.Max(120, comboColumnWidth - 6);
-
-    _toolbarStrip.ResumeLayout(true);
-}
-
-// Zoek/commentaar: Bouwt dit UI-onderdeel opnieuw op voor RebuildTrayMenu.
-private void RebuildTrayMenu()
-{
-    if (_notifyIcon is null)
-        return;
-
-    _notifyIcon.ContextMenuStrip = null;
-    _trayMenu?.Dispose();
-
-    _trayMenu = new ContextMenuStrip();
-
-    _trayMenu.Items.Add(T("tray.show", "Show Syscalculator"), null, (_, _) => RestoreFromTray());
-    _trayMenu.Items.Add(T("tray.hide", "Hide to system tray"), null, (_, _) => HideToTray());
-    _trayMenu.Items.Add(new ToolStripSeparator());
-    _trayMenu.Items.Add(T("tray.wizard", "WizardExpress"), null, WizardExpress_Click);
-    _trayMenu.Items.Add(T("tray.calculator", "Calculator"), null, Calculator_Click);
-    _trayMenu.Items.Add(new ToolStripSeparator());
-    _trayMenu.Items.Add(T("tray.exit", "Exit"), null, (_, _) =>
+    // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateClassicTextBox.
+    private static TextBox CreateClassicTextBox()
     {
-        _allowRealClose = true;
-        _notifyIcon.Visible = false;
-        Close();
-    });
+        return new TextBox
+        {
+            Width = 220,
+            Anchor = AnchorStyles.Left,
+            TextAlign = HorizontalAlignment.Left
+        };
+    }
 
-    _notifyIcon.ContextMenuStrip = _trayMenu;
-    _notifyIcon.Text = BuildTrayText();
-}
+    private void ApplyTextBoxContextMenu(TextBox textBox)
+    {
+        if (UsesImeInputLanguage())
+            return;
+
+        var menu = new ContextMenuStrip();
+        var cut = menu.Items.Add(T("menu.edit.cut", "Cut"));
+        var copy = menu.Items.Add(T("menu.edit.copy", "Copy"));
+        var paste = menu.Items.Add(T("menu.edit.paste", "Paste"));
+        var delete = menu.Items.Add(T("menu.edit.delete", "Delete"));
+        menu.Items.Add(new ToolStripSeparator());
+        var selectAll = menu.Items.Add(T("menu.edit.select_all", "Select all"));
+
+        cut.Click += (_, _) => textBox.Cut();
+        copy.Click += (_, _) => textBox.Copy();
+        paste.Click += (_, _) => textBox.Paste();
+        delete.Click += (_, _) =>
+        {
+            if (textBox.SelectionLength > 0)
+            {
+                textBox.SelectedText = string.Empty;
+                return;
+            }
+
+            if (textBox.SelectionStart < textBox.TextLength)
+            {
+                var selectionStart = textBox.SelectionStart;
+                textBox.Text = textBox.Text.Remove(selectionStart, 1);
+                textBox.SelectionStart = selectionStart;
+            }
+        };
+        selectAll.Click += (_, _) => textBox.SelectAll();
+        menu.Opening += (_, e) =>
+        {
+            var hasSelection = textBox.SelectionLength > 0;
+            var hasText = textBox.TextLength > 0;
+            cut.Enabled = hasSelection;
+            copy.Enabled = hasSelection;
+            paste.Enabled = Clipboard.ContainsText();
+            delete.Enabled = hasSelection || textBox.SelectionStart < textBox.TextLength;
+            selectAll.Enabled = hasText;
+            e.Cancel = !hasText && !paste.Enabled;
+        };
+
+        textBox.ContextMenuStrip = menu;
+    }
+
+    private static bool UsesImeInputLanguage()
+    {
+        var language = InputLanguage.CurrentInputLanguage.Culture.TwoLetterISOLanguageName;
+        return language is "zh" or "ja" or "ko";
+    }
+    // Zoek/commentaar: Past groottes/kolommen aan voor ResizeConverterTextColumns.
+    private void ResizeConverterTextColumns()
+    {
+        if (_converterBody is null)
+            return;
+
+        const int totalTextAndSuffixWidth = 250;
+        const int minimumTextBoxWidth = 125;
+        const int maximumTextBoxWidth = 220;
+        const int minimumSymbolWidth = 12;
+        const int symbolPadding = 14;
+
+        var prefixWidth = Math.Max(
+            minimumSymbolWidth,
+            Math.Max(MeasureLabelWidth(_inputPrefixLabel), MeasureLabelWidth(_outputPrefixLabel)) + symbolPadding);
+
+        var suffixWidth = Math.Max(
+            minimumSymbolWidth,
+            Math.Max(MeasureLabelWidth(_inputSuffixLabel), MeasureLabelWidth(_outputSuffixLabel)) + symbolPadding);
+
+        var textBoxWidth = Math.Clamp(
+            totalTextAndSuffixWidth - suffixWidth,
+            minimumTextBoxWidth,
+            maximumTextBoxWidth);
+
+        suffixWidth = Math.Max(suffixWidth, totalTextAndSuffixWidth - textBoxWidth);
+
+        _converterBody.SuspendLayout();
+
+        _converterBody.ColumnStyles[1].Width = prefixWidth;
+        _converterBody.ColumnStyles[3].Width = textBoxWidth;
+        _converterBody.ColumnStyles[4].Width = suffixWidth;
+
+        _inputPrefixLabel.Size = new Size(prefixWidth, 23);
+        _outputPrefixLabel.Size = new Size(prefixWidth, 23);
+
+        _inputSuffixLabel.Size = new Size(suffixWidth, 23);
+        _outputSuffixLabel.Size = new Size(suffixWidth, 23);
+
+        _inputTextBox.Width = textBoxWidth;
+        _outputTextBox.Width = textBoxWidth;
+
+        _converterBody.ResumeLayout(true);
+    }
+
+    // Zoek/commentaar: Meet tekst of UI-afmetingen voor MeasureLabelWidth.
+    private static int MeasureLabelWidth(Label label)
+    {
+        return MeasureTextWidth(label.Text, label.Font);
+    }
+
+    // Zoek/commentaar: Meet tekst of UI-afmetingen voor MeasureTextWidth.
+    private static int MeasureTextWidth(string text, Font font)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return 0;
+
+        return TextRenderer.MeasureText(text, font).Width;
+    }
+
+    // Zoek/commentaar: Past een regel, instelling of bewerking toe voor ApplyLanguageImmediately.
+    private void ApplyLanguageImmediately()
+    {
+        RebuildMainMenu();
+        UpdateCalculatorAvailability();
+
+        _digitGroupCheckBox.Text = T("option.digit_group", "Digit group");
+        _decimalsCheckBox.Text = T("option.decimals", "Decimals");
+        _liveConvertCheckBox.Text = T("option.live_convert", "Live convert");
+
+        ResizeToolbarLanguageColumns();
+        ResizeConverterTextColumns();
+
+        RebuildTrayMenu();
+
+        SetStatus(T("status.language_changed", "Language changed."));
+    }
+
+    // Zoek/commentaar: Bouwt dit UI-onderdeel opnieuw op voor RebuildMainMenu.
+    private void RebuildMainMenu()
+    {
+        var oldMenu = MainMenuStrip;
+
+        if (oldMenu is not null)
+        {
+            Controls.Remove(oldMenu);
+            MainMenuStrip = null;
+            oldMenu.Dispose();
+        }
+
+        BuildMenu();
+    }
+
+    // Zoek/commentaar: Past groottes/kolommen aan voor ResizeToolbarLanguageColumns.
+    private void ResizeToolbarLanguageColumns()
+    {
+        if (_toolbarStrip is null || _toolbarFileLabel is null || _converterCombo is null)
+            return;
+
+        var fileLabelText = T("toolbar.file", "File:");
+        var fileLabelWidth = Math.Max(34, MeasureTextWidth(fileLabelText, Font) + 8);
+        var comboColumnWidth = Math.Max(160, 264 - fileLabelWidth);
+
+        _toolbarStrip.SuspendLayout();
+
+        _toolbarFileLabel.Text = fileLabelText;
+        _toolbarFileLabel.Width = fileLabelWidth;
+
+        _toolbarStrip.ColumnStyles[4].Width = fileLabelWidth;
+        _toolbarStrip.ColumnStyles[5].Width = comboColumnWidth;
+
+        _converterCombo.Width = Math.Max(120, comboColumnWidth - 6);
+
+        _toolbarStrip.ResumeLayout(true);
+    }
+
+    // Zoek/commentaar: Bouwt dit UI-onderdeel opnieuw op voor RebuildTrayMenu.
+    private void RebuildTrayMenu()
+    {
+        if (_notifyIcon is null)
+            return;
+
+        _notifyIcon.ContextMenuStrip = null;
+        _trayMenu?.Dispose();
+
+        _trayMenu = new ContextMenuStrip();
+
+        _trayMenu.Items.Add(T("tray.show", "Show Syscalculator"), null, (_, _) => RestoreFromTray());
+        _trayMenu.Items.Add(T("tray.hide", "Hide to system tray"), null, (_, _) => HideToTray());
+        _trayMenu.Items.Add(new ToolStripSeparator());
+        _trayMenu.Items.Add(T("tray.wizard", "WizardExpress"), null, WizardExpress_Click);
+        _trayMenu.Items.Add(T("tray.calculator", "Calculator"), null, Calculator_Click);
+        _trayMenu.Items.Add(new ToolStripSeparator());
+        _trayMenu.Items.Add(T("tray.exit", "Exit"), null, (_, _) =>
+        {
+            _allowRealClose = true;
+            _notifyIcon.Visible = false;
+            Close();
+        });
+
+        _notifyIcon.ContextMenuStrip = _trayMenu;
+        _notifyIcon.Text = BuildTrayText();
+    }
     // Zoek/commentaar: Type-overzicht: enum MainToolbarIcon bevat de hoofdlogica/data voor dit onderdeel.
     private enum MainToolbarIcon
     {
@@ -1346,47 +1345,47 @@ private void RebuildTrayMenu()
 
         LoadConverter(item);
     }
-// Zoek/commentaar: Laadt gegevens of instellingen voor LoadStartupNodIfNeeded.
-private void LoadStartupNodIfNeeded()
-{
-    if (string.IsNullOrWhiteSpace(_startupNodPath))
-        return;
-
-    LoadNodFilePath(_startupNodPath);
-}
-
-internal void ActivateFromSecondInstance(string? nodPath)
-{
-    RestoreToForeground();
-
-    if (!string.IsNullOrWhiteSpace(nodPath))
-        LoadNodFilePath(nodPath);
-    else
-        SetStatus(T("status.already_running", "Syscalculator is already running."));
-}
-
-private void LoadNodFilePath(string nodPath)
-{
-    if (!File.Exists(nodPath))
+    // Zoek/commentaar: Laadt gegevens of instellingen voor LoadStartupNodIfNeeded.
+    private void LoadStartupNodIfNeeded()
     {
-        MessageBox.Show(
-            this,
-            string.Format(T("dialog.open_nod.file_not_found", "File not found: {0}"), nodPath),
-            T("dialog.open_nod.failed_title", "NOD load failed"),
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Error);
+        if (string.IsNullOrWhiteSpace(_startupNodPath))
+            return;
 
-        return;
+        LoadNodFilePath(_startupNodPath);
     }
 
-    var item = new NodCatalogItem
+    internal void ActivateFromSecondInstance(string? nodPath)
     {
-        DisplayName = Path.GetFileNameWithoutExtension(nodPath),
-        NodPath = nodPath
-    };
+        RestoreToForeground();
 
-    LoadConverter(item);
-}
+        if (!string.IsNullOrWhiteSpace(nodPath))
+            LoadNodFilePath(nodPath);
+        else
+            SetStatus(T("status.already_running", "Syscalculator is already running."));
+    }
+
+    private void LoadNodFilePath(string nodPath)
+    {
+        if (!File.Exists(nodPath))
+        {
+            MessageBox.Show(
+                this,
+                string.Format(T("dialog.open_nod.file_not_found", "File not found: {0}"), nodPath),
+                T("dialog.open_nod.failed_title", "NOD load failed"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+
+            return;
+        }
+
+        var item = new NodCatalogItem
+        {
+            DisplayName = Path.GetFileNameWithoutExtension(nodPath),
+            NodPath = nodPath
+        };
+
+        LoadConverter(item);
+    }
     // Zoek/commentaar: Laadt gegevens of instellingen voor LoadConverter.
     private void LoadConverter(NodCatalogItem item)
     {
@@ -1509,7 +1508,7 @@ private void LoadNodFilePath(string nodPath)
         if (_updatingText || !_liveConvertEnabled || !_inputRadio.Checked || IsPowerResumeQuietPeriod())
             return;
 
-        
+
         _liveConvertTimer.Stop();
         _liveConvertTimer.Start();
     }
@@ -1520,7 +1519,7 @@ private void LoadNodFilePath(string nodPath)
         if (_updatingText || !_liveConvertEnabled || !_outputRadio.Checked || IsPowerResumeQuietPeriod())
             return;
 
-        
+
         _liveConvertTimer.Stop();
         _liveConvertTimer.Start();
     }
@@ -1643,26 +1642,26 @@ private void LoadNodFilePath(string nodPath)
 
         return textBox.Text;
     }
-  // Zoek/commentaar: Probeert tekst veilig te parsen voor TryParseNumber.
-  private static bool TryParseNumber(string text, out decimal value)
-{
-    text = (text ?? "").Trim();
-
-    if (text.Length == 0)
+    // Zoek/commentaar: Probeert tekst veilig te parsen voor TryParseNumber.
+    private static bool TryParseNumber(string text, out decimal value)
     {
-        value = 0;
-        return false;
+        text = (text ?? "").Trim();
+
+        if (text.Length == 0)
+        {
+            value = 0;
+            return false;
+        }
+
+        // Engine-output gebruikt punt als decimaalteken, bijvoorbeeld 33.80.
+        // Dit moet eerst invariant gelezen worden, anders maakt NL-regio er 3380 van.
+        if (decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            return true;
+
+        // Gebruikersinvoer mag wel volgens Windows-regio zijn, bijvoorbeeld 33,80.
+        text = NormalizeForEngine(text);
+        return decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
     }
-
-    // Engine-output gebruikt punt als decimaalteken, bijvoorbeeld 33.80.
-    // Dit moet eerst invariant gelezen worden, anders maakt NL-regio er 3380 van.
-    if (decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
-        return true;
-
-    // Gebruikersinvoer mag wel volgens Windows-regio zijn, bijvoorbeeld 33,80.
-    text = NormalizeForEngine(text);
-    return decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
-}
 
     // Zoek/commentaar: Voert een conversie uit voor ConvertForward.
     private void ConvertForward()
@@ -1692,20 +1691,20 @@ private void LoadNodFilePath(string nodPath)
     private void ConvertForward(TextBox sourceTextBox, TextBox targetTextBox)
     {
         if (_updatingText)
-        return;
+            return;
 
-    if (_currentDocument is null)
-        return;
+        if (_currentDocument is null)
+            return;
 
-    if (string.IsNullOrWhiteSpace(sourceTextBox.Text))
-    {
-        _updatingText = true;
-        targetTextBox.Clear();
-        targetTextBox.Tag = null;
-        _updatingText = false;
-        SetStatus("");
-        return;
-    }
+        if (string.IsNullOrWhiteSpace(sourceTextBox.Text))
+        {
+            _updatingText = true;
+            targetTextBox.Clear();
+            targetTextBox.Tag = null;
+            _updatingText = false;
+            SetStatus("");
+            return;
+        }
 
         try
         {
@@ -1751,20 +1750,20 @@ private void LoadNodFilePath(string nodPath)
     private void ConvertReverse(TextBox sourceTextBox, TextBox targetTextBox)
     {
         if (_updatingText)
-        return;
+            return;
 
-    if (_currentDocument is null)
-        return;
+        if (_currentDocument is null)
+            return;
 
-    if (string.IsNullOrWhiteSpace(sourceTextBox.Text))
-    {
-        _updatingText = true;
-        targetTextBox.Clear();
-        targetTextBox.Tag = null;
-        _updatingText = false;
-        SetStatus("");
-        return;
-    }
+        if (string.IsNullOrWhiteSpace(sourceTextBox.Text))
+        {
+            _updatingText = true;
+            targetTextBox.Clear();
+            targetTextBox.Tag = null;
+            _updatingText = false;
+            SetStatus("");
+            return;
+        }
 
         try
         {
@@ -1915,6 +1914,7 @@ private void LoadNodFilePath(string nodPath)
         if (_currentItem is not null)
             path = _catalogService.ResolveNodPath(_currentItem);
 
+        SyscalculatorDebugger.Log("Opening NodEditor from MainForm; file=" + (string.IsNullOrWhiteSpace(path) ? "(none)" : path));
         using var form = new NodEditorForm(path);
         ShowOwnedDialog(form);
 
@@ -1925,6 +1925,7 @@ private void LoadNodFilePath(string nodPath)
     // Zoek/commentaar: Methode ToolEditor_Click: opent de gedeelde Tiedragon ToolEditor-basis.
     private void ToolEditor_Click(object? sender, EventArgs e)
     {
+        SyscalculatorDebugger.Log("Opening ToolEditor from MainForm.");
         using var form = new ToolEditorForm();
         ShowOwnedDialog(form);
     }

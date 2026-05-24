@@ -1,20 +1,18 @@
-﻿#nullable enable
-using System.Drawing.Drawing2D;
-using System.ComponentModel;
-using System.Globalization;
-using Microsoft.Win32;
-using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
+#nullable enable
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
-using Tiedragon.NodSystem.Core;
+using Microsoft.Win32;
+using System.Drawing.Drawing2D;
+using System.Globalization;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Tiedragon.Graph;
 using Tiedragon.Graph.G2D;
 using Tiedragon.Graph.G3D;
-using Tiedragon.ToolEditor;
 using Tiedragon.Help;
+using Tiedragon.NodSystem.Core;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -76,6 +74,7 @@ public sealed class NodEditorForm : Form
         public RichTextBox Editor { get; init; } = null!;
         public TextBox LineNumbers { get; init; } = null!;
         public string HistoryText { get; set; } = "";
+        public int LastLineNumberCount { get; set; }
         public Stack<string> UndoTextStack { get; } = new();
         public Stack<string> RedoTextStack { get; } = new();
     }
@@ -198,6 +197,7 @@ public sealed class NodEditorForm : Form
         {
             DoubleBuffered = true;
             ResizeRedraw = true;
+            Cursor = GraphCursors.Pan;
             SetStyle(
                 ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.OptimizedDoubleBuffer |
@@ -605,7 +605,8 @@ public sealed class NodEditorForm : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        if (e.CloseReason == CloseReason.UserClosing && HasUnsavedTabs())
+        RefreshDirtyStateBeforeClose();
+        if (HasUnsavedTabs())
         {
             var choice = ShowUnsavedChangesDialog(
                 T("editor.dialog.close_editor_title", "Close NOD Editor"),
@@ -712,6 +713,12 @@ public sealed class NodEditorForm : Form
     private bool HasUnsavedTabs()
     {
         return _tabs.Values.Any(tab => tab.Dirty);
+    }
+
+    private void RefreshDirtyStateBeforeClose()
+    {
+        foreach (var tab in _tabs.Values)
+            SetTabDirty(tab, !IsCleanEditorText(tab));
     }
 
     private bool SaveDirtyTabsBeforeClose()
@@ -1312,12 +1319,12 @@ public sealed class NodEditorForm : Form
         {
             _graphCanvas.Focus();
             if (_graphHasView)
-                _graphCanvas.Cursor = Cursors.SizeAll;
+                _graphCanvas.Cursor = GraphCursors.Pan;
         };
         _graphCanvas.MouseLeave += (_, _) =>
         {
             if (!_graphPanning)
-                _graphCanvas.Cursor = Cursors.Default;
+                _graphCanvas.Cursor = GraphCursors.Default;
         };
         graphHost.Controls.Add(_graphCanvas);
 
@@ -1435,12 +1442,12 @@ public sealed class NodEditorForm : Form
         _graph3DCanvas.MouseEnter += (_, _) =>
         {
             _graph3DCanvas.Focus();
-            _graph3DCanvas.Cursor = Cursors.SizeAll;
+            _graph3DCanvas.Cursor = GraphCursors.Pan;
         };
         _graph3DCanvas.MouseLeave += (_, _) =>
         {
             if (!_graph3DDragging)
-                _graph3DCanvas.Cursor = Cursors.Default;
+                _graph3DCanvas.Cursor = GraphCursors.Default;
         };
         graphHost.Controls.Add(_graph3DCanvas);
 
@@ -2090,7 +2097,7 @@ public sealed class NodEditorForm : Form
             _graphPanStartMaxY = view.MaxY;
         }
 
-        _graph3DCanvas.Cursor = Cursors.SizeAll;
+        _graph3DCanvas.Cursor = GraphCursors.Pan;
     }
 
     private void Graph3DCanvas_MouseMove(object? sender, MouseEventArgs e)
@@ -2113,7 +2120,7 @@ public sealed class NodEditorForm : Form
     private void Graph3DCanvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _graph3DDragging = false;
-        _graph3DCanvas.Cursor = _graph3DCanvas.ClientRectangle.Contains(e.Location) ? Cursors.SizeAll : Cursors.Default;
+        _graph3DCanvas.Cursor = _graph3DCanvas.ClientRectangle.Contains(e.Location) ? GraphCursors.Pan : GraphCursors.Default;
     }
 
     private void Graph3DCanvas_MouseWheel(object? sender, MouseEventArgs e)
@@ -2414,8 +2421,8 @@ public sealed class NodEditorForm : Form
         _draggingGraphPointPanel = true;
         _graphPointPanelDragStart = _graphPointPanel.Parent.PointToClient(control.PointToScreen(e.Location));
         _graphPointPanelStartLocation = _graphPointPanel.Location;
-        _graphPointPanel.Cursor = Cursors.SizeAll;
-        _graphPointTable.Cursor = Cursors.SizeAll;
+        _graphPointPanel.Cursor = Cursors.Hand;
+        _graphPointTable.Cursor = Cursors.Hand;
         _graphPointPanel.BringToFront();
     }
 
@@ -2507,8 +2514,8 @@ public sealed class NodEditorForm : Form
         _draggingGraph3DPointPanel = true;
         _graph3DPointPanelDragStart = _graph3DPointPanel.Parent.PointToClient(control.PointToScreen(e.Location));
         _graph3DPointPanelStartLocation = _graph3DPointPanel.Location;
-        _graph3DPointPanel.Cursor = Cursors.SizeAll;
-        _graph3DPointTable.Cursor = Cursors.SizeAll;
+        _graph3DPointPanel.Cursor = Cursors.Hand;
+        _graph3DPointTable.Cursor = Cursors.Hand;
         _graph3DPointPanel.BringToFront();
     }
 
@@ -3621,7 +3628,7 @@ public sealed class NodEditorForm : Form
         _graphPanStartMaxX = _graphViewMaxX;
         _graphPanStartMinY = _graphViewMinY;
         _graphPanStartMaxY = _graphViewMaxY;
-        _graphCanvas.Cursor = Cursors.SizeAll;
+        _graphCanvas.Cursor = GraphCursors.Pan;
     }
 
     private void GraphCanvas_MouseMove(object? sender, MouseEventArgs e)
@@ -3629,7 +3636,7 @@ public sealed class NodEditorForm : Form
         if (!_graphPanning)
         {
             if (_graphHasView)
-                _graphCanvas.Cursor = Cursors.SizeAll;
+                _graphCanvas.Cursor = GraphCursors.Pan;
             UpdateGraphPointerStatus(e.Location);
             return;
         }
@@ -3658,7 +3665,7 @@ public sealed class NodEditorForm : Form
     private void GraphCanvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _graphPanning = false;
-        _graphCanvas.Cursor = _graphCanvas.ClientRectangle.Contains(e.Location) && _graphHasView ? Cursors.SizeAll : Cursors.Default;
+        _graphCanvas.Cursor = _graphCanvas.ClientRectangle.Contains(e.Location) && _graphHasView ? GraphCursors.Pan : GraphCursors.Default;
     }
 
     private void MatchGraphPreviewViewToCanvasAspect()
@@ -6716,6 +6723,10 @@ public sealed class NodEditorForm : Form
     private void UpdateLineNumbers(EditorTab tab)
     {
         var count = Math.Max(1, tab.Editor.Lines.Length);
+        if (tab.LastLineNumberCount == count)
+            return;
+
+        tab.LastLineNumberCount = count;
         tab.LineNumbers.Text = string.Join(Environment.NewLine, Enumerable.Range(1, count).Select(i => i.ToString()));
     }
 
@@ -7839,7 +7850,7 @@ public sealed class NodEditorForm : Form
         var col = Math.Max(0, index - first);
 
         _positionLabel.Text = FormatPositionStatus(line + 1, col + 1);
-        _lineCountLabel.Text = FormatLineCountStatus(editor.Lines.Length);
+        _lineCountLabel.Text = FormatLineCountStatus(Math.Max(1, editor.GetLineFromCharIndex(editor.TextLength) + 1));
         _lineEndingLabel.Text = Environment.NewLine == "\r\n" ? "CRLF" : "LF";
 
         var title = EditorWindowTitle();

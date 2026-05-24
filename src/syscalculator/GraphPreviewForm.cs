@@ -1,10 +1,10 @@
-﻿#nullable enable
+#nullable enable
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Tiedragon.NodSystem.Core;
 using Tiedragon.Graph;
 using Tiedragon.Graph.G2D;
+using Tiedragon.NodSystem.Core;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -219,12 +219,12 @@ public sealed class GraphPreviewForm : Form
         {
             _canvas.Focus();
             if (_hasView)
-                _canvas.Cursor = Cursors.SizeAll;
+                _canvas.Cursor = GraphCursors.Pan;
         };
         _canvas.MouseLeave += (_, _) =>
         {
             if (!_panning)
-                _canvas.Cursor = Cursors.Default;
+                _canvas.Cursor = GraphCursors.Default;
         };
         _showRangeLines.CheckedChanged += (_, _) =>
         {
@@ -591,8 +591,8 @@ public sealed class GraphPreviewForm : Form
         _draggingPointsPanel = true;
         _pointsPanelDragStart = _pointsPanel.Parent!.PointToClient(((Control)sender!).PointToScreen(e.Location));
         _pointsPanelStartLocation = _pointsPanel.Location;
-        _pointsPanel.Cursor = Cursors.SizeAll;
-        _pointsGrid.Cursor = Cursors.SizeAll;
+        _pointsPanel.Cursor = Cursors.Hand;
+        _pointsGrid.Cursor = Cursors.Hand;
         _pointsPanel.BringToFront();
     }
 
@@ -630,6 +630,7 @@ public sealed class GraphPreviewForm : Form
         {
             DoubleBuffered = true;
             ResizeRedraw = true;
+            Cursor = GraphCursors.Pan;
             SetStyle(ControlStyles.AllPaintingInWmPaint |
                      ControlStyles.UserPaint |
                      ControlStyles.OptimizedDoubleBuffer |
@@ -988,7 +989,7 @@ public sealed class GraphPreviewForm : Form
             _rectangleZooming = true;
             _rectangleZoomStart = e.Location;
             _rectangleZoomCurrent = e.Location;
-            _canvas.Cursor = Cursors.Cross;
+            _canvas.Cursor = GraphCursors.Pan;
             _canvas.Invalidate();
             return;
         }
@@ -1002,7 +1003,7 @@ public sealed class GraphPreviewForm : Form
         _panStartMaxX = _viewMaxX;
         _panStartMinY = _viewMinY;
         _panStartMaxY = _viewMaxY;
-        _canvas.Cursor = Cursors.SizeAll;
+        _canvas.Cursor = GraphCursors.Pan;
     }
 
     private void Canvas_MouseMove(object? sender, MouseEventArgs e)
@@ -1018,7 +1019,7 @@ public sealed class GraphPreviewForm : Form
         if (!_panning)
         {
             if (_hasView)
-                _canvas.Cursor = Cursors.SizeAll;
+                _canvas.Cursor = GraphCursors.Pan;
             UpdatePointerStatus(e.Location);
             return;
         }
@@ -1053,7 +1054,7 @@ public sealed class GraphPreviewForm : Form
 
         _panning = false;
         ResampleVisibleView();
-        _canvas.Cursor = _canvas.ClientRectangle.Contains(e.Location) && _hasView ? Cursors.SizeAll : Cursors.Default;
+        _canvas.Cursor = _canvas.ClientRectangle.Contains(e.Location) && _hasView ? GraphCursors.Pan : GraphCursors.Default;
         _canvas.Invalidate();
     }
 
@@ -1077,7 +1078,7 @@ public sealed class GraphPreviewForm : Form
 
         if (rect.Width < 10 || rect.Height < 10)
         {
-            _canvas.Cursor = _canvas.ClientRectangle.Contains(endPoint) && _hasView ? Cursors.SizeAll : Cursors.Default;
+            _canvas.Cursor = _canvas.ClientRectangle.Contains(endPoint) && _hasView ? GraphCursors.Pan : GraphCursors.Default;
             _canvas.Invalidate();
             return;
         }
@@ -1094,14 +1095,14 @@ public sealed class GraphPreviewForm : Form
         ResampleVisibleView();
         UpdatePointerStatus(endPoint);
         NotifySyncStateChanged();
-        _canvas.Cursor = _canvas.ClientRectangle.Contains(endPoint) && _hasView ? Cursors.SizeAll : Cursors.Default;
+        _canvas.Cursor = _canvas.ClientRectangle.Contains(endPoint) && _hasView ? GraphCursors.Pan : GraphCursors.Default;
         _canvas.Invalidate();
     }
 
     private void CancelRectangleZoom()
     {
         _rectangleZooming = false;
-        _canvas.Cursor = _hasView ? Cursors.SizeAll : Cursors.Default;
+        _canvas.Cursor = _hasView ? GraphCursors.Pan : GraphCursors.Default;
         _canvas.Invalidate();
     }
 
@@ -1708,4 +1709,3 @@ public sealed class GraphPreviewForm : Form
     }
 
 }
-

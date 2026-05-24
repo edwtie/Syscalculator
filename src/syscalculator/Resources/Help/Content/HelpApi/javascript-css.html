@@ -4,12 +4,14 @@
 
 <table>
   <tr><th>Waar</th><th>JavaScript</th><th>Wat doet het?</th></tr>
-  <tr><td><code>main/*.html</code></td><td>geen extra schrijvers-JS</td><td>Gewone gebruikershelp.</td></tr>
-  <tr><td><code>nod/full/*.html</code></td><td><code>nod.js</code></td><td>Zet automatisch een kopieerknop bij elk <code>&lt;pre&gt;</code> codeblok.</td></tr>
-  <tr><td><code>nod/command/*.html</code></td><td><code>nod.js</code></td><td>Zet automatisch een kopieerknop bij elk <code>&lt;pre&gt;</code> codeblok.</td></tr>
-  <tr><td><code>nod/popup/*.html</code></td><td><code>nod.js</code></td><td>Past de hoogte van de kleine helpballon aan.</td></tr>
-  <tr><td>formulekaart</td><td><code>formula.js</code></td><td>Bevat kopieerknoppen, zoeken en formulefilm.</td></tr>
+  <tr><td><code>main/*.html</code></td><td><code>basis.js</code> wanneer nodig</td><td>Gewone gebruikershelp. Schrijvers zetten zelf geen script in de pagina.</td></tr>
+  <tr><td><code>nod/full/*.html</code></td><td><code>basis.js</code> + <code>nod.js</code></td><td>Zet automatisch een kopieerknop bij elk <code>&lt;pre&gt;</code> codeblok.</td></tr>
+  <tr><td><code>nod/command/*.html</code></td><td><code>basis.js</code> + <code>nod.js</code></td><td>Zet automatisch een kopieerknop bij elk <code>&lt;pre&gt;</code> codeblok.</td></tr>
+  <tr><td><code>nod/popup/*.html</code></td><td><code>basis.js</code> + <code>nod.js</code></td><td>Past de hoogte van de kleine helpballon aan.</td></tr>
+  <tr><td>formulekaart</td><td><code>basis.js</code> + <code>formula.js</code></td><td>Bevat kopieerknoppen, zoeken en formulefilm.</td></tr>
 </table>
+
+<div class="notice"><b>Volgorde:</b> <code>basis.js</code> moet altijd vóór <code>nod.js</code> of <code>formula.js</code> geladen worden. Syscalculator regelt deze volgorde in <code>HelpHtml</code>.</div>
 
 <p>Welke CSS hoort erbij:</p>
 
