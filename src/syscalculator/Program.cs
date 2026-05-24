@@ -13,8 +13,6 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        SyscalculatorDebugger.Initialize(args);
-
         try
         {
             if (args.Any(IsHelpSwitch))
@@ -24,8 +22,9 @@ internal static class Program
                 return;
             }
 
-            ApplySystemColorMode();
             ApplicationConfiguration.Initialize();
+            ApplySystemColorMode();
+            SyscalculatorDebugger.Initialize(args);
 
             if (ShouldOpenNodTool(args, out var editorPath, out var openTemplateWizard))
             {

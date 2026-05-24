@@ -10,11 +10,11 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
-        ToolEditorDebugger.Initialize();
         try
         {
-            ApplySystemColorMode();
             ApplicationConfiguration.Initialize();
+            ApplySystemColorMode();
+            ToolEditorDebugger.Initialize();
             ToolEditorDebugger.Log("Startup mode: Standalone ToolEditor.");
             Application.Run(new ToolEditorForm());
         }
