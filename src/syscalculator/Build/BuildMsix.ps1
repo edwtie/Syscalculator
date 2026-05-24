@@ -28,12 +28,16 @@ $isSelfContained = $true
 
 if ([string]::IsNullOrWhiteSpace($PackageVersion)) {
     $today = Get-Date
-    $dateRevision = ($today.Month * 100) + $today.Day
-    $PackageVersion = '2.0.{0}.{1}' -f $today.Year, $dateRevision
+    $PackageVersion = '2.0.{0}.0' -f ($today.Year + 1)
 }
 
 if ($PackageVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
-    throw "MSIX package version must have four numeric parts, for example 2.0.2026.518. Current value: $PackageVersion"
+    throw "MSIX package version must have four numeric parts, for example 2.0.2027.0. Current value: $PackageVersion"
+}
+
+$versionParts = $PackageVersion.Split('.') | ForEach-Object { [int]$_ }
+if ($versionParts[3] -ne 0) {
+    throw "Microsoft Store MSIX packages must use revision 0. Increment the third version part instead, for example 2.0.2027.0. Current value: $PackageVersion"
 }
 
 function Find-MakeAppx {
