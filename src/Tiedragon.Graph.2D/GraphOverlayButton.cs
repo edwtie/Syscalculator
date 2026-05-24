@@ -3,7 +3,6 @@
 // Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Draws reusable Graph2D overlay buttons and navigation groups.
 using System.Drawing.Drawing2D;
-using Tiedragon.Graph;
 
 namespace Tiedragon.Graph.G2D;
 

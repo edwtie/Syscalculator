@@ -3,7 +3,6 @@
 // Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Builds the draggable point-table overlay used by graph surfaces.
 using System.Drawing.Drawing2D;
-using Tiedragon.Graph;
 
 namespace Tiedragon.Graph.G2D;
 
@@ -62,7 +61,7 @@ public static class GraphPointTableOverlay
             Location = new Point(padding, padding),
             Size = new Size(tableWidth, titleHeight),
             BackColor = Color.FromArgb(239, 246, 255),
-            Cursor = Cursors.SizeAll
+            Cursor = Cursors.Hand
         };
         titleBar.Paint += (_, e) => DrawTitleBar(e.Graphics, titleBar.ClientRectangle, titleProvider?.Invoke() ?? title, detailProvider(), density);
         titleBar.MouseDown += (_, e) =>
@@ -221,3 +220,4 @@ public static class GraphPointTableOverlay
         }
     }
 }
+

@@ -106,6 +106,51 @@ conceptpakket tegen een basispackage controleren, ontbrekende bestanden
 toevoegen en ontbrekende taalsleutels aanvullen zonder bestaande vertalingen te
 overschrijven.
 
+De taalpackage-architectuur heeft een enkele pipeline:
+
+```text
+source package -> parser/render pipeline -> compiled .lngpdk
+```
+
+Het source package is de enige bewerkbare bron van waarheid. ToolEditor mag een
+source package openen en bewerken, maar mag geen tweede verborgen generator zijn
+met andere bronnen. De compiler levert daarna definitieve HTML, media, scripts,
+manifest en checksums. Oude Syscalculator 1.x/VB6-help is alleen legacy- en
+migratiemateriaal; het mag niet automatisch als actieve `manual/` content in
+nieuwe releasepackages terechtkomen.
+
+Er zijn twee packagevormen:
+
+```text
+*.objpdk  = editable object/source package, concept en basispackage
+*.lngpdk  = compiled language distribution package, eventueel gesigned
+```
+
+De keten is bewust strak:
+
+```text
+taalgenerator -> .objpdk -> compiler -> .lngpdk
+```
+
+De taalgenerator maakt dus het bewerkbare `.objpdk`. De compiler leest dat
+`.objpdk`, voert parser/render-, security- en kwaliteitscontroles uit en schrijft
+pas daarna het distributiebestand `.lngpdk`.
+
+ToolEditor werkt primair met `.objpdk`. Een `.lngpdk` mag geopend worden voor
+inspectie of om een nieuw concept te maken, maar wijzigingen moeten als aparte
+`.objpdk` worden opgeslagen. Een gesigneerde `.lngpdk` is immutable
+release-output: bij aanpassen kloppen SHA-256 en signature niet meer.
+
+Belangrijk: ToolEditor mag een gesigneerde `.lngpdk` niet in-place bewerken of
+opnieuw opslaan. Zodra de inhoud verandert, is de bestaande signature ongeldig.
+De juiste route is altijd:
+
+```text
+signed .lngpdk -> inspect/save as .objpdk -> edit -> compiler -> new signed .lngpdk
+```
+
+Daarmee blijven checksums, signing en release-metadata betrouwbaar.
+
 Voor een eigen app kiest de ontwikkelaar een vaste `softwareId`, maakt een
 officieel basispackage en laat vertalingen daartegen compileren. De app zelf
 accepteert daarna alleen packages met de juiste identiteit en geldige checksums.

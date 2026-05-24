@@ -171,12 +171,12 @@ internal sealed class Graph3DPreviewForm : Form
         _canvas.MouseEnter += (_, _) =>
         {
             _canvas.Focus();
-            _canvas.Cursor = Cursors.SizeAll;
+            _canvas.Cursor = GraphCursors.Pan;
         };
         _canvas.MouseLeave += (_, _) =>
         {
             if (!_dragging)
-                _canvas.Cursor = Cursors.Default;
+                _canvas.Cursor = GraphCursors.Default;
         };
         host.Controls.Add(_canvas);
 
@@ -483,7 +483,7 @@ internal sealed class Graph3DPreviewForm : Form
             _panStartMinY = view.MinY;
             _panStartMaxY = view.MaxY;
         }
-        _canvas.Cursor = Cursors.SizeAll;
+        _canvas.Cursor = GraphCursors.Pan;
     }
 
     private void Canvas_MouseMove(object? sender, MouseEventArgs e)
@@ -506,7 +506,7 @@ internal sealed class Graph3DPreviewForm : Form
     private void Canvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _dragging = false;
-        _canvas.Cursor = _canvas.ClientRectangle.Contains(e.Location) ? Cursors.SizeAll : Cursors.Default;
+        _canvas.Cursor = _canvas.ClientRectangle.Contains(e.Location) ? GraphCursors.Pan : GraphCursors.Default;
     }
 
     private void Canvas_MouseWheel(object? sender, MouseEventArgs e)
@@ -807,6 +807,7 @@ internal sealed class Graph3DPreviewForm : Form
         {
             DoubleBuffered = true;
             ResizeRedraw = true;
+            Cursor = GraphCursors.Pan;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
         }
 

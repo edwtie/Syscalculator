@@ -301,6 +301,113 @@ menu.about.help=Help for users
 help.nav.home=Home
 help.nav.previous=Previous
 help.nav.next=Next
+tool_editor.help.title=Language manager help
+tool_editor.help.page.overview=Using ToolEditor
+tool_editor.help.page.package=Language package workflow
+tool_editor.help.page.html=Editing HTML
+tool_editor.help.page.media=Media and images
+tool_editor.help.page.compile=Validate and compile
+tool_editor.menu.extra=Extra
+tool_editor.security.menu=Security settings...
+tool_editor.security.title=Security settings
+tool_editor.security.heading=Language package policy
+tool_editor.security.ini=INI:
+tool_editor.security.open=Open
+tool_editor.security.close=Close
+tool_editor.security.apply=Apply
+tool_editor.security.add=Add
+tool_editor.security.edit=Edit
+tool_editor.security.delete=Delete
+tool_editor.security.delete_confirm=Delete this rule?
+tool_editor.security.applied=Policy applied in this ToolEditor session.
+tool_editor.security.unsaved_message=Security settings have unapplied changes. Apply changes before closing?
+tool_editor.security.policy_missing=Policy file was not found.
+tool_editor.security.parser_rule=Parser rule
+tool_editor.security.prefix=Prefix:
+tool_editor.security.rule=Rule:
+tool_editor.security.type=Type:
+tool_editor.security.ok=OK
+tool_editor.security.cancel=Cancel
+tool_editor.security.category.allowed_extensions=Allowed extensions
+tool_editor.security.category.allowed_extensions.desc=These file types may be stored in a package when the path also matches.
+tool_editor.security.category.blocked_extensions=Blocked extensions
+tool_editor.security.category.blocked_extensions.desc=These file types are always rejected.
+tool_editor.security.category.image_extensions=Image extensions
+tool_editor.security.category.image_extensions.desc=These image types may be previewed and managed as media.
+tool_editor.security.category.text_extensions=Text extensions
+tool_editor.security.category.text_extensions.desc=These text types may be edited under text package paths.
+tool_editor.security.category.scripts=Scripts
+tool_editor.security.category.scripts.title=JavaScript
+tool_editor.security.category.scripts.desc=Only these script names may be stored in a package.
+tool_editor.security.category.templates=Templates
+tool_editor.security.category.templates.title=Root help templates
+tool_editor.security.category.templates.desc=These shared help templates and style files may be stored directly below help/.
+tool_editor.security.category.parser=Parser rules
+tool_editor.security.category.parser.title=Parser and package paths
+tool_editor.security.category.parser.desc=The compiler uses these prefix rules to classify package files.
+tool_editor.security.meaning.allowed=allowed
+tool_editor.security.meaning.blocked=blocked
+tool_editor.security.meaning.trusted_script=trusted help script
+tool_editor.security.meaning.root_help=root help file
+tool_editor.security.meaning.image=images only
+tool_editor.security.meaning.language=language file
+tool_editor.security.meaning.text=HTML/CSS/JS according to policy
+tool_editor.tree.nod_users=NOD for users
+tool_editor.window.title=Tiedragon ToolEditor
+tool_editor.toolbar.new_package=New package
+tool_editor.toolbar.new_package.tip=Create a package from the configured Syscalculator language
+tool_editor.toolbar.open=Open
+tool_editor.toolbar.open.tip=Open language package or concept
+tool_editor.toolbar.save_concept=Save concept
+tool_editor.toolbar.save_concept.tip=Save concept language package
+tool_editor.toolbar.validate=Validate
+tool_editor.toolbar.validate.tip=Validate current document
+tool_editor.toolbar.preview=Preview
+tool_editor.toolbar.preview.tip=Refresh HTML preview
+tool_editor.toolbar.compile=Compile
+tool_editor.toolbar.compile.tip=Compile language package to .lngpdk
+tool_editor.preview.title=Preview
+tool_editor.status.ready=Ready
+tool_editor.status.starter_failed=Starter package failed to load: 
+tool_editor.status.pages=Pages
+tool_editor.status.page=Page
+tool_editor.status.tabs=Tabs
+tool_editor.status.media=Media
+tool_editor.status.size=Size
+tool_editor.status.lines=Lines
+tool_editor.status.characters=Characters
+tool_editor.menu.file=File
+tool_editor.menu.file.new_package=New package
+tool_editor.menu.file.open_package=Open language package...
+tool_editor.menu.file.save_concept=Save concept language package
+tool_editor.menu.file.save_current=Save current document
+tool_editor.menu.file.compile=Compile language package...
+tool_editor.menu.file.close=Close
+tool_editor.menu.edit=Edit
+tool_editor.menu.edit.undo=Undo
+tool_editor.menu.edit.cut=Cut
+tool_editor.menu.edit.copy=Copy
+tool_editor.menu.edit.paste=Paste
+tool_editor.menu.edit.select_all=Select all
+tool_editor.menu.view=View
+tool_editor.menu.view.refresh_preview=Refresh preview
+tool_editor.menu.view.validate=Validate
+tool_editor.menu.package=Package
+tool_editor.menu.package.show_media=Show media files
+tool_editor.menu.package.show_manifest=Show manifest
+tool_editor.menu.package.validate_manifest=Validate manifest
+tool_editor.menu.package.add_media=Add media...
+tool_editor.menu.package.replace_media=Replace media...
+tool_editor.menu.package.delete_selected=Delete selected file
+tool_editor.menu.package.check_links=Check HTML links
+tool_editor.menu.package.compile=Compile package...
+tool_editor.menu.package.sha256=Calculate SHA-256...
+tool_editor.menu.package.encryption=Encryption...
+tool_editor.menu.package.view_media=View media
+tool_editor.menu.extra.open_debug_log=Open debug log
+tool_editor.menu.help=Help
+tool_editor.menu.help.open=ToolEditor help
+tool_editor.menu.help.about=About Syscalculator
 help.main.title=Syscalculator help
 help.main.close=Close
 help.main.body=Syscalculator is a converter tool.\r\n\r\nWhat you can do:\r\n- Choose a converter from the list.\r\n- Type a value in the first field.\r\n- Read the result in the second field.\r\n- Use WizardExpress for quick clipboard conversion.\r\n- Use NOD Editor for advanced converter work.\r\n\r\nWizardExpress:\r\n- Copy values to the clipboard.\r\n- Open WizardExpress.\r\n- Click OK.\r\n- Paste the converted values back.\r\n\r\nClipboard note:\r\n- WizardExpress works well with normal text programs.\r\n- WizardExpress also works well with LibreOffice Calc.\r\n- Microsoft Excel can behave differently with clipboard data.\r\n- If Excel paste is difficult, use LibreOffice Calc or work through files instead of clipboard.\r\n\r\nTips:\r\n- Open NOD when you want a specific converter file.\r\n- Reload the converter list if new files were added.\r\n- Use Calculator when you want to type into another field directly.\r\n\r\nThis help is for everyday use.\r\nFor converter development, use the NOD Editor help.
@@ -495,17 +602,27 @@ editor.nod_help.full.structure=<h2>Basic structure</h2><pre>Name Celsius to Fahr
 editor.nod_help.full.workflow=<h2>Workflow</h2><ol><li>Start with <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, and <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>; then the converter has a name and visible labels.</li><li>Optionally choose symbols with <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a>. Use left or right per value, not both.</li><li>Add conversion rules: <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> for calculations, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> for exact text translation, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> for prefix changes.</li><li>Use <b>Validate</b> or F5 to check syntax and <b>Test</b> or F6 to see the result.</li><li>Place <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> at the end.</li></ol>
 editor.nod_help.full.symbols=<h2>Symbols</h2><table><tr><th>Command</th><th>Position</th><th>Example</th></tr><tr><td>Symb1</td><td>left of input</td><td>DM 25</td></tr><tr><td>Symb2</td><td>left of output</td><td>EUR 25</td></tr><tr><td>Symb3</td><td>right of input</td><td>25 kg</td></tr><tr><td>Symb4</td><td>right of output</td><td>25 lb</td></tr></table><p>Usually choose left or right per value, not both, to avoid duplicate text such as <code>DM 25 DM</code>.</p>
 editor.nod_help.full.commands=<h2>Important commands</h2><ul><li><b>math</b>: calculates with <code>ans</code>.</li><li><b>trans</b>: translates exact text values.</li><li><b>chg</b>: changes starting text/prefix; also supports <code>x</code> patterns such as <code>050-2xxxxx</code>, with the most specific prefix winning.</li><li><b>indoprint ... indoend</b>: introduction text block. Do not forget <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</li><li><b>end</b>: closes the NOD file.</li></ul>
+editor.nod_help.full.commands.basic=<p>These commands form the base of almost every NOD file. They describe the converter name, input, output, symbols, result text and number display.</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a></td><td>Converter name/title.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input"><code>input</code></a>, <a class="cmd-link" href="nodpage:cmd:inputr"><code>inputr</code></a></td><td>Modern input and reverse/output fields.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a></td><td>Classic labels for older NOD files.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:result"><code>Result</code></a>, <a class="cmd-link" href="nodpage:cmd:resfou"><code>Resfou</code></a></td><td>Result label and error text.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> through <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a></td><td>Symbols left or right of input and output.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:format"><code>format</code></a></td><td>Number display, for example decimals.</td></tr></table>
+editor.nod_help.full.commands.math=<p>These commands are for calculation and normal value conversion. Use them when output comes from a formula or reverse rule.</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a></td><td>Calculates further with <code>ans</code>. Multiple <code>math</code> lines may follow each other.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a></td><td>Describes how the converter can calculate back.</td></tr></table><p>For formula graphs, see <a href="nodpage:graph-preview">Graph 2D and Graph 3D</a>.</p>
+editor.nod_help.full.commands.text=<p>These commands change text or fixed values. They fit words, codes, phone prefixes, statuses and historical renumbering tables.</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>Translates a complete value to another value.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>Changes starting text or a pattern, for example old to new phone prefix.</td></tr></table>
+editor.nod_help.full.commands.data=<p>These commands belong to <code>mode data</code>. They are meant for tables, fields, output columns and data cleanup.</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a></td><td>Name of the source table.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a></td><td>Field/column on which rules are applied.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td><td>Output field or output column.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td><td>Normalize phone numbers.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:lookup"><code>lookup</code></a>, <a class="cmd-link" href="nodpage:cmd:match"><code>match</code></a></td><td>Link or look up values.</td></tr></table>
+editor.nod_help.full.commands.equation=<p>These commands belong to <code>mode equation</code>. They describe known values, the equation, the unknown and constraints.</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a></td><td>Define a known value.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a></td><td>Describe the equation.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a></td><td>Choose the unknown variable.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td><td>Limit conditions, for example <code>x &gt;= 0</code>.</td></tr></table>
+editor.nod_help.full.commands.system=<p>These commands belong to the NOD system itself: file type, source information, preview text, safety, introduction text and closing.</p><table><tr><th>Command</th><th>Purpose</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a></td><td>Choose NOD file type, such as calculator, data or equation.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:urln"><code>URLN</code></a></td><td>Source, documentation or reference link.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:preview"><code>preview</code></a></td><td>Example text for preview/sample display.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:backup"><code>backup</code></a></td><td>Compatibility or safety setting from older NOD files.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>, <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a></td><td>Introduction text block.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a></td><td>Closes the NOD file.</td></tr></table>
 editor.nod_help.full.examples=<h2>Examples by NOD type</h2><p>NOD files can describe different kinds of converters. Choose the pattern that fits what you want to build.</p><h3>1. Calculation tool with math</h3><p>Use this for numbers: temperature, distance, weight, currency, percentage.</p><pre>Name Celsius to Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;end</pre><h3>2. Translation tool with trans</h3><p>Use this when the full input must exactly match a known value. Separate old and new with a comma. Use quotes when values contain spaces or commas.</p><pre>Name Postcode to address demo&#13;&#10;input1 Postcode house number&#13;&#10;input2 Address&#13;&#10;trans "2566 GB 241","Nieboerweg 241, 2566 GB Den Haag"&#13;&#10;end</pre><h3>3. Prefix/pattern tool with chg</h3><p>Use <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> when only the start of the text changes. Separate old and new with a comma. <code>x</code> patterns are allowed, useful for old phone renumbering tables.</p><pre>Name Operation Decibel example&#13;&#10;input1 Old phone number&#13;&#10;input2 New phone number&#13;&#10;chg "01751-xxxxx","070-51xxxxx"&#13;&#10;chg "050-2xxxxx","050-52xxxxx"&#13;&#10;end</pre><h3>4. Tool with left/right symbols</h3><p>Use symbols to display values neatly. Choose left or right per value.</p><pre>Name German mark to euro&#13;&#10;input1 Mark&#13;&#10;input2 Euro&#13;&#10;Symb1 DM&#13;&#10;Symb2 EUR&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre><h3>5. Introduction text with indoprint</h3><p>Use this when the user should see instructions before using the converter.</p><pre>indoprint This converter changes Celsius to Fahrenheit.&#13;&#10;indoprint Enter a temperature in degrees Celsius.&#13;&#10;indoend</pre><h3>6. Equation solving with equation</h3><p>Use this for formula-like problems where an unknown variable should be solved.</p><pre>Name Solve equation&#13;&#10;given y = 20&#13;&#10;equation y = x * 2&#13;&#10;solve x&#13;&#10;constraint x >= 0&#13;&#10;end</pre><h3>7. Example as shown in the window</h3><p>This shows where labels, input, result, and symbols appear on screen.</p><div class="dialog-example"><div class="dialog-title">EuroCalculator</div><div class="dialog-menu"><span>File</span><span>Edit</span><span>Config</span><span>Tools</span><span>About</span></div><div class="dialog-body"><div class="dialog-row"><span></span><div class="dialog-label">Value in Deutsch Mark</div><span></span></div><div class="dialog-row"><span class="dialog-radio on"></span><div class="dialog-input">22</div><div class="dialog-symbol">DM</div></div><div class="dialog-row"><span></span><div class="dialog-label">Value in euros</div><span></span></div><div class="dialog-row"><span class="dialog-radio"></span><div class="dialog-input">11.25</div><span></span></div><div class="dialog-options"><span>&#9633; Digit group</span><span>&#9745; Decimals</span><span>2</span></div></div></div><pre>Name German mark to euro&#13;&#10;input1 Value in Deutsch Mark&#13;&#10;input2 Value in euros&#13;&#10;Symb3 DM&#13;&#10;format ##.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre>
 editor.nod_help.full.troubleshooting=<h2>Common mistakes</h2><ul><li><b>Duplicate symbols:</b> do not use both left and right symbols for the same value, otherwise you can get text such as <code>DM 25 DM</code>.</li><li><b>Introduction without end:</b> close every <a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a> block with <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a>.</li><li><b>Math without ans:</b> use <code>ans</code> as the current value, for example <code>math ans * 100</code>.</li><li><b>No end:</b> place <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> at the end of the file.</li><li><b>Comma/dot:</b> decimals often work with comma or dot; always test with F6.</li></ul>
 editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsius to Fahrenheit</div><div><b>Meaning:</b> internal converter name.</div><div><b>Example:</b> <code>Name Postcode to address demo</code>.</div>
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN User title</div><div><b>Meaning:</b> visible title or description for the user.</div><div><b>Example:</b> <code>URLN Phone renumbering 1995 complete</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Meaning:</b> label of the input value.</div><div><b>Example:</b> <code>input1 Old phone number</code>.</div>
 editor.nod_help.input2=<div class="title">input2</div><div class="syntax">input2 Fahrenheit</div><div><b>Meaning:</b> label of the output value.</div><div><b>Example:</b> <code>input2 New phone number</code>.</div>
+editor.nod_help.input=<div class="title">input</div><div class="syntax">input x Label</div><div><b>Meaning:</b> modern input definition for NOD 2.0 beta.</div><div><b>Examples:</b> <code>input x Celsius</code>, <code>input y Width</code>, <code>input height Height</code>, <code>input text Text</code>, <code>input phone Phone number</code>.</div><div><b>Math notation:</b> <code>input x</code> belongs to <code>ans(x)</code>/<code>ansx</code>; custom inputs use <code>ans(name)</code>.</div>
+editor.nod_help.inputr=<div class="title">inputr</div><div class="syntax">inputr y Label</div><div><b>Meaning:</b> reverse/output-side input label for modern NOD files.</div><div><b>Example:</b> <code>inputr y Fahrenheit</code>.</div>
 editor.nod_help.symb1=<div class="title">Symb1</div><div class="syntax">Symb1 DM</div><div><b>Meaning:</b> symbol left of input1.</div><div><b>Example:</b> <code>Symb1 DM</code> displays <code>DM 25</code>.</div>
 editor.nod_help.symb2=<div class="title">Symb2</div><div class="syntax">Symb2 EUR</div><div><b>Meaning:</b> symbol left of input2/output.</div><div><b>Example:</b> <code>Symb2 EUR</code> displays <code>EUR 12.78</code>.</div>
 editor.nod_help.symb3=<div class="title">Symb3</div><div class="syntax">Symb3 kg</div><div><b>Meaning:</b> symbol right of input1.</div><div><b>Example:</b> <code>Symb3 kg</code> displays <code>25 kg</code>.</div>
 editor.nod_help.symb4=<div class="title">Symb4</div><div class="syntax">Symb4 lb</div><div><b>Meaning:</b> symbol right of input2/output.</div><div><b>Example:</b> <code>Symb4 lb</code> displays <code>55 lb</code>.</div>
 editor.nod_help.format=<div class="title">format</div><div class="syntax">format ##.00</div><div><b>Meaning:</b> controls how many decimals the result shows.</div><div><b>Example:</b> <code>format ##.00</code> displays <code>12.50</code>.</div>
+editor.nod_help.result=<div class="title">Result</div><div class="syntax">Result result:</div><div><b>Meaning:</b> text label for a normal result.</div><div><b>Example:</b> <code>Result New number:</code>.</div>
+editor.nod_help.resfou=<div class="title">Resfou</div><div class="syntax">Resfou invalid value</div><div><b>Meaning:</b> error text shown when conversion cannot produce a valid result.</div><div><b>Example:</b> <code>Resfou Not found</code>.</div>
 editor.nod_help.mode=<div class="title">mode</div><div class="syntax">mode calculator</div><div><b>Meaning:</b> extra setting for converter type.</div><div><b>Example:</b> <code>mode calculator</code>.</div>
 editor.nod_help.math=<div class="title">math</div><div class="syntax">math ans * 1.8</div><div><b>Meaning:</b> runs a calculation step with <code>ans</code> as current value.</div><div><b>Example:</b> <code>math ans + 32</code> adds 32 to the current value.</div>
 editor.nod_help.chg=<div class="title">chg</div><div class="syntax">chg "old-prefix","new-prefix"</div><div><b>Meaning:</b> changes the start of text, for example codes or phone numbers.</div><div><b>Example:</b> <code>chg "01751-xxxxx","070-51xxxxx"</code> turns <code>01751-12345</code> into <code>070-5112345</code>.</div><div><b>Patterns:</b> <code>x</code> may mark the remaining digits. If multiple rules match, the longest/most specific prefix wins.</div>
@@ -664,4 +781,147 @@ legal.privacy.choices.updates=You can disable automatic update checks or change 
 legal.privacy.choices.local=You can remove local files and settings yourself.
 legal.privacy.contact.title=Contact
 legal.privacy.contact.body=For privacy or data processing questions, contact info@tiedragon.com.
+formula_card.index.title=Formula Card
+formula_card.index.intro=The formula card brings together math rules, MathML, LaTeX and example NOD for use in Syscalculator.
+formula_card.index.column.formula=Formula
+formula_card.index.column.category=Category
+formula_card.index.column.tags=Tags
+formula_card.index.column.description=Description
+formula_card.section.formula=Formula
+formula_card.section.text=Text
+formula_card.section.latex=LaTeX
+formula_card.section.mathml=MathML
+formula_card.section.example_nod=Example NOD
+formula_card.card.vector-2d-arrow.title=2D vector arrow
+formula_card.card.vector-2d-arrow.formula_text=v = (x,y), |v| = sqrt(x^2 + y^2)
+formula_card.card.vector-2d-arrow.plain_text=2D vector from the origin to point (x,y)
+formula_card.card.vector-2d-arrow.tags=VWO D|PWS|Vectors|2D graph|Limited vector
+formula_card.card.vector-2d-arrow.description=A 2D vector is an arrow from the origin to (x,y); length(vec(...)) calculates the length of that arrow. For 3D visualization, use Graph 3D; geometry mode is available for X/Y/Z and NOD math.
+formula_card.card.vector-2d-arrow.example_nod=Name 2D vector arrow note\ninput x X component\ninput y Y component\noutput arrow Graph arrow\nend
+formula_card.card.vector-length-3d.title=3D vector length
+formula_card.card.vector-length-3d.formula_text=v = (x,y,z), |v| = sqrt(x^2 + y^2 + z^2)
+formula_card.card.vector-length-3d.plain_text=Length of a 3D vector.
+formula_card.card.vector-length-3d.tags=VWO D|PWS|Vectors|3D|Limited vector
+formula_card.card.vector-length-3d.description=The 3D vector length is the length of the arrow from the origin to (x,y,z). Graph 3D shows the full XYZ arrow; Graph 2D can show the same vector as a perspective projection with (x/z,y/z), or as a plain X/Y arrow when z is zero.
+formula_card.card.vector-length-3d.example_nod=Name 3D vector length\nmode geometry\ninput x X component\ninput y Y component\ninput z Z component\noutput length Length\nmath length(vec(x,y,z))\nend
+formula_card.card.matrix-2x2-determinant.title=2x2 matrix determinant
+formula_card.card.matrix-2x2-determinant.formula_text=det([[a,b],[c,d]]) = a*d - b*c
+formula_card.card.matrix-2x2-determinant.plain_text=The determinant of a 2x2 matrix is a*d - b*c.
+formula_card.card.matrix-2x2-determinant.tags=VWO D|PWS|Linear algebra|Limited matrix
+formula_card.card.matrix-2x2-determinant.description=Matrix topic for 2x2 matrices. 3x3 matrices work in NOD math with mat3(...), det(...), trace(...) and mget(...); Graph 3D is available for visualization.
+formula_card.card.matrix-2x2-determinant.example_nod=Name 2x2 matrix determinant note\ninput text Matrix values a,b,c,d\noutput det Determinant\nend
+formula_card.card.integral-definite-area.formula_text=integral from a to b of f(x) dx = area
+formula_card.card.integral-definite-area.example_nod=Name Definite integral area note\ninput text Function and limits a b\noutput area Area\nend
 help.main.page.updater.body=<p>The updater keeps Syscalculator current without changing your NOD files or personal settings.</p><h2>Where to find it</h2><ul><li><b>About &gt; Check for updates...</b> checks immediately.</li><li><b>Config &gt; Check for updates automatically</b> controls startup checks.</li><li><b>Config &gt; Update channel</b> selects the release line.</li></ul><h2>Update channels</h2><table><tr><th>Channel</th><th>Purpose</th><th>Package</th></tr><tr><td><b>Daily</b></td><td>Frequent test builds for quick fixes.</td><td>Inno Setup installer and updater zip.</td></tr><tr><td><b>Beta</b></td><td>Evaluation test builds. Beta can contain unfinished features or regressions and is not meant for normal daily use.</td><td>MSIX, Inno Setup installer and updater zip.</td></tr><tr><td><b>Alpha</b></td><td>Very early internal experiment builds. Alpha can break more easily.</td><td>Only when an alpha package is published.</td></tr><tr><td><b>Release</b></td><td>Stable public release line.</td><td>MSIX and Inno Setup installer.</td></tr></table><div class="warning"><b>Important:</b> Alpha and Beta builds can cause problems because they are test versions. They are not suitable for normal daily use.</div>
+editor.nod_help.input.compatibility=<h2>Input compatibility in NOD 2.0 beta</h2><div class="notice"><b>Important:</b> older NOD files with <code>input1</code> and <code>input2</code> keep working in the 2.x line. For new files, use <code>input</code> for real input and <code>inputr</code> for the reverse/output side.</div><div class="warning-sign">{WarningBoardSvg}<div><b>Avoid collisions:</b> for 2D vectors and limited matrix 2x2, <code>input2</code> is not supported. Write <code>input x</code> and <code>input y</code> for real values. Use <code>inputr y</code> or <code>output y</code> only for the reverse/output side.</div></div><table class="syntax-compare"><tr><th>Old syntax</th><th>New syntax</th><th>Use</th></tr><tr><td><code>input1 Celsius</code></td><td><code>input x Celsius</code></td><td>first numeric value</td></tr><tr><td><code>input2 Fahrenheit</code></td><td><code>inputr y Fahrenheit</code><br><code>output y Fahrenheit</code></td><td>reverse/output label</td></tr><tr><td><code>input2</code> for vector/matrix</td><td><code>input x</code> + <code>input y</code></td><td>not supported; use explicit values</td></tr><tr><td><code>input1 Text</code></td><td><code>input text Text</code></td><td>text for <code>trans</code> and <code>chg</code></td></tr></table><h2>Using input in math</h2><p>For education and future NOD with multiple input fields, the clear notation is <code>ans(x)</code>, <code>ans(y)</code> and <code>ans(height)</code>. In NOD 2.0, <code>ans</code> remains the current value/intermediate result and stays compatible with older files.</p>
+editor.nod_help.symbols.command_diagram=<h2>Example in the window</h2><p>{note}</p><table class="symbol-mini"><tr><td></td><td colspan="4" class="mini-label">{rowLabel}</td></tr><tr><td class="mini-radio"><span class="shot-radio {shotRadioClass}"></span></td><td class="mini-before">{rowBefore}</td><td class="mini-field"><span class="shot-input">{rowValue}</span></td><td class="mini-after">{rowAfter}</td><td class="mini-help"><span class="legend">{label}</span></td></tr></table><pre>Name German mark to euro&#13;&#10;input1 Value in Deutsch Mark&#13;&#10;input2 Value in euros&#13;&#10;{code}&#13;&#10;format #.00&#13;&#10;math ans / 1.95583&#13;&#10;end</pre><p><b>Note:</b> for the same value, usually use left or right, not both.</p>
+editor.nod_help.full.graph_preview=<h2>Graph 2D and Graph 3D</h2><p>The graph view visualizes formula converters. Graph 2D behaves like the classic graph preview. Graph 3D adds an X/Y/Z grid, camera navigation, red point markers and a 2D mode that can follow the same graph behavior.</p><p>Surfaces such as <code>z = f(x,y)</code> are roadmap work.</p>
+editor.nod_help.full.si_scale=<h2>SI and scale display</h2><p>Large and small graph values can be displayed with compact SI-style labels so the grid, axes and point table remain readable while zooming.</p><table><tr><th>Label</th><th>Name</th><th>Factor</th><th>Base unit</th></tr><tr><td><code>k</code></td><td>kilo</td><td>10^3</td><td>meter / value</td></tr><tr><td><code>M</code></td><td>mega</td><td>10^6</td><td>meter / value</td></tr><tr><td><code>G</code></td><td>giga</td><td>10^9</td><td>meter / value</td></tr><tr><td><code>T</code></td><td>tera</td><td>10^12</td><td>meter / value</td></tr><tr><td><code>m</code></td><td>milli</td><td>10^-3</td><td>meter / value</td></tr><tr><td><code>u</code></td><td>micro</td><td>10^-6</td><td>meter / value</td></tr><tr><td><code>n</code></td><td>nano</td><td>10^-9</td><td>meter / value</td></tr><tr><td><code>p</code></td><td>pico</td><td>10^-12</td><td>meter / value</td></tr><tr><td><code>f</code></td><td>femto</td><td>10^-15</td><td>meter / value</td></tr><tr><td><code>a</code></td><td>atto</td><td>10^-18</td><td>meter / value</td></tr><tr><td><code>ly</code></td><td>light-year</td><td>9.4607304725808 x 10^15</td><td>meter</td></tr><tr><td><code>lP</code></td><td>Planck length</td><td>1.616255 x 10^-35</td><td>meter</td></tr></table><p>At extreme zoom levels Graph2D/Graph3D use these compact labels for ticks and visible values. The calculation stays numeric; only the display becomes compact.</p><table><tr><th>Example</th><th>Approximate size</th><th>Display idea</th><th>Notes</th></tr><tr><td>Atom diameter</td><td>1 x 10^-10 to 5 x 10^-10</td><td>100 p to 500 p</td><td>depends on element and bonding</td></tr><tr><td>Atomic nucleus</td><td>4 x 10^-15 to 15 x 10^-15</td><td>4 f to 15 f</td><td>depends on nucleus mass</td></tr><tr><td>Neutron/nucleon</td><td>about 1 x 10^-15</td><td>about 1 f</td><td>scale example, not a hard sphere</td></tr></table>
+editor.nod_help.full.compatibility=<h2>NOD 2.0 beta and older NOD files</h2><p>Syscalculator 2.0 is still under development, but older NOD 1.x files must keep working.</p><div class="notice"><b>Compatible:</b> <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code>, symbols, <code>indoprint</code>, <code>indoend</code> and <code>end</code> remain supported in the 2.x line.</div>
+editor.nod_help.full.history=<h2>History</h2><p>The Syscalculator line goes back to Tiedos/Nodelistomzetter, Nodomzet and Hong technology. A recovered Wayback page from 22 February 1997 mentions Nodelistomzetter 1.36, Nodelistzoeker for Windows 95 and MoneyCalculator as early conversion tools by Edward Tie/Tiedos Software.</p><p>A later Wayback page for famtie.tcsoftware.com redirects to the Tiedos homepage and shows the transition phase: HONG technology for Syscal in November 1998, FreeSyscal Euro Edition on 1 January 1999, Syscalculcator Lite 1.5 Beta in March 1999 and Syscalculcator Euro Edition with more currencies in June 1999.</p><p>The Syscalculcator Lite 1.48 product page says the software descends from Nodomzet. The July 2001 download page says Hong technology uses the <code>.nod</code> extension and supports applications such as calculating, translating, converting and measuring. An archived <code>CF-m3.nod</code> file from 2002 shows the same readable NOD structure with commands such as <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> and <code>end</code>.</p><p>A recovered screenshot of Syscalculator Euro Edition shows version <code>1.50.94 RC 2</code>, the Eurorekenmachine window, WizardExpress and an About dialog with copyright 1996-2001. The About dialog also states that the program is free software under the GNU General Public License, version 2 or later.</p><p>Hong technology meant technology for converting or transforming important data. In current Syscalculator terms, it is the conceptual predecessor of the NOD system: a readable structure for data conversion.</p><p>That makes the historical line clearer: nodelist and telephone conversion first, then currency conversion, then Hong programs with <code>.nod</code>, and then the broader Syscalculator/NOD conversion and calculation system.</p><p>Syscalculator 2.0 keeps the readable NOD idea and adds editor help, validation, Graph2D, Graph3D, geometry, language packages and richer math support.</p>
+editor.nod_help.reverse.extra=<h2>reverse examples</h2><p><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a> describes how a converter can calculate back when the normal <code>math</code> rule is not enough.</p><pre>math ans * 1.8&#13;&#10;math ans + 32&#13;&#10;reverse ans - 32&#13;&#10;reverse ans / 1.8</pre>
+editor.nod_help.phoneformat.extra=<h2>phoneformat examples</h2><p><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a> is used inside data-oriented NOD files to normalize phone numbers.</p><pre>mode data&#13;&#10;field phone&#13;&#10;phoneformat country NL&#13;&#10;phoneformat remove_spaces true&#13;&#10;output phone_clean</pre>
+editor.nod_help.math.advanced=<details><summary>Geometry, vectors and matrices</summary><p>Vectors are geometry: distance, direction, length, angle and projection. Use numeric helper functions such as <code>length</code>, <code>distance</code>, <code>dot</code>, <code>cross</code>, <code>det</code>, <code>trace</code>, <code>mget</code>, <code>x</code>, <code>y</code> and <code>z</code>.</p><table><tr><th>Goal</th><th>Syntax</th><th>Result</th></tr><tr><td>2D vector length</td><td><code>math length(vec(3,4))</code></td><td><code>5</code></td></tr><tr><td>3D vector length</td><td><code>math length(vec(3,4,12))</code></td><td><code>13</code></td></tr><tr><td>Dot product</td><td><code>math dot(vec(1,2), vec(3,4))</code></td><td><code>11</code></td></tr><tr><td>2x2 determinant</td><td><code>math det(mat2(1,2,3,4))</code></td><td><code>-2</code></td></tr></table><div class="notice"><b>Scope:</b> Graph 3D is available for X/Y/Z visualization. Surface plotting remains roadmap work.</div></details>
+editor.nod_help.math.statistics=<details><summary>Statistics</summary><p>Statistics functions summarize a series of numbers into one result.</p><table><tr><th>Goal</th><th>Syntax</th><th>Example result</th></tr><tr><td>Sum</td><td><code>math sum(2,4,4,4,5,5,7,9)</code></td><td><code>40</code></td></tr><tr><td>Mean</td><td><code>math mean(2,4,4,4,5,5,7,9)</code></td><td><code>5</code></td></tr><tr><td>Median</td><td><code>math median(2,4,4,4,5,5,7,9)</code></td><td><code>4.5</code></td></tr><tr><td>Standard deviation</td><td><code>math stdev(2,4,4,4,5,5,7,9)</code></td><td><code>2</code></td></tr></table></details>
+editor.nod_help.math.probability=<details><summary>Probability</summary><p>Probability helpers include factorials, combinations, permutations and expected value.</p><table><tr><th>Goal</th><th>Syntax</th><th>Example</th></tr><tr><td>Factorial</td><td><code>math ans!</code> or <code>math factorial(ans)</code></td><td><code>5!</code> gives <code>120</code>.</td></tr><tr><td>Combinations</td><td><code>math comb(n,r)</code></td><td><code>comb(5,2)</code> gives <code>10</code>.</td></tr><tr><td>Permutations</td><td><code>math perm(n,r)</code></td><td><code>perm(5,2)</code> gives <code>20</code>.</td></tr></table></details>
+editor.nod_help.equation.visuals=<h2>Equation visuals</h2><p>Equation help shows the known values, the equation, the requested unknown and optional constraints. Use <code>given</code>, <code>equation</code>, <code>solve</code> and <code>constraint</code> together.</p>
+tool_editor.links.valid=All HTML links were found in the package.
+tool_editor.manifest.valid=Manifest is valid.
+tool_editor.media.rename.exists=A media file with this name already exists.
+tool_editor.media.rename.invalid_name=Use a valid image name: png, jpg, jpeg, svg, webp, gif or bmp.
+tool_editor.media.rename.title=Rename media
+tool_editor.status.concept_save_failed=Save concept failed: 
+tool_editor.status.concept_saved=Concept language package saved: 
+tool_editor.status.link_missing=HTML link missing: 
+tool_editor.status.links_valid=All HTML links point to existing package documents and media.
+tool_editor.status.manifest_invalid=Manifest invalid: 
+tool_editor.status.manifest_valid=Manifest is valid.
+tool_editor.status.media_added_suffix=media file(s) added.
+tool_editor.status.media_renamed=Media renamed: 
+tool_editor.status.media_replaced=Media replaced: 
+tool_editor.status.new_package_created=New base package created from the configured Syscalculator language.
+tool_editor.status.no_supported_media=No supported media found.
+tool_editor.status.package_compile_failed=Package compile failed: 
+tool_editor.status.package_compiled=Package compiled. SHA-256: 
+tool_editor.status.package_not_compiled=Package not compiled: 
+tool_editor.status.package_part_cannot_delete=Package part cannot be deleted: 
+tool_editor.status.readonly=Read-only: 
+tool_editor.status.removed_from_package=Removed from package: 
+tool_editor.status.select_media_first=Select a media file first.
+tool_editor.status.validation_failed=Validation failed: 
+tool_editor.status.validation_passed=Validation passed: 
+tool_editor.validation.passed=Validation passed.
+tool_editor.status.file_rejected=File rejected: 
+tool_editor.status.files=files
+tool_editor.status.generated_help_converted=Generated help was converted to editable HTML.
+tool_editor.status.link_target=Link: 
+tool_editor.status.link_target_missing=Link target not found: 
+tool_editor.status.media_copied_clipboard=Media copied to Windows clipboard: 
+tool_editor.status.no_clipboard_media=No supported media on the Windows clipboard.
+tool_editor.status.saved=Saved: 
+tool_editor.status.selected=Selected: 
+tool_editor.status.select_html_first=Select an HTML document first.
+tool_editor.status.sha256_failed=SHA-256 failed: 
+tool_editor.tree.media=Media and images
+
+tool_editor.button.cancel=Cancel
+tool_editor.button.close=Close
+tool_editor.button.ok=OK
+tool_editor.button.open=Open
+tool_editor.compile.title=Compile package
+tool_editor.delete.confirm.message=Delete this file from the language package?\r\n\r\nThe source file on disk will not be deleted.
+tool_editor.delete.protected.message=This item belongs to the fixed language package structure and cannot be deleted.\r\n\r\nUse the tab close button to close only the tab.
+tool_editor.dialog.open_document.title=Open ToolEditor document
+tool_editor.dialog.open_file.title=Open file
+tool_editor.dialog.open_concept.title=Open concept language package
+tool_editor.dialog.open_package.filter=Tiedragon language packages (*.objpdk;*.lngpdk)|*.objpdk;*.lngpdk|Source manifest (manifest.json)|manifest.json|Legacy zip (*.zip)|*.zip|All files (*.*)|*.*
+tool_editor.dialog.open_package.title=Open language package
+tool_editor.manifest.properties.title=Language package properties
+tool_editor.manifest.property.fallback_language=Fallback language
+tool_editor.manifest.property.language_code=Language code
+tool_editor.manifest.property.name=Name
+tool_editor.manifest.property.native_name=Native name
+tool_editor.manifest.property.package_id=Package ID
+tool_editor.manifest.property.package_version=Package version
+tool_editor.manifest.property.producer=Producer
+tool_editor.manifest.property.product=Product
+tool_editor.manifest.property.software_id=Software ID
+tool_editor.media.add.title=Add media to language package
+tool_editor.media.column.date=Date
+tool_editor.media.column.dimensions=Dimensions
+tool_editor.media.column.file=File
+tool_editor.media.column.package_path=Package path
+tool_editor.media.column.size=Size
+tool_editor.media.column.source=Source
+tool_editor.media.files.title=Media files
+tool_editor.media.rename.new_name=New file name:
+tool_editor.media.replace.title=Replace media
+tool_editor.sha256.filter=Tiedragon language package (*.lngpdk)|*.lngpdk|All files (*.*)|*.*
+tool_editor.sha256.title=Calculate SHA-256
+tool_editor.status.sha256=SHA-256: 
+tool_editor.status.manifest_loaded=Manifest loaded: 
+tool_editor.status.file_opened=File opened: 
+tool_editor.status.open_file_failed=Open file failed: 
+tool_editor.status.concept_package_opened=Concept language package opened: 
+tool_editor.status.open_package_failed=Open language package failed: 
+tool_editor.status.open_concept_failed=Open concept language package failed: 
+tool_editor.status.language_package_opened=Language package opened: 
+
+tool_editor.document.column.type=Type
+tool_editor.document.column.topic=Topic
+tool_editor.dialog.save_concept.title=Save concept language package
+tool_editor.confirm_reset.message=The current language package has unsaved changes.\r\n\r\nSave concept before continuing?
+tool_editor.confirm_reset.title=Language package
+tool_editor.reject_file.message_prefix=This file does not belong in the language package structure:\r\n\r\n
+tool_editor.reject_file.message_suffix=\r\n\r\nAllowed: manifest.json, language/*.lng, manual/help/NOD/formula HTML/CSS/JS, and media png/jpg/jpeg/svg/webp/gif/bmp.
+tool_editor.media.preview.title=Media preview
+tool_editor.media.preview.file=File: 
+tool_editor.media.preview.package_path=Package path: 
+tool_editor.media.preview.dimensions=Dimensions: 
+tool_editor.media.preview.size=Size: 
+tool_editor.media.preview.date=Date: 
+tool_editor.media.preview.source=Source: 
+tool_editor.compile.success.path=Package compiled:\r\n
+tool_editor.compile.success.encryption=Encryption: not active yet\r\nThe reader currently accepts only unencrypted packages.
+tool_editor.security.info.title=Package security
+tool_editor.security.info.message=The `.lngpdk` compile uses a strict container with double SHA-256 checks:\r\n\r\n- package SHA-256 for the full file\r\n- payload SHA-256 in the container header\r\n\r\nEncryption is intentionally disabled for now. Syscalculator refuses encrypted packages fail-closed until support is complete.\r\n\r\nSigning uses RSA-PSS-SHA256. If `Signed` is enabled, the reader verifies against language-package-trusted-keys.json and refuses fail-closed without a trusted public key.

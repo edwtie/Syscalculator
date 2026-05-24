@@ -14,6 +14,7 @@
     <FileVersion>2.0.0.0</FileVersion>
     <InformationalVersion>2.0.0-beta</InformationalVersion>
     <ApplicationIcon>Resources\Syscalculator.ico</ApplicationIcon>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,6 +75,10 @@
 
   <ItemGroup>
     <None Update="*.lng">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Include="..\Tiedragon.LanguagePackage\LanguagePackageSignatureVerifier.cs" Link="LanguagePackageSignatureVerifier.cs" />
+    <None Include="..\Tiedragon.LanguagePackage\language-package-trusted-keys.json" Link="language-package-trusted-keys.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="language.cfg">

@@ -1,9 +1,9 @@
 #nullable enable
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.WinForms;
 
 namespace Tiedragon.Help;
 
@@ -12,6 +12,7 @@ public sealed record NodHelpPage(string Id, string Title, string Html);
 
 public enum HelpNavigationIcon
 {
+    None,
     Previous,
     Home,
     Next,
@@ -43,16 +44,21 @@ public sealed class NodHelpForm : Form
         string? selectedPageId = null,
         string homeText = "Home",
         string previousText = "Previous",
-        string nextText = "Next")
+        string nextText = "Next",
+        bool okOnly = false,
+        string okText = "OK",
+        bool showTopics = true)
     {
         _pages = pages;
-        var topicPaneWidth = CalculateTopicPaneWidth(pages);
+        var topicPaneWidth = showTopics ? CalculateTopicPaneWidth(pages) : 0;
 
         Text = title;
-        Width = Math.Max(1040, topicPaneWidth + 720);
+        Width = showTopics ? Math.Max(1040, topicPaneWidth + 720) : 840;
         Height = 720;
-        MinimumSize = new Size(900, 560);
+        MinimumSize = showTopics ? new Size(900, 560) : new Size(720, 520);
         StartPosition = FormStartPosition.CenterParent;
+        if (okOnly)
+            ControlBox = false;
         KeyPreview = true;
         KeyDown += NodHelpForm_KeyDown;
 
@@ -66,6 +72,7 @@ public sealed class NodHelpForm : Form
         };
         split.SizeChanged += (_, _) => ApplyTopicPaneWidth(split, topicPaneWidth);
         Shown += (_, _) => ApplyTopicPaneWidth(split, topicPaneWidth);
+        split.Panel1Collapsed = !showTopics;
 
         _topics = new HelpTopicsList
         {
@@ -133,9 +140,23 @@ public sealed class NodHelpForm : Form
         _homeButton.Click += (_, _) => SelectFirstPage();
         _previousButton.Click += (_, _) => SelectRelativePage(-1);
         _nextButton.Click += (_, _) => SelectRelativePage(1);
-        navigation.Controls.Add(_previousButton, 0, 0);
-        navigation.Controls.Add(_homeButton, 1, 0);
-        navigation.Controls.Add(_nextButton, 2, 0);
+        if (okOnly)
+        {
+            var okButton = CreateNavigationButton(okText, HelpNavigationIcon.None, AnchorStyles.None);
+            okButton.DialogResult = DialogResult.OK;
+            okButton.Click += (_, _) => Close();
+            AcceptButton = okButton;
+            CancelButton = okButton;
+            navigation.Controls.Add(new Panel { Dock = DockStyle.Fill }, 0, 0);
+            navigation.Controls.Add(okButton, 1, 0);
+            navigation.Controls.Add(new Panel { Dock = DockStyle.Fill }, 2, 0);
+        }
+        else
+        {
+            navigation.Controls.Add(_previousButton, 0, 0);
+            navigation.Controls.Add(_homeButton, 1, 0);
+            navigation.Controls.Add(_nextButton, 2, 0);
+        }
         navigationHost.Controls.Add(navigation);
 
         _browser = new WebView2
@@ -235,7 +256,8 @@ public sealed class NodHelpForm : Form
         contentHost.Controls.Add(contentInner);
         contentOuter.Controls.Add(contentHost);
 
-        split.Panel1.Controls.Add(topicsHost);
+        if (showTopics)
+            split.Panel1.Controls.Add(topicsHost);
         split.Panel2.Padding = new Padding(0);
         split.Panel2.Controls.Add(contentOuter);
         split.Panel2.Controls.Add(navigationHost);
@@ -726,12 +748,6 @@ public sealed class HelpNavigationButton : Button
         g.FillPath(background, path);
         g.DrawPath(borderPen, path);
 
-        var iconRect = _icon switch
-        {
-            HelpNavigationIcon.Next => new RectangleF(ClientSize.Width - 42, 5, 24, 24),
-            _ => new RectangleF(18, 5, 24, 24)
-        };
-
         using var iconPen = new Pen(iconColor, 2.4f)
         {
             StartCap = LineCap.Round,
@@ -739,16 +755,30 @@ public sealed class HelpNavigationButton : Button
             LineJoin = LineJoin.Round
         };
         using var iconFill = new SolidBrush(Enabled ? Color.FromArgb(239, 246, 255) : Color.FromArgb(241, 245, 249));
-        DrawIcon(g, iconPen, iconFill, iconRect);
+        if (_icon != HelpNavigationIcon.None)
+        {
+            var iconRect = _icon switch
+            {
+                HelpNavigationIcon.Next => new RectangleF(ClientSize.Width - 42, 5, 24, 24),
+                _ => new RectangleF(18, 5, 24, 24)
+            };
+            DrawIcon(g, iconPen, iconFill, iconRect);
+        }
 
         var textRect = _icon switch
         {
+            HelpNavigationIcon.None => new Rectangle(10, 0, ClientSize.Width - 20, ClientSize.Height),
             HelpNavigationIcon.Previous => new Rectangle(52, 0, ClientSize.Width - 62, ClientSize.Height),
             HelpNavigationIcon.Next => new Rectangle(10, 0, ClientSize.Width - 62, ClientSize.Height),
             _ => new Rectangle(52, 0, ClientSize.Width - 62, ClientSize.Height)
         };
         var flags = TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis;
-        flags |= _icon == HelpNavigationIcon.Next ? TextFormatFlags.Right : TextFormatFlags.Left;
+        flags |= _icon switch
+        {
+            HelpNavigationIcon.None => TextFormatFlags.HorizontalCenter,
+            HelpNavigationIcon.Next => TextFormatFlags.Right,
+            _ => TextFormatFlags.Left
+        };
         TextRenderer.DrawText(g, Text, Font, textRect, textColor, flags);
 
         if (Focused && ShowFocusCues)
@@ -798,6 +828,8 @@ public sealed class HelpNavigationButton : Button
     {
         switch (_icon)
         {
+            case HelpNavigationIcon.None:
+                break;
             case HelpNavigationIcon.Previous:
                 DrawArrow(g, pen, rect, -1);
                 break;

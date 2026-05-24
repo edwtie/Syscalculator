@@ -26,3 +26,13 @@ curl.exe -L https://www.tiedragon.com/api/syscalculator-updates/syscalculator.js
 The daily channel must show the same `version`, `packageId`, and `sha256` as
 `web/updates/syscalculator.json` in this repository.
 
+The project has a WinSCP-based deploy helper for the live endpoints:
+
+```cmd
+DEPLOY_UPDATE_MANIFEST.bat
+```
+
+It uses the saved WinSCP session `edwtie@tiedragon.nl`, uploads
+`syscalculator.json` and `updater.php` to both `tiedragon.com` and
+`tiedragon.nl`, and then validates the live daily `version`, `packageId` and
+`sha256`.

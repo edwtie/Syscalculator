@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System.ComponentModel;
-using Tiedragon.NodSystem.Core;
 using Tiedragon.Graph;
 using Tiedragon.Graph.G2D;
+using Tiedragon.NodSystem.Core;
 
 namespace Syscalculator.UI.WinForms;
 

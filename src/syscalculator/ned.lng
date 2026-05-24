@@ -307,6 +307,113 @@ menu.about.help=Help voor gebruikers
 help.nav.home=Home
 help.nav.previous=Vorige
 help.nav.next=Volgende
+tool_editor.help.title=Taalmanager help
+tool_editor.help.page.overview=ToolEditor gebruiken
+tool_editor.help.page.package=Taalpakket workflow
+tool_editor.help.page.html=HTML bewerken
+tool_editor.help.page.media=Media en afbeeldingen
+tool_editor.help.page.compile=Valideren en compileren
+tool_editor.menu.extra=Extra
+tool_editor.security.menu=Beveiligingsinstellingen...
+tool_editor.security.title=Beveiligingsinstellingen
+tool_editor.security.heading=Language package policy
+tool_editor.security.ini=INI:
+tool_editor.security.open=Open
+tool_editor.security.close=Sluiten
+tool_editor.security.apply=Toepassen
+tool_editor.security.add=Toevoegen
+tool_editor.security.edit=Wijzigen
+tool_editor.security.delete=Verwijderen
+tool_editor.security.delete_confirm=Deze regel verwijderen?
+tool_editor.security.applied=Policy toegepast in deze ToolEditor-sessie.
+tool_editor.security.unsaved_message=Beveiligingsinstellingen hebben nog niet-toegepaste wijzigingen. Toepassen voordat je sluit?
+tool_editor.security.policy_missing=Policy-bestand is niet gevonden.
+tool_editor.security.parser_rule=Parserregel
+tool_editor.security.prefix=Prefix:
+tool_editor.security.rule=Regel:
+tool_editor.security.type=Type:
+tool_editor.security.ok=OK
+tool_editor.security.cancel=Annuleren
+tool_editor.security.category.allowed_extensions=Toegestane extensies
+tool_editor.security.category.allowed_extensions.desc=Deze bestandstypen mogen in een package staan als het pad ook klopt.
+tool_editor.security.category.blocked_extensions=Geblokkeerde extensies
+tool_editor.security.category.blocked_extensions.desc=Deze bestandstypen worden altijd geweigerd.
+tool_editor.security.category.image_extensions=Afbeeldingsextensies
+tool_editor.security.category.image_extensions.desc=Deze afbeeldingstypen mogen als media worden beheerd en weergegeven.
+tool_editor.security.category.text_extensions=Tekstextensies
+tool_editor.security.category.text_extensions.desc=Deze teksttypen mogen onder tekstpaden worden bewerkt.
+tool_editor.security.category.scripts=Scripts
+tool_editor.security.category.scripts.title=JavaScript
+tool_editor.security.category.scripts.desc=Alleen deze scriptnamen mogen in een package zitten.
+tool_editor.security.category.templates=Templates
+tool_editor.security.category.templates.title=Root-help templates
+tool_editor.security.category.templates.desc=Deze gedeelde help-templates en stijlbestanden mogen direct onder help/ staan.
+tool_editor.security.category.parser=Parserregels
+tool_editor.security.category.parser.title=Parser en packagepaden
+tool_editor.security.category.parser.desc=De compiler gebruikt deze prefixregels om bestanden in categorieen te plaatsen.
+tool_editor.security.meaning.allowed=toegestaan
+tool_editor.security.meaning.blocked=geblokkeerd
+tool_editor.security.meaning.trusted_script=trusted help script
+tool_editor.security.meaning.root_help=root-help bestand
+tool_editor.security.meaning.image=alleen afbeeldingen
+tool_editor.security.meaning.language=taalbestand
+tool_editor.security.meaning.text=HTML/CSS/JS volgens policy
+tool_editor.tree.nod_users=NOD voor gebruikers
+tool_editor.window.title=Tiedragon ToolEditor
+tool_editor.toolbar.new_package=Nieuw package
+tool_editor.toolbar.new_package.tip=Maak een package op basis van de ingestelde Syscalculator-taal
+tool_editor.toolbar.open=Open
+tool_editor.toolbar.open.tip=Open taalpackage of concept
+tool_editor.toolbar.save_concept=Save concept
+tool_editor.toolbar.save_concept.tip=Save concept taalpackage
+tool_editor.toolbar.validate=Valideren
+tool_editor.toolbar.validate.tip=Valideer huidig document
+tool_editor.toolbar.preview=Preview
+tool_editor.toolbar.preview.tip=Ververs HTML-preview
+tool_editor.toolbar.compile=Compileer
+tool_editor.toolbar.compile.tip=Compileer taalpackage naar .lngpdk
+tool_editor.preview.title=Preview
+tool_editor.status.ready=Gereed
+tool_editor.status.starter_failed=Starter package laden mislukt: 
+tool_editor.status.pages=Pagina's
+tool_editor.status.page=Pagina
+tool_editor.status.tabs=Tabs
+tool_editor.status.media=Media
+tool_editor.status.size=Grootte
+tool_editor.status.lines=Regels
+tool_editor.status.characters=Tekens
+tool_editor.menu.file=Bestand
+tool_editor.menu.file.new_package=Nieuw package
+tool_editor.menu.file.open_package=Open taalpackage...
+tool_editor.menu.file.save_concept=Save concept taalpackage
+tool_editor.menu.file.save_current=Opslaan huidig document
+tool_editor.menu.file.compile=Compileer taalpackage...
+tool_editor.menu.file.close=Sluiten
+tool_editor.menu.edit=Bewerken
+tool_editor.menu.edit.undo=Ongedaan maken
+tool_editor.menu.edit.cut=Knippen
+tool_editor.menu.edit.copy=Kopiëren
+tool_editor.menu.edit.paste=Plakken
+tool_editor.menu.edit.select_all=Alles selecteren
+tool_editor.menu.view=Beeld
+tool_editor.menu.view.refresh_preview=Preview verversen
+tool_editor.menu.view.validate=Valideren
+tool_editor.menu.package=Pakket
+tool_editor.menu.package.show_media=Mediabestanden tonen
+tool_editor.menu.package.show_manifest=Manifest tonen
+tool_editor.menu.package.validate_manifest=Manifest valideren
+tool_editor.menu.package.add_media=Media toevoegen...
+tool_editor.menu.package.replace_media=Media vervangen...
+tool_editor.menu.package.delete_selected=Geselecteerd bestand verwijderen
+tool_editor.menu.package.check_links=HTML-links controleren
+tool_editor.menu.package.compile=Pakket compileren...
+tool_editor.menu.package.sha256=SHA-256 berekenen...
+tool_editor.menu.package.encryption=Encryptie...
+tool_editor.menu.package.view_media=Media bekijken
+tool_editor.menu.extra.open_debug_log=Debuglog openen
+tool_editor.menu.help=Help
+tool_editor.menu.help.open=ToolEditor help
+tool_editor.menu.help.about=About Syscalculator
 help.main.title=Syscalculator help
 help.main.close=Sluiten
 help.main.body=Syscalculator is een converterprogramma.\r\n\r\nWat u kunt doen:\r\n- Kies een converter uit de lijst.\r\n- Typ een waarde in het eerste veld.\r\n- Lees het resultaat in het tweede veld.\r\n- Gebruik WizardExpress voor snelle klembordconversie.\r\n- Gebruik NOD Editor voor gevorderd converterwerk.\r\n\r\nWizardExpress:\r\n- Kopieer waarden naar het klembord.\r\n- Open WizardExpress.\r\n- Klik op OK.\r\n- Plak de geconverteerde waarden terug.\r\n\r\nOpmerking over het klembord:\r\n- WizardExpress werkt goed met gewone tekstprogramma's.\r\n- WizardExpress werkt ook goed met LibreOffice Calc.\r\n- Microsoft Excel kan anders omgaan met klemborddata.\r\n- Als plakken in Excel lastig is, gebruik dan LibreOffice Calc of werk via bestanden in plaats van via het klembord.\r\n\r\nTips:\r\n- Open NOD als u een specifiek converterbestand wilt laden.\r\n- Laad de converterlijst opnieuw als er nieuwe bestanden zijn toegevoegd.\r\n- Gebruik Calculator als u rechtstreeks in een ander veld wilt typen.\r\n\r\nDeze help is bedoeld voor dagelijks gebruik.\r\nGebruik voor converterontwikkeling de help van de NOD Editor.
@@ -479,7 +586,7 @@ editor.nod_help.page.commands.other=Overige commands
 editor.nod_help.page.examples=Voorbeelden
 editor.nod_help.page.troubleshooting=Veelgemaakte fouten
 editor.nod_help.full.intro=<h2>Wat is NOD?</h2><p><b>NOD</b> is het tekstformaat waarmee Syscalculator een converter beschrijft. Een NOD-bestand vertelt hoe de converter heet, welke invoer en uitvoer zichtbaar zijn, welke symbolen bij waarden horen en welke regels de waarde omzetten.</p><h2>Het basisidee</h2><p>Een NOD-bestand leest als een klein stappenplan. Eerst komt de naam, daarna de labels, daarna eventueel symbolen en uitlegtekst, vervolgens de regels die rekenen of tekst omzetten. De laatste regel is meestal <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a>.</p><h2>Waarom gewone tekst?</h2><p>Omdat de kennis dan zichtbaar blijft. Een Celsius/Fahrenheit-regel, een eurokoers of een oude telefoonnummeromzetting zit niet verstopt in programmacode, maar staat als leesbare regels in het bestand.</p><h2>Mini voorbeeld</h2><pre>Name Celsius naar Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;end</pre><p>Lees dit van boven naar beneden: de converter krijgt een naam, toont twee labels, kiest een getalnotatie en voert twee rekenstappen uit met <code>ans</code> als huidige waarde.</p>
-editor.nod_help.full.guide=<p>Dit hoofdstuk gaat over werken in het editorvenster. Je schrijft de NOD-tekst in het midden, gebruikt de knoppen bovenin voor openen, opslaan, testen en valideren, en leest de commandotips wanneer je op een bekende regel staat.</p><h2>Het venster</h2>{NodEditorScreenshot}<p class="shot-caption">Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>Name</code>.</p><h2>Een converter maken</h2><ol><li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.</li><li>Voeg optioneel <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot en met <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> toe voor symbolen links of rechts van waarden.</li><li>Schrijf de omzetting met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> of <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.</li><li>Gebruik <b>Validate</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.</li><li>Sla het bestand op zodra de converter klopt.</li></ol><h2>Commandotips</h2><p>De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Replace</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>More help</b> opent de volledige commandopagina.</p><h2>Undo, redo en herstel</h2><p><b>Undo</b> en <b>Redo</b> gaan over recente tekstbewerkingen. <b>Restore</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Tools &gt; Repair lines</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.</p>
+editor.nod_help.full.guide=<p>Dit hoofdstuk gaat over werken in het editorvenster. Je schrijft de NOD-tekst in het midden, gebruikt de knoppen bovenin voor openen, opslaan, testen en valideren, en leest de commandotips wanneer je op een bekende regel staat.</p><h2>Het venster</h2>{NodEditorScreenshot}<p class="shot-caption">Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>Name</code>.</p><h2>Een converter maken</h2><ol><li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.</li><li>Voeg optioneel <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot en met <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> toe voor symbolen links of rechts van waarden.</li><li>Schrijf de omzetting met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> of <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.</li><li>Gebruik <b>Valideren</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.</li><li>Sla het bestand op zodra de converter klopt.</li></ol><h2>Commandotips</h2><p>De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Vervangen</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>Meer help</b> opent de volledige commandopagina.</p><h2>Ongedaan maken, opnieuw uitvoeren en herstel</h2><p><b>Ongedaan maken</b> en <b>Opnieuw uitvoeren</b> gaan over recente tekstbewerkingen. <b>Herstel</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Extra &gt; Regels repareren</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.</p>
 editor.nod_help.guide.intro=Dit hoofdstuk gaat over werken in het editorvenster. Je schrijft de NOD-tekst in het midden, gebruikt de knoppen bovenin voor openen, opslaan, testen en valideren, en leest de commandotips wanneer je op een bekende regel staat.
 editor.nod_help.guide.window_title=Het venster
 editor.nod_help.guide.screenshot_caption=Voorbeeld: een Celsius/Fahrenheit-converter met de commandotip voor <code>Name</code>.
@@ -487,13 +594,14 @@ editor.nod_help.guide.create_title=Een converter maken
 editor.nod_help.guide.create.name=Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>.
 editor.nod_help.guide.create.symbols=Voeg optioneel <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot en met <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a> toe voor symbolen links of rechts van waarden.
 editor.nod_help.guide.create.rules=Schrijf de omzetting met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a>, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> of <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a>.
-editor.nod_help.guide.create.validate=Gebruik <b>Validate</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.
+editor.nod_help.guide.create.validate=Gebruik <b>Valideren</b> om syntaxfouten te vinden en <b>Test</b> om de uitkomst te proberen.
 editor.nod_help.guide.create.save=Sla het bestand op zodra de converter klopt.
 editor.nod_help.guide.tips_title=Commandotips
-editor.nod_help.guide.tips=De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Replace</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>More help</b> opent de volledige commandopagina.
-editor.nod_help.guide.undo_title=Undo, redo en herstel
-editor.nod_help.guide.undo=<b>Undo</b> en <b>Redo</b> gaan over recente tekstbewerkingen. <b>Restore</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Tools &gt; Repair lines</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.
+editor.nod_help.guide.tips=De blauwe ballon is bedoeld als korte hulp bij de regel waar de cursor staat. Soms toont hij ook een modernere schrijfwijze. Gebruik <b>Vervangen</b> alleen wanneer je die moderne vorm echt wilt overnemen; <b>Meer help</b> opent de volledige commandopagina.
+editor.nod_help.guide.undo_title=Ongedaan maken, opnieuw uitvoeren en herstel
+editor.nod_help.guide.undo=<b>Ongedaan maken</b> en <b>Opnieuw uitvoeren</b> gaan over recente tekstbewerkingen. <b>Herstel</b> is groter: daarmee zet je de huidige tab terug naar de laatst geopende of opgeslagen versie. <b>Extra &gt; Regels repareren</b> is iets anders; dat probeert geplakte of samengevoegde NOD-regels te repareren.
 editor.nod_help.full.classic_book=<h2>Waarom oud en nieuw naast elkaar bestaan</h2><p>Syscalculator 2.0 is geen breuk met de oude NOD-bestanden. De bedoeling is juist dat oude converters herkenbaar blijven, terwijl de editor meer hulp geeft tijdens het schrijven, testen en onderhouden.</p><h2>Wat klassiek NOD sterk maakte</h2><p>Klassiek NOD was klein en direct. Een regel met <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> rekende verder met <code>ans</code>. Een regel met <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> vertaalde een vaste waarde. Een regel met <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> veranderde het begin van tekst, bijvoorbeeld bij oude telefoonnummeromzettingen.</p><h2>Wat NOD 2.0 toevoegt</h2><p>NOD 2.0 bewaart die eenvoudige basis, maar zet er een moderne editor omheen: syntaxkleuring, commandotips, rechterklik-help, templates, validatie, testuitvoer, preview en herstel. De taal blijft leesbaar, maar de omgeving helpt sneller fouten vinden.</p><h2>Overzicht</h2><table><tr><th>Syscalculator 1.73 / NOD 1.x</th><th>Syscalculator 2.0 / NOD editor</th></tr><tr><td>Kleine tekstbestanden met klassieke commands zoals <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code> en <code>end</code>.</td><td>Dezelfde basis blijft werken, zodat oude NOD-bestanden herkenbaar en bruikbaar blijven.</td></tr><tr><td>Je moest vaak onthouden waar symbolen verschijnen en daarna in de oude calculator testen.</td><td>De editor toont een live preview/simulator waarin je meteen ziet waar <code>Symb1</code> t/m <code>Symb4</code> staan.</td></tr><tr><td><code>chg</code> was vooral klassieke prefixvervanging, handig voor oude telefoonnummer-omzettingen.</td><td><code>chg</code> blijft compatibel, maar NOD 2.0 kan ook patronen met <code>x</code>-capture gebruiken.</td></tr><tr><td>Help zat vooral in voorbeelden en ervaring.</td><td>De editor geeft suggesties, rechterklik-help, commandopagina's en voorbeelden per soort NOD-bestand.</td></tr></table><h2>Vuistregel</h2><p>Gebruik oude commands gerust wanneer je een bestaand bestand onderhoudt. Gebruik de modernere schrijfwijze wanneer de editor die voorstelt en het bestand daardoor duidelijker wordt. Compatibiliteit is belangrijk, maar leesbaarheid is het doel.</p>
+editor.nod_help.full.compatibility=<h2>NOD 2.0 beta en oudere NOD-bestanden</h2><p>Syscalculator 2.0 is nog in ontwikkeling. Nieuwe mogelijkheden kunnen erbij komen, maar oudere NOD 1.x-bestanden moeten blijven werken.</p><div class="notice"><b>Compatibel:</b> <code>input1</code>, <code>input2</code>, <code>math</code>, <code>trans</code>, <code>chg</code>, <code>Symb1</code> t/m <code>Symb4</code>, <code>indoprint</code>, <code>indoend</code> en <code>end</code> blijven ondersteund in de 2.x-lijn.</div><div class="warning-sign">{WarningBoardSvg}<div><b>Let op:</b> gebruik <code>input2</code> niet voor 2D-vectoren of beperkte 2x2-matrices. In die gevallen is <code>y</code> of de matrixwaarde echte invoer. Als <code>input2</code> tegelijk als oude omkeer-/uitvoerzijde wordt gelezen, kunnen velden botsen en kan de UI of berekening verkeerd koppelen.</div></div><h2>Oude stijl tegenover nieuwe stijl</h2><table class="syntax-compare"><tr><th>Doel</th><th>Oude NOD</th><th>NOD 2.0 beta</th><th>Opmerking</th></tr><tr><td>Numerieke invoer</td><td><code>input1 Celsius</code></td><td><code>input x Celsius</code></td><td><code>input1</code> wordt intern gelezen als <code>x</code>.</td></tr><tr><td>Numerieke uitvoer/omkeerzijde</td><td><code>input2 Fahrenheit</code></td><td><code>inputr y Fahrenheit</code> of <code>output y Fahrenheit</code></td><td><code>input2</code> blijft een legacy uitvoer-/omkeerlabel, zodat omgekeerd rekenen niet botst met echte tweede invoer.</td></tr><tr><td>Tekstconversie</td><td><code>input1 Tekst</code></td><td><code>input text Tekst</code></td><td>Voor <code>trans</code> en <code>chg</code> is <code>input text</code> duidelijker.</td></tr><tr><td>Twee tekstwaarden</td><td><code>input1 Bron</code><br><code>input2 Doel</code></td><td><code>input texta Bron</code><br><code>input textb Doel</code></td><td>Handig voor vergelijken, vertalen of latere uitgebreide teksttools.</td></tr><tr><td>2D-vector</td><td>gebruik geen <code>input2</code></td><td><code>input x X-component</code><br><code>input y Y-component</code></td><td>Bij een vector is <code>y</code> echte tweede invoer, niet de omkeer-/uitvoerzijde.</td></tr><tr><td>Benoemde invoer</td><td>Niet expliciet</td><td><code>input height Hoogte</code><br><code>input radius Straal</code></td><td>Voorbereiding op NOD 2.1 met meer dan drie waarden.</td></tr><tr><td>Telefoonnummer</td><td><code>input1 Telefoon</code></td><td><code>input phone Telefoonnummer</code><br><code>input telefoon Telefoonnummer</code></td><td><code>telefoon</code> werkt als alias voor phone.</td></tr><tr><td>Beperkte matrix 2x2</td><td>Niet expliciet</td><td>Formulekaart met <code>det = a*d - b*c</code></td><td>Educatief/formulekaart in de 2.0 beta; nog geen matrix-engine.</td></tr><tr><td>Matrix 3x3 / 3D</td><td>Niet ondersteund</td><td>Niet gebruiken in 2.0 beta</td><td>Hoort bij een latere 3D graph/geometry-engine.</td></tr></table><h2>Wanneer aanpassen?</h2><ul><li>Laat bestaande oude NOD-bestanden gewoon werken.</li><li>Gebruik voor nieuwe NOD 2.0 beta-bestanden liever <code>input x</code>, <code>input y</code>, <code>input text</code> of <code>input phone</code>.</li><li>Verwijder <code>input1</code>/<code>input2</code> pas in een echte brekende versie zoals NOD 3.0.</li></ul><h2>Lijnintegralen en formulekaarten</h2><p>Onderwerpen zoals 2D-vectorpijlen, lijnintegralen en beperkte 2x2-matrices kunnen in de 2.0 beta al bestaan als formulekaart en educatieve uitleg. Een 2D-vector kan als pijl in een graph worden getoond. <code>math geometry</code>, <code>mode geometry</code> en 3x3-matrices zijn nog geen 2.0-productiefuncties, omdat ze een 3D graph/geometry-engine nodig hebben.</p>
 editor.nod_help.full.structure=<h2>Basisstructuur</h2><pre>Name Celsius naar Fahrenheit&#13;&#10;URLN Celsius naar Fahrenheit&#13;&#10;input1 Celsius&#13;&#10;input2 Fahrenheit&#13;&#10;format ##.00&#13;&#10;math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;end</pre>
 editor.nod_help.full.workflow=<h2>Werkwijze</h2><ol><li>Begin met <a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a>, <a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a> en <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a>; dan weet de converter hoe hij heet en welke labels zichtbaar zijn.</li><li>Kies optioneel symbolen met <a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> t/m <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a>. Gebruik per waarde links of rechts, niet beide.</li><li>Voeg conversieregels toe: <a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a> voor rekenen, <a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a> voor exacte tekstvertaling, <a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a> voor prefixwijziging.</li><li>Gebruik <b>Valideren</b> of F5 om syntax te controleren en <b>Test</b> of F6 om de uitkomst te zien.</li><li>Zet <a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a> aan het einde.</li></ol>
 editor.nod_help.full.symbols=<h2>Symbolen</h2><table><tr><th>Command</th><th>Positie</th><th>Voorbeeld</th></tr><tr><td>Symb1</td><td>links van input</td><td>DM 25</td></tr><tr><td>Symb2</td><td>links van output</td><td>EUR 25</td></tr><tr><td>Symb3</td><td>rechts van input</td><td>25 kg</td></tr><tr><td>Symb4</td><td>rechts van output</td><td>25 lb</td></tr></table><p>Kies per waarde meestal links of rechts, niet allebei, om dubbele tekst zoals <code>DM 25 DM</code> te voorkomen.</p>
@@ -504,11 +612,15 @@ editor.nod_help.name=<div class="title">Name</div><div class="syntax">Name Celsi
 editor.nod_help.urln=<div class="title">URLN</div><div class="syntax">URLN Titel voor gebruiker</div><div><b>Betekenis:</b> zichtbare titel of omschrijving voor de gebruiker.</div><div><b>Voorbeeld:</b> <code>URLN Telefoonnummer omnummering 1995 volledig</code>.</div>
 editor.nod_help.input1=<div class="title">input1</div><div class="syntax">input1 Celsius</div><div><b>Betekenis:</b> legacy label van de invoerwaarde.</div><div><b>Vervangen door:</b> <code>input x Celsius</code>.</div><div><b>Tip:</b> oude combinatie <code>input1</code>/<code>input2</code> wordt modern <code>input x</code>/<code>inputr y</code>.</div><div><b>Voorbeeld:</b> <code>input1 Celsius</code> wordt <code>input x Celsius</code>.</div>
 editor.nod_help.input2=<div class="title">input2</div><div class="syntax">input2 Fahrenheit</div><div><b>Betekenis:</b> legacy label van de uitvoerwaarde en reverse-kant.</div><div><b>Vervangen door:</b> <code>inputr y Fahrenheit</code> of <code>output y Fahrenheit</code>.</div><div><b>Pas op:</b> gebruik <code>input y</code> alleen als het echt een tweede invoerwaarde is, bijvoorbeeld bij een 2D vector.</div><div><b>Voorbeeld:</b> <code>input2 Fahrenheit</code> wordt <code>inputr y Fahrenheit</code>.</div>
+editor.nod_help.input=<div class="title">input</div><div class="syntax">input x Label</div><div><b>Betekenis:</b> moderne invoerdefinitie voor NOD 2.0 beta.</div><div><b>Voorbeelden:</b> <code>input x Celsius</code>, <code>input y Breedte</code>, <code>input hoogte Hoogte</code>, <code>input text Tekst</code>, <code>input phone Telefoonnummer</code>.</div><div><b>Math-notatie:</b> <code>input x</code> hoort bij <code>ans(x)</code>/<code>ansx</code>; eigen invoernamen gebruik je met <code>ans(naam)</code>.</div>
+editor.nod_help.inputr=<div class="title">inputr</div><div class="syntax">inputr y Label</div><div><b>Betekenis:</b> modern label voor de terugreken- of uitvoerkant.</div><div><b>Voorbeeld:</b> <code>inputr y Fahrenheit</code>.</div>
 editor.nod_help.symb1=<div class="title">Symb1</div><div class="syntax">Symb1 DM</div><div><b>Betekenis:</b> symbool links van input1.</div><div><b>Voorbeeld:</b> <code>Symb1 DM</code> toont <code>DM 25</code>.</div>
 editor.nod_help.symb2=<div class="title">Symb2</div><div class="syntax">Symb2 EUR</div><div><b>Betekenis:</b> symbool links van input2/output.</div><div><b>Voorbeeld:</b> <code>Symb2 EUR</code> toont <code>EUR 12,78</code>.</div>
 editor.nod_help.symb3=<div class="title">Symb3</div><div class="syntax">Symb3 kg</div><div><b>Betekenis:</b> symbool rechts van input1.</div><div><b>Voorbeeld:</b> <code>Symb3 kg</code> toont <code>25 kg</code>.</div>
 editor.nod_help.symb4=<div class="title">Symb4</div><div class="syntax">Symb4 lb</div><div><b>Betekenis:</b> symbool rechts van input2/output.</div><div><b>Voorbeeld:</b> <code>Symb4 lb</code> toont <code>55 lb</code>.</div>
 editor.nod_help.format=<div class="title">format</div><div class="syntax">format ##.00</div><div><b>Betekenis:</b> bepaalt hoeveel decimalen het resultaat toont.</div><div><b>Voorbeeld:</b> <code>format ##.00</code> toont <code>12.50</code>.</div>
+editor.nod_help.result=<div class="title">Result</div><div class="syntax">Result resultaat:</div><div><b>Betekenis:</b> tekstlabel voor een normaal resultaat.</div><div><b>Voorbeeld:</b> <code>Result Nieuw nummer:</code>.</div>
+editor.nod_help.resfou=<div class="title">Resfou</div><div class="syntax">Resfou ongeldige waarde</div><div><b>Betekenis:</b> fouttekst wanneer de conversie geen geldig resultaat kan maken.</div><div><b>Voorbeeld:</b> <code>Resfou Niet gevonden</code>.</div>
 editor.nod_help.mode=<div class="title">mode</div><div class="syntax">mode calculator</div><div><b>Betekenis:</b> extra instelling voor het type converter.</div><div><b>Voorbeeld:</b> <code>mode calculator</code>.</div>
 editor.nod_help.math=<div class="title">math</div><div class="syntax">math ans * 1,8</div><div><b>Betekenis:</b> voert een rekenstap uit met <code>ans</code> als huidige waarde.</div><div><b>Voorbeeld:</b> <code>math ans + 32</code> telt 32 op bij de huidige waarde.</div>
 editor.nod_help.math.popup_advanced=<div><b>Meer rekenfuncties:</b> <code>math length(vec(3,4))</code>, <code>math vec 3 4</code>, <code>math det(mat2(1,2,3,4))</code> en <code>math mean(2,4,4,4,5,5,7,9)</code>.</div>
@@ -579,7 +691,7 @@ clipboard.debug.report_date_culture=nl-NL
 clipboard.debug.report_date_format=d MMMM yyyy
 clipboard.debug.summary=Samenvatting
 clipboard.debug.formats=Formaten
-clipboard.debug.preview=Preview
+clipboard.debug.preview=Voorbeeld
 clipboard.debug.preview_rows_all={0} rijen getoond
 clipboard.debug.preview_rows_limited=Eerste {0} van {1} rijen getoond
 clipboard.debug.owner=Eigenaar
@@ -672,3 +784,148 @@ legal.privacy.choices.updates=U kunt automatische updatecontrole uitschakelen of
 legal.privacy.choices.local=U kunt lokale bestanden en instellingen zelf verwijderen.
 legal.privacy.contact.title=Contact
 legal.privacy.contact.body=Voor vragen over privacy of gegevensverwerking kunt u contact opnemen via info@tiedragon.com.
+formula_card.index.title=Formulekaart
+formula_card.index.intro=De formulekaart bundelt wiskundige basisregels, MathML, LaTeX en voorbeeld-NOD voor gebruik in Syscalculator.
+formula_card.index.column.formula=Formule
+formula_card.index.column.category=Categorie
+formula_card.index.column.tags=Tags
+formula_card.index.column.description=Uitleg
+formula_card.section.formula=Formule
+formula_card.section.text=Tekst
+formula_card.section.latex=LaTeX
+formula_card.section.mathml=MathML
+formula_card.section.example_nod=Voorbeeld-NOD
+formula_card.card.vector-2d-arrow.title=2D vectorpijl
+formula_card.card.vector-2d-arrow.formula_text=v = (x,y), |v| = sqrt(x^2 + y^2)
+formula_card.card.vector-2d-arrow.plain_text=2D vector van de oorsprong naar punt (x,y)
+formula_card.card.vector-2d-arrow.tags=VWO D|PWS|Vectoren|2D grafiek|Beperkte vector
+formula_card.card.vector-2d-arrow.description=Een 2D vector is een pijl vanaf de oorsprong naar (x,y); length(vec(...)) berekent de lengte van die pijl. Voor 3D-visualisatie gebruik je Graph 3D; de geometrie-modus is beschikbaar voor X/Y/Z en NOD-wiskunde.
+formula_card.card.vector-2d-arrow.example_nod=Name 2D vectorpijl notitie\ninput x X component\ninput y Y component\noutput pijl Grafiekpijl\nend
+formula_card.card.vector-length-3d.title=3D vectorlengte
+formula_card.card.vector-length-3d.formula_text=v = (x,y,z), |v| = sqrt(x^2 + y^2 + z^2)
+formula_card.card.vector-length-3d.plain_text=Lengte van een 3D-vector.
+formula_card.card.vector-length-3d.tags=VWO D|PWS|Vectoren|3D|Beperkte vector
+formula_card.card.vector-length-3d.description=De 3D vectorlengte is de lengte van de pijl vanaf de oorsprong naar (x,y,z). Graph 3D toont de volledige XYZ-pijl; Graph 2D kan dezelfde vector tonen als perspectiefprojectie met (x/z,y/z), of als gewone X/Y-pijl wanneer z nul is.
+formula_card.card.vector-length-3d.example_nod=Name 3D vectorlengte\nmode geometry\ninput x X component\ninput y Y component\ninput z Z component\noutput lengte Lengte\nmath length(vec(x,y,z))\nend
+formula_card.card.matrix-2x2-determinant.title=2x2 matrixdeterminant
+formula_card.card.matrix-2x2-determinant.formula_text=det([[a,b],[c,d]]) = a*d - b*c
+formula_card.card.matrix-2x2-determinant.plain_text=Determinant van een 2x2 matrix is a*d - b*c.
+formula_card.card.matrix-2x2-determinant.tags=VWO D|PWS|Lineaire algebra|Beperkte matrix
+formula_card.card.matrix-2x2-determinant.description=Matrix-onderwerp voor 2x2 matrices. 3x3 matrices werken in NOD-wiskunde met mat3(...), det(...), trace(...) en mget(...); Graph 3D is beschikbaar voor visualisatie.
+formula_card.card.matrix-2x2-determinant.example_nod=Name 2x2 matrixdeterminant notitie\ninput text Matrixwaarden a,b,c,d\noutput det Determinant\nend
+formula_card.card.integral-definite-area.formula_text=integraal van a tot b van f(x) dx = oppervlakte
+formula_card.card.integral-definite-area.example_nod=Name Bepaalde integraal oppervlakte notitie\ninput text Functie en grenzen a b\noutput oppervlakte Oppervlakte\nend
+editor.nod_help.full.commands.basic=<p>Deze commands vormen de basis van bijna elk NOD-bestand. Ze beschrijven naam, invoer, uitvoer, symbolen, resultaattekst en getalweergave.</p><table><tr><th>Commando</th><th>Doel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:name"><code>Name</code></a></td><td>Naam/titel van de converter.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input"><code>input</code></a>, <a class="cmd-link" href="nodpage:cmd:inputr"><code>inputr</code></a></td><td>Moderne invoer- en uitvoervelden.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:input1"><code>input1</code></a>, <a class="cmd-link" href="nodpage:cmd:input2"><code>input2</code></a></td><td>Klassieke labels voor oude NOD-bestanden.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:result"><code>Result</code></a>, <a class="cmd-link" href="nodpage:cmd:resfou"><code>Resfou</code></a></td><td>Resultaatlabel en foutmelding.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:symb1"><code>Symb1</code></a> tot <a class="cmd-link" href="nodpage:cmd:symb4"><code>Symb4</code></a></td><td>Symbolen links of rechts van invoer en uitvoer.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:format"><code>format</code></a></td><td>Getalweergave, bijvoorbeeld decimalen.</td></tr></table>
+editor.nod_help.full.commands.math=<p>Deze commands horen bij rekenen en normale waardeconversie. Gebruik ze wanneer de uitvoer met een formule of omkeerregel uit de invoer komt.</p><table><tr><th>Commando</th><th>Doel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:math"><code>math</code></a></td><td>Rekent verder met <code>ans</code>. Meerdere <code>math</code>-regels mogen achter elkaar.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a></td><td>Geeft aan hoe de converter terug kan rekenen.</td></tr></table><p>Voor grafieken bij formules: zie <a href="nodpage:graph-preview">Graph 2D en Graph 3D</a>.</p>
+editor.nod_help.full.commands.text=<p>Deze commands veranderen tekst of vaste waarden. Ze zijn geschikt voor woorden, codes, telefoonprefixen, statussen en historische renummeringstabellen.</p><table><tr><th>Commando</th><th>Doel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:trans"><code>trans</code></a></td><td>Vertaalt een volledige waarde naar een andere waarde.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:chg"><code>chg</code></a></td><td>Wijzigt begintekst of een patroon, bijvoorbeeld oude naar nieuwe telefoonprefix.</td></tr></table>
+editor.nod_help.full.commands.data=<p>Deze commands horen bij <code>mode data</code>. Ze zijn bedoeld voor tabellen, velden, uitvoerkolommen en opschonen van data.</p><table><tr><th>Commando</th><th>Doel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:table"><code>table</code></a></td><td>Naam van de brontabel.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:field"><code>field</code></a></td><td>Veld/kolom waarop regels worden toegepast.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:output"><code>output</code></a></td><td>Uitvoerveld of uitvoerkolom.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a></td><td>Telefoonnummers normaliseren.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:lookup"><code>lookup</code></a>, <a class="cmd-link" href="nodpage:cmd:match"><code>match</code></a></td><td>Waarden koppelen of opzoeken.</td></tr></table>
+editor.nod_help.full.commands.equation=<p>Deze commands horen bij <code>mode equation</code>. Ze beschrijven bekende waarden, de vergelijking, de onbekende en beperkingen.</p><table><tr><th>Commando</th><th>Doel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:given"><code>given</code></a></td><td>Bekende waarde vastleggen.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:equation"><code>equation</code></a></td><td>Vergelijking beschrijven.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:solve"><code>solve</code></a></td><td>Onbekende variabele kiezen.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:constraint"><code>constraint</code></a></td><td>Voorwaarden beperken, bijvoorbeeld <code>x &gt;= 0</code>.</td></tr></table>
+editor.nod_help.full.commands.system=<p>Deze commands horen bij het NOD-systeem zelf: bestandstype, broninformatie, previewtekst, veiligheid, introductietekst en afsluiten. Daarom staan ze apart van de reken- en datacommands.</p><table><tr><th>Commando</th><th>Doel</th></tr><tr><td><a class="cmd-link" href="nodpage:cmd:mode"><code>mode</code></a></td><td>Type NOD-bestand kiezen, zoals calculator, data of equation.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:urln"><code>URLN</code></a></td><td>Bron, documentatie of referentielink.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:preview"><code>preview</code></a></td><td>Voorbeeldtekst voor preview/sample display.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:backup"><code>backup</code></a></td><td>Compatibiliteits- of veiligheidsinstelling uit oudere NOD-bestanden.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:indoprint"><code>indoprint</code></a>, <a class="cmd-link" href="nodpage:cmd:indoend"><code>indoend</code></a></td><td>Introductietekstblok.</td></tr><tr><td><a class="cmd-link" href="nodpage:cmd:end"><code>end</code></a></td><td>Sluit het NOD-bestand af.</td></tr></table>
+editor.nod_help.input.compatibility=<h2>Invoercompatibiliteit in NOD 2.0 beta</h2><div class="notice"><b>Belangrijk:</b> oude NOD-bestanden met <code>input1</code> en <code>input2</code> blijven werken in de 2.x-lijn. Gebruik voor nieuwe bestanden <code>input</code> voor echte invoer en <code>inputr</code> voor de terugreken-/uitvoerkant.</div><div class="warning-sign">{WarningBoardSvg}<div><b>Voorkom botsingen:</b> voor 2D-vectoren en beperkte matrix 2x2 wordt <code>input2</code> niet ondersteund. Schrijf <code>input x</code> en <code>input y</code> voor echte waarden. Gebruik <code>inputr y</code> of <code>output y</code> alleen voor de terugreken-/uitvoerkant.</div></div><table class="syntax-compare"><tr><th>Oude syntax</th><th>Nieuwe syntax</th><th>Gebruik</th></tr><tr><td><code>input1 Celsius</code></td><td><code>input x Celsius</code></td><td>eerste numerieke waarde</td></tr><tr><td><code>input2 Fahrenheit</code></td><td><code>inputr y Fahrenheit</code><br><code>output y Fahrenheit</code></td><td>terugreken-/uitvoerlabel</td></tr><tr><td><code>input2</code> voor vector/matrix</td><td><code>input x</code> + <code>input y</code></td><td>niet ondersteund; gebruik expliciete waarden</td></tr><tr><td><code>input1 Tekst</code></td><td><code>input text Tekst</code></td><td>tekst voor <code>trans</code> en <code>chg</code></td></tr></table><h2>Input gebruiken in math</h2><p>Voor onderwijs en toekomstige NOD met meerdere invoervelden is de duidelijke notatie <code>ans(x)</code>, <code>ans(y)</code> en <code>ans(height)</code>. In NOD 2.0 blijft <code>ans</code> de huidige waarde/tussenuitkomst en blijft die compatibel met oude bestanden.</p>
+editor.nod_help.symbols.command_diagram=<h2>Voorbeeld in het venster</h2><p>{note}</p><table class="symbol-mini"><tr><td></td><td colspan="4" class="mini-label">{rowLabel}</td></tr><tr><td class="mini-radio"><span class="shot-radio {shotRadioClass}"></span></td><td class="mini-before">{rowBefore}</td><td class="mini-field"><span class="shot-input">{rowValue}</span></td><td class="mini-after">{rowAfter}</td><td class="mini-help"><span class="legend">{label}</span></td></tr></table><pre>Name Duitse mark naar euro&#13;&#10;input1 Bedrag in Duitse marken&#13;&#10;input2 Bedrag in euro's&#13;&#10;{code}&#13;&#10;format #.00&#13;&#10;math ans / 1,95583&#13;&#10;end</pre><p><b>Opmerking:</b> gebruik voor dezelfde waarde meestal links of rechts, niet allebei.</p>
+editor.nod_help.full.graph_preview=<h2>Graph 2D en Graph 3D</h2><p>De graph-weergave visualiseert formuleconverters. Graph 2D gedraagt zich als de klassieke graph preview. Graph 3D voegt een X/Y/Z-rooster, cameranavigatie, rode punten en een 2D-modus toe.</p><p>Oppervlakken zoals <code>z = f(x,y)</code> blijven roadmap-werk.</p>
+editor.nod_help.full.si_scale=<h2>SI en schaalweergave</h2><p>Grote en kleine graph-waarden kunnen compact worden weergegeven, zodat rooster, assen en puntentabel leesbaar blijven tijdens zoomen.</p><table><tr><th>Label</th><th>Naam</th><th>Factor</th><th>Basiseenheid</th></tr><tr><td><code>k</code></td><td>kilo</td><td>10^3</td><td>meter / waarde</td></tr><tr><td><code>M</code></td><td>mega</td><td>10^6</td><td>meter / waarde</td></tr><tr><td><code>G</code></td><td>giga</td><td>10^9</td><td>meter / waarde</td></tr><tr><td><code>T</code></td><td>tera</td><td>10^12</td><td>meter / waarde</td></tr><tr><td><code>m</code></td><td>milli</td><td>10^-3</td><td>meter / waarde</td></tr><tr><td><code>u</code></td><td>micro</td><td>10^-6</td><td>meter / waarde</td></tr><tr><td><code>n</code></td><td>nano</td><td>10^-9</td><td>meter / waarde</td></tr><tr><td><code>p</code></td><td>pico</td><td>10^-12</td><td>meter / waarde</td></tr><tr><td><code>f</code></td><td>femto</td><td>10^-15</td><td>meter / waarde</td></tr><tr><td><code>a</code></td><td>atto</td><td>10^-18</td><td>meter / waarde</td></tr><tr><td><code>lj</code></td><td>lichtjaar</td><td>9.4607304725808 x 10^15</td><td>meter</td></tr><tr><td><code>lP</code></td><td>Plancklengte</td><td>1.616255 x 10^-35</td><td>meter</td></tr></table><p>Bij extreem in- of uitzoomen gebruikt Graph2D/Graph3D deze compacte labels voor tick-getallen en zichtbare waarden. De echte berekening blijft numeriek; alleen de weergave wordt compacter.</p><table><tr><th>Voorbeeld</th><th>Grootte ongeveer</th><th>Weergave-idee</th><th>Opmerking</th></tr><tr><td>Atoomdiameter</td><td>1 x 10^-10 tot 5 x 10^-10</td><td>100 p tot 500 p</td><td>afhankelijk van element en binding</td></tr><tr><td>Atoomkern</td><td>4 x 10^-15 tot 15 x 10^-15</td><td>4 f tot 15 f</td><td>afhankelijk van kernmassa</td></tr><tr><td>Neutron/nucleon</td><td>ongeveer 1 x 10^-15</td><td>ongeveer 1 f</td><td>schaalvoorbeeld, geen harde bol</td></tr></table>
+editor.nod_help.full.history=<h2>Geschiedenis</h2><p>De Syscalculator-lijn gaat terug naar Tiedos/Nodelistomzetter, Nodomzet en Hong-technologie. Een teruggevonden Wayback-pagina van 22 februari 1997 noemt Nodelistomzetter 1.36, Nodelistzoeker for Windows 95 en MoneyCalculator als vroege conversietools van Edward Tie/Tiedos Software.</p><p>Een latere Wayback-pagina van famtie.tcsoftware.com verwijst naar de Tiedos-homepage en laat de tussenfase zien: HONG-Technologie voor Syscal in november 1998, FreeSyscal Euro Edition op 1 januari 1999, Syscalculcator Lite 1.5 Beta in maart 1999 en Syscalculcator Euro Edition met meer valuta's in juni 1999.</p><p>De productpagina van Syscalculcator Lite 1.48 zegt dat de software afstamt van Nodomzet. De downloadpagina uit juli 2001 zegt dat Hong-technologie de <code>.nod</code>-extensie gebruikt en toepassingen ondersteunt zoals omrekenen, vertalen, converteren en meten. Een gearchiveerd <code>CF-m3.nod</code>-bestand uit 2002 toont dezelfde leesbare NOD-structuur met commands zoals <code>Name</code>, <code>input1</code>, <code>input2</code>, <code>math</code> en <code>end</code>.</p><p>Een teruggevonden screenshot van Syscalculator Euro Edition toont versie <code>1.50.94 RC 2</code>, de Eurorekenmachine, WizardExpress en een About-dialoog met copyright 1996-2001. De About-dialoog vermeldt ook dat het programma vrije software is onder de GNU General Public License versie 2 of later.</p><p>Hong-technologie betekende: belangrijke gegevens converteren of omzetten. In de huidige Syscalculator-termen is dat de conceptuele voorloper van het NOD-systeem: een leesbare structuur om gegevens om te zetten.</p><p>Daarmee is de historische lijn duidelijker: eerst nodelist- en telefoonnummers omzetten, daarna valutaconversie, daarna Hong-programma's met <code>.nod</code>, en daarna het bredere Syscalculator/NOD conversie- en rekensysteem.</p><p>Syscalculator 2.0 bewaart het leesbare NOD-idee en voegt editorhelp, validatie, Graph2D, Graph3D, geometry, taalpakketten en rijkere math-ondersteuning toe.</p>
+editor.nod_help.reverse.extra=<h2>reverse voorbeelden</h2><p><a class="cmd-link" href="nodpage:cmd:reverse"><code>reverse</code></a> beschrijft hoe een converter terug kan rekenen wanneer de gewone <code>math</code>-regel niet genoeg is.</p><pre>math ans * 1,8&#13;&#10;math ans + 32&#13;&#10;reverse ans - 32&#13;&#10;reverse ans / 1,8</pre>
+editor.nod_help.phoneformat.extra=<h2>phoneformat voorbeelden</h2><p><a class="cmd-link" href="nodpage:cmd:phoneformat"><code>phoneformat</code></a> wordt gebruikt in data-gerichte NOD-bestanden om telefoonnummers te normaliseren.</p><pre>mode data&#13;&#10;field telefoon&#13;&#10;phoneformat country NL&#13;&#10;phoneformat remove_spaces true&#13;&#10;output telefoon_schoon</pre>
+editor.nod_help.equation.visuals=<h2>Vergelijkingen visueel</h2><p>Vergelijkingshelp toont de bekende waarden, de vergelijking, de gevraagde onbekende en eventuele voorwaarden. Gebruik <code>given</code>, <code>equation</code>, <code>solve</code> en <code>constraint</code> samen.</p>
+tool_editor.links.valid=Alle HTML-links zijn gevonden in het package.
+tool_editor.manifest.valid=Manifest is geldig.
+tool_editor.media.rename.exists=Er bestaat al een media-bestand met deze naam.
+tool_editor.media.rename.invalid_name=Gebruik een geldige afbeeldingsnaam: png, jpg, jpeg, svg, webp, gif of bmp.
+tool_editor.media.rename.title=Media hernoemen
+tool_editor.status.concept_save_failed=Save concept mislukt: 
+tool_editor.status.concept_saved=Concept taalpackage opgeslagen: 
+tool_editor.status.link_missing=HTML-link ontbreekt: 
+tool_editor.status.links_valid=Alle HTML-links verwijzen naar bestaande package-documenten en media.
+tool_editor.status.manifest_invalid=Manifest ongeldig: 
+tool_editor.status.manifest_valid=Manifest is geldig.
+tool_editor.status.media_added_suffix=media-bestand(en) toegevoegd.
+tool_editor.status.media_renamed=Media hernoemd: 
+tool_editor.status.media_replaced=Media vervangen: 
+tool_editor.status.new_package_created=Nieuw basispackage gemaakt op basis van de ingestelde Syscalculator-taal.
+tool_editor.status.no_supported_media=Geen ondersteunde media gevonden.
+tool_editor.status.package_compile_failed=Package compile mislukt: 
+tool_editor.status.package_compiled=Package gecompileerd. SHA-256: 
+tool_editor.status.package_not_compiled=Package niet gecompileerd: 
+tool_editor.status.package_part_cannot_delete=Taalpakket-onderdeel kan niet worden verwijderd: 
+tool_editor.status.readonly=Alleen tonen: 
+tool_editor.status.removed_from_package=Uit pakket verwijderd: 
+tool_editor.status.select_media_first=Selecteer eerst een media-bestand.
+tool_editor.status.validation_failed=Validation failed: 
+tool_editor.status.validation_passed=Validation passed: 
+tool_editor.validation.passed=Validation passed.
+tool_editor.status.file_rejected=Bestand geweigerd: 
+tool_editor.status.files=bestanden
+tool_editor.status.generated_help_converted=Gegenereerde help is omgezet naar bewerkbare HTML.
+tool_editor.status.link_target=Link: 
+tool_editor.status.link_target_missing=Linkdoel niet gevonden: 
+tool_editor.status.media_copied_clipboard=Media gekopieerd naar Windows klembord: 
+tool_editor.status.no_clipboard_media=Geen ondersteunde media op Windows klembord.
+tool_editor.status.saved=Opgeslagen: 
+tool_editor.status.selected=Geselecteerd: 
+tool_editor.status.select_html_first=Selecteer eerst een HTML-document.
+tool_editor.status.sha256_failed=SHA-256 mislukt: 
+tool_editor.tree.media=Media en afbeeldingen
+
+tool_editor.button.cancel=Annuleren
+tool_editor.button.close=Sluiten
+tool_editor.button.ok=OK
+tool_editor.button.open=Openen
+tool_editor.compile.title=Package compileren
+tool_editor.delete.confirm.message=Verwijder dit bestand uit het language package?\r\n\r\nHet bronbestand op schijf wordt niet verwijderd.
+tool_editor.delete.protected.message=Dit onderdeel hoort bij de vaste taalpakket-structuur en kan niet worden verwijderd.\r\n\r\nGebruik het kruisje op de tab om alleen de tab te sluiten.
+tool_editor.dialog.open_document.title=ToolEditor-document openen
+tool_editor.dialog.open_file.title=Bestand openen
+tool_editor.dialog.open_concept.title=Concept taalpackage openen
+tool_editor.dialog.open_package.filter=Tiedragon language packages (*.objpdk;*.lngpdk)|*.objpdk;*.lngpdk|Source manifest (manifest.json)|manifest.json|Legacy zip (*.zip)|*.zip|Alle bestanden (*.*)|*.*
+tool_editor.dialog.open_package.title=Taalpackage openen
+tool_editor.manifest.properties.title=Eigenschappen van taalpakket
+tool_editor.manifest.property.fallback_language=Fallback taal
+tool_editor.manifest.property.language_code=Taalcode
+tool_editor.manifest.property.name=Naam
+tool_editor.manifest.property.native_name=Native naam
+tool_editor.manifest.property.package_id=Package-id
+tool_editor.manifest.property.package_version=Pakketversie
+tool_editor.manifest.property.producer=Producent
+tool_editor.manifest.property.product=Product
+tool_editor.manifest.property.software_id=Software-id
+tool_editor.media.add.title=Media toevoegen aan language package
+tool_editor.media.column.date=Datum
+tool_editor.media.column.dimensions=Afmeting
+tool_editor.media.column.file=Bestand
+tool_editor.media.column.package_path=Pakketpad
+tool_editor.media.column.size=Grootte
+tool_editor.media.column.source=Bron
+tool_editor.media.files.title=Mediabestanden
+tool_editor.media.rename.new_name=Nieuwe bestandsnaam:
+tool_editor.media.replace.title=Media vervangen
+tool_editor.sha256.filter=Tiedragon language package (*.lngpdk)|*.lngpdk|Alle bestanden (*.*)|*.*
+tool_editor.sha256.title=SHA-256 berekenen
+tool_editor.status.sha256=SHA-256: 
+tool_editor.status.manifest_loaded=Manifest geladen: 
+tool_editor.status.file_opened=Bestand geopend: 
+tool_editor.status.open_file_failed=Open bestand mislukt: 
+tool_editor.status.concept_package_opened=Concept taalpackage geopend: 
+tool_editor.status.open_package_failed=Open taalpackage mislukt: 
+tool_editor.status.open_concept_failed=Open concept taalpackage mislukt: 
+tool_editor.status.language_package_opened=Taalpackage geopend: 
+
+tool_editor.document.column.type=Soort
+tool_editor.document.column.topic=Onderwerp
+tool_editor.dialog.save_concept.title=Concept taalpackage opslaan
+tool_editor.confirm_reset.message=Het huidige taalpackage heeft niet-opgeslagen wijzigingen.\r\n\r\nSave concept voordat je verdergaat?
+tool_editor.confirm_reset.title=Taalpackage
+tool_editor.reject_file.message_prefix=Dit bestand hoort niet in de language package-structuur:\r\n\r\n
+tool_editor.reject_file.message_suffix=\r\n\r\nToegestaan: manifest.json, language/*.lng, manual/help/NOD/formule HTML/CSS/JS, en media png/jpg/jpeg/svg/webp/gif/bmp.
+tool_editor.media.preview.title=Media preview
+tool_editor.media.preview.file=Bestand: 
+tool_editor.media.preview.package_path=Pakketpad: 
+tool_editor.media.preview.dimensions=Afmeting: 
+tool_editor.media.preview.size=Grootte: 
+tool_editor.media.preview.date=Datum: 
+tool_editor.media.preview.source=Bron: 
+tool_editor.compile.success.path=Package gecompileerd:\r\n
+tool_editor.compile.success.encryption=Encryptie: nog niet actief\r\nDe reader accepteert voorlopig alleen niet-versleutelde packages.
+tool_editor.security.info.title=Packagebeveiliging
+tool_editor.security.info.message=De `.lngpdk` compile gebruikt nu een strikte container met dubbele SHA-256-controle:\r\n\r\n- package SHA-256 voor het volledige bestand\r\n- payload SHA-256 in de containerheader\r\n\r\nEncryptie staat bewust nog uit. Syscalculator weigert encrypted packages nu fail-closed, zodat er geen half ondersteunde package kan laden.\r\n\r\nSigning gebruikt RSA-PSS-SHA256. Als `Signed` aan staat, controleert de reader de signature tegen language-package-trusted-keys.json en weigert hij fail-closed zonder vertrouwde publieke sleutel.

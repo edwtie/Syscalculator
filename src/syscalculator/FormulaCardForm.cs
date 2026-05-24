@@ -1,7 +1,7 @@
-﻿using System.Net;
-using System.Runtime.InteropServices;
-using Microsoft.Web.WebView2.Core;
+﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using System.Net;
+using System.Runtime.InteropServices;
 using Tiedragon.Help;
 using Tiedragon.NodSystem.Core;
 
@@ -487,7 +487,7 @@ internal sealed class FormulaCardForm : Form
         switch (message)
         {
             case "copy:nod":
-                Clipboard.SetText(card.ExampleNod);
+                Clipboard.SetText(CardExampleNod(card));
                 break;
             case "copy:latex":
                 Clipboard.SetText(card.Latex);
@@ -496,7 +496,7 @@ internal sealed class FormulaCardForm : Form
                 Clipboard.SetText(card.MathMl);
                 break;
             case "copy:text":
-                Clipboard.SetText(card.PlainText);
+                Clipboard.SetText(CardPlainText(card));
                 break;
         }
     }
@@ -715,18 +715,18 @@ internal sealed class FormulaCardForm : Form
         }
     }
 
-    private static bool NodeContains(TreeNode node, string query)
+    private bool NodeContains(TreeNode node, string query)
     {
         if (node.Tag is FormulaCard card)
         {
-            return card.Title.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
-                card.Formula.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
-                card.Description.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+            return CardTitle(card).Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                CardFormulaText(card).Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                CardDescription(card).Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
                 card.Latex.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
                 card.MathMl.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
-                card.ExampleNod.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
-                card.PlainText.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
-                card.LevelTags.Any(tag => tag.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+                CardExampleNod(card).Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                CardPlainText(card).Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                CardTags(card).Any(tag => tag.Contains(query, StringComparison.CurrentCultureIgnoreCase));
         }
 
         return node.Text.Contains(query, StringComparison.CurrentCultureIgnoreCase);
@@ -758,7 +758,7 @@ internal sealed class FormulaCardForm : Form
 
     private string BuildCardHtml(FormulaCard card)
     {
-        var tags = string.Join("", card.LevelTags
+        var tags = string.Join("", CardTags(card)
             .Select(DisplayTag)
             .Distinct(StringComparer.CurrentCultureIgnoreCase)
             .Select(tag => $"<span class=\"tag\">{Html(tag)}</span>"));
@@ -1334,7 +1334,7 @@ internal sealed class FormulaCardForm : Form
             ["latex"] = Html(card.Latex),
             ["mathml_pre"] = Html(card.MathMl),
             ["section_example_nod"] = Html(T("formula_card.section_example_nod", "Example NOD")),
-            ["example_nod"] = Html(card.ExampleNod),
+            ["example_nod"] = Html(CardExampleNod(card)),
             ["copy_nod"] = Html(T("formula_card.copy_nod", "Copy NOD"))
         });
 
@@ -1545,7 +1545,7 @@ internal sealed class FormulaCardForm : Form
             "point-line-distance" => ("math |ans(a)*ans(xp) + ans(b)*ans(yp) - ans(c)| / sqrt(ans(a)^2 + ans(b)^2)", "2D analytische meetkunde met named inputs."),
             "matrix-2x2-determinant" => ("math det(mat2(1,2,3,4))\r\nmath det2(1,2,3,4)\r\nmath mget(mat2(1,2,3,4), 2, 1)\r\nmath x(mat2(1,2,3,4) * vec(5,6))", "det en det2 geven de determinant. mget leest een cel. Matrix maal vector kan met x(...) of y(...) naar een component worden omgezet."),
             "circle-integral" => ("math line-integral(F, path)", "Conceptregel voor later. Kringintegraal blijft hier een uitlegkaart, geen runtime-engine."),
-            _ => ExtractFirstMathLine(card.ExampleNod)
+            _ => ExtractFirstMathLine(CardExampleNod(card))
         };
     }
 
@@ -1901,6 +1901,29 @@ internal sealed class FormulaCardForm : Form
         return T($"formula_card.card.{card.Id}.description", card.Description);
     }
 
+    private string CardFormulaText(FormulaCard card)
+    {
+        return T($"formula_card.card.{card.Id}.formula_text", card.Formula);
+    }
+
+    private string CardPlainText(FormulaCard card)
+    {
+        return T($"formula_card.card.{card.Id}.plain_text", card.PlainText);
+    }
+
+    private string CardExampleNod(FormulaCard card)
+    {
+        return T($"formula_card.card.{card.Id}.example_nod", card.ExampleNod);
+    }
+
+    private IReadOnlyList<string> CardTags(FormulaCard card)
+    {
+        var value = T($"formula_card.card.{card.Id}.tags", string.Join("|", card.LevelTags));
+        return value
+            .Split(['|', ','], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .ToArray();
+    }
+
     private string Vector3DProjectionNote()
     {
         return T(
@@ -2111,7 +2134,7 @@ internal sealed class FormulaCardForm : Form
             "circle-integral" => (
                 "math line-integral(F, path)",
                 "Conceptregel voor later. Kringintegraal blijft hier een uitlegkaart, geen runtime-engine."),
-            _ => ExtractFirstMathLine(card.ExampleNod)
+            _ => ExtractFirstMathLine(CardExampleNod(card))
         };
 
         return $$"""

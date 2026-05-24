@@ -414,7 +414,7 @@ public static class NodParser
     // Zoek/commentaar: Leest tekst in en zet die om naar gestructureerde data voor ParseMath.
     private static void ParseMath(string value, NodDocument doc, int lineNumber)
     {
-        
+
         if (TryParseCalculusMath(value, lineNumber, out var calculusStep))
         {
             doc.CalculusSteps.Add(calculusStep);

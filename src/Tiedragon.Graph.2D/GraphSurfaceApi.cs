@@ -2,8 +2,6 @@
 
 // Copyright (c) 1995-2026 Edward Tie / Tiedragon. All rights reserved.
 // Public Graph2D surface API for chrome, range controls, drawing, and view helpers.
-using Tiedragon.Graph;
-
 namespace Tiedragon.Graph.G2D;
 
 /// <summary>

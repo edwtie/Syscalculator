@@ -1,13 +1,8 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace Syscalculator.UI.WinForms;
@@ -169,10 +164,10 @@ public sealed class MathMlPreviewControl : UserControl
                 return new GlyphBox("");
 
             case "mspace":
-            {
-                var width = element.Attribute("width")?.Value ?? "8";
-                return StyleBox(element, new SpaceBox(ParseLength(width, 8f)));
-            }
+                {
+                    var width = element.Attribute("width")?.Value ?? "8";
+                    return StyleBox(element, new SpaceBox(ParseLength(width, 8f)));
+                }
 
             case "mi":
             case "mn":
@@ -200,91 +195,91 @@ public sealed class MathMlPreviewControl : UserControl
                     : new GlyphBox(opText));
 
             case "mfrac":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 2)
-                    return StyleBox(element, new FractionBox(ParseElement(children[0]), ParseElement(children[1])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 2)
+                        return StyleBox(element, new FractionBox(ParseElement(children[0]), ParseElement(children[1])));
 
-                return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
-            }
+                    return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
+                }
 
             case "msup":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 2)
-                    return StyleBox(element, new SuperscriptBox(ParseElement(children[0]), ParseElement(children[1])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 2)
+                        return StyleBox(element, new SuperscriptBox(ParseElement(children[0]), ParseElement(children[1])));
 
-                return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
-            }
+                    return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
+                }
 
             case "msub":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 2)
-                    return StyleBox(element, new SubscriptBox(ParseElement(children[0]), ParseElement(children[1])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 2)
+                        return StyleBox(element, new SubscriptBox(ParseElement(children[0]), ParseElement(children[1])));
 
-                return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
-            }
+                    return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
+                }
 
             case "msubsup":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 3)
-                    return StyleBox(element, new SubSupBox(ParseElement(children[0]), ParseElement(children[1]), ParseElement(children[2])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 3)
+                        return StyleBox(element, new SubSupBox(ParseElement(children[0]), ParseElement(children[1]), ParseElement(children[2])));
 
-                return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
-            }
+                    return StyleBox(element, new GlyphBox(NormalizeText(WebUtility.HtmlDecode(element.Value))));
+                }
 
             case "msqrt":
                 return StyleBox(element, new SqrtBox(ParseContainer(element)));
 
             case "mroot":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 2)
-                    return StyleBox(element, new RootBox(ParseElement(children[0]), ParseElement(children[1])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 2)
+                        return StyleBox(element, new RootBox(ParseElement(children[0]), ParseElement(children[1])));
 
-                return StyleBox(element, new SqrtBox(ParseContainer(element)));
-            }
+                    return StyleBox(element, new SqrtBox(ParseContainer(element)));
+                }
 
             case "mover":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 2)
-                    return StyleBox(element, new OverBox(ParseElement(children[0]), ParseElement(children[1])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 2)
+                        return StyleBox(element, new OverBox(ParseElement(children[0]), ParseElement(children[1])));
 
-                return StyleBox(element, ParseContainer(element));
-            }
+                    return StyleBox(element, ParseContainer(element));
+                }
 
             case "munder":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 2)
-                    return StyleBox(element, new UnderBox(ParseElement(children[0]), ParseElement(children[1])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 2)
+                        return StyleBox(element, new UnderBox(ParseElement(children[0]), ParseElement(children[1])));
 
-                return StyleBox(element, ParseContainer(element));
-            }
+                    return StyleBox(element, ParseContainer(element));
+                }
 
             case "munderover":
-            {
-                var children = element.Elements().ToList();
-                if (children.Count >= 3)
-                    return StyleBox(element, new UnderOverBox(ParseElement(children[0]), ParseElement(children[1]), ParseElement(children[2])));
+                {
+                    var children = element.Elements().ToList();
+                    if (children.Count >= 3)
+                        return StyleBox(element, new UnderOverBox(ParseElement(children[0]), ParseElement(children[1]), ParseElement(children[2])));
 
-                return StyleBox(element, ParseContainer(element));
-            }
+                    return StyleBox(element, ParseContainer(element));
+                }
 
             case "mfenced":
-            {
-                var open = element.Attribute("open")?.Value ?? "(";
-                var close = element.Attribute("close")?.Value ?? ")";
-                return StyleBox(element, new RowBox(new MathBox[]
                 {
+                    var open = element.Attribute("open")?.Value ?? "(";
+                    var close = element.Attribute("close")?.Value ?? ")";
+                    return StyleBox(element, new RowBox(new MathBox[]
+                    {
                     new GlyphBox(open),
                     ParseContainer(element),
                     new GlyphBox(close)
-                }));
-            }
+                    }));
+                }
 
             default:
                 return element.Elements().Any()

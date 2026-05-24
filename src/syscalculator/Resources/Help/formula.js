@@ -2,14 +2,13 @@
 window.syscalFormulaHelp = window.syscalFormulaHelp || {};
 window.syscalFormulaHelp.installCopyButtons = function () {
 document.addEventListener('click', event => {
-    const target = event.target instanceof Element ? event.target : event.target.parentElement;
-    const button = target ? target.closest('[data-copy]') : null;
-    if (!button || !window.chrome || !window.chrome.webview) {
+    const button = window.syscalculatorHelp.closestFromEvent(event, '[data-copy]');
+    if (!button) {
         return;
     }
 
     event.preventDefault();
-    window.chrome.webview.postMessage('copy:' + button.getAttribute('data-copy'));
+    window.syscalculatorHelp.postWebView('copy:' + button.getAttribute('data-copy'));
 });
 
 };
@@ -287,20 +286,19 @@ async function playChainPreview() {
   setCaption("Preview final frame: f'(x) = 3(x\u00b2 - 1)\u00b2 \u00b7 2x. The constant -1 has dropped away.");
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.syscalculatorHelp.onReady(() => {
   window.setTimeout(() => showPowerStart(2), 350);
 });
 
 document.addEventListener('click', event => {
-  const target = event.target instanceof Element ? event.target : event.target.parentElement;
-  const powerButton = target ? target.closest('[data-film-power]') : null;
+  const powerButton = window.syscalculatorHelp.closestFromEvent(event, '[data-film-power]');
   if (powerButton) {
     event.preventDefault();
     playPower(Number(powerButton.getAttribute('data-film-power')));
     return;
   }
 
-  if (target && target.closest('[data-film-chain]')) {
+  if (window.syscalculatorHelp.closestFromEvent(event, '[data-film-chain]')) {
     event.preventDefault();
     playChainPreview();
   }

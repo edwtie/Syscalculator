@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [string]$InputFolder,
+    [string]$InputSource,
 
     [Parameter(Mandatory = $true, Position = 1)]
     [string]$OutputPackage,
@@ -17,7 +17,7 @@ $repoRoot = Split-Path -Parent $scriptRoot
 $project = Join-Path $repoRoot "src/Tiedragon.LanguagePackage/Tiedragon.LanguagePackage.csproj"
 
 if ([string]::IsNullOrWhiteSpace($BasePackage)) {
-    dotnet run --project $project --no-restore -- agent-compile $InputFolder $OutputPackage
+    dotnet run --project $project --no-restore -- agent-compile $InputSource $OutputPackage
 } else {
-    dotnet run --project $project --no-restore -- agent-compile-with-base $BasePackage $InputFolder $OutputPackage
+    dotnet run --project $project --no-restore -- agent-compile-with-base $BasePackage $InputSource $OutputPackage
 }

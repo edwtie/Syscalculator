@@ -88,7 +88,7 @@ public static class DataTransformEngine
         // Always remove hyphen before prefix conversion, because phone chg normally expects pure prefix.
         value = value.Replace("-", "");
 
-        if (options.NormalizeInternational && 
+        if (options.NormalizeInternational &&
             string.Equals(options.Country, "NL", StringComparison.OrdinalIgnoreCase))
         {
             if (value.StartsWith("+31", StringComparison.OrdinalIgnoreCase))

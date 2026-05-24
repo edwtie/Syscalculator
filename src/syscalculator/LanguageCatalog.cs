@@ -12,7 +12,8 @@ internal sealed class LanguageCatalog
         public bool Matches(string fileName, string? packageId)
         {
             return FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(PackageId, packageId, StringComparison.OrdinalIgnoreCase);
+                (string.Equals(PackageId, packageId, StringComparison.OrdinalIgnoreCase) ||
+                 string.IsNullOrWhiteSpace(packageId));
         }
     }
 
@@ -132,17 +133,16 @@ internal sealed class LanguageCatalog
         AddLanguageFiles(files, baseDirectory);
         AddLanguageFiles(files, Path.Combine(baseDirectory, "Languages"));
 
-        var languages = files
-            .Select(pair =>
-            {
-                var texts = ReadLanguageFile(pair.Value);
-                var displayName = texts.TryGetValue("language.name", out var name) && !string.IsNullOrWhiteSpace(name)
-                    ? name
-                    : Path.GetFileNameWithoutExtension(pair.Key);
+        var languages = new Dictionary<string, LanguageInfo>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in files)
+        {
+            var texts = ReadLanguageFile(pair.Value);
+            var displayName = texts.TryGetValue("language.name", out var name) && !string.IsNullOrWhiteSpace(name)
+                ? name
+                : Path.GetFileNameWithoutExtension(pair.Key);
 
-                return new LanguageInfo(displayName, pair.Key);
-            })
-            .ToList();
+            languages[pair.Key] = new LanguageInfo(displayName, pair.Key);
+        }
 
         foreach (var package in LanguagePackageService.ListInstalled(baseDirectory))
         {
@@ -164,10 +164,10 @@ internal sealed class LanguageCatalog
                 displayName = name;
             }
 
-            languages.Add(new LanguageInfo(displayName, package.LanguageFileName, package.Manifest.PackageKey));
+            languages[package.LanguageFileName] = new LanguageInfo(displayName, package.LanguageFileName, package.Manifest.PackageKey);
         }
 
-        return languages
+        return languages.Values
             .OrderBy(language => language.DisplayName, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(language => language.SourceLabel, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -232,11 +232,19 @@ internal sealed class LanguageCatalog
                 continue;
 
             var key = line[..separator].Trim();
-            var value = line[(separator + 1)..].Trim();
+            var value = DecodeLanguageValue(line[(separator + 1)..].Trim());
             if (key.Length > 0)
                 texts[key] = value;
         }
 
         return texts;
+    }
+
+    private static string DecodeLanguageValue(string value)
+    {
+        return value
+            .Replace("\\r\\n", "\n", StringComparison.Ordinal)
+            .Replace("\\n", "\n", StringComparison.Ordinal)
+            .Replace("\\t", "\t", StringComparison.Ordinal);
     }
 }

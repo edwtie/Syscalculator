@@ -13,7 +13,10 @@ public sealed record HelpDialogOptions(
     string Title,
     IReadOnlyList<NodHelpPage> Pages,
     string? SelectedPageId = null,
-    HelpNavigationLabels? Navigation = null);
+    HelpNavigationLabels? Navigation = null,
+    bool OkOnly = false,
+    string OkText = "OK",
+    bool ShowTopics = true);
 
 // Zoek/commentaar: Centrale API voor helpvensters, taalcontent en help-assets.
 public static class HelpApi
@@ -29,7 +32,10 @@ public static class HelpApi
             options.SelectedPageId,
             navigation.Home,
             navigation.Previous,
-            navigation.Next);
+            navigation.Next,
+            options.OkOnly,
+            options.OkText,
+            options.ShowTopics);
 
         if (owner is Form ownerForm)
         {

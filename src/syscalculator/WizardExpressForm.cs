@@ -1,6 +1,6 @@
-﻿using System.Globalization;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Tiedragon.ClipboardConvert;
 using Tiedragon.NodSystem.Core;

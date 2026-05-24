@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
@@ -18,6 +18,8 @@
     <InformationalVersion>2.1.0-alpha</InformationalVersion>
     <ApplicationManifest>Package.appxmanifest</ApplicationManifest>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <Platforms>AnyCPU;x64</Platforms>
+    <DefaultLanguage>nl</DefaultLanguage>
   </PropertyGroup>
 
   <ItemGroup>
