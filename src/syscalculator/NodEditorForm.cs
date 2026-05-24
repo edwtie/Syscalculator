@@ -5409,9 +5409,7 @@ public sealed class NodEditorForm : Form
     private void AttachEditorTabContextMenu(EditorTab tab)
     {
         var menu = CreateEditorTabContextMenu(tab);
-        tab.HeaderPanel.ContextMenuStrip = menu;
-        tab.HeaderTitle.ContextMenuStrip = menu;
-        tab.HeaderCloseButton.ContextMenuStrip = menu;
+        ToolEditorTabsApi.AttachContextMenu(menu, tab.HeaderPanel, tab.HeaderTitle, tab.HeaderCloseButton);
     }
 
     private ContextMenuStrip CreateEditorTabContextMenu(EditorTab tab)
@@ -5425,9 +5423,6 @@ public sealed class NodEditorForm : Form
 
         menu.Opening += (_, _) =>
         {
-            if (_tabs.ContainsKey(tab.Page))
-                SelectEditorTab(tab.Page);
-
             var tabs = GetEditorTabsInHeaderOrder();
             var index = tabs.IndexOf(tab);
             closeAll.Enabled = tabs.Count > 0;

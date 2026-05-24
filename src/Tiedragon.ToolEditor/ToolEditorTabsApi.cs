@@ -78,6 +78,32 @@ public static class ToolEditorTabsApi
         title.Font = new Font(baseFont, selected ? FontStyle.Bold : FontStyle.Regular);
     }
 
+    /// <summary>
+    /// Attaches a tab context menu that opens on right-click without selecting or opening the tab.
+    /// </summary>
+    public static void AttachContextMenu(ContextMenuStrip menu, params Control[] controls)
+    {
+        foreach (var control in controls)
+        {
+            control.ContextMenuStrip = null;
+            control.MouseDown += (_, e) =>
+            {
+                if (e.Button != MouseButtons.Right)
+                    return;
+
+                var screenLocation = control.PointToScreen(e.Location);
+                control.BeginInvoke(() =>
+                {
+                    if (control.IsDisposed || menu.IsDisposed)
+                        return;
+
+                    var target = controls.FirstOrDefault(item => !item.IsDisposed && item.Visible) ?? control;
+                    menu.Show(target, target.PointToClient(screenLocation));
+                });
+            };
+        }
+    }
+
     private sealed class ToolEditorTabHeaderPanel : Panel
     {
         [Browsable(false)]
