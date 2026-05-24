@@ -28,7 +28,8 @@ $isSelfContained = $true
 
 if ([string]::IsNullOrWhiteSpace($PackageVersion)) {
     $today = Get-Date
-    $PackageVersion = '2.0.{0}.0' -f $today.Year
+    $dateRevision = ($today.Month * 100) + $today.Day
+    $PackageVersion = '2.0.{0}.{1}' -f $today.Year, $dateRevision
 }
 
 if ($PackageVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
