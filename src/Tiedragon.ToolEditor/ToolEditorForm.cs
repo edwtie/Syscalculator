@@ -98,12 +98,18 @@ public sealed class ToolEditorForm : Form
           {{items}}
         </div>
         """;
-    private static readonly Color SyntaxDefaultColor = Color.FromArgb(31, 41, 55);
-    private static readonly Color SyntaxKeywordColor = Color.FromArgb(0, 74, 173);
-    private static readonly Color SyntaxAttributeColor = Color.FromArgb(170, 72, 20);
-    private static readonly Color SyntaxStringColor = Color.FromArgb(126, 82, 0);
-    private static readonly Color SyntaxCommentColor = Color.FromArgb(47, 128, 67);
-    private static readonly Color SyntaxSelectorColor = Color.FromArgb(96, 64, 160);
+    private static readonly Color DarkWindowBackColor = Color.FromArgb(18, 24, 32);
+    private static readonly Color DarkPanelBackColor = Color.FromArgb(31, 41, 55);
+    private static readonly Color DarkEditorBackColor = Color.FromArgb(39, 39, 39);
+    private static readonly Color DarkEditorTextColor = Color.FromArgb(226, 232, 240);
+    private static readonly Color DarkMutedTextColor = Color.FromArgb(148, 163, 184);
+    private static readonly Color DarkBorderColor = Color.FromArgb(55, 65, 81);
+    private static readonly Color SyntaxDefaultColor = Color.FromArgb(226, 232, 240);
+    private static readonly Color SyntaxKeywordColor = Color.FromArgb(96, 165, 250);
+    private static readonly Color SyntaxAttributeColor = Color.FromArgb(251, 146, 60);
+    private static readonly Color SyntaxStringColor = Color.FromArgb(253, 186, 116);
+    private static readonly Color SyntaxCommentColor = Color.FromArgb(74, 222, 128);
+    private static readonly Color SyntaxSelectorColor = Color.FromArgb(196, 181, 253);
 
     private static readonly byte[] LanguagePackageMagic = Encoding.ASCII.GetBytes(LanguagePackageMagicText);
     private static readonly JsonSerializerOptions LanguagePackageJsonOptions = new()
@@ -196,6 +202,7 @@ public sealed class ToolEditorForm : Form
         Height = 760;
         MinimumSize = new Size(900, 560);
         StartPosition = FormStartPosition.CenterParent;
+        BackColor = DarkWindowBackColor;
         KeyPreview = true;
         KeyDown += ToolEditorForm_KeyDown;
         FormClosing += ToolEditorForm_FormClosing;
@@ -232,8 +239,8 @@ public sealed class ToolEditorForm : Form
             ShowRootLines = true,
             ShowNodeToolTips = true,
             Font = new Font("Segoe UI", 9),
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(31, 41, 55)
+            BackColor = Color.FromArgb(15, 23, 42),
+            ForeColor = Color.FromArgb(226, 232, 240)
         };
         _fileTree.AfterSelect += FileTree_AfterSelect;
         _fileTree.AllowDrop = true;
@@ -243,7 +250,7 @@ public sealed class ToolEditorForm : Form
         var fileTreeHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(203, 213, 225),
+            BackColor = DarkBorderColor,
             Padding = new Padding(1)
         };
         fileTreeHost.Controls.Add(_fileTree);
@@ -257,8 +264,8 @@ public sealed class ToolEditorForm : Form
             MultiSelect = false,
             View = View.Details,
             Font = new Font("Segoe UI", 9),
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(31, 41, 55)
+            BackColor = DarkPanelBackColor,
+            ForeColor = DarkEditorTextColor
         };
         _documentList.Columns.Add(TToolEditor("tool_editor.document.column.type", "Type"), 150);
         _documentList.Columns.Add(TToolEditor("tool_editor.document.column.topic", "Topic"), 240);
@@ -272,7 +279,7 @@ public sealed class ToolEditorForm : Form
         _tabStrip.Dock = DockStyle.Fill;
         _tabStrip.WrapContents = false;
         _tabStrip.AutoScroll = false;
-        _tabStrip.BackColor = Color.White;
+        _tabStrip.BackColor = DarkPanelBackColor;
         _tabStrip.Padding = new Padding(0, 2, 0, 0);
         _tabStrip.Margin = Padding.Empty;
 
@@ -300,6 +307,7 @@ public sealed class ToolEditorForm : Form
             _htmlEditor.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _htmlEditor.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _htmlEditor.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            _htmlEditor.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Dark;
             _htmlEditor.CoreWebView2.WebMessageReceived += (_, args) => HandleHtmlEditorMessage(args);
             ShowPendingHtmlEditorIfReady();
         };
@@ -314,7 +322,7 @@ public sealed class ToolEditorForm : Form
         _editorContent = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.White,
+            BackColor = DarkBorderColor,
             Padding = new Padding(1, 0, 1, 1)
         };
         _htmlEditHost = new TableLayoutPanel
@@ -322,7 +330,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 2,
-            BackColor = Color.White,
+            BackColor = DarkPanelBackColor,
             Padding = Padding.Empty
         };
         _editConceptRow = new RowStyle(SizeType.Absolute, 0);
@@ -335,7 +343,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
-            BackColor = Color.White,
+            BackColor = DarkPanelBackColor,
             Padding = new Padding(4, 4, 4, 0)
         };
         _htmlToolbarRow = new RowStyle(SizeType.Absolute, 0);
@@ -366,6 +374,7 @@ public sealed class ToolEditorForm : Form
             _preview.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            _preview.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Dark;
             _preview.CoreWebView2.WebMessageReceived += (_, args) => HandlePreviewMessage(args);
             ShowPendingHtmlIfReady();
         };
@@ -405,7 +414,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             Margin = Padding.Empty,
             Padding = Padding.Empty,
-            BackColor = Color.White
+            BackColor = DarkPanelBackColor
         };
 
         var previewTitle = new Label
@@ -473,7 +482,7 @@ public sealed class ToolEditorForm : Form
             Orientation = Orientation.Horizontal,
             BorderStyle = BorderStyle.None,
             SplitterWidth = 1,
-            BackColor = Color.FromArgb(226, 232, 240),
+            BackColor = DarkBorderColor,
             Panel1MinSize = 1,
             Panel2MinSize = 1
         };
@@ -492,7 +501,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.None,
             SplitterWidth = 5,
-            BackColor = Color.FromArgb(226, 232, 240),
+            BackColor = DarkBorderColor,
             FixedPanel = FixedPanel.Panel1,
             Panel1MinSize = 1,
             Panel2MinSize = 1
@@ -511,7 +520,7 @@ public sealed class ToolEditorForm : Form
         {
             Dock = DockStyle.Bottom,
             Height = 24,
-            BackColor = Color.FromArgb(248, 250, 252)
+            BackColor = DarkWindowBackColor
         };
         _statusInfoLabel = new Label
         {
@@ -519,8 +528,8 @@ public sealed class ToolEditorForm : Form
             Width = 520,
             TextAlign = ContentAlignment.MiddleRight,
             Padding = new Padding(8, 0, 8, 0),
-            BackColor = Color.FromArgb(248, 250, 252),
-            ForeColor = Color.FromArgb(71, 85, 105),
+            BackColor = DarkWindowBackColor,
+            ForeColor = DarkMutedTextColor,
             Text = ""
         };
         _statusLabel = new Label
@@ -528,8 +537,8 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(8, 0, 8, 0),
-            BackColor = Color.FromArgb(248, 250, 252),
-            ForeColor = Color.FromArgb(31, 41, 55),
+            BackColor = DarkWindowBackColor,
+            ForeColor = DarkEditorTextColor,
             Text = TToolEditor("tool_editor.status.ready", "Ready")
         };
         statusBar.Controls.Add(_statusLabel);
@@ -2907,7 +2916,7 @@ public sealed class ToolEditorForm : Form
         {
             document.ReadOnly = true;
             editor.ReadOnly = true;
-            editor.BackColor = Color.FromArgb(248, 250, 252);
+            ApplyEditorColors(editor);
         }
 
         document.Editor = editor;
@@ -2994,7 +3003,7 @@ public sealed class ToolEditorForm : Form
         ApplyFileMetadata(document);
         var editor = CreateTextEditor(BuildImageInfoText(document), document);
         editor.ReadOnly = true;
-        editor.BackColor = Color.FromArgb(248, 250, 252);
+        ApplyEditorColors(editor);
         document.Editor = editor;
         ApplyDocumentLabels(document);
         var header = ToolEditorTabsApi.CreateHeader(
@@ -3253,6 +3262,7 @@ public sealed class ToolEditorForm : Form
             HideSelection = false,
             Text = text
         };
+        ApplyEditorColors(editor);
         document.Editor = editor;
         if (createLineNumbers)
             EnsureLineNumbersAttached(document);
@@ -3283,6 +3293,13 @@ public sealed class ToolEditorForm : Form
                 ScheduleSyntaxHighlight(document);
         };
         return editor;
+    }
+
+    private static void ApplyEditorColors(RichTextBox editor)
+    {
+        editor.BackColor = DarkEditorBackColor;
+        editor.ForeColor = DarkEditorTextColor;
+        editor.SelectionBackColor = Color.FromArgb(37, 99, 235);
     }
 
     private static void EnsureLineNumbersAttached(ToolEditorDocument document)
@@ -3338,9 +3355,9 @@ public sealed class ToolEditorForm : Form
                 ScrollBars = RichTextBoxScrollBars.Both,
                 HideSelection = false,
                 ReadOnly = true,
-                BackColor = Color.White,
                 Text = BuildRenderedSourceText(document)
             };
+            ApplyEditorColors(renderedEditor);
             var lineNumbers = new LineNumberPanel();
             lineNumbers.Attach(renderedEditor);
             renderedEditor.VScroll += (_, _) => lineNumbers.Invalidate();
@@ -3349,7 +3366,7 @@ public sealed class ToolEditorForm : Form
             var host = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White
+                BackColor = DarkBorderColor
             };
             host.Controls.Add(renderedEditor);
             host.Controls.Add(lineNumbers);
@@ -3360,7 +3377,7 @@ public sealed class ToolEditorForm : Form
             var host = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White
+                BackColor = DarkBorderColor
             };
             host.Controls.Add(document.Editor);
             host.Controls.Add(document.LineNumbers);
@@ -6733,7 +6750,7 @@ public sealed class ToolEditorForm : Form
     private void SetStatus(string text, bool isError)
     {
         _statusLabel.Text = text;
-        _statusLabel.ForeColor = isError ? Color.FromArgb(170, 35, 35) : Color.FromArgb(31, 41, 55);
+        _statusLabel.ForeColor = isError ? Color.FromArgb(252, 165, 165) : DarkEditorTextColor;
         UpdateStatusMetrics(_current);
     }
 
@@ -7075,8 +7092,8 @@ public sealed class ToolEditorForm : Form
         {
             Dock = DockStyle.Left;
             Width = MinPanelWidth;
-            BackColor = Color.FromArgb(248, 250, 252);
-            ForeColor = Color.FromArgb(100, 116, 139);
+            BackColor = Color.FromArgb(30, 41, 59);
+            ForeColor = Color.FromArgb(148, 163, 184);
             DoubleBuffered = true;
         }
 
@@ -7110,7 +7127,7 @@ public sealed class ToolEditorForm : Form
             if (_editor is null || _editor.IsDisposed)
                 return;
 
-            using var border = new Pen(Color.FromArgb(226, 232, 240));
+            using var border = new Pen(DarkBorderColor);
             e.Graphics.DrawLine(border, Width - 1, 0, Width - 1, Height);
 
             using var brush = new SolidBrush(ForeColor);
