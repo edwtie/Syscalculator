@@ -3832,7 +3832,18 @@ public sealed class ToolEditorForm : Form
     {
         var menu = CreateTabContextMenu(document);
         foreach (var control in controls)
-            control.ContextMenuStrip = menu;
+        {
+            control.MouseDown += (_, e) =>
+            {
+                if (e.Button == MouseButtons.Right && !ReferenceEquals(document, _current))
+                    SelectDocument(document);
+            };
+            control.MouseUp += (_, e) =>
+            {
+                if (e.Button == MouseButtons.Right)
+                    menu.Show(control, e.Location);
+            };
+        }
     }
 
     private ContextMenuStrip CreateTabContextMenu(ToolEditorDocument document)
@@ -3844,7 +3855,6 @@ public sealed class ToolEditorForm : Form
 
         menu.Opening += (_, _) =>
         {
-            SelectDocument(document);
             var openDocuments = GetOpenDocumentsInTabOrder();
             var index = openDocuments.IndexOf(document);
             closeAll.Enabled = openDocuments.Count > 0;
