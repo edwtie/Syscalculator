@@ -93,6 +93,26 @@ public static class ToolEditorTabsApi
     }
 
     /// <summary>
+    /// Applies shared close glyph colors after a lightweight panel changes state.
+    /// </summary>
+    public static void ConfigureCloseButtonColors(
+        Button button,
+        Color glyphColor,
+        Color hoverGlyphColor,
+        Color hoverBackColor,
+        Color pressedBackColor)
+    {
+        if (button is not ToolEditorTabCloseButton closeButton)
+            return;
+
+        closeButton.GlyphColor = glyphColor;
+        closeButton.HoverGlyphColor = hoverGlyphColor;
+        closeButton.HoverBackColor = hoverBackColor;
+        closeButton.PressedBackColor = pressedBackColor;
+        closeButton.Invalidate();
+    }
+
+    /// <summary>
     /// Applies selected/dirty state and title text to a tab header.
     /// </summary>
     public static void SetHeaderState(Control headerPanel, Label title, string text, bool selected, bool dirty, Font baseFont)

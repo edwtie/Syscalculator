@@ -22,6 +22,7 @@ internal sealed class ToolEditorConceptBanner : ToolEditorWorkBoardBanner
     private readonly ToolEditorWorkBoardSvgIcon _conceptIcon;
     private readonly ToolEditorSignedLockIcon _signedIcon;
     private readonly Panel _closeSlot;
+    private readonly Button _closeButton;
     private ToolEditorBannerKind _kind = ToolEditorBannerKind.Concept;
 
     public ToolEditorConceptBanner()
@@ -72,30 +73,30 @@ internal sealed class ToolEditorConceptBanner : ToolEditorWorkBoardBanner
             Padding = Padding.Empty
         };
 
-        var close = ToolEditorTabsApi.CreateCloseButton(
+        _closeButton = ToolEditorTabsApi.CreateCloseButton(
             (_, _) => CloseRequested?.Invoke(this, EventArgs.Empty),
             Color.FromArgb(92, 58, 0),
             Color.FromArgb(69, 43, 0),
             Color.FromArgb(245, 184, 0),
             Color.FromArgb(190, 130, 0));
-        close.Size = new Size(24, 24);
-        close.BackColor = Color.Transparent;
-        close.Margin = Padding.Empty;
-        close.Padding = Padding.Empty;
-        close.FlatStyle = FlatStyle.Flat;
-        close.FlatAppearance.BorderSize = 0;
-        close.FlatAppearance.MouseDownBackColor = Color.Transparent;
-        close.FlatAppearance.MouseOverBackColor = Color.Transparent;
-        close.UseVisualStyleBackColor = false;
-        close.Cursor = Cursors.Hand;
-        close.TabStop = false;
+        _closeButton.Size = new Size(24, 24);
+        _closeButton.BackColor = Color.Transparent;
+        _closeButton.Margin = Padding.Empty;
+        _closeButton.Padding = Padding.Empty;
+        _closeButton.FlatStyle = FlatStyle.Flat;
+        _closeButton.FlatAppearance.BorderSize = 0;
+        _closeButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        _closeButton.FlatAppearance.MouseOverBackColor = Color.Transparent;
+        _closeButton.UseVisualStyleBackColor = false;
+        _closeButton.Cursor = Cursors.Hand;
+        _closeButton.TabStop = false;
         _closeSlot.Resize += (_, _) =>
         {
-            close.Location = new Point(
-                Math.Max(0, (_closeSlot.Width - close.Width) / 2),
-                Math.Max(0, (_closeSlot.Height - close.Height) / 2));
+            _closeButton.Location = new Point(
+                Math.Max(0, (_closeSlot.Width - _closeButton.Width) / 2),
+                Math.Max(0, (_closeSlot.Height - _closeButton.Height) / 2));
         };
-        _closeSlot.Controls.Add(close);
+        _closeSlot.Controls.Add(_closeButton);
 
         Controls.Add(_message);
         Controls.Add(_closeSlot);
@@ -143,6 +144,24 @@ internal sealed class ToolEditorConceptBanner : ToolEditorWorkBoardBanner
         _closeSlot.BackColor = backColor;
         _closeSlot.Visible = true;
         _closeSlot.Width = 48;
+        if (signed)
+        {
+            ToolEditorTabsApi.ConfigureCloseButtonColors(
+                _closeButton,
+                Color.FromArgb(20, 83, 45),
+                Color.FromArgb(5, 46, 22),
+                Color.FromArgb(134, 239, 172),
+                Color.FromArgb(22, 163, 74));
+        }
+        else
+        {
+            ToolEditorTabsApi.ConfigureCloseButtonColors(
+                _closeButton,
+                Color.FromArgb(92, 58, 0),
+                Color.FromArgb(69, 43, 0),
+                Color.FromArgb(245, 184, 0),
+                Color.FromArgb(190, 130, 0));
+        }
         SignedBackColor = _signedBackColor;
         SignedBorderColor = _signedBorderColor;
     }
