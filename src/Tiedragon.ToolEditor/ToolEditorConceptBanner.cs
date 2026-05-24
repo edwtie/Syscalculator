@@ -72,24 +72,18 @@ internal sealed class ToolEditorConceptBanner : ToolEditorWorkBoardBanner
             Padding = Padding.Empty
         };
 
-        var close = new Button
-        {
-            Size = new Size(24, 24),
-            Text = "×",
-            BackColor = Color.FromArgb(255, 249, 220),
-            ForeColor = Color.FromArgb(51, 65, 85),
-            FlatStyle = FlatStyle.Flat,
-            Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-            TextAlign = ContentAlignment.MiddleCenter,
-            UseVisualStyleBackColor = false,
-            Cursor = Cursors.Hand,
-            Margin = Padding.Empty
-        };
-        close.FlatAppearance.BorderColor = Color.FromArgb(214, 163, 24);
-        close.FlatAppearance.BorderSize = 1;
-        close.MouseEnter += (_, _) => close.BackColor = Color.FromArgb(255, 239, 165);
-        close.MouseLeave += (_, _) => close.BackColor = Color.FromArgb(255, 249, 220);
-        close.Click += (_, _) => CloseRequested?.Invoke(this, EventArgs.Empty);
+        var close = ToolEditorTabsApi.CreateCloseButton((_, _) => CloseRequested?.Invoke(this, EventArgs.Empty));
+        close.Size = new Size(24, 24);
+        close.BackColor = Color.Transparent;
+        close.Margin = Padding.Empty;
+        close.Padding = Padding.Empty;
+        close.FlatStyle = FlatStyle.Flat;
+        close.FlatAppearance.BorderSize = 0;
+        close.FlatAppearance.MouseDownBackColor = Color.Transparent;
+        close.FlatAppearance.MouseOverBackColor = Color.Transparent;
+        close.UseVisualStyleBackColor = false;
+        close.Cursor = Cursors.Hand;
+        close.TabStop = false;
         _closeSlot.Resize += (_, _) =>
         {
             close.Location = new Point(

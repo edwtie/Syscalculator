@@ -62,6 +62,16 @@ public static class ToolEditorTabsApi
     }
 
     /// <summary>
+    /// Creates the shared close glyph button used by tabs and lightweight panels.
+    /// </summary>
+    public static Button CreateCloseButton(EventHandler close)
+    {
+        var button = new ToolEditorTabCloseButton();
+        button.Click += close;
+        return button;
+    }
+
+    /// <summary>
     /// Applies selected/dirty state and title text to a tab header.
     /// </summary>
     public static void SetHeaderState(Control headerPanel, Label title, string text, bool selected, bool dirty, Font baseFont)
@@ -230,9 +240,13 @@ public static class ToolEditorTabsApi
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            var tabBackColor = Parent is ToolEditorTabHeaderPanel { Selected: true }
-                ? Color.White
-                : Color.FromArgb(242, 246, 252);
+            var tabBackColor = Parent switch
+            {
+                ToolEditorTabHeaderPanel { Selected: true } => Color.White,
+                ToolEditorTabHeaderPanel => Color.FromArgb(242, 246, 252),
+                { } parent => parent.BackColor,
+                _ => BackColor
+            };
             e.Graphics.Clear(tabBackColor);
 
             var glyphColor = Color.FromArgb(45, 67, 98);
@@ -252,7 +266,7 @@ public static class ToolEditorTabsApi
 
             var cx = Width / 2;
             var cy = Height / 2;
-            const int r = 4;
+            var r = Math.Max(4, Math.Min(Width, Height) / 4);
             e.Graphics.DrawLine(pen, cx - r, cy - r, cx + r, cy + r);
             e.Graphics.DrawLine(pen, cx + r, cy - r, cx - r, cy + r);
         }
