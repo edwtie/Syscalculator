@@ -33,6 +33,7 @@ public sealed class ToolEditorForm : Form
     private const long MaxPackagePayloadBytes = 192L * 1024 * 1024;
     private const int MaxLanguageSyntaxHighlightChars = 180_000;
     private const int MaxSourceSyntaxHighlightChars = 90_000;
+    private const int SyntaxHighlightViewportBufferChars = 4_000;
     private const int MaxLanguagePreviewRows = 500;
     private const int WmSetRedraw = 0x000B;
     private const string FormulaIndexPackageTemplate = """
@@ -3269,8 +3270,18 @@ public sealed class ToolEditorForm : Form
             }
             document.LineNumbers?.RefreshMetrics();
         };
-        editor.VScroll += (_, _) => document.LineNumbers?.Invalidate();
-        editor.Resize += (_, _) => document.LineNumbers?.Invalidate();
+        editor.VScroll += (_, _) =>
+        {
+            document.LineNumbers?.Invalidate();
+            if (ReferenceEquals(_current, document))
+                ScheduleSyntaxHighlight(document);
+        };
+        editor.Resize += (_, _) =>
+        {
+            document.LineNumbers?.Invalidate();
+            if (ReferenceEquals(_current, document))
+                ScheduleSyntaxHighlight(document);
+        };
         return editor;
     }
 
@@ -5514,14 +5525,23 @@ public sealed class ToolEditorForm : Form
             return;
         }
 
-        var version = BuildSyntaxHighlightVersion(document);
+        if (!editor.IsHandleCreated)
+            return;
+
+        var range = GetSyntaxHighlightRange(editor);
+        if (range.Length <= 0)
+            return;
+
+        var text = editor.Text;
+        var visibleText = text.Substring(range.Start, Math.Min(range.Length, text.Length - range.Start));
+        var version = BuildSyntaxHighlightVersion(document, range, visibleText);
         if (string.Equals(document.SyntaxHighlightVersion, version, StringComparison.Ordinal))
             return;
 
         document.Highlighting = true;
         try
         {
-            ApplySyntaxHighlight(editor, document.PackagePath);
+            ApplySyntaxHighlight(editor, document.PackagePath, range, visibleText);
             document.SyntaxHighlightVersion = version;
         }
         finally
@@ -5533,34 +5553,53 @@ public sealed class ToolEditorForm : Form
     private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath)
     {
         if (editor.IsDisposed ||
+            !editor.IsHandleCreated ||
             editor.TextLength > GetSyntaxHighlightLimit(packagePath) ||
             !IsSyntaxHighlightedSource(packagePath, out var extension))
         {
             return;
         }
 
+        var range = GetSyntaxHighlightRange(editor);
+        if (range.Length <= 0)
+            return;
+
+        var text = editor.Text;
+        var visibleText = text.Substring(range.Start, Math.Min(range.Length, text.Length - range.Start));
+        ApplySyntaxHighlight(editor, packagePath, range, visibleText, extension);
+    }
+
+    private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath, SyntaxHighlightRange range, string visibleText)
+    {
+        if (!IsSyntaxHighlightedSource(packagePath, out var extension))
+            return;
+
+        ApplySyntaxHighlight(editor, packagePath, range, visibleText, extension);
+    }
+
+    private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath, SyntaxHighlightRange range, string visibleText, string extension)
+    {
         var selectionStart = editor.SelectionStart;
         var selectionLength = editor.SelectionLength;
-        var text = editor.Text;
 
         SetControlRedraw(editor, enabled: false);
         try
         {
             editor.SuspendLayout();
-            editor.SelectAll();
+            editor.Select(range.Start, visibleText.Length);
             editor.SelectionColor = SyntaxDefaultColor;
 
             if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
                 extension.Equals(".htm", StringComparison.OrdinalIgnoreCase))
-                HighlightHtml(editor, text);
+                HighlightHtml(editor, visibleText, range.Start);
             else if (extension.Equals(".css", StringComparison.OrdinalIgnoreCase))
-                HighlightCss(editor, text);
+                HighlightCss(editor, visibleText, range.Start);
             else if (extension.Equals(".lng", StringComparison.OrdinalIgnoreCase))
-                HighlightLanguage(editor, text);
+                HighlightLanguage(editor, visibleText, range.Start);
             else if (extension.Equals(".js", StringComparison.OrdinalIgnoreCase))
-                HighlightJavaScript(editor, text);
+                HighlightJavaScript(editor, visibleText, range.Start);
             else if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
-                HighlightJson(editor, text);
+                HighlightJson(editor, visibleText, range.Start);
 
             editor.Select(
                 Math.Min(selectionStart, editor.TextLength),
@@ -5573,10 +5612,28 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string BuildSyntaxHighlightVersion(ToolEditorDocument document)
+    private static SyntaxHighlightRange GetSyntaxHighlightRange(RichTextBox editor)
+    {
+        var textLength = editor.TextLength;
+        if (textLength <= 0)
+            return new SyntaxHighlightRange(0, 0);
+
+        var bottomRight = new Point(Math.Max(0, editor.ClientSize.Width - 1), Math.Max(0, editor.ClientSize.Height - 1));
+        var first = Math.Clamp(editor.GetCharIndexFromPosition(Point.Empty), 0, textLength);
+        var last = Math.Clamp(editor.GetCharIndexFromPosition(bottomRight), first, textLength);
+        var start = Math.Max(0, first - SyntaxHighlightViewportBufferChars);
+        var end = Math.Min(textLength, Math.Max(last + SyntaxHighlightViewportBufferChars, start + SyntaxHighlightViewportBufferChars));
+        return new SyntaxHighlightRange(start, end - start);
+    }
+
+    private static string BuildSyntaxHighlightVersion(ToolEditorDocument document, SyntaxHighlightRange range, string visibleText)
     {
         var editor = document.Editor;
-        return document.PackagePath + "|" + editor.TextLength.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + editor.Text.GetHashCode().ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return document.PackagePath + "|" +
+            editor.TextLength.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" +
+            range.Start.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" +
+            range.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" +
+            visibleText.GetHashCode().ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private static bool IsSyntaxHighlightedSource(string packagePath, out string extension)
@@ -5600,38 +5657,38 @@ public sealed class ToolEditorForm : Form
             : MaxSourceSyntaxHighlightChars;
     }
 
-    private static void HighlightHtml(RichTextBox editor, string text)
+    private static void HighlightHtml(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, HtmlCommentRegex, SyntaxCommentColor);
-        ApplyMatches(editor, text, HtmlTagRegex, SyntaxKeywordColor);
-        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, groupIndex: 1);
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
+        ApplyMatches(editor, text, HtmlCommentRegex, SyntaxCommentColor, offset);
+        ApplyMatches(editor, text, HtmlTagRegex, SyntaxKeywordColor, offset);
+        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, offset, groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
     }
 
-    private static void HighlightCss(RichTextBox editor, string text)
+    private static void HighlightCss(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, CssSelectorRegex, SyntaxSelectorColor, groupIndex: 2);
-        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, groupIndex: 1);
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
+        ApplyMatches(editor, text, CssSelectorRegex, SyntaxSelectorColor, offset, groupIndex: 2);
+        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, offset, groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
     }
 
-    private static void HighlightLanguage(RichTextBox editor, string text)
+    private static void HighlightLanguage(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, LanguageKeyRegex, SyntaxKeywordColor);
-        ApplyMatches(editor, text, LanguageCommentRegex, SyntaxCommentColor);
+        ApplyMatches(editor, text, LanguageKeyRegex, SyntaxKeywordColor, offset);
+        ApplyMatches(editor, text, LanguageCommentRegex, SyntaxCommentColor, offset);
     }
 
-    private static void HighlightJavaScript(RichTextBox editor, string text)
+    private static void HighlightJavaScript(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
-        ApplyMatches(editor, text, JavaScriptKeywordRegex, SyntaxKeywordColor);
-        ApplyMatches(editor, text, JavaScriptCommentRegex, SyntaxCommentColor);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
+        ApplyMatches(editor, text, JavaScriptKeywordRegex, SyntaxKeywordColor, offset);
+        ApplyMatches(editor, text, JavaScriptCommentRegex, SyntaxCommentColor, offset);
     }
 
-    private static void HighlightJson(RichTextBox editor, string text)
+    private static void HighlightJson(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor);
-        ApplyMatches(editor, text, JsonPropertyRegex, SyntaxKeywordColor);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
+        ApplyMatches(editor, text, JsonPropertyRegex, SyntaxKeywordColor, offset);
     }
 
     private static void SetControlRedraw(Control control, bool enabled)
@@ -5644,7 +5701,7 @@ public sealed class ToolEditorForm : Form
             control.Invalidate();
     }
 
-    private static void ApplyMatches(RichTextBox editor, string text, Regex regex, Color color, int groupIndex = 0)
+    private static void ApplyMatches(RichTextBox editor, string text, Regex regex, Color color, int offset, int groupIndex = 0)
     {
         foreach (Match match in regex.Matches(text))
         {
@@ -5652,10 +5709,12 @@ public sealed class ToolEditorForm : Form
             if (!group.Success || group.Length == 0)
                 continue;
 
-            editor.Select(group.Index, group.Length);
+            editor.Select(offset + group.Index, group.Length);
             editor.SelectionColor = color;
         }
     }
+
+    private readonly record struct SyntaxHighlightRange(int Start, int Length);
 
     private static void ValidateJson(string text, List<string> errors)
     {
