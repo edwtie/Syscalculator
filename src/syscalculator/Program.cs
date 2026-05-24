@@ -69,7 +69,7 @@ internal static class Program
     private static void ApplySystemColorMode()
     {
 #pragma warning disable WFO5001
-        Application.SetColorMode(SystemColorMode.System);
+        Application.SetColorMode(SystemColorMode.Dark);
 #pragma warning restore WFO5001
     }
 
