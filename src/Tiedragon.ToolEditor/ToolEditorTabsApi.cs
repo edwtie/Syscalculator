@@ -9,6 +9,12 @@ namespace Tiedragon.ToolEditor;
 /// </summary>
 public static class ToolEditorTabsApi
 {
+    private static readonly Color TabSelectedBack = Color.FromArgb(31, 41, 55);
+    private static readonly Color TabInactiveBack = Color.FromArgb(15, 23, 42);
+    private static readonly Color TabBorder = Color.FromArgb(55, 65, 81);
+    private static readonly Color TabSelectedText = Color.FromArgb(248, 250, 252);
+    private static readonly Color TabInactiveText = Color.FromArgb(203, 213, 225);
+
     /// <summary>
     /// Creates the visual tab strip used above editor content.
     /// </summary>
@@ -125,7 +131,7 @@ public static class ToolEditorTabsApi
         }
 
         title.Text = text;
-        title.ForeColor = selected ? Color.Black : Color.FromArgb(40, 55, 75);
+        title.ForeColor = selected ? TabSelectedText : TabInactiveText;
         title.Font = new Font(baseFont, selected ? FontStyle.Bold : FontStyle.Regular);
     }
 
@@ -177,14 +183,14 @@ public static class ToolEditorTabsApi
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             var rect = new Rectangle(0, 0, Width - 1, Height - 1);
             using var path = RoundedTopRect(rect, 5);
-            using var fill = new SolidBrush(Selected ? Color.White : Color.FromArgb(242, 246, 252));
-            using var border = new Pen(Color.FromArgb(190, 200, 214));
+            using var fill = new SolidBrush(Selected ? TabSelectedBack : TabInactiveBack);
+            using var border = new Pen(TabBorder);
             e.Graphics.FillPath(fill, path);
             e.Graphics.DrawPath(border, path);
 
             if (Selected)
             {
-                using var cover = new Pen(Color.White, 2);
+                using var cover = new Pen(TabSelectedBack, 2);
                 e.Graphics.DrawLine(cover, 1, Height - 2, Width - 2, Height - 2);
                 e.Graphics.DrawLine(cover, 1, Height - 1, Width - 2, Height - 1);
             }
@@ -212,7 +218,7 @@ public static class ToolEditorTabsApi
         {
             base.OnPaint(e);
             var y = Height - 1;
-            using var border = new Pen(Color.FromArgb(205, 212, 222));
+            using var border = new Pen(TabBorder);
             var x = 0;
 
             foreach (Control control in Controls)
@@ -303,8 +309,8 @@ public static class ToolEditorTabsApi
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             var tabBackColor = Parent switch
             {
-                ToolEditorTabHeaderPanel { Selected: true } => Color.White,
-                ToolEditorTabHeaderPanel => Color.FromArgb(242, 246, 252),
+                ToolEditorTabHeaderPanel { Selected: true } => TabSelectedBack,
+                ToolEditorTabHeaderPanel => TabInactiveBack,
                 { } parent => parent.BackColor,
                 _ => BackColor
             };

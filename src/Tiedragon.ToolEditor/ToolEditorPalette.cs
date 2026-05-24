@@ -27,4 +27,17 @@ public readonly record struct ToolEditorPalette(
         Color.FromArgb(239, 246, 255),
         Color.FromArgb(254, 240, 138),
         Color.FromArgb(250, 204, 21));
+
+    /// <summary>
+    /// Dark editor palette used when WinForms runs in dark color mode.
+    /// </summary>
+    public static ToolEditorPalette Dark { get; } = new(
+        Color.FromArgb(31, 41, 55),
+        Color.FromArgb(226, 232, 240),
+        Color.FromArgb(96, 165, 250),
+        Color.FromArgb(34, 197, 94),
+        Color.FromArgb(251, 191, 36),
+        Color.FromArgb(30, 58, 138),
+        Color.FromArgb(250, 204, 21),
+        Color.FromArgb(234, 179, 8));
 }

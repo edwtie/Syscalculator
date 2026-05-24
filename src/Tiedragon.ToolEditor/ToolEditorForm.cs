@@ -213,14 +213,14 @@ public sealed class ToolEditorForm : Form
 
         ToolEditorDebugger.Log("ToolEditorForm building menu and toolbar.");
         var menu = BuildMenu();
-        var toolbar = ToolEditorApi.CreateToolbar();
-        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.new_package", "New package"), ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.new_package.tip", "Create a package from the configured Syscalculator language")));
-        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.open", "Open"), ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.open.tip", "Open language package or concept")));
+        var toolbar = ToolEditorApi.CreateToolbar(ToolEditorPalette.Dark);
+        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.new_package", "New package"), ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.new_package.tip", "Create a package from the configured Syscalculator language"), ToolEditorPalette.Dark));
+        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.open", "Open"), ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.open.tip", "Open language package or concept"), ToolEditorPalette.Dark));
         toolbar.Items.Add(new ToolStripSeparator());
-        _saveButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.save_concept", "Save concept"), ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.save_concept.tip", "Save concept language package"));
-        _validateButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.validate", "Validate"), ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), TToolEditor("tool_editor.toolbar.validate.tip", "Validate current document"));
-        _previewButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.preview", "Preview"), ToolEditorIcon.Test, (_, _) => ShowPreviewPane(), TToolEditor("tool_editor.toolbar.preview.tip", "Refresh HTML preview"));
-        var compileButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.compile", "Compile"), ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.compile.tip", "Compile language package to .lngpdk"));
+        _saveButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.save_concept", "Save concept"), ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.save_concept.tip", "Save concept language package"), ToolEditorPalette.Dark);
+        _validateButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.validate", "Validate"), ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), TToolEditor("tool_editor.toolbar.validate.tip", "Validate current document"), ToolEditorPalette.Dark);
+        _previewButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.preview", "Preview"), ToolEditorIcon.Test, (_, _) => ShowPreviewPane(), TToolEditor("tool_editor.toolbar.preview.tip", "Refresh HTML preview"), ToolEditorPalette.Dark);
+        var compileButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.compile", "Compile"), ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.compile.tip", "Compile language package to .lngpdk"), ToolEditorPalette.Dark);
         toolbar.Items.Add(_saveButton);
         toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(_validateButton);
@@ -922,9 +922,11 @@ public sealed class ToolEditorForm : Form
         {
             GripStyle = ToolStripGripStyle.Hidden,
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = DarkPanelBackColor,
+            ForeColor = DarkEditorTextColor,
             Padding = new Padding(2, 2, 2, 2),
-            RenderMode = ToolStripRenderMode.System
+            RenderMode = ToolStripRenderMode.ManagerRenderMode,
+            Renderer = new DarkToolStripRenderer()
         };
 
         toolbar.Items.Add(_sourceModeButton);
@@ -983,7 +985,9 @@ public sealed class ToolEditorForm : Form
             CheckOnClick = false,
             ToolTipText = tooltip,
             Padding = new Padding(6, 1, 6, 1),
-            Margin = new Padding(1, 1, 1, 1)
+            Margin = new Padding(1, 1, 1, 1),
+            BackColor = DarkPanelBackColor,
+            ForeColor = DarkEditorTextColor
         };
         button.Click += click;
         return button;
@@ -996,7 +1000,9 @@ public sealed class ToolEditorForm : Form
             DisplayStyle = ToolStripItemDisplayStyle.Text,
             AutoSize = true,
             ToolTipText = tooltip,
-            Padding = new Padding(4, 1, 4, 1)
+            Padding = new Padding(4, 1, 4, 1),
+            BackColor = DarkPanelBackColor,
+            ForeColor = DarkEditorTextColor
         };
         button.Click += click;
         return button;
@@ -1012,14 +1018,18 @@ public sealed class ToolEditorForm : Form
             DisplayStyle = ToolStripItemDisplayStyle.Text,
             AutoSize = true,
             ToolTipText = tooltip,
-            Padding = new Padding(4, 1, 4, 1)
+            Padding = new Padding(4, 1, 4, 1),
+            BackColor = DarkPanelBackColor,
+            ForeColor = DarkEditorTextColor
         };
 
         foreach (var item in items)
         {
             var menuItem = new ToolStripMenuItem(item.Text)
             {
-                ToolTipText = item.Tooltip
+                ToolTipText = item.Tooltip,
+                BackColor = DarkPanelBackColor,
+                ForeColor = DarkEditorTextColor
             };
             menuItem.Click += (_, _) => item.Action();
             button.DropDownItems.Add(menuItem);
@@ -3684,8 +3694,8 @@ public sealed class ToolEditorForm : Form
         button.Font = active
             ? new Font(button.Font, FontStyle.Bold)
             : new Font(button.Font, FontStyle.Regular);
-        button.BackColor = active ? Color.FromArgb(222, 235, 255) : Color.FromArgb(248, 250, 252);
-        button.ForeColor = active ? Color.FromArgb(0, 63, 143) : Color.FromArgb(15, 23, 42);
+        button.BackColor = active ? Color.FromArgb(37, 99, 235) : DarkPanelBackColor;
+        button.ForeColor = active ? Color.White : DarkEditorTextColor;
         button.DisplayStyle = ToolStripItemDisplayStyle.Text;
     }
 
@@ -7080,6 +7090,62 @@ public sealed class ToolEditorForm : Form
         string OutputPath,
         string PackageSha256,
         string PayloadSha256);
+
+    private sealed class DarkToolStripRenderer : ToolStripProfessionalRenderer
+    {
+        public DarkToolStripRenderer()
+            : base(new DarkToolStripColorTable())
+        {
+            RoundedEdges = false;
+        }
+
+        protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
+        {
+            using var pen = new Pen(DarkBorderColor);
+            e.Graphics.DrawLine(pen, 0, e.ToolStrip.Height - 1, e.ToolStrip.Width, e.ToolStrip.Height - 1);
+        }
+
+        protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
+        {
+            var selected = e.Item.Selected || (e.Item is ToolStripButton { Checked: true });
+            var pressed = e.Item.Pressed;
+            var bounds = new Rectangle(Point.Empty, e.Item.Size);
+            var color = pressed
+                ? Color.FromArgb(29, 78, 216)
+                : selected
+                    ? Color.FromArgb(37, 99, 235)
+                    : DarkPanelBackColor;
+
+            using var brush = new SolidBrush(color);
+            e.Graphics.FillRectangle(brush, bounds);
+        }
+
+        protected override void OnRenderDropDownButtonBackground(ToolStripItemRenderEventArgs e)
+        {
+            OnRenderButtonBackground(e);
+        }
+    }
+
+    private sealed class DarkToolStripColorTable : ProfessionalColorTable
+    {
+        public override Color ToolStripDropDownBackground => DarkPanelBackColor;
+        public override Color ImageMarginGradientBegin => DarkPanelBackColor;
+        public override Color ImageMarginGradientMiddle => DarkPanelBackColor;
+        public override Color ImageMarginGradientEnd => DarkPanelBackColor;
+        public override Color MenuBorder => DarkBorderColor;
+        public override Color MenuItemBorder => Color.FromArgb(37, 99, 235);
+        public override Color MenuItemSelected => Color.FromArgb(37, 99, 235);
+        public override Color MenuItemSelectedGradientBegin => Color.FromArgb(37, 99, 235);
+        public override Color MenuItemSelectedGradientEnd => Color.FromArgb(37, 99, 235);
+        public override Color ButtonSelectedGradientBegin => Color.FromArgb(37, 99, 235);
+        public override Color ButtonSelectedGradientMiddle => Color.FromArgb(37, 99, 235);
+        public override Color ButtonSelectedGradientEnd => Color.FromArgb(37, 99, 235);
+        public override Color ButtonPressedGradientBegin => Color.FromArgb(29, 78, 216);
+        public override Color ButtonPressedGradientMiddle => Color.FromArgb(29, 78, 216);
+        public override Color ButtonPressedGradientEnd => Color.FromArgb(29, 78, 216);
+        public override Color SeparatorDark => DarkBorderColor;
+        public override Color SeparatorLight => Color.FromArgb(75, 85, 99);
+    }
 
     private sealed class LineNumberPanel : Panel
     {
