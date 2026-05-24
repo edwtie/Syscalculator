@@ -1045,10 +1045,8 @@ public sealed class ToolEditorForm : Form
             ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding Help runtime documents.");
             AddHelpRuntimeDocuments();
             ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding main help documents.");
-            if (language.Code.Equals("ned", StringComparison.OrdinalIgnoreCase))
-                AddDutchHelpDocuments();
-            else
-                AddEnglishHelpDocuments();
+            AddMainHelpMediaDocuments();
+            AddMainHelpDocuments(language.Code);
             ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding NOD help documents.");
             AddNodHelpDocuments();
             ToolEditorDebugger.Log("NewLanguagePackageTemplate: adding formula card documents.");
@@ -1333,73 +1331,6 @@ public sealed class ToolEditorForm : Form
         };
     }
 
-    private static string BuildHtmlTemplate()
-    {
-        return """
-        <h1>Syscalculator Help</h1>
-        <p>Er zijn nog geen Nederlandse helpbestanden gevonden.</p>
-        <div class="help-warning">Controleer of de helpbronnen in de repository aanwezig zijn.</div>
-        """;
-    }
-
-    private void AddDutchHelpDocuments()
-    {
-        AddLegacyHelpDocuments("nl", BuildHtmlTemplate);
-    }
-
-    private void AddEnglishHelpDocuments()
-    {
-        AddLegacyHelpDocuments("en", BuildEnglishHtmlTemplate);
-    }
-
-    private void AddLegacyHelpDocuments(string languagePrefix, Func<string> fallbackFactory)
-    {
-        var helpDirectory = FindRepositoryPath("legacy/Syscalculator174.VB6/help");
-        if (helpDirectory is null)
-        {
-            AddDocument("manual/index.html", fallbackFactory(), null);
-            return;
-        }
-
-        var helpFiles = Directory.GetFiles(helpDirectory, "*.htm")
-            .Where(path => Path.GetFileName(path).Equals("index_" + languagePrefix + ".htm", StringComparison.OrdinalIgnoreCase) ||
-                Path.GetFileName(path).StartsWith("help_" + languagePrefix + "_", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(path => Path.GetFileName(path).Equals("index_" + languagePrefix + ".htm", StringComparison.OrdinalIgnoreCase) ? "" : Path.GetFileName(path), StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        if (helpFiles.Count == 0)
-        {
-            AddDocument("manual/index.html", fallbackFactory(), null);
-            return;
-        }
-
-        var pageNameMap = helpFiles.ToDictionary(
-            path => Path.GetFileName(path),
-            path => BuildLegacyHelpPackageFileName(Path.GetFileName(path), languagePrefix),
-            StringComparer.OrdinalIgnoreCase);
-
-        var mediaNameMap = AddDutchHelpMedia(helpDirectory);
-        foreach (var file in helpFiles)
-        {
-            var packageName = pageNameMap[Path.GetFileName(file)];
-            AddLazyDocument(
-                "manual/" + packageName,
-                () => ConvertDutchHelpHtml(File.ReadAllText(file, Encoding.Latin1), pageNameMap, mediaNameMap),
-                file);
-        }
-    }
-
-    private static string BuildLegacyHelpPackageFileName(string fileName, string languagePrefix)
-    {
-        var name = Path.GetFileNameWithoutExtension(fileName);
-        if (name.Equals("index_" + languagePrefix, StringComparison.OrdinalIgnoreCase))
-            return "index.html";
-
-        name = Regex.Replace(name, @"^(help|manual)[_-]+" + Regex.Escape(languagePrefix) + @"[_-]+", "", RegexOptions.IgnoreCase);
-        name = Regex.Replace(name, @"^" + Regex.Escape(languagePrefix) + @"[_-]+", "", RegexOptions.IgnoreCase);
-        return name + ".html";
-    }
-
     private static string BuildEnglishHtmlTemplate()
     {
         return """
@@ -1407,6 +1338,85 @@ public sealed class ToolEditorForm : Form
         <p>This starter language package contains the editable package structure for Syscalculator help, NOD help, formula cards, translations and media.</p>
         <div class="help-info">Use this English base package as the source for a new translation package.</div>
         """;
+    }
+
+    private void AddMainHelpMediaDocuments()
+    {
+        AddMainHelpMediaDocument("WizardExpressHelp.png");
+        AddMainHelpMediaDocument("NodEditorHelp.svg");
+    }
+
+    private void AddMainHelpMediaDocument(string fileName)
+    {
+        var sourcePath = FindToolEditorResourcePath("Resources/" + fileName) ??
+            FindRepositoryPath("src/syscalculator/Resources/" + fileName);
+        if (sourcePath is null)
+            return;
+
+        AddImageDocument("assets/" + fileName, File.ReadAllBytes(sourcePath), sourcePath);
+    }
+
+    private void AddMainHelpDocuments(string languageCode)
+    {
+        var pages = new (string BodyKey, string ResourceName)[]
+        {
+            ("help.main.page.intro.body", "intro.html"),
+            ("help.main.page.main.body", "main.html"),
+            ("help.main.page.fields.body", "fields.html"),
+            ("help.main.page.wizard.body", "wizard.html"),
+            ("help.main.page.calculator.body", "calculator.html"),
+            ("help.main.page.applications.body", "applications.html"),
+            ("help.main.page.configuration.body", "configuration.html"),
+            ("help.main.page.updater.body", "updater.html"),
+            ("help.main.page.window.body", "window.html"),
+            ("help.main.page.nodfiles.body", "nodfiles.html"),
+            ("help.main.page.nodeditor.body", "nodeditor.html"),
+            ("help.main.page.support.body", "support.html")
+        };
+
+        foreach (var page in pages)
+        {
+            var sourcePath = FindToolEditorResourcePath("Resources/Help/Content/main/" + page.ResourceName) ??
+                FindRepositoryPath("src/syscalculator/Resources/Help/Content/main/" + page.ResourceName);
+            AddLazyDocument(
+                "help/content/main/" + page.ResourceName,
+                () => BuildMainHelpDocumentSource(languageCode, page.BodyKey, page.ResourceName, sourcePath),
+                sourcePath);
+        }
+    }
+
+    private string BuildMainHelpDocumentSource(string languageCode, string bodyKey, string resourceName, string? sourcePath)
+    {
+        var languageMap = GetCurrentLanguageMap();
+        string? ResolveText(string key) => languageMap.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
+
+        var fallback = sourcePath is null ? BuildEnglishHtmlTemplate() : File.ReadAllText(sourcePath, Encoding.UTF8);
+        var html = HelpApi.Content(
+            languageCode,
+            ResolveText,
+            bodyKey,
+            "main/" + resourceName,
+            fallback);
+        html = HelpHtml.ApplyContentPlaceholders(html, new Dictionary<string, string?>
+        {
+            ["NodEditorScreenshot"] = BuildPackageScreenshotImage(
+                "assets/NodEditorHelp.svg",
+                ResolveText("help.main.page.nodeditor.screenshot_alt") ?? "Screenshot of the NOD Editor with toolbar, code editor and command tip.") ?? HelpApi.ScreenshotImage(
+                languageCode,
+                ResolveText,
+                "NodEditorHelp.svg",
+                ResolveText("help.main.page.nodeditor.screenshot_alt") ?? "Screenshot of the NOD Editor with toolbar, code editor and command tip."),
+            ["WizardExpressScreenshot"] = BuildPackageScreenshotImage(
+                "assets/WizardExpressHelp.png",
+                ResolveText("help.main.page.wizard.screenshot_alt") ?? "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.") ?? HelpApi.ScreenshotImage(
+                languageCode,
+                ResolveText,
+                "WizardExpressHelp.png",
+                ResolveText("help.main.page.wizard.screenshot_alt") ?? "Screenshot of WizardExpress in front of Syscalculator and a spreadsheet.")
+        });
+        return FormatGeneratedHelpSource(html);
     }
 
     private static string BuildConceptHelpBanner(string languagePrefix)
@@ -1787,48 +1797,6 @@ public sealed class ToolEditorForm : Form
         }
 
         return html;
-    }
-
-    private Dictionary<string, string> AddDutchHelpMedia(string helpDirectory)
-    {
-        var media = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var file in Directory.GetFiles(helpDirectory)
-                     .Where(IsImagePath)
-                     .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
-        {
-            var name = Path.GetFileName(file);
-            var packagePath = "assets/" + name;
-            media[name] = packagePath;
-            AddImageDocument(packagePath, File.ReadAllBytes(file), file);
-        }
-
-        return media;
-    }
-
-    private static string ConvertDutchHelpHtml(string html, IReadOnlyDictionary<string, string> pageNameMap, IReadOnlyDictionary<string, string> mediaNameMap)
-    {
-        html = html.Replace("charset=windows-1252", "charset=utf-8", StringComparison.OrdinalIgnoreCase);
-        html = html.Replace("Syscalculator 1.74", "Syscalculator", StringComparison.OrdinalIgnoreCase);
-        html = Regex.Replace(
-            html,
-            @"\s*<div\s+class\s*=\s*[""']nav[""']>\s*<a\s+href\s*=\s*[""']index_nl\.htm[""']>\s*Nederlandse help\s*</a>\s*</div>\s*",
-            Environment.NewLine,
-            RegexOptions.IgnoreCase);
-        foreach (var item in pageNameMap)
-            html = ReplaceQuotedPath(html, item.Key, item.Value);
-        foreach (var item in mediaNameMap)
-            html = ReplaceQuotedPath(html, item.Key, item.Value);
-
-        return html;
-    }
-
-    private static string ReplaceQuotedPath(string html, string from, string to)
-    {
-        return Regex.Replace(
-            html,
-            "(?<quote>[\"'])" + Regex.Escape(from) + "\\k<quote>",
-            match => match.Groups["quote"].Value + to + match.Groups["quote"].Value,
-            RegexOptions.IgnoreCase);
     }
 
     private static string LoadLanguageText(string languageCode, string displayName)
