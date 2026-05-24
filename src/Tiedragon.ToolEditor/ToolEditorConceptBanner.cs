@@ -72,7 +72,12 @@ internal sealed class ToolEditorConceptBanner : ToolEditorWorkBoardBanner
             Padding = Padding.Empty
         };
 
-        var close = ToolEditorTabsApi.CreateCloseButton((_, _) => CloseRequested?.Invoke(this, EventArgs.Empty));
+        var close = ToolEditorTabsApi.CreateCloseButton(
+            (_, _) => CloseRequested?.Invoke(this, EventArgs.Empty),
+            Color.FromArgb(92, 58, 0),
+            Color.FromArgb(69, 43, 0),
+            Color.FromArgb(245, 184, 0),
+            Color.FromArgb(190, 130, 0));
         close.Size = new Size(24, 24);
         close.BackColor = Color.Transparent;
         close.Margin = Padding.Empty;

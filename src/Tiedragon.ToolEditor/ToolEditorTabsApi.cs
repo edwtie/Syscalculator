@@ -72,6 +72,27 @@ public static class ToolEditorTabsApi
     }
 
     /// <summary>
+    /// Creates the shared close glyph button with custom hover colors for non-tab surfaces.
+    /// </summary>
+    public static Button CreateCloseButton(
+        EventHandler close,
+        Color glyphColor,
+        Color hoverGlyphColor,
+        Color hoverBackColor,
+        Color pressedBackColor)
+    {
+        var button = new ToolEditorTabCloseButton
+        {
+            GlyphColor = glyphColor,
+            HoverGlyphColor = hoverGlyphColor,
+            HoverBackColor = hoverBackColor,
+            PressedBackColor = pressedBackColor
+        };
+        button.Click += close;
+        return button;
+    }
+
+    /// <summary>
     /// Applies selected/dirty state and title text to a tab header.
     /// </summary>
     public static void SetHeaderState(Control headerPanel, Label title, string text, bool selected, bool dirty, Font baseFont)
@@ -208,6 +229,26 @@ public static class ToolEditorTabsApi
             UseVisualStyleBackColor = false;
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color GlyphColor { get; set; } = Color.FromArgb(45, 67, 98);
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color HoverGlyphColor { get; set; } = Color.FromArgb(0, 74, 173);
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color PressedGlyphColor { get; set; } = Color.White;
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color HoverBackColor { get; set; } = Color.FromArgb(226, 238, 255);
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color PressedBackColor { get; set; } = Color.FromArgb(40, 94, 170);
+
         protected override void OnMouseEnter(EventArgs e)
         {
             _hovered = true;
@@ -249,13 +290,13 @@ public static class ToolEditorTabsApi
             };
             e.Graphics.Clear(tabBackColor);
 
-            var glyphColor = Color.FromArgb(45, 67, 98);
+            var glyphColor = GlyphColor;
             if (_hovered)
             {
-                var back = _pressed ? Color.FromArgb(40, 94, 170) : Color.FromArgb(226, 238, 255);
+                var back = _pressed ? PressedBackColor : HoverBackColor;
                 using var fill = new SolidBrush(back);
                 e.Graphics.FillRectangle(fill, new Rectangle(2, 3, Width - 4, Height - 6));
-                glyphColor = _pressed ? Color.White : Color.FromArgb(0, 74, 173);
+                glyphColor = _pressed ? PressedGlyphColor : HoverGlyphColor;
             }
 
             using var pen = new Pen(glyphColor, 2.1f)
