@@ -727,6 +727,7 @@ internal sealed class Graph3DPreviewForm : Form
         _camera = Graph3DApi.RotateCamera(_camera, yaw, pitch);
         _rotationDial.Camera = _camera;
         UpdateModeButtons();
+        Update3DViewportRangeControlsIfNeeded();
         _canvas.Invalidate();
         NotifySyncStateChanged();
     }
