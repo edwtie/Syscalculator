@@ -22,6 +22,21 @@ container for Tiedragon apps. Syscalculator remains the first consumer, but the
 compiler/editor are designed so they can later move to a separate
 `Tiedragon.Localization` repository and be reused by other apps.
 
+Language Package 1.0 should be treated as a new package category, not only as a
+new file extension. Many ecosystems have translation files, resource bundles,
+browser add-ons or application plug-in packages. The Syscalculator `.lngpdk`
+format combines those ideas for a narrower domain: mathematical software where
+UI text, NOD command help, formula cards, legal pages, media and trusted help
+scripts must travel together and must be verifiable at runtime.
+
+For that reason this document describes `.lngpdk` as the first known Tiedragon
+language/content package of this kind: a signed, fail-closed, app-bound package
+for calculator/NOD/help/formula-card localization. The claim is intentionally
+specific. It does not mean that no language packages, gettext catalogs or
+browser localization packs existed before. It means that this package model is
+new in the combination of scope, trust checks and runtime integration needed by
+Syscalculator 2.0.
+
 ## Current Implementation
 
 Current projects:
@@ -257,6 +272,106 @@ languagePackage=ned
 keeps large help/media work editable. `.lngpdk` is safer for distribution
 because all related language content is checked, hashed and optionally signed
 together.
+
+## Comparison With Existing Formats
+
+Language Package 1.0 is deliberately stricter than classic translation
+formats. The difference is not that `.lngpdk` stores more strings. The
+difference is that it treats localization as a release artifact with provenance,
+policy and trust.
+
+| Format | What it is good at | Why it is not enough for Syscalculator 2.0 |
+| --- | --- | --- |
+| `.lng` key/value file | Simple editable UI text and emergency fallback. | No package identity, no media, no signed payload, no complete help/formula-card bundle. |
+| gettext `.po` / `.mo` | Mature translator workflow for message catalogs. | Message catalogs do not naturally carry HTML help, NOD command pages, formula cards, trusted scripts, media policy and app-bound signatures in one release package. |
+| `.resx` / satellite assemblies | Strong .NET integration and compiled resources. | Requires build-time integration, is less suitable for user-installable language packs, and does not provide the ToolEditor concept workflow. |
+| Java `.properties` / resource bundles | Lightweight text resources. | Similar to `.lng`: good for strings, weak for signed mixed content and package-level validation. |
+| ZIP archive | Easy generic container. | A plain ZIP has no Syscalculator identity, no strict header, no trust status, no required language keys and no fail-closed policy by itself. |
+| NuGet package | Versioned .NET distribution with metadata. | Targets developer dependency management, not end-user runtime language selection or offline help/content trust UI. |
+| WinHelp `.hlp` | Historic Windows help format for classic desktop applications. | Obsolete for modern Windows, not suitable for signed mixed localization packages, formula cards or WebView2-based help. |
+| Compiled HTML Help `.chm` | Bundles HTML help into one searchable Windows help file. | Strong for static documentation, but not a language package: it does not carry UI strings, NOD command metadata, formula-card resources, installer/update hashes and app-bound trust metadata as one runtime unit. |
+| Microsoft Help / Visual Studio help collections | Structured offline documentation for developer tools. | Designed for documentation catalogs, not end-user language package selection, fallback `.lng` handling or Syscalculator runtime trust indicators. |
+| Windows 10/11 app help using web pages or WebView2 | Modern HTML rendering, online docs and embedded help UI. | Provides the rendering surface, not the package contract. `.lngpdk` can use WebView2-rendered HTML, but it also defines source/compiled package flow, validation, signing and fallback behavior. |
+| Browser extension language pack | Can distribute translated UI/content for a host app. | Tied to browser extension models and permissions, not to WinForms/WebView2 help, NOD syntax help or formula-card compilation. |
+| App plug-in package | Can extend application behavior. | Too broad and often executable. `.lngpdk` is intentionally narrow: localization/content with a small allowlist for known help scripts. |
+
+`.lngpdk` sits between a translation catalog and a plug-in package. It is more
+complete than a catalog, but less dangerous than a general plug-in. The package
+can contain HTML, CSS, known JavaScript files and media, but it may only contain
+files allowed by policy. The runtime verifies the package before presenting it
+as trusted.
+
+It also sits beside, not inside, the traditional Windows help lineage. `.hlp`,
+`.chm` and modern WebView2 help solve the "show help pages" problem. `.lngpdk`
+solves the broader "ship a trusted language/content unit" problem. A compiled
+package can contain help pages that feel like normal Windows 11 desktop help,
+but those pages are only one part of the package. The same signed unit also
+provides UI labels, command tips, formula-card content, media and package
+metadata.
+
+## Why This Package Exists
+
+Syscalculator 2.0 needs language data to be installable, inspectable and safe.
+Loose `.lng` files solved early translation work, but they did not solve the
+modern release problem:
+
+- help text and UI text could drift apart;
+- NOD command tips could be translated in one place and documented in another;
+- formula cards needed HTML, CSS, JavaScript and media, not only strings;
+- installers and update manifests needed a stable package hash;
+- users needed to see whether a language came from a signed package or from a
+  loose fallback file;
+- developers needed ToolEditor to work with source packages without editing the
+  signed runtime artifact directly.
+
+The package therefore has two halves:
+
+- `.objpdk` is the authoring/concept side for humans, ToolEditor and AI agents;
+- `.lngpdk` is the compiled distribution side for installers, updates and
+  runtime loading.
+
+The split is important. It keeps authoring flexible while making release
+loading strict. A translator can work with source content. A user receives a
+compiled package with identity, hashes and an optional signature. If the package
+is signed and valid, Syscalculator can show a green trust indicator. If the app
+falls back to a loose `.lng`, it can show that state explicitly instead of
+pretending the fallback file has the same trust level.
+
+## Why It Is First In Its Specific Category
+
+Existing localization systems usually choose one center of gravity:
+
+- message catalog first;
+- compiled resource first;
+- Windows help file first;
+- plug-in package first;
+- browser extension first;
+- generic archive first.
+
+Language Package 1.0 uses a different center of gravity: a calculator language
+package as a complete, signed educational/runtime content unit. The package is
+bound to `softwareId`, language code and package identity. It carries UI text,
+main help, NOD help, formula cards, legal/help pages, media and allowed help
+runtime files. It is validated by a compiler and rechecked by the application.
+
+This is why the format can reasonably be called a first for Syscalculator and,
+as far as the project currently knows, the first package format in this
+specific niche: a signed mathematical localization/content package with:
+
+- editable source package and compiled runtime package as separate artifacts;
+- deterministic compile pipeline;
+- required key validation for signed packages;
+- SHA-256 package and payload hashes;
+- app-bound manifest metadata;
+- optional RSA signature;
+- strict file policy and JavaScript allowlist;
+- runtime trust UI for signed package versus loose fallback;
+- integrated help, NOD command tips and formula-card content.
+
+If a future comparable public format is found, this document should describe it
+and narrow the claim. The important engineering point remains: `.lngpdk` exists
+because Syscalculator needs more than translated strings, but less than a
+general executable plug-in.
 
 ## Wrapper Format
 

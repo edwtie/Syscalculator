@@ -29,7 +29,7 @@ public sealed class GraphTextOverlayButton : Control
         Width = 34;
         Height = 22;
         Margin = new Padding(0, 1, 2, 0);
-        ForeColor = Color.FromArgb(15, 63, 143);
+        ForeColor = GraphOverlayStyle.TextColor(GraphOverlayVisualState.Normal);
         Cursor = Cursors.Hand;
         TabStop = false;
         Font = new Font("Segoe UI", 7f, FontStyle.Bold);
@@ -40,7 +40,7 @@ public sealed class GraphTextOverlayButton : Control
             ControlStyles.ResizeRedraw |
             ControlStyles.UserPaint,
             true);
-        BackColor = Color.White;
+        BackColor = GraphOverlayStyle.PanelFill(translucent: false);
     }
 
     /// <summary>

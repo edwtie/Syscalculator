@@ -5,9 +5,27 @@ namespace Syscalculator.UI.WinForms;
 internal sealed class LanguageCatalog
 {
     // Zoek/commentaar: Type-overzicht: record LanguageInfo bevat de hoofdlogica/data voor dit onderdeel.
-    public sealed record LanguageInfo(string DisplayName, string FileName, string? PackageId = null)
+    public sealed record LanguageInfo(
+        string DisplayName,
+        string FileName,
+        string? PackageId = null,
+        bool Signed = false,
+        string SignatureAlgorithm = "",
+        string SignatureKeyId = "",
+        string SignatureKeySha256 = "",
+        string LanguageCode = "",
+        string Producer = "",
+        string Product = "",
+        string PackageVersion = "")
     {
-        public string SourceLabel => PackageId is null ? FileName : PackageId + "/" + FileName;
+        public string SourceLabel
+        {
+            get
+            {
+                var source = PackageId is null ? FileName : PackageId + "/" + FileName;
+                return Signed ? source + " (signed)" : source;
+            }
+        }
 
         public bool Matches(string fileName, string? packageId)
         {
@@ -164,7 +182,18 @@ internal sealed class LanguageCatalog
                 displayName = name;
             }
 
-            languages[package.LanguageFileName] = new LanguageInfo(displayName, package.LanguageFileName, package.Manifest.PackageKey);
+            languages[package.LanguageFileName] = new LanguageInfo(
+                displayName,
+                package.LanguageFileName,
+                package.Manifest.PackageKey,
+                package.Signed,
+                package.SignatureAlgorithm,
+                package.SignatureKeyId,
+                package.SignatureKeySha256,
+                package.Manifest.LanguageCode,
+                package.Manifest.Producer,
+                package.Manifest.Product,
+                package.Manifest.PackageVersion);
         }
 
         return languages.Values

@@ -11,6 +11,23 @@ namespace Tiedragon.Graph.G3D;
 /// </summary>
 public static class Graph3DRenderer
 {
+    private static Color CanvasBackColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(10, 18, 32) : Color.White;
+    private static Color MessageTextColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.DimGray;
+    private static Color AxisColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.FromArgb(48, 56, 68);
+    private static Color QuietAxisColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(148, 163, 184) : Color.FromArgb(70, 82, 98);
+    private static Color AxisGuideColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(220, 226, 235);
+    private static Color AxisLabelColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(226, 232, 240) : Color.FromArgb(51, 65, 85);
+    private static Color NumberLabelColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.FromArgb(71, 85, 105);
+    private static Color NeutralMajorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(215, 222, 232);
+    private static Color NeutralMinorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(240, 244, 248);
+    private static Color XyMajorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(49, 70, 104) : Color.FromArgb(198, 213, 234);
+    private static Color XzMajorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(68, 55, 100) : Color.FromArgb(220, 205, 238);
+    private static Color YzMajorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(43, 86, 70) : Color.FromArgb(198, 226, 211);
+    private static Color XyMinorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(24, 36, 58) : Color.FromArgb(233, 239, 248);
+    private static Color XzMinorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(36, 31, 56) : Color.FromArgb(240, 232, 248);
+    private static Color YzMinorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(22, 48, 43) : Color.FromArgb(231, 245, 237);
+    private static Color PointBorderColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(15, 23, 42) : Color.White;
+
     public static void Draw(
         Graphics graphics,
         Control canvas,
@@ -26,7 +43,7 @@ public static class Graph3DRenderer
         GraphPlotDensity density)
     {
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        graphics.Clear(Color.White);
+        graphics.Clear(CanvasBackColor);
 
         var plot = GraphGeometry2D.GetPlotRectangle(canvas.ClientRectangle);
         if (plot.Width <= 0 || plot.Height <= 0)
@@ -52,12 +69,12 @@ public static class Graph3DRenderer
 
         if (!string.IsNullOrWhiteSpace(disabledMessage))
         {
-            using var brush = new SolidBrush(Color.DimGray);
+            using var brush = new SolidBrush(MessageTextColor);
             graphics.DrawString(disabledMessage, canvas.Font, brush, plot.Left + 12, plot.Top + 12);
         }
         else if (linePoints.Count == 0)
         {
-            using var brush = new SolidBrush(Color.DimGray);
+            using var brush = new SolidBrush(MessageTextColor);
             graphics.DrawString(emptyMessage, canvas.Font, brush, plot.Left + 12, plot.Top + 12);
         }
     }
@@ -81,12 +98,12 @@ public static class Graph3DRenderer
 
     private static void DrawGrid(Graphics graphics, GraphGridScene3D gridScene, Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
     {
-        using var xyMajorPen = new Pen(Color.FromArgb(198, 213, 234), 0.95f);
-        using var xzMajorPen = new Pen(Color.FromArgb(220, 205, 238), 0.95f);
-        using var yzMajorPen = new Pen(Color.FromArgb(198, 226, 211), 0.95f);
-        using var xyMinorPen = new Pen(Color.FromArgb(233, 239, 248), 0.45f);
-        using var xzMinorPen = new Pen(Color.FromArgb(240, 232, 248), 0.45f);
-        using var yzMinorPen = new Pen(Color.FromArgb(231, 245, 237), 0.45f);
+        using var xyMajorPen = new Pen(XyMajorGridColor, 0.95f);
+        using var xzMajorPen = new Pen(XzMajorGridColor, 0.95f);
+        using var yzMajorPen = new Pen(YzMajorGridColor, 0.95f);
+        using var xyMinorPen = new Pen(XyMinorGridColor, 0.45f);
+        using var xzMinorPen = new Pen(XzMinorGridColor, 0.45f);
+        using var yzMinorPen = new Pen(YzMinorGridColor, 0.45f);
         using var axisGuidePen = CreateAxisGuidePen();
         using var axisPen = CreateAxisPen();
 
@@ -124,8 +141,8 @@ public static class Graph3DRenderer
 
     private static void DrawNeutralGrid(Graphics graphics, GraphGridScene3D gridScene, Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
     {
-        using var majorPen = new Pen(Color.FromArgb(215, 222, 232), 0.85f);
-        using var minorPen = new Pen(Color.FromArgb(240, 244, 248), 0.4f);
+        using var majorPen = new Pen(NeutralMajorGridColor, 0.85f);
+        using var minorPen = new Pen(NeutralMinorGridColor, 0.4f);
         using var axisGuidePen = CreateAxisGuidePen();
         using var axisPen = CreateQuietAxisPen();
 
@@ -146,7 +163,7 @@ public static class Graph3DRenderer
 
     private static Pen CreateAxisPen()
     {
-        return new Pen(Color.FromArgb(48, 56, 68), 1.65f)
+        return new Pen(AxisColor, 1.65f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round
@@ -155,7 +172,7 @@ public static class Graph3DRenderer
 
     private static Pen CreateQuietAxisPen()
     {
-        return new Pen(Color.FromArgb(70, 82, 98), 1.5f)
+        return new Pen(QuietAxisColor, 1.5f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round
@@ -164,7 +181,7 @@ public static class Graph3DRenderer
 
     private static Pen CreateAxisGuidePen()
     {
-        return new Pen(Color.FromArgb(220, 226, 235), 3.3f)
+        return new Pen(AxisGuideColor, 3.3f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round
@@ -231,18 +248,26 @@ public static class Graph3DRenderer
                 isMinimum: false)
         };
 
-        using var minFill = new SolidBrush(Color.FromArgb(coloredGrid ? 25 : 36, 92, 106, 124));
-        using var maxFill = new SolidBrush(Color.FromArgb(coloredGrid ? 10 : 16, 148, 163, 184));
-        using var minOutline = new Pen(Color.FromArgb(coloredGrid ? 165 : 190, 82, 94, 111), coloredGrid ? 1.15f : 1.3f)
+        using var minFill = new SolidBrush(GraphOverlayStyle.UseDarkTheme
+            ? Color.FromArgb(coloredGrid ? 36 : 52, 37, 99, 235)
+            : Color.FromArgb(coloredGrid ? 25 : 36, 92, 106, 124));
+        using var maxFill = new SolidBrush(GraphOverlayStyle.UseDarkTheme
+            ? Color.FromArgb(coloredGrid ? 18 : 28, 148, 163, 184)
+            : Color.FromArgb(coloredGrid ? 10 : 16, 148, 163, 184));
+        using var minOutline = new Pen(GraphOverlayStyle.UseDarkTheme
+            ? Color.FromArgb(coloredGrid ? 180 : 210, 96, 165, 250)
+            : Color.FromArgb(coloredGrid ? 165 : 190, 82, 94, 111), coloredGrid ? 1.15f : 1.3f)
         {
             DashStyle = DashStyle.Dash
         };
-        using var maxOutline = new Pen(Color.FromArgb(coloredGrid ? 100 : 125, 148, 163, 184), 0.9f)
+        using var maxOutline = new Pen(GraphOverlayStyle.UseDarkTheme
+            ? Color.FromArgb(coloredGrid ? 120 : 150, 148, 163, 184)
+            : Color.FromArgb(coloredGrid ? 100 : 125, 148, 163, 184), 0.9f)
         {
             DashStyle = DashStyle.Dot
         };
-        using var minLabelBrush = new SolidBrush(Color.FromArgb(51, 65, 85));
-        using var maxLabelBrush = new SolidBrush(Color.FromArgb(100, 116, 139));
+        using var minLabelBrush = new SolidBrush(GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(51, 65, 85));
+        using var maxLabelBrush = new SolidBrush(GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.FromArgb(100, 116, 139));
         using var labelFont = new Font("Segoe UI", 7f, FontStyle.Regular);
 
         foreach (var field in fields
@@ -316,7 +341,7 @@ public static class Graph3DRenderer
         }
 
         using var pointBrush = new SolidBrush(Color.FromArgb(220, 38, 38));
-        using var pointBorder = new Pen(Color.White, 1.2f);
+        using var pointBorder = new Pen(PointBorderColor, 1.2f);
         foreach (var point in Graph3DApi.ProjectToScreen(Graph3DApi.From2D(highlightPoints, z: 0d), plot, view, camera).Select(p => p.Screen))
         {
             if (!float.IsFinite(point.X) || !float.IsFinite(point.Y))
@@ -330,7 +355,7 @@ public static class Graph3DRenderer
     private static void DrawAxisLabels(Graphics graphics, GraphGridScene3D scene, Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
     {
         using var font = new Font("Segoe UI Semibold", 8f);
-        using var brush = new SolidBrush(Color.FromArgb(51, 65, 85));
+        using var brush = new SolidBrush(AxisLabelColor);
         foreach (var axis in scene.Axes)
         {
             var projected = Graph3DApi.ProjectToScreen(axis.End, plot, view, camera);
@@ -344,7 +369,7 @@ public static class Graph3DRenderer
     private static void DrawNumberLabels(Graphics graphics, GraphGridScene3D scene, Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
     {
         using var font = new Font("Segoe UI", 7f);
-        using var brush = new SolidBrush(Color.FromArgb(71, 85, 105));
+        using var brush = new SolidBrush(NumberLabelColor);
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 
         DrawAxisTickLabels(graphics, scene.GridLines.Where(line => line.Plane == GraphGridPlane3D.XY && line.Direction == GraphAxis3D.Y), value => new GraphPoint3D(value, 0d, 0d), plot, view, camera, font, brush, format, new PointF(0f, 12f));

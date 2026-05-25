@@ -22,6 +22,25 @@ public static class GraphPlotRenderer
     private const double PicoMeter = 1e-12;
     private const double LightYearMeters = 9_460_730_472_580_800d;
     private const double PlanckLengthMeters = 1.616255e-35;
+    private static Color PlotBackColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(10, 18, 32) : Color.White;
+    private static Color AxisColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.FromArgb(38, 38, 38);
+    private static Color MajorGridColor(GraphPlotDensity density) => GraphOverlayStyle.UseDarkTheme
+        ? density == GraphPlotDensity.Compact ? Color.FromArgb(64, 79, 103) : Color.FromArgb(71, 85, 105)
+        : density == GraphPlotDensity.Compact ? Color.FromArgb(185, 194, 206) : Color.FromArgb(176, 186, 199);
+    private static Color MinorGridColor(GraphPlotDensity density) => GraphOverlayStyle.UseDarkTheme
+        ? density == GraphPlotDensity.Compact ? Color.FromArgb(30, 41, 59) : Color.FromArgb(37, 49, 68)
+        : density == GraphPlotDensity.Compact ? Color.FromArgb(234, 240, 248) : Color.FromArgb(229, 236, 246);
+    private static Color AxisTextColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(226, 232, 240) : Color.FromArgb(31, 31, 31);
+    private static Color AxisLabelBackColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(248, 252, 255);
+    private static Color MessageTextColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.DimGray;
+    private static Color RangeLineColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(46, 110, 210);
+    private static Color RangeTextColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(25, 78, 156);
+    private static Color RangeLabelBackColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(248, 252, 255);
+    private static Color RangeLabelBorderColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(59, 130, 246) : Color.FromArgb(196, 216, 246);
+    private static Color DataLineColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(52, 211, 153) : Color.FromArgb(20, 125, 82);
+    private static Color DataTextColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(167, 243, 208) : Color.FromArgb(12, 103, 68);
+    private static Color DataLabelBackColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(10, 30, 28) : Color.FromArgb(248, 255, 251);
+    private static Color DataLabelBorderColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(45, 212, 191) : Color.FromArgb(187, 226, 204);
 
     /// <summary>
     /// Returns the drawable graph rectangle inside a canvas control.
@@ -207,19 +226,19 @@ public static class GraphPlotRenderer
             return;
 
         var plot = GraphGeometry2D.GetPlotRectangle(rect);
-        using var background = new SolidBrush(Color.White);
+        using var background = new SolidBrush(PlotBackColor);
         g.FillRectangle(background, rect);
 
         if (!string.IsNullOrWhiteSpace(disabledMessage))
         {
-            using var brush = new SolidBrush(Color.DimGray);
+            using var brush = new SolidBrush(MessageTextColor);
             g.DrawString(disabledMessage, font, brush, plot.Left + 12, plot.Top + 12);
             return;
         }
 
         if (series.Count == 0 || series.All(line => line.Points.Count == 0))
         {
-            using var brush = new SolidBrush(Color.DimGray);
+            using var brush = new SolidBrush(MessageTextColor);
             g.DrawString(emptyMessage, font, brush, plot.Left + 12, plot.Top + 12);
             return;
         }
@@ -326,15 +345,11 @@ public static class GraphPlotRenderer
         var xCoarseStep = ChooseCoarseStep(plot, view, density, vertical: true);
         var yCoarseStep = ChooseCoarseStep(plot, view, density, vertical: false);
         var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
-        using var axisPen = new Pen(Color.FromArgb(38, 38, 38), 1f * strokeMultiplier);
-        using var majorGridPen = new Pen(
-            density == GraphPlotDensity.Compact ? Color.FromArgb(185, 194, 206) : Color.FromArgb(176, 186, 199),
-            (density == GraphPlotDensity.Compact ? 0.9f : 1.05f) * strokeMultiplier);
-        using var minorGridPen = new Pen(
-            density == GraphPlotDensity.Compact ? Color.FromArgb(234, 240, 248) : Color.FromArgb(229, 236, 246),
-            (density == GraphPlotDensity.Compact ? 0.45f : 0.55f) * strokeMultiplier);
-        using var labelBrush = new SolidBrush(Color.FromArgb(31, 31, 31));
-        using var axisLabelBack = new SolidBrush(Color.FromArgb(248, 252, 255));
+        using var axisPen = new Pen(AxisColor, 1f * strokeMultiplier);
+        using var majorGridPen = new Pen(MajorGridColor(density), (density == GraphPlotDensity.Compact ? 0.9f : 1.05f) * strokeMultiplier);
+        using var minorGridPen = new Pen(MinorGridColor(density), (density == GraphPlotDensity.Compact ? 0.45f : 0.55f) * strokeMultiplier);
+        using var labelBrush = new SolidBrush(AxisTextColor);
+        using var axisLabelBack = new SolidBrush(AxisLabelBackColor);
         using var tickFont = new Font("Segoe UI", density == GraphPlotDensity.Compact ? 7.5f : 8f);
 
         var xFineStep = xCoarseStep / 10d;
@@ -464,13 +479,13 @@ public static class GraphPlotRenderer
         Func<PointF, PointF> map)
     {
         var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
-        using var rangePen = new Pen(Color.FromArgb(46, 110, 210), (density == GraphPlotDensity.Compact ? 0.9f : 1.15f) * strokeMultiplier)
+        using var rangePen = new Pen(RangeLineColor, (density == GraphPlotDensity.Compact ? 0.9f : 1.15f) * strokeMultiplier)
         {
             DashStyle = DashStyle.Dash
         };
-        using var rangeBrush = new SolidBrush(Color.FromArgb(25, 78, 156));
-        using var labelBack = new SolidBrush(Color.FromArgb(248, 252, 255));
-        using var labelBorder = new Pen(Color.FromArgb(196, 216, 246), 1f);
+        using var rangeBrush = new SolidBrush(RangeTextColor);
+        using var labelBack = new SolidBrush(RangeLabelBackColor);
+        using var labelBorder = new Pen(RangeLabelBorderColor, 1f);
 
         if (double.IsFinite(requestedMinX) && double.IsFinite(requestedMaxX))
         {
@@ -530,13 +545,13 @@ public static class GraphPlotRenderer
         var minY = Math.Min(dataMinY, dataMaxY);
         var maxY = Math.Max(dataMinY, dataMaxY);
         var strokeMultiplier = SmallScaleStrokeMultiplier(view, density);
-        using var dataPen = new Pen(Color.FromArgb(20, 125, 82), (density == GraphPlotDensity.Compact ? 0.9f : 1.15f) * strokeMultiplier)
+        using var dataPen = new Pen(DataLineColor, (density == GraphPlotDensity.Compact ? 0.9f : 1.15f) * strokeMultiplier)
         {
             DashStyle = DashStyle.DashDot
         };
-        using var dataBrush = new SolidBrush(Color.FromArgb(12, 103, 68));
-        using var labelBack = new SolidBrush(Color.FromArgb(248, 255, 251));
-        using var labelBorder = new Pen(Color.FromArgb(187, 226, 204), 1f);
+        using var dataBrush = new SolidBrush(DataTextColor);
+        using var labelBack = new SolidBrush(DataLabelBackColor);
+        using var labelBorder = new Pen(DataLabelBorderColor, 1f);
 
         if (Math.Abs(maxY - minY) < 0.000001f)
         {
@@ -709,15 +724,19 @@ public static class GraphPlotRenderer
             return;
 
         var planckScale = scale <= PlanckLengthMeters * 10f;
-        using var brush = new SolidBrush(planckScale
-            ? Color.FromArgb(density == GraphPlotDensity.Compact ? 34 : 42, 235, 240, 255)
-            : Color.FromArgb(density == GraphPlotDensity.Compact ? 18 : 24, 238, 250, 255));
+        using var brush = new SolidBrush(GraphOverlayStyle.UseDarkTheme
+            ? planckScale
+                ? Color.FromArgb(density == GraphPlotDensity.Compact ? 60 : 78, 30, 58, 138)
+                : Color.FromArgb(density == GraphPlotDensity.Compact ? 40 : 54, 30, 41, 59)
+            : planckScale
+                ? Color.FromArgb(density == GraphPlotDensity.Compact ? 34 : 42, 235, 240, 255)
+                : Color.FromArgb(density == GraphPlotDensity.Compact ? 18 : 24, 238, 250, 255));
         g.FillRectangle(brush, plot);
 
         var text = planckScale ? "Planck-minimum 1 lP" : "Subatomaire schaal";
-        using var textBrush = new SolidBrush(Color.FromArgb(45, 67, 95));
-        using var backBrush = new SolidBrush(Color.FromArgb(238, 247, 255));
-        using var borderPen = new Pen(Color.FromArgb(184, 207, 232), 1f);
+        using var textBrush = new SolidBrush(GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(45, 67, 95));
+        using var backBrush = new SolidBrush(GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(238, 247, 255));
+        using var borderPen = new Pen(GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(59, 130, 246) : Color.FromArgb(184, 207, 232), 1f);
         using var font = new Font("Segoe UI", density == GraphPlotDensity.Compact ? 7f : 8f, FontStyle.Regular);
         DrawCornerLabel(g, text, font, textBrush, backBrush, borderPen, plot);
     }

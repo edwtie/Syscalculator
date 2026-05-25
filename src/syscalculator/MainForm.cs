@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using Microsoft.Web.WebView2.Core;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using Tiedragon.Help;
@@ -13,6 +14,12 @@ namespace Syscalculator.UI.WinForms;
 public sealed class MainForm : Form
 {
     private const int PowerResumeQuietMs = 1600;
+    private static readonly Color DarkWindowBackColor = Color.FromArgb(18, 24, 32);
+    private static readonly Color DarkPanelBackColor = Color.FromArgb(31, 41, 55);
+    private static readonly Color DarkEditorBackColor = Color.FromArgb(39, 39, 39);
+    private static readonly Color DarkEditorTextColor = Color.FromArgb(226, 232, 240);
+    private static readonly Color DarkMutedTextColor = Color.FromArgb(148, 163, 184);
+    private static readonly Color DarkBorderColor = Color.FromArgb(55, 65, 81);
 
     // Zoek/commentaar: Type-overzicht: class ModernToolbarRenderer bevat de hoofdlogica/data voor dit onderdeel.
     private sealed class ModernToolbarRenderer : ToolStripProfessionalRenderer
@@ -109,15 +116,32 @@ public sealed class MainForm : Form
     private ToolStripMenuItem? _automaticUpdateCheckMenuItem;
     private ToolStripMenuItem? _dailyUpdateChannelMenuItem;
     private ToolStripMenuItem? _betaUpdateChannelMenuItem;
+    private ToolStripMenuItem? _darkThemeMenuItem;
+    private ToolStripMenuItem? _classicThemeMenuItem;
+    private ToolEditorUiTheme _uiTheme;
     private bool _updatingText;
     private int _defaultDecimals;
 
     private readonly string? _startupNodPath;
     private readonly bool _startInTray;
 
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? DarkWindowBackColor : Color.FromArgb(236, 236, 236);
+    private Color PanelBackColor => IsDarkTheme ? DarkPanelBackColor : Color.FromArgb(246, 246, 246);
+    private Color MenuBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(242, 242, 242);
+    private Color BodyBackColor => IsDarkTheme ? Color.FromArgb(24, 24, 24) : Color.FromArgb(236, 236, 236);
+    private Color EditorBackColor => IsDarkTheme ? DarkEditorBackColor : SystemColors.Window;
+    private Color EditorTextColor => IsDarkTheme ? DarkEditorTextColor : SystemColors.ControlText;
+    private Color MutedTextColor => IsDarkTheme ? DarkMutedTextColor : Color.FromArgb(120, 120, 120);
+    private Color ButtonHoverBackColor => IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(230, 238, 248);
+    private Color ButtonDownBackColor => IsDarkTheme ? Color.FromArgb(30, 64, 175) : Color.FromArgb(214, 228, 246);
+    private CoreWebView2PreferredColorScheme PreferredWebViewColorScheme =>
+        IsDarkTheme ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light;
+
     // Zoek/commentaar: Constructor: maakt en initialiseert MainForm.
     public MainForm(string? startupNodPath = null, bool startInTray = false)
     {
+        _uiTheme = ToolEditorUiThemeSettings.Load();
         _startupNodPath = startupNodPath;
         _startInTray = startInTray;
 
@@ -130,7 +154,7 @@ public sealed class MainForm : Form
         MinimumSize = new Size(Width, Height);
         MaximumSize = new Size(Width, Height);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.FromArgb(236, 236, 236);
+        BackColor = WindowBackColor;
 
         _englishLanguage = LanguageCatalog.Load(AppContext.BaseDirectory, "eng.lng");
         _catalogService = new NodCatalogService(AppContext.BaseDirectory);
@@ -156,6 +180,8 @@ public sealed class MainForm : Form
 
         BuildMenu();
         BuildLayout();
+        ApplyMainTheme();
+        ToolEditorUiThemeSettings.ThemeChanged += ToolEditorThemeChanged;
         BuildTray();
         LoadCatalog();
         LoadStartupNodIfNeeded();
@@ -170,7 +196,8 @@ public sealed class MainForm : Form
         var menu = new MenuStrip
         {
             Dock = DockStyle.Top,
-            BackColor = Color.FromArgb(242, 242, 242)
+            BackColor = MenuBackColor,
+            ForeColor = EditorTextColor
         };
 
         var file = new ToolStripMenuItem(T("menu.file", "File"));
@@ -375,6 +402,13 @@ public sealed class MainForm : Form
         updateChannelMenu.DropDownItems.Add(_betaUpdateChannelMenuItem);
         config.DropDownItems.Add(updateChannelMenu);
         config.DropDownItems.Add(new ToolStripSeparator());
+        var themeMenu = new ToolStripMenuItem(T("tool_editor.menu.extra.theme", "Theme"));
+        _darkThemeMenuItem = CreateThemeMenuItem(T("tool_editor.menu.extra.theme.dark", "Dark"), ToolEditorUiTheme.Dark);
+        _classicThemeMenuItem = CreateThemeMenuItem(T("tool_editor.menu.extra.theme.classic", "Classic"), ToolEditorUiTheme.Classic);
+        themeMenu.DropDownItems.Add(_darkThemeMenuItem);
+        themeMenu.DropDownItems.Add(_classicThemeMenuItem);
+        config.DropDownItems.Add(themeMenu);
+        config.DropDownItems.Add(new ToolStripSeparator());
         config.DropDownItems.Add(T("menu.config.catalog_manager", "Catalog manager"), null, CatalogManager_Click);
 
         var tools = new ToolStripMenuItem(T("menu.tools", "Tools"));
@@ -408,6 +442,186 @@ public sealed class MainForm : Form
         MainMenuStrip = menu;
         Controls.Add(menu);
         menu.BringToFront();
+    }
+
+    private ToolStripMenuItem CreateThemeMenuItem(string text, ToolEditorUiTheme theme)
+    {
+        var item = new ToolStripMenuItem(text)
+        {
+            Checked = _uiTheme == theme,
+            CheckOnClick = false
+        };
+        item.Click += (_, _) => ApplyAndSaveTheme(theme);
+        return item;
+    }
+
+    private void ApplyAndSaveTheme(ToolEditorUiTheme theme)
+    {
+        if (_uiTheme == theme)
+            return;
+
+        _uiTheme = theme;
+        ToolEditorUiThemeSettings.Save(theme);
+        ToolEditorUiThemeSettings.ApplyApplicationColorMode(theme);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, theme);
+        ApplyMainTheme();
+        UpdateThemeMenuChecks();
+        SetStatus(T("tool_editor.theme.saved", "Theme saved."));
+    }
+
+    internal void ApplySharedTheme(ToolEditorUiTheme theme)
+    {
+        if (_uiTheme == theme)
+            return;
+
+        _uiTheme = theme;
+        ToolEditorUiThemeSettings.ApplyApplicationColorMode(theme);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, theme);
+        ApplyMainTheme();
+        UpdateThemeMenuChecks();
+    }
+
+    private void ToolEditorThemeChanged(ToolEditorUiTheme theme)
+    {
+        if (IsDisposed || Disposing)
+            return;
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => ToolEditorThemeChanged(theme)));
+            return;
+        }
+
+        ApplySharedTheme(theme);
+    }
+
+    private void UpdateThemeMenuChecks()
+    {
+        if (_darkThemeMenuItem is not null)
+            _darkThemeMenuItem.Checked = _uiTheme == ToolEditorUiTheme.Dark;
+        if (_classicThemeMenuItem is not null)
+            _classicThemeMenuItem.Checked = _uiTheme == ToolEditorUiTheme.Classic;
+    }
+
+    private void ApplyMainTheme()
+    {
+        BackColor = WindowBackColor;
+        ApplyThemeToControl(this);
+        ApplyThemeToToolStrip(MainMenuStrip);
+        ApplyThemeToToolStrip(_statusStrip);
+        if (_statusLabel is not null)
+            _statusLabel.ForeColor = EditorTextColor;
+        if (_toolbarFileLabel is not null)
+            _toolbarFileLabel.ForeColor = EditorTextColor;
+        if (_converterCombo is not null)
+        {
+            _converterCombo.BackColor = EditorBackColor;
+            _converterCombo.ForeColor = EditorTextColor;
+        }
+        if (_inputTextBox is not null)
+        {
+            _inputTextBox.BackColor = EditorBackColor;
+            _inputTextBox.ForeColor = EditorTextColor;
+        }
+        if (_outputTextBox is not null)
+        {
+            _outputTextBox.BackColor = EditorBackColor;
+            _outputTextBox.ForeColor = EditorTextColor;
+        }
+        if (_decimalsUpDown is not null)
+        {
+            _decimalsUpDown.BackColor = EditorBackColor;
+            _decimalsUpDown.ForeColor = EditorTextColor;
+        }
+
+        foreach (var button in Controls.OfType<Control>().SelectMany(DescendantControls).OfType<Button>())
+        {
+            button.BackColor = PanelBackColor;
+            button.ForeColor = EditorTextColor;
+            button.FlatAppearance.BorderColor = IsDarkTheme ? DarkBorderColor : Color.FromArgb(246, 246, 246);
+            button.FlatAppearance.MouseOverBackColor = ButtonHoverBackColor;
+            button.FlatAppearance.MouseDownBackColor = ButtonDownBackColor;
+        }
+    }
+
+    private IEnumerable<Control> DescendantControls(Control control)
+    {
+        foreach (Control child in control.Controls)
+        {
+            yield return child;
+            foreach (var grandChild in DescendantControls(child))
+                yield return grandChild;
+        }
+    }
+
+    private void ApplyThemeToControl(Control control)
+    {
+        if (control is MenuStrip or StatusStrip)
+        {
+            control.BackColor = MenuBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+        else if (control is TextBox or ComboBox or NumericUpDown)
+        {
+            control.BackColor = EditorBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+        else if (control is CheckBox checkBox)
+        {
+            checkBox.BackColor = BodyBackColor;
+            checkBox.ForeColor = checkBox.Enabled ? EditorTextColor : MutedTextColor;
+            checkBox.UseVisualStyleBackColor = false;
+        }
+        else if (control is RadioButton radioButton)
+        {
+            radioButton.BackColor = BodyBackColor;
+            radioButton.ForeColor = EditorTextColor;
+            radioButton.UseVisualStyleBackColor = false;
+        }
+        else if (control is Label)
+        {
+            control.ForeColor = EditorTextColor;
+            if (control.BackColor != Color.Transparent)
+                control.BackColor = BodyBackColor;
+        }
+        else if (control is TableLayoutPanel or FlowLayoutPanel)
+        {
+            control.BackColor = control == _toolbarStrip ? PanelBackColor : BodyBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+        else if (control is Panel)
+        {
+            control.BackColor = PanelBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyThemeToControl(child);
+    }
+
+    private void ApplyThemeToToolStrip(ToolStrip? toolStrip)
+    {
+        if (toolStrip is null)
+            return;
+
+        toolStrip.BackColor = MenuBackColor;
+        toolStrip.ForeColor = EditorTextColor;
+        foreach (ToolStripItem item in toolStrip.Items)
+            ApplyThemeToToolStripItem(item);
+    }
+
+    private void ApplyThemeToToolStripItem(ToolStripItem item)
+    {
+        item.BackColor = MenuBackColor;
+        item.ForeColor = EditorTextColor;
+
+        if (item is ToolStripDropDownItem dropDown)
+        {
+            dropDown.DropDown.BackColor = MenuBackColor;
+            dropDown.DropDown.ForeColor = EditorTextColor;
+            foreach (ToolStripItem child in dropDown.DropDownItems)
+                ApplyThemeToToolStripItem(child);
+        }
     }
 
     private TextBox GetActiveEditTextBox()
@@ -632,6 +846,12 @@ public sealed class MainForm : Form
         protected override bool ShowFocusCues => false;
     }
 
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
+    }
+
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildLayout.
     private void BuildLayout()
     {
@@ -641,7 +861,7 @@ public sealed class MainForm : Form
             RowCount = 4,
             ColumnCount = 1,
             Padding = new Padding(8, 4, 8, 0),
-            BackColor = Color.FromArgb(236, 236, 236)
+            BackColor = BodyBackColor
         };
 
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));  // toolbar model
@@ -661,7 +881,9 @@ public sealed class MainForm : Form
         _statusStrip = new StatusStrip
         {
             Dock = DockStyle.Bottom,
-            SizingGrip = true
+            SizingGrip = true,
+            BackColor = MenuBackColor,
+            ForeColor = EditorTextColor
         };
         _statusLabel = new ToolStripStatusLabel(T("status.ready", "Ready"));
         _statusStrip.Items.Add(_statusLabel);
@@ -677,14 +899,14 @@ public sealed class MainForm : Form
         {
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.None,
-            BackColor = Color.FromArgb(246, 246, 246),
+            BackColor = PanelBackColor,
             Padding = new Padding(10, 10, 10, 2)
         };
 
         var strip = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(246, 246, 246),
+            BackColor = PanelBackColor,
             ColumnCount = 7,
             RowCount = 1,
             Margin = new Padding(0),
@@ -725,6 +947,7 @@ public sealed class MainForm : Form
             Width = fileLabelWidth,
             Anchor = AnchorStyles.Left | AnchorStyles.Right,
             Margin = new Padding(0),
+            ForeColor = EditorTextColor,
             TextAlign = ContentAlignment.MiddleLeft
         };
 
@@ -735,7 +958,9 @@ public sealed class MainForm : Form
             DropDownStyle = ComboBoxStyle.DropDownList,
             Width = Math.Max(120, comboColumnWidth - 6),
             Anchor = AnchorStyles.Left,
-            Margin = new Padding(0)
+            Margin = new Padding(0),
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
         _converterCombo.SelectedIndexChanged += ConverterCombo_SelectedIndexChanged;
         strip.Controls.Add(_converterCombo, 5, 0);
@@ -756,14 +981,15 @@ public sealed class MainForm : Form
             FlatStyle = FlatStyle.Flat,
             Image = CreateMainToolbarImage(icon),
             Text = "",
-            BackColor = Color.FromArgb(246, 246, 246),
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor,
             Cursor = Cursors.Hand,
             TabStop = false
         };
         button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.BorderColor = Color.FromArgb(246, 246, 246);
-        button.FlatAppearance.MouseOverBackColor = Color.FromArgb(230, 238, 248);
-        button.FlatAppearance.MouseDownBackColor = Color.FromArgb(214, 228, 246);
+        button.FlatAppearance.BorderColor = IsDarkTheme ? DarkBorderColor : Color.FromArgb(246, 246, 246);
+        button.FlatAppearance.MouseOverBackColor = ButtonHoverBackColor;
+        button.FlatAppearance.MouseDownBackColor = ButtonDownBackColor;
         button.Click += click;
 
         return button;
@@ -778,7 +1004,7 @@ public sealed class MainForm : Form
             ColumnCount = 5,
             RowCount = 5,
             Padding = new Padding(16, 6, 20, 0),
-            BackColor = Color.FromArgb(236, 236, 236)
+            BackColor = BodyBackColor
         };
 
         _converterBody = body;
@@ -797,8 +1023,8 @@ public sealed class MainForm : Form
         _inputLabel = CreateClassicLabel("Input 1");
         _outputLabel = CreateClassicLabel("Input 2");
 
-        _inputRadio = new RadioButton { Checked = true, Anchor = AnchorStyles.Left };
-        _outputRadio = new RadioButton { Anchor = AnchorStyles.Left };
+        _inputRadio = new RadioButton { Checked = true, Anchor = AnchorStyles.Left, BackColor = BodyBackColor, ForeColor = EditorTextColor, UseVisualStyleBackColor = false };
+        _outputRadio = new RadioButton { Anchor = AnchorStyles.Left, BackColor = BodyBackColor, ForeColor = EditorTextColor, UseVisualStyleBackColor = false };
 
         _inputRadio.CheckedChanged += (_, _) =>
         {
@@ -875,14 +1101,17 @@ public sealed class MainForm : Form
             WrapContents = false,
             FlowDirection = FlowDirection.LeftToRight,
             Padding = new Padding(8, 0, 0, 0),
-            BackColor = Color.FromArgb(236, 236, 236)
+            BackColor = BodyBackColor
         };
 
         _digitGroupCheckBox = new CheckBox
         {
             Text = T("option.digit_group", "Digit group"),
             AutoSize = true,
-            Margin = new Padding(0, 6, 90, 0)
+            Margin = new Padding(0, 6, 90, 0),
+            BackColor = BodyBackColor,
+            ForeColor = EditorTextColor,
+            UseVisualStyleBackColor = false
         };
         _digitGroupCheckBox.CheckedChanged += (_, _) => RefreshFormattedValues();
 
@@ -890,7 +1119,10 @@ public sealed class MainForm : Form
         {
             Text = T("option.decimals", "Decimals"),
             AutoSize = true,
-            Margin = new Padding(0, 6, 8, 0)
+            Margin = new Padding(0, 6, 8, 0),
+            BackColor = BodyBackColor,
+            ForeColor = EditorTextColor,
+            UseVisualStyleBackColor = false
         };
         _decimalsCheckBox.CheckedChanged += (_, _) =>
         {
@@ -904,7 +1136,9 @@ public sealed class MainForm : Form
             Minimum = 0,
             Maximum = 8,
             Enabled = false,
-            Margin = new Padding(0, 3, 16, 0)
+            Margin = new Padding(0, 3, 16, 0),
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
         _decimalsUpDown.ValueChanged += (_, _) => RefreshFormattedValues();
 
@@ -913,6 +1147,9 @@ public sealed class MainForm : Form
             Text = T("option.live_convert", "Live convert"),
             AutoSize = true,
             Checked = _liveConvertEnabled,
+            BackColor = BodyBackColor,
+            ForeColor = EditorTextColor,
+            UseVisualStyleBackColor = false,
             Visible = false
         };
 
@@ -925,20 +1162,21 @@ public sealed class MainForm : Form
     }
 
     // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateClassicLabel.
-    private static Label CreateClassicLabel(string text)
+    private Label CreateClassicLabel(string text)
     {
         return new Label
         {
             Text = text,
             AutoSize = true,
             Anchor = AnchorStyles.Left,
-            ForeColor = Color.Black,
+            ForeColor = EditorTextColor,
+            BackColor = BodyBackColor,
             Font = new Font("Segoe UI", 9, FontStyle.Regular)
         };
     }
 
     // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateSymbolLabel.
-    private static Label CreateSymbolLabel()
+    private Label CreateSymbolLabel()
     {
         return new Label
         {
@@ -946,18 +1184,22 @@ public sealed class MainForm : Form
             AutoSize = false,
             Anchor = AnchorStyles.Left,
             TextAlign = ContentAlignment.MiddleLeft,
+            ForeColor = MutedTextColor,
+            BackColor = BodyBackColor,
             Margin = new Padding(0)
         };
     }
 
     // Zoek/commentaar: Maakt een nieuw object of hulponderdeel voor CreateClassicTextBox.
-    private static TextBox CreateClassicTextBox()
+    private TextBox CreateClassicTextBox()
     {
         return new TextBox
         {
             Width = 220,
             Anchor = AnchorStyles.Left,
-            TextAlign = HorizontalAlignment.Left
+            TextAlign = HorizontalAlignment.Left,
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
     }
 
@@ -1006,6 +1248,7 @@ public sealed class MainForm : Form
         };
 
         textBox.ContextMenuStrip = menu;
+        ApplyThemeToToolStrip(menu);
     }
 
     private static bool UsesImeInputLanguage()
@@ -1155,6 +1398,7 @@ public sealed class MainForm : Form
 
         _notifyIcon.ContextMenuStrip = _trayMenu;
         _notifyIcon.Text = BuildTrayText();
+        ApplyThemeToToolStrip(_trayMenu);
     }
     // Zoek/commentaar: Type-overzicht: enum MainToolbarIcon bevat de hoofdlogica/data voor dit onderdeel.
     private enum MainToolbarIcon
@@ -1965,7 +2209,13 @@ public sealed class MainForm : Form
             T("help.main.title", "Syscalculator help"),
             BuildMainHelpPages(),
             SelectedPageId: "intro",
-            Navigation: GetHelpNavigationLabels()));
+            Navigation: GetHelpNavigationLabels(),
+            PreferredColorScheme: PreferredWebViewColorScheme,
+            ShowSignedPackageBadge: BuildCurrentLanguageSignedPackageInformation() is not null,
+            SignedPackageBadgeText: CurrentLanguagePackageIsSigned()
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            SignedPackageInformation: BuildCurrentLanguageSignedPackageInformation()));
     }
 
     private void Feedback_Click(object? sender, EventArgs e)
@@ -1995,12 +2245,10 @@ public sealed class MainForm : Form
                 SetStatus(T("update.none_status", "Syscalculator is up to date."));
                 if (showNoUpdateMessage)
                 {
-                    MessageBox.Show(
-                        this,
-                        T("update.none", "You already have the latest version for this channel."),
+                    ShowThemedInfoDialog(
                         T("update.title", "Syscalculator update"),
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                        T("update.none", "You already have the latest version for this channel."),
+                        SystemIcons.Information);
                 }
 
                 return;
@@ -2016,12 +2264,10 @@ public sealed class MainForm : Form
             SetStatus(T("update.failed_status", "Update check failed."));
             if (showNoUpdateMessage)
             {
-                MessageBox.Show(
-                    this,
-                    string.Format(NormalizeUpdateDialogText(T("update.failed", "Could not check for updates.\n\n{0}")), ex.Message),
+                ShowThemedInfoDialog(
                     T("update.title", "Syscalculator update"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
+                    string.Format(NormalizeUpdateDialogText(T("update.failed", "Could not check for updates.\n\n{0}")), ex.Message),
+                    SystemIcons.Warning);
             }
         }
     }
@@ -2057,12 +2303,10 @@ public sealed class MainForm : Form
             date,
             summary);
 
-        var answer = MessageBox.Show(
-            this,
-            message,
+        var answer = ShowThemedQuestionDialog(
             T("update.title", "Syscalculator update"),
-            MessageBoxButtons.YesNo,
-            MessageBoxIcon.Information);
+            message,
+            SystemIcons.Information);
 
         if (answer == DialogResult.Yes)
             StartAvailableUpdate(update);
@@ -2117,6 +2361,59 @@ public sealed class MainForm : Form
             T("help.nav.home", "Home"),
             T("help.nav.previous", "Previous"),
             T("help.nav.next", "Next"));
+    }
+
+    private bool CurrentLanguagePackageIsSigned()
+    {
+        return LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(language => language.Matches(_language.FileName, _language.PackageId))
+            ?.Signed == true;
+    }
+
+    private HelpSignedPackageInformation? BuildCurrentLanguageSignedPackageInformation()
+    {
+        var language = LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(item => item.Matches(_language.FileName, _language.PackageId));
+        if (language is null)
+            return null;
+
+        var signed = language.Signed;
+        var code = string.IsNullOrWhiteSpace(language.LanguageCode)
+            ? Path.GetFileNameWithoutExtension(language.FileName)
+            : language.LanguageCode;
+        var author = string.IsNullOrWhiteSpace(language.Producer)
+            ? T("dialog.language.info.local_author", "Local file")
+            : language.Producer;
+        var product = string.IsNullOrWhiteSpace(language.Product) ? "Syscalculator" : language.Product;
+        var packageId = string.IsNullOrWhiteSpace(language.PackageId) ? "-" : language.PackageId;
+        var version = string.IsNullOrWhiteSpace(language.PackageVersion) ? "-" : language.PackageVersion;
+        var algorithm = string.IsNullOrWhiteSpace(language.SignatureAlgorithm) ? "-" : language.SignatureAlgorithm;
+        var keyId = string.IsNullOrWhiteSpace(language.SignatureKeyId) ? "-" : language.SignatureKeyId;
+        var keySha256 = string.IsNullOrWhiteSpace(language.SignatureKeySha256) ? "-" : language.SignatureKeySha256;
+
+        return new HelpSignedPackageInformation(
+            T("dialog.language.info.title", "Language information"),
+            language.DisplayName,
+            signed
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            [
+                new(T("dialog.language.info.name", "Language"), language.DisplayName),
+                new(T("dialog.language.info.code", "Code"), code),
+                new(T("dialog.language.info.author", "Author"), author),
+                new(T("dialog.language.info.product", "Product"), product),
+                new(T("dialog.language.info.package", "Package"), packageId),
+                new(T("dialog.language.info.file", "File"), language.FileName),
+                new(T("dialog.language.info.version", "Version"), version),
+                new(T("dialog.language.info.signed", "Signed"), signed ? T("common.yes", "Yes") : T("common.no", "No")),
+                new(T("dialog.language.info.algorithm", "Algorithm"), algorithm),
+                new(T("dialog.language.info.key", "Key"), keyId),
+                new("SHA-256", keySha256)
+            ],
+            signed
+                ? T("help.signed_package_tip", "This help comes from a verified signed language package.")
+                : T("help.unsigned_language_tip", "This help comes from a loose language file and is not signed."),
+            signed);
     }
 
     private IReadOnlyList<NodHelpPage> BuildMainHelpPages()
@@ -2174,7 +2471,52 @@ public sealed class MainForm : Form
 
     private string WrapMainHelpPage(string title, string body)
     {
-        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapTopicPage(title, body, HelpApi.MainHelpCss()));
+        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapTopicPage(title, body, MainHelpCss()));
+    }
+
+    private string MainHelpCss()
+    {
+        return HelpApi.MainHelpCss() + Environment.NewLine + MainHelpThemeCss();
+    }
+
+    private string MainHelpThemeCss()
+    {
+        if (!IsDarkTheme)
+            return "";
+
+        return """
+        :root { color-scheme: dark; }
+        html, body { background:#111827 !important; color:#e5e7eb !important; }
+        body { background:linear-gradient(180deg,#111827 0,#0f172a 140px) !important; }
+        h1, h2, h3, b { color:#93c5fd !important; }
+        h2 { border-bottom-color:#334155 !important; }
+        p, li, td { color:#d1d5db !important; }
+        a { color:#bfdbfe !important; }
+        code, pre {
+          background:#1f2937 !important; border-color:#374151 !important; color:#bfdbfe !important;
+        }
+        pre { background:#020617 !important; color:#e5e7eb !important; }
+        table, details, .example-card, .topic-link, .math-card, .formula-card, .graph-card {
+          background:#111827 !important; border-color:#334155 !important; box-shadow:none !important;
+        }
+        th, summary { background:#1e293b !important; color:#bfdbfe !important; border-color:#334155 !important; }
+        td { border-color:#334155 !important; }
+        tr:nth-child(even) td { background:#0f172a !important; }
+        .notice, .help-info, .help-tip {
+          background:#172554 !important; border-color:#2563eb !important; color:#dbeafe !important;
+        }
+        .warning, .warning-sign {
+          background:#3b1d0a !important; border-color:#b45309 !important; color:#fed7aa !important;
+        }
+        .screenshot-frame, .image-preview {
+          background:#0f172a !important; border-color:#334155 !important; box-shadow:none !important;
+        }
+        .image-preview img { background:#111827 !important; box-shadow:0 8px 24px rgba(0,0,0,.45) !important; }
+        .media-meta, .shot-caption, .muted { color:#9ca3af !important; }
+        ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background:#111827 !important; }
+        ::-webkit-scrollbar-thumb { background:#4b5563 !important; border-color:#111827 !important; }
+        ::selection { background:#2563eb; color:#ffffff; }
+        """;
     }
 
     private string BuildHelpImageTag(string fileName, string altText)
@@ -2190,13 +2532,179 @@ public sealed class MainForm : Form
 
         if (_currentMeta.IntroLines.Count == 0)
         {
-            MessageBox.Show(this, T("dialog.no_intro", "This converter has no introduction text."), T("dialog.intro_title", "Introduction"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            ShowThemedInfoDialog(
+                T("dialog.intro_title", "Introduction"),
+                T("dialog.no_intro", "This converter has no introduction text."));
             return;
         }
 
         var title = string.IsNullOrWhiteSpace(_currentMeta.Urln) ? _currentMeta.Name : _currentMeta.Urln;
         using var dialog = new IntroDialogForm(title, _currentMeta.IntroLines);
         ShowOwnedDialog(dialog);
+    }
+
+    private void ShowThemedInfoDialog(string title, string message)
+    {
+        ShowThemedInfoDialog(title, message, SystemIcons.Information);
+    }
+
+    private void ShowThemedInfoDialog(string title, string message, Icon icon)
+    {
+        using var dialog = new Form
+        {
+            Text = title,
+            Width = 318,
+            Height = 152,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowInTaskbar = false,
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor,
+            TopMost = TopMost
+        };
+        AppWindowIcon.ApplyTo(dialog);
+        dialog.HandleCreated += (_, _) => ToolEditorUiThemeSettings.ApplyNativeWindowTheme(dialog, _uiTheme);
+
+        var content = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 2,
+            Padding = new Padding(18, 18, 16, 12),
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor
+        };
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 42));
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+
+        var picture = new PictureBox
+        {
+            Width = 32,
+            Height = 32,
+            SizeMode = PictureBoxSizeMode.CenterImage,
+            Image = icon.ToBitmap(),
+            Margin = new Padding(0, 4, 10, 0)
+        };
+        var text = new Label
+        {
+            Text = message,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor,
+            AutoEllipsis = true
+        };
+        var ok = new Button
+        {
+            Text = "OK",
+            DialogResult = DialogResult.OK,
+            Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+            Width = 84,
+            Height = 28,
+            BackColor = IsDarkTheme ? Color.FromArgb(37, 99, 235) : SystemColors.Control,
+            ForeColor = IsDarkTheme ? Color.White : SystemColors.ControlText,
+            UseVisualStyleBackColor = false
+        };
+
+        content.Controls.Add(picture, 0, 0);
+        content.Controls.Add(text, 1, 0);
+        content.Controls.Add(ok, 1, 1);
+        dialog.Controls.Add(content);
+        dialog.AcceptButton = ok;
+        dialog.CancelButton = ok;
+
+        ShowOwnedDialog(dialog);
+    }
+
+    private DialogResult ShowThemedQuestionDialog(string title, string message, Icon icon)
+    {
+        using var dialog = new Form
+        {
+            Text = title,
+            Width = 420,
+            Height = 220,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowInTaskbar = false,
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor,
+            TopMost = TopMost
+        };
+        AppWindowIcon.ApplyTo(dialog);
+        dialog.HandleCreated += (_, _) => ToolEditorUiThemeSettings.ApplyNativeWindowTheme(dialog, _uiTheme);
+
+        var content = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 2,
+            Padding = new Padding(18, 18, 16, 12),
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor
+        };
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 42));
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+
+        var picture = new PictureBox
+        {
+            Width = 32,
+            Height = 32,
+            SizeMode = PictureBoxSizeMode.CenterImage,
+            Image = icon.ToBitmap(),
+            Margin = new Padding(0, 4, 10, 0)
+        };
+        var text = new Label
+        {
+            Text = message,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor,
+            AutoEllipsis = true
+        };
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            BackColor = WindowBackColor,
+            WrapContents = false
+        };
+        var yes = CreateThemedDialogButton(T("common.yes", "Yes"), DialogResult.Yes);
+        var no = CreateThemedDialogButton(T("common.no", "No"), DialogResult.No);
+        buttons.Controls.Add(yes);
+        buttons.Controls.Add(no);
+
+        content.Controls.Add(picture, 0, 0);
+        content.Controls.Add(text, 1, 0);
+        content.Controls.Add(buttons, 1, 1);
+        dialog.Controls.Add(content);
+        dialog.AcceptButton = yes;
+        dialog.CancelButton = no;
+
+        return ShowOwnedDialog(dialog);
+    }
+
+    private Button CreateThemedDialogButton(string text, DialogResult result)
+    {
+        return new Button
+        {
+            Text = text,
+            DialogResult = result,
+            Width = 84,
+            Height = 28,
+            Margin = new Padding(8, 6, 0, 0),
+            BackColor = IsDarkTheme ? Color.FromArgb(37, 99, 235) : SystemColors.Control,
+            ForeColor = IsDarkTheme ? Color.White : SystemColors.ControlText,
+            UseVisualStyleBackColor = false
+        };
     }
 
     // Zoek/commentaar: Toont een venster, melding of detailweergave voor ShowIntroIfNeeded.
@@ -2358,6 +2866,7 @@ public sealed class MainForm : Form
     {
         if (disposing)
         {
+            ToolEditorUiThemeSettings.ThemeChanged -= ToolEditorThemeChanged;
             SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
             _liveConvertTimer.Dispose();
             _notifyIcon?.Dispose();

@@ -1,3 +1,5 @@
+using Tiedragon.ToolEditor;
+
 namespace Syscalculator.UI.WinForms;
 
 /// <summary>
@@ -7,23 +9,47 @@ public sealed class CatalogManagerForm : Form
 {
     private readonly NodCatalogService _service;
     private readonly LanguageCatalog _language;
+    private readonly ToolEditorUiTheme _uiTheme;
     private readonly BindingSource _binding = new();
     private DataGridView _grid = null!;
+
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? Color.FromArgb(32, 32, 32) : SystemColors.Control;
+    private Color PanelBackColor => IsDarkTheme ? Color.FromArgb(32, 32, 32) : SystemColors.Control;
+    private Color TextColor => IsDarkTheme ? Color.White : SystemColors.ControlText;
+    private Color MutedTextColor => IsDarkTheme ? Color.FromArgb(210, 220, 236) : SystemColors.ControlText;
+    private Color BorderColor => IsDarkTheme ? Color.FromArgb(75, 85, 99) : SystemColors.ControlDark;
+    private Color GridBackColor => IsDarkTheme ? Color.FromArgb(38, 38, 38) : SystemColors.Window;
+    private Color GridAlternateBackColor => IsDarkTheme ? Color.FromArgb(45, 45, 45) : Color.FromArgb(248, 250, 252);
+    private Color GridHeaderBackColor => IsDarkTheme ? Color.FromArgb(48, 48, 48) : SystemColors.Control;
+    private Color GridSelectionBackColor => IsDarkTheme ? Color.FromArgb(37, 99, 235) : SystemColors.Highlight;
+    private Color ButtonBackColor => IsDarkTheme ? Color.FromArgb(45, 45, 45) : SystemColors.Control;
+    private Color ButtonHoverBackColor => IsDarkTheme ? Color.FromArgb(55, 65, 81) : SystemColors.ControlLight;
+    private Color ButtonDownBackColor => IsDarkTheme ? Color.FromArgb(31, 41, 55) : SystemColors.ControlDark;
 
     // Zoek/commentaar: Constructor: maakt en initialiseert CatalogManagerForm.
     public CatalogManagerForm(NodCatalogService service)
     {
         _service = service;
         _language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
+        _uiTheme = ToolEditorUiThemeSettings.Load();
 
         Text = T("catalog.title", "Converter catalog");
         AppWindowIcon.ApplyTo(this);
+        BackColor = WindowBackColor;
+        ForeColor = TextColor;
         Width = 760;
         Height = 460;
         StartPosition = FormStartPosition.CenterParent;
 
         BuildLayout();
         LoadData();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
     }
 
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildLayout.
@@ -33,7 +59,9 @@ public sealed class CatalogManagerForm : Form
         {
             Dock = DockStyle.Fill,
             RowCount = 2,
-            Padding = new Padding(12)
+            Padding = new Padding(12),
+            BackColor = PanelBackColor,
+            ForeColor = TextColor
         };
 
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -46,6 +74,7 @@ public sealed class CatalogManagerForm : Form
             AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
             DataSource = _binding
         };
+        ApplyGridTheme(_grid);
         _grid.Columns.Add(new DataGridViewTextBoxColumn
         {
             DataPropertyName = nameof(NodCatalogItem.DisplayName),
@@ -70,9 +99,14 @@ public sealed class CatalogManagerForm : Form
 
         panel.Controls.Add(_grid, 0, 0);
 
-        var buttons = new FlowLayoutPanel { Dock = DockStyle.Fill };
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = PanelBackColor,
+            ForeColor = TextColor
+        };
 
-        var add = new Button { Text = T("catalog.add", "Add") };
+        var add = CreateCatalogButton(T("catalog.add", "Add"));
         add.Click += (_, _) =>
         {
             var items = GetItems();
@@ -80,10 +114,10 @@ public sealed class CatalogManagerForm : Form
             _binding.DataSource = items;
         };
 
-        var choose = new Button { Text = T("catalog.choose_nod", "Choose NOD...") };
+        var choose = CreateCatalogButton(T("catalog.choose_nod", "Choose NOD..."));
         choose.Click += ChooseNod_Click;
 
-        var save = new Button { Text = T("catalog.save", "Save") };
+        var save = CreateCatalogButton(T("catalog.save", "Save"));
         save.Click += (_, _) =>
         {
             _service.Save(GetItems());
@@ -96,6 +130,51 @@ public sealed class CatalogManagerForm : Form
 
         panel.Controls.Add(buttons, 0, 1);
         Controls.Add(panel);
+    }
+
+    private void ApplyGridTheme(DataGridView grid)
+    {
+        grid.BackgroundColor = PanelBackColor;
+        grid.BackColor = GridBackColor;
+        grid.ForeColor = TextColor;
+        grid.GridColor = BorderColor;
+        grid.BorderStyle = BorderStyle.FixedSingle;
+        grid.EnableHeadersVisualStyles = false;
+        grid.RowHeadersVisible = false;
+
+        grid.ColumnHeadersDefaultCellStyle.BackColor = GridHeaderBackColor;
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = TextColor;
+        grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = GridHeaderBackColor;
+        grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = TextColor;
+
+        grid.DefaultCellStyle.BackColor = GridBackColor;
+        grid.DefaultCellStyle.ForeColor = MutedTextColor;
+        grid.DefaultCellStyle.SelectionBackColor = GridSelectionBackColor;
+        grid.DefaultCellStyle.SelectionForeColor = Color.White;
+
+        grid.AlternatingRowsDefaultCellStyle.BackColor = GridAlternateBackColor;
+        grid.AlternatingRowsDefaultCellStyle.ForeColor = MutedTextColor;
+        grid.AlternatingRowsDefaultCellStyle.SelectionBackColor = GridSelectionBackColor;
+        grid.AlternatingRowsDefaultCellStyle.SelectionForeColor = Color.White;
+    }
+
+    private Button CreateCatalogButton(string text)
+    {
+        var button = new Button
+        {
+            Text = text,
+            AutoSize = true,
+            MinimumSize = new Size(92, 27),
+            FlatStyle = FlatStyle.Flat,
+            UseVisualStyleBackColor = false,
+            BackColor = ButtonBackColor,
+            ForeColor = TextColor
+        };
+
+        button.FlatAppearance.BorderColor = BorderColor;
+        button.FlatAppearance.MouseOverBackColor = ButtonHoverBackColor;
+        button.FlatAppearance.MouseDownBackColor = ButtonDownBackColor;
+        return button;
     }
 
     // Zoek/commentaar: Laadt gegevens of instellingen voor LoadData.

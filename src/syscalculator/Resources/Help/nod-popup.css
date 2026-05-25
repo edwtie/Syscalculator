@@ -6,7 +6,34 @@ body { margin:0; padding:10px 13px 7px; font-family:"Segoe UI", Arial, sans-seri
 .muted { color:#6b7280; }
 .insert { display:inline-block; margin-top:6px; padding:5px 10px; border-radius:999px; background:#0f3f8f; color:#fff; text-decoration:none; font-weight:700; }
 .more { display:inline-block; margin:6px 0 0 8px; color:#0f3f8f; font-weight:700; text-decoration:none; }
-.actions { margin:7px 0 0; }
+.actions { display:flex; align-items:center; gap:8px; margin:7px 0 0; }
+.actions .insert, .actions .more { margin-top:0; }
+.actions a.signed-package-badge,
+.actions a.signed-package-badge:link,
+.actions a.signed-package-badge:visited,
+.actions a.signed-package-badge:hover,
+.actions a.signed-package-badge:active,
+.actions a.signed-package-badge:focus {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 22px;
+  width:22px;
+  height:22px;
+  margin:0;
+  padding:0;
+  color:#22c55e;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:4px;
+  box-shadow:none;
+  text-decoration:none;
+  line-height:0;
+  outline-offset:2px;
+}
+.actions a.signed-package-badge:hover,
+.actions a.signed-package-badge:focus { background:#ecfdf5; border-color:#bbf7d0; }
+.signed-package-badge svg { display:block; width:18px; height:18px; flex:0 0 18px; }
 .suggest { color:#0f3f8f; text-decoration:none; font-weight:750; }
 code { font-family:Consolas, "Cascadia Mono", monospace; background:#eef4ff; border:1px solid #d7e3f7; border-radius:5px; padding:1px 4px; color:#0f3f8f; overflow-wrap:anywhere; }
 .cmd-link { text-decoration:none; }

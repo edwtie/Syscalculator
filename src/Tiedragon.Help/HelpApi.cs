@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Web.WebView2.Core;
 
 namespace Tiedragon.Help;
 
@@ -8,6 +9,16 @@ public delegate string? HelpContentResolver(string fileName);
 // Zoek/commentaar: Bundelt labels voor de helpnavigatie.
 public sealed record HelpNavigationLabels(string Home, string Previous, string Next);
 
+public sealed record HelpInformationRow(string Label, string Value);
+
+public sealed record HelpSignedPackageInformation(
+    string Title,
+    string Name,
+    string Status,
+    IReadOnlyList<HelpInformationRow> Rows,
+    string Tip = "This help comes from a verified signed package.",
+    bool Verified = true);
+
 // Zoek/commentaar: Beschrijft een compleet helpvenster.
 public sealed record HelpDialogOptions(
     string Title,
@@ -16,7 +27,11 @@ public sealed record HelpDialogOptions(
     HelpNavigationLabels? Navigation = null,
     bool OkOnly = false,
     string OkText = "OK",
-    bool ShowTopics = true);
+    bool ShowTopics = true,
+    CoreWebView2PreferredColorScheme? PreferredColorScheme = null,
+    bool ShowSignedPackageBadge = false,
+    string SignedPackageBadgeText = "Signed package verified",
+    HelpSignedPackageInformation? SignedPackageInformation = null);
 
 // Zoek/commentaar: Centrale API voor helpvensters, taalcontent en help-assets.
 public static class HelpApi
@@ -35,7 +50,11 @@ public static class HelpApi
             navigation.Next,
             options.OkOnly,
             options.OkText,
-            options.ShowTopics);
+            options.ShowTopics,
+            options.PreferredColorScheme,
+            options.ShowSignedPackageBadge,
+            options.SignedPackageBadgeText,
+            options.SignedPackageInformation);
 
         if (owner is Form ownerForm)
         {
@@ -48,6 +67,18 @@ public static class HelpApi
         }
 
         return form.ShowDialog(owner);
+    }
+
+    public static void ShowSignedPackageInformation(
+        IWin32Window owner,
+        HelpSignedPackageInformation information,
+        CoreWebView2PreferredColorScheme? preferredColorScheme = null)
+    {
+        ArgumentNullException.ThrowIfNull(information);
+        HelpSignedPackageInformationDialog.Show(
+            owner,
+            information,
+            preferredColorScheme == CoreWebView2PreferredColorScheme.Dark);
     }
 
     public static string Text(HelpTextResolver resolveText, string key, string fallback)

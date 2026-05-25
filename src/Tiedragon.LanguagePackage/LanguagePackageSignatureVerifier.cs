@@ -96,6 +96,25 @@ internal static class LanguagePackageSignatureVerifier
         return Encoding.UTF8.GetBytes(canonical);
     }
 
+    public static string GetTrustedPublicKeySha256(string? signatureKeyId, string? signatureAlgorithm)
+    {
+        if (string.IsNullOrWhiteSpace(signatureKeyId) || string.IsNullOrWhiteSpace(signatureAlgorithm))
+            return "";
+
+        var normalizedKeyId = signatureKeyId.Trim();
+        var normalizedAlgorithm = signatureAlgorithm.Trim();
+        var key = LoadTrustedKeys()
+            .FirstOrDefault(key =>
+                key.KeyId.Equals(normalizedKeyId, StringComparison.OrdinalIgnoreCase) &&
+                key.Algorithm.Equals(normalizedAlgorithm, StringComparison.OrdinalIgnoreCase));
+        if (key is null)
+            return "";
+
+        using var rsa = RSA.Create();
+        rsa.ImportFromPem(key.PublicKeyPem);
+        return Convert.ToHexString(SHA256.HashData(rsa.ExportSubjectPublicKeyInfo())).ToLowerInvariant();
+    }
+
     private static bool VerifySignature(TrustedLanguagePackageKey key, string algorithm, string signature, byte[] signingInput)
     {
         using var rsa = RSA.Create();

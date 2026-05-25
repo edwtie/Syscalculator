@@ -229,7 +229,8 @@ De migratie is gestart en kan verder stap voor stap gebeuren:
 2. `GraphSurfaceApi`, `GraphOverlayButton` en `GraphPointTableOverlay` staan in `Graph2D`;
 3. volgende stap: forms verder beperken tot data, events, zoom/pan state en applicatielogica.
 
-Het uitgewerkte voorstel staat in `docs/GRAPH2D_DLL_PROPOSAL.md`.
+De actuele Graph-indeling staat in `TIEDRAGON_GRAPH_ARCHITECTURE.svg` en in de
+Graph-secties van deze architectuurdocumentatie.
 
 ## Tiedragon.ClipboardConvert API
 

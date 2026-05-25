@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Tiedragon.ToolEditor;
@@ -163,12 +164,26 @@ internal static class ToolEditorDebugger
             Directory.CreateDirectory(LogFolder);
             var message = "[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "] " + text;
             Debug.WriteLine(message);
+            Trace.WriteLine(message);
+            WriteDebugConsole(message);
             lock (Sync)
                 File.AppendAllText(CurrentLogPath, message + Environment.NewLine, Encoding.UTF8);
         }
         catch
         {
             // Diagnostics must never create a second failure path.
+        }
+    }
+
+    private static void WriteDebugConsole(string message)
+    {
+        try
+        {
+            OutputDebugString(message + Environment.NewLine);
+        }
+        catch
+        {
+            // Debug console mirroring is optional; the file log remains primary.
         }
     }
 
@@ -187,4 +202,7 @@ internal static class ToolEditorDebugger
             // Error reporting must never create a second failure path.
         }
     }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern void OutputDebugString(string lpOutputString);
 }

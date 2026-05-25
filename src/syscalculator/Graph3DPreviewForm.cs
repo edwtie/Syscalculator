@@ -2,6 +2,7 @@
 using Tiedragon.Graph;
 using Tiedragon.Graph.G2D;
 using Tiedragon.Graph.G3D;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -10,6 +11,7 @@ internal sealed class Graph3DPreviewForm : Form
     private const decimal GraphRangeLimit = 1_000_000_000_000_000_000_000_000m;
     private const decimal GraphStepMinimum = 0.0000000000000000000000000001m;
 
+    private readonly ToolEditorUiTheme _uiTheme;
     private readonly Panel _canvas;
     private readonly Panel _navigationPanel;
     private readonly Panel _pointsPanel;
@@ -37,6 +39,7 @@ internal sealed class Graph3DPreviewForm : Form
     private string _disabledMessage = "";
     private string _pointerText = "";
     private bool _dragging;
+    private MouseButtons _dragButton;
     private bool _draggingPointsPanel;
     private bool _flat2DMode;
     private bool _pointTableRequestedVisible = true;
@@ -49,11 +52,26 @@ internal sealed class Graph3DPreviewForm : Form
     private double _panStartMaxY;
     private double _gridStep = 10d;
     private bool _applyingData;
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? Color.FromArgb(18, 24, 32) : SystemColors.Control;
+    private Color PanelBackColor => IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.FromArgb(250, 250, 250);
+    private Color ToolbarBackColor => IsDarkTheme ? Color.FromArgb(31, 41, 55) : Color.FromArgb(250, 250, 250);
+    private Color GraphHostBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.White;
+    private Color TextColor => IsDarkTheme ? Color.FromArgb(226, 232, 240) : SystemColors.ControlText;
+    private Color EditorBackColor => IsDarkTheme ? Color.FromArgb(39, 39, 39) : SystemColors.Window;
+    private Color ButtonBackColor => IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.White;
+    private Color ButtonActiveBackColor => IsDarkTheme ? Color.FromArgb(30, 64, 175) : Color.FromArgb(219, 234, 254);
+    private Color ButtonBorderColor => IsDarkTheme ? Color.FromArgb(71, 85, 105) : Color.FromArgb(203, 216, 234);
+    private Color ButtonActiveBorderColor => IsDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(59, 130, 246);
 
     public Graph3DPreviewForm()
     {
+        _uiTheme = ToolEditorUiThemeSettings.Load();
+        GraphOverlayStyle.UseDarkTheme = IsDarkTheme;
         Text = "Graph 3D";
         AppWindowIcon.ApplyTo(this);
+        BackColor = WindowBackColor;
+        ForeColor = TextColor;
         Width = 1020;
         Height = 620;
         MinimumSize = new Size(760, 440);
@@ -65,7 +83,8 @@ internal sealed class Graph3DPreviewForm : Form
             RowCount = 2,
             ColumnCount = 1,
             Padding = new Padding(10),
-            BackColor = Color.FromArgb(250, 250, 250)
+            BackColor = PanelBackColor,
+            ForeColor = TextColor
         };
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 98));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -75,7 +94,9 @@ internal sealed class Graph3DPreviewForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 12,
             RowCount = 3,
-            Padding = new Padding(0, 4, 0, 4)
+            Padding = new Padding(0, 4, 0, 4),
+            BackColor = ToolbarBackColor,
+            ForeColor = TextColor
         };
         for (var i = 0; i < 12; i++)
             toolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, i % 2 == 0 ? 54 : 86));
@@ -127,14 +148,14 @@ internal sealed class Graph3DPreviewForm : Form
         toolbar.Controls.Add(_isoButton, 1, 2);
         _topButton = MakeModeButton("Top", () => SetCamera(GraphCameraPreset3D.Top));
         toolbar.Controls.Add(_topButton, 2, 2);
-        _grid = new CheckBox { Text = "Grid", Checked = true, AutoSize = true, Margin = new Padding(12, 7, 6, 0) };
+        _grid = new CheckBox { Text = "Grid", Checked = true, AutoSize = true, Margin = new Padding(12, 7, 6, 0), BackColor = ToolbarBackColor, ForeColor = TextColor };
         _grid.CheckedChanged += (_, _) =>
         {
             InvalidateCanvas();
             NotifySyncStateChanged();
         };
         toolbar.Controls.Add(_grid, 3, 2);
-        _lines = new CheckBox { Text = "Lines", Checked = true, AutoSize = true, Margin = new Padding(6, 7, 6, 0) };
+        _lines = new CheckBox { Text = "Lines", Checked = true, AutoSize = true, Margin = new Padding(6, 7, 6, 0), BackColor = ToolbarBackColor, ForeColor = TextColor };
         _lines.CheckedChanged += (_, _) =>
         {
             UpdateRangeInputMode();
@@ -161,8 +182,8 @@ internal sealed class Graph3DPreviewForm : Form
         toolbar.Controls.Add(_toggleTableButton, 6, 2);
         root.Controls.Add(toolbar, 0, 0);
 
-        var host = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
-        _canvas = new GraphCanvasPanel { Dock = DockStyle.Fill, BackColor = Color.White };
+        var host = new Panel { Dock = DockStyle.Fill, BackColor = GraphHostBackColor };
+        _canvas = new GraphCanvasPanel { Dock = DockStyle.Fill, BackColor = GraphHostBackColor };
         _canvas.Paint += Canvas_Paint;
         _canvas.MouseDown += Canvas_MouseDown;
         _canvas.MouseMove += Canvas_MouseMove;
@@ -224,9 +245,16 @@ internal sealed class Graph3DPreviewForm : Form
         };
         root.Controls.Add(host, 0, 1);
         Controls.Add(root);
+        ApplyThemeToChildren(this);
         PlaceOverlays(host);
         UpdateModeButtons();
         UpdatePointTableAvailability();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
     }
 
     internal event EventHandler<Graph3DPreviewSyncState>? SyncStateChanged;
@@ -310,23 +338,28 @@ internal sealed class Graph3DPreviewForm : Form
             Height = 28,
             Margin = new Padding(0, 1, 4, 0),
             FlatStyle = FlatStyle.Flat,
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(15, 63, 143),
+            UseVisualStyleBackColor = false,
+            BackColor = ButtonBackColor,
+            ForeColor = GraphOverlayStyle.TitleText,
             Font = new Font("Segoe UI", 8f, FontStyle.Bold)
         };
-        button.FlatAppearance.BorderColor = Color.FromArgb(203, 216, 234);
+        button.FlatAppearance.BorderColor = ButtonBorderColor;
+        button.FlatAppearance.MouseOverBackColor = IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(239, 246, 255);
+        button.FlatAppearance.MouseDownBackColor = ButtonActiveBackColor;
         button.Click += (_, _) => action();
         return button;
     }
 
-    private static Label MakeToolbarLabel(string text)
+    private Label MakeToolbarLabel(string text)
     {
         return new Label
         {
             Text = text,
             AutoSize = true,
             Anchor = AnchorStyles.Left,
-            Margin = new Padding(4, 6, 2, 0)
+            Margin = new Padding(4, 6, 2, 0),
+            BackColor = ToolbarBackColor,
+            ForeColor = TextColor
         };
     }
 
@@ -343,6 +376,66 @@ internal sealed class Graph3DPreviewForm : Form
             Width = 82,
             Margin = new Padding(0, 2, 4, 0)
         };
+    }
+
+    private void ApplyThemeToChildren(Control control)
+    {
+        foreach (Control child in control.Controls)
+        {
+            switch (child)
+            {
+                case NumericUpDown numberBox:
+                    numberBox.BackColor = EditorBackColor;
+                    numberBox.ForeColor = TextColor;
+                    break;
+                case DataGridView grid:
+                    ApplyGridTheme(grid);
+                    break;
+                case CheckBox checkBox:
+                    checkBox.BackColor = ToolbarBackColor;
+                    checkBox.ForeColor = TextColor;
+                    break;
+                case Label label:
+                    label.BackColor = ToolbarBackColor;
+                    label.ForeColor = TextColor;
+                    break;
+                case TableLayoutPanel table:
+                    table.BackColor = ReferenceEquals(table.Parent, this) ? PanelBackColor : ToolbarBackColor;
+                    table.ForeColor = TextColor;
+                    break;
+                case Panel panel when !ReferenceEquals(panel, _canvas):
+                    panel.BackColor = ReferenceEquals(panel, _pointsPanel) || ReferenceEquals(panel, _navigationPanel)
+                        ? GraphOverlayStyle.PanelFill(translucent: false)
+                        : GraphHostBackColor;
+                    panel.ForeColor = TextColor;
+                    break;
+            }
+
+            ApplyThemeToChildren(child);
+        }
+
+        _pointsTitleBar.BackColor = GraphOverlayStyle.TitleFill;
+        _pointsTitleBar.Invalidate();
+        _rotationDial.BackColor = GraphOverlayStyle.PanelFill(translucent: false);
+    }
+
+    private static void ApplyGridTheme(DataGridView grid)
+    {
+        grid.BackgroundColor = GraphOverlayStyle.TableBack;
+        grid.BackColor = GraphOverlayStyle.TableBack;
+        grid.ForeColor = GraphOverlayStyle.TableText;
+        grid.GridColor = GraphOverlayStyle.TableGrid;
+        grid.EnableHeadersVisualStyles = false;
+        grid.ColumnHeadersDefaultCellStyle.BackColor = GraphOverlayStyle.TitleFill;
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = GraphOverlayStyle.TitleText;
+        grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = GraphOverlayStyle.TitleFill;
+        grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = GraphOverlayStyle.TitleText;
+        grid.DefaultCellStyle.BackColor = GraphOverlayStyle.TableBack;
+        grid.DefaultCellStyle.ForeColor = GraphOverlayStyle.TableText;
+        grid.DefaultCellStyle.SelectionBackColor = GraphOverlayStyle.TableSelectionBack;
+        grid.DefaultCellStyle.SelectionForeColor = GraphOverlayStyle.TableSelectionText;
+        grid.AlternatingRowsDefaultCellStyle.BackColor = GraphOverlayStyle.TableAlternateBack;
+        grid.AlternatingRowsDefaultCellStyle.ForeColor = GraphOverlayStyle.TableText;
     }
 
     private void ApplyRangeFromControls()
@@ -470,12 +563,13 @@ internal sealed class Graph3DPreviewForm : Form
 
     private void Canvas_MouseDown(object? sender, MouseEventArgs e)
     {
-        if (e.Button != MouseButtons.Left)
+        if (e.Button is not (MouseButtons.Left or MouseButtons.Right))
             return;
 
         _dragging = true;
+        _dragButton = e.Button;
         _lastMouse = e.Location;
-        if (_flat2DMode)
+        if (_flat2DMode || e.Button == MouseButtons.Right)
         {
             var view = Get2DView();
             _panStartMinX = view.MinX;
@@ -497,6 +591,12 @@ internal sealed class Graph3DPreviewForm : Form
             return;
         }
 
+        if (_dragButton == MouseButtons.Right)
+        {
+            PanCamera(e.Location);
+            return;
+        }
+
         var dx = e.X - _lastMouse.X;
         var dy = e.Y - _lastMouse.Y;
         _lastMouse = e.Location;
@@ -506,6 +606,7 @@ internal sealed class Graph3DPreviewForm : Form
     private void Canvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _dragging = false;
+        _dragButton = MouseButtons.None;
         _canvas.Cursor = _canvas.ClientRectangle.Contains(e.Location) ? GraphCursors.Pan : GraphCursors.Default;
     }
 
@@ -602,10 +703,11 @@ internal sealed class Graph3DPreviewForm : Form
         return normalized;
     }
 
-    private static void PaintModeButtonState(Button button, bool active)
+    private void PaintModeButtonState(Button button, bool active)
     {
-        button.BackColor = active ? Color.FromArgb(219, 234, 254) : Color.White;
-        button.FlatAppearance.BorderColor = active ? Color.FromArgb(59, 130, 246) : Color.FromArgb(203, 216, 234);
+        button.BackColor = active ? ButtonActiveBackColor : ButtonBackColor;
+        button.ForeColor = active && IsDarkTheme ? Color.White : GraphOverlayStyle.TitleText;
+        button.FlatAppearance.BorderColor = active ? ButtonActiveBorderColor : ButtonBorderColor;
     }
 
     private void RotateCamera(double yaw, double pitch)
@@ -692,6 +794,21 @@ internal sealed class Graph3DPreviewForm : Form
             _panStartMaxX - graphDx,
             _panStartMinY + graphDy,
             _panStartMaxY + graphDy));
+        _canvas.Invalidate();
+        NotifySyncStateChanged();
+    }
+
+    private void PanCamera(Point location)
+    {
+        var dx = location.X - _lastMouse.X;
+        var dy = location.Y - _lastMouse.Y;
+        _lastMouse = location;
+        _camera = _camera with
+        {
+            PanX = _camera.PanX + dx,
+            PanY = _camera.PanY + dy
+        };
+        _rotationDial.Camera = _camera;
         _canvas.Invalidate();
         NotifySyncStateChanged();
     }

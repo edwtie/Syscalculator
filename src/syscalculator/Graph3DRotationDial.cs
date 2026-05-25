@@ -1,6 +1,7 @@
 #nullable enable
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
+using Tiedragon.Graph;
 using Tiedragon.Graph.G3D;
 
 namespace Syscalculator.UI.WinForms;
@@ -22,7 +23,7 @@ internal sealed class Graph3DRotationDial : Control
 
         Width = 82;
         Height = 82;
-        BackColor = Color.White;
+        BackColor = GraphOverlayStyle.PanelFill(translucent: false);
         Cursor = Cursors.Hand;
         TabStop = false;
         _toolTip.SetToolTip(this, "Drag to rotate like a compass. Double-click to reset.");

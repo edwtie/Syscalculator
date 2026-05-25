@@ -16,6 +16,7 @@ public sealed class HtmlMathPreviewControl : UserControl
     private string? _pendingHtml;
     private bool _browserFailed;
     private TaskCompletionSource? _readySource;
+    private CoreWebView2PreferredColorScheme _preferredColorScheme = CoreWebView2PreferredColorScheme.Light;
 
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -26,6 +27,24 @@ public sealed class HtmlMathPreviewControl : UserControl
         {
             _mathMarkup = value ?? "";
             SetHtml(BuildHtml(_mathMarkup));
+        }
+    }
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public CoreWebView2PreferredColorScheme PreferredColorScheme
+    {
+        get => _preferredColorScheme;
+        set
+        {
+            if (_preferredColorScheme == value)
+                return;
+
+            _preferredColorScheme = value;
+            if (_browser.CoreWebView2 is not null)
+                _browser.CoreWebView2.Profile.PreferredColorScheme = value;
+            if (!string.IsNullOrWhiteSpace(_mathMarkup))
+                SetHtml(BuildHtml(_mathMarkup));
         }
     }
 
@@ -68,6 +87,7 @@ public sealed class HtmlMathPreviewControl : UserControl
             _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
             _browser.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            _browser.CoreWebView2.Profile.PreferredColorScheme = _preferredColorScheme;
             ShowPendingHtmlIfReady();
             _readySource?.TrySetResult();
         };
@@ -200,6 +220,7 @@ public sealed class HtmlMathPreviewControl : UserControl
         var fore = HtmlColor(ForeColor);
         var softBack = BackColor.GetBrightness() > 0.96f ? back : "#f8fbff";
         var softBorder = BackColor.GetBrightness() > 0.96f ? back : "#bfdbfe";
+        var colorScheme = _preferredColorScheme == CoreWebView2PreferredColorScheme.Dark ? "dark" : "light";
         var baseFontSize = Math.Max(16f, Font.SizeInPoints);
         var mathFontSize = Math.Max(18f, baseFontSize + 3f);
         var baseSizeCss = baseFontSize.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
@@ -211,7 +232,7 @@ public sealed class HtmlMathPreviewControl : UserControl
         <head>
         <meta charset="utf-8">
         <style>
-        :root { color-scheme: light; }
+        :root { color-scheme: {{colorScheme}}; }
         * { box-sizing: border-box; }
         html, body {
             margin: 0;

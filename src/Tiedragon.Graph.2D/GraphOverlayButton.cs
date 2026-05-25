@@ -55,8 +55,8 @@ public sealed class GraphOverlayButton : Control
         Text = "";
         Width = density == GraphOverlayButtonDensity.Compact ? 26 : 36;
         Height = density == GraphOverlayButtonDensity.Compact ? 26 : 36;
-        BackColor = Color.White;
-        ForeColor = Color.FromArgb(31, 41, 55);
+        BackColor = GraphOverlayStyle.PanelFill(translucent: false);
+        ForeColor = GraphOverlayStyle.IconColor(GraphOverlayVisualState.Normal);
         Cursor = Cursors.Hand;
         TabStop = false;
         _toolTip.SetToolTip(this, tooltip);
@@ -103,7 +103,7 @@ public sealed class GraphOverlayButton : Control
         {
             Width = compact ? 32 : 44,
             Height = compact ? 94 : 128,
-            BackColor = Color.White
+            BackColor = GraphOverlayStyle.PanelFill(translucent: false)
         };
 
         var padding = compact ? 3 : 4;
@@ -189,6 +189,7 @@ public sealed class GraphOverlayButton : Control
                 ? GraphOverlayVisualState.Pressed
                 : _hover ? GraphOverlayVisualState.Hover : GraphOverlayVisualState.Normal;
         GraphOverlayStyle.PaintButtonChrome(e.Graphics, rect, Density == GraphOverlayButtonDensity.Compact ? 8 : 10, state, translucent: false);
+        ForeColor = GraphOverlayStyle.IconColor(state);
 
         var cx = rect.Left + rect.Width / 2f;
         var cy = rect.Top + rect.Height / 2f;

@@ -1,6 +1,6 @@
 # Softwarearchitectuur
 
-![Syscalculator totale architectuur](SYSCALCULATOR_ARCHITECTURE.svg)
+<img src="SYSCALCULATOR_ARCHITECTURE.svg" alt="Syscalculator totale architectuur" width="150%">
 
 ## Doel
 

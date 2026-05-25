@@ -3,7 +3,9 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace Tiedragon.Help;
 
@@ -32,10 +34,18 @@ public sealed class NodHelpForm : Form
     private readonly Button _homeButton;
     private readonly Button _previousButton;
     private readonly Button _nextButton;
+    private readonly CoreWebView2PreferredColorScheme? _preferredColorScheme;
     private string? _pendingHtml;
     private bool _browserFailed;
     private int _currentSearchIndex = -1;
     private bool _suppressSearchReset;
+    private bool IsDarkTheme => _preferredColorScheme == CoreWebView2PreferredColorScheme.Dark;
+    private Color ShellBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(248, 250, 252);
+    private Color PanelBackColor => IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White;
+    private Color NavigationBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(241, 245, 249);
+    private Color BorderColor => IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(203, 213, 225);
+    private Color TextColor => IsDarkTheme ? Color.FromArgb(229, 231, 235) : Color.FromArgb(31, 41, 55);
+    private Color SearchBackColor => IsDarkTheme ? Color.FromArgb(31, 41, 55) : Color.White;
 
     // Zoek/commentaar: Constructor: maakt en initialiseert NodHelpForm.
     public NodHelpForm(
@@ -47,9 +57,14 @@ public sealed class NodHelpForm : Form
         string nextText = "Next",
         bool okOnly = false,
         string okText = "OK",
-        bool showTopics = true)
+        bool showTopics = true,
+        CoreWebView2PreferredColorScheme? preferredColorScheme = null,
+        bool showSignedPackageBadge = false,
+        string signedPackageBadgeText = "Signed package verified",
+        HelpSignedPackageInformation? signedPackageInformation = null)
     {
         _pages = pages;
+        _preferredColorScheme = preferredColorScheme;
         var topicPaneWidth = showTopics ? CalculateTopicPaneWidth(pages) : 0;
 
         Text = title;
@@ -68,7 +83,7 @@ public sealed class NodHelpForm : Form
             FixedPanel = FixedPanel.Panel1,
             SplitterWidth = 1,
             BorderStyle = BorderStyle.None,
-            BackColor = Color.FromArgb(226, 232, 240)
+            BackColor = BorderColor
         };
         split.SizeChanged += (_, _) => ApplyTopicPaneWidth(split, topicPaneWidth);
         Shown += (_, _) => ApplyTopicPaneWidth(split, topicPaneWidth);
@@ -77,8 +92,9 @@ public sealed class NodHelpForm : Form
         _topics = new HelpTopicsList
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(31, 41, 55)
+            BackColor = PanelBackColor,
+            ForeColor = TextColor,
+            DarkMode = IsDarkTheme
         };
         foreach (var page in _pages)
             _topics.Items.Add(page);
@@ -95,13 +111,13 @@ public sealed class NodHelpForm : Form
         var topicsHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(6, 0, 5, 6)
         };
         var topicsBorder = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(203, 213, 225),
+            BackColor = BorderColor,
             Padding = new Padding(1)
         };
         topicsBorder.Controls.Add(_topics);
@@ -111,14 +127,14 @@ public sealed class NodHelpForm : Form
         {
             Dock = DockStyle.Bottom,
             Height = 60,
-            BackColor = Color.FromArgb(241, 245, 249),
+            BackColor = NavigationBackColor,
             Padding = new Padding(0)
         };
         navigationHost.Controls.Add(new Panel
         {
             Dock = DockStyle.Top,
             Height = 1,
-            BackColor = Color.FromArgb(203, 213, 225)
+            BackColor = BorderColor
         });
 
         var navigation = new TableLayoutPanel
@@ -127,7 +143,7 @@ public sealed class NodHelpForm : Form
             Padding = new Padding(16, 10, 16, 10),
             ColumnCount = 3,
             RowCount = 1,
-            BackColor = Color.FromArgb(241, 245, 249)
+            BackColor = NavigationBackColor
         };
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333f));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333f));
@@ -147,9 +163,9 @@ public sealed class NodHelpForm : Form
             okButton.Click += (_, _) => Close();
             AcceptButton = okButton;
             CancelButton = okButton;
-            navigation.Controls.Add(new Panel { Dock = DockStyle.Fill }, 0, 0);
+            navigation.Controls.Add(new Panel { Dock = DockStyle.Fill, BackColor = NavigationBackColor }, 0, 0);
             navigation.Controls.Add(okButton, 1, 0);
-            navigation.Controls.Add(new Panel { Dock = DockStyle.Fill }, 2, 0);
+            navigation.Controls.Add(new Panel { Dock = DockStyle.Fill, BackColor = NavigationBackColor }, 2, 0);
         }
         else
         {
@@ -177,6 +193,8 @@ public sealed class NodHelpForm : Form
             _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _browser.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            if (_preferredColorScheme.HasValue)
+                _browser.CoreWebView2.Profile.PreferredColorScheme = _preferredColorScheme.Value;
             _browser.CoreWebView2.WebMessageReceived += Browser_WebMessageReceived;
             ShowPendingHtmlIfReady();
         };
@@ -186,18 +204,19 @@ public sealed class NodHelpForm : Form
         {
             Dock = DockStyle.Top,
             Height = 38,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(10, 6, 10, 6)
         };
         var searchLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 5,
+            ColumnCount = 6,
             RowCount = 1,
-            BackColor = Color.FromArgb(248, 250, 252)
+            BackColor = ShellBackColor
         };
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, showSignedPackageBadge ? 32 : 0));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 34));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 34));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 34));
@@ -207,7 +226,7 @@ public sealed class NodHelpForm : Form
             AutoSize = true,
             Text = "Zoek",
             Font = new Font("Segoe UI", 9),
-            ForeColor = Color.FromArgb(31, 41, 55),
+            ForeColor = TextColor,
             Margin = new Padding(0, 4, 8, 0)
         }, 0, 0);
 
@@ -216,40 +235,61 @@ public sealed class NodHelpForm : Form
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.FixedSingle,
             Font = new Font("Segoe UI", 9),
+            BackColor = SearchBackColor,
+            ForeColor = TextColor,
             Margin = new Padding(0, 0, 8, 0)
         };
         _searchBox.TextChanged += (_, _) => SearchCurrentPage(resetIndex: true);
         _searchBox.KeyDown += SearchBox_KeyDown;
         searchLayout.Controls.Add(_searchBox, 1, 0);
 
+        if (showSignedPackageBadge)
+        {
+            var signedBadge = new HelpSignedPackageBadge
+            {
+                Dock = DockStyle.Fill,
+                BackColor = ShellBackColor,
+                Margin = new Padding(0, 0, 8, 0),
+                Verified = signedPackageInformation?.Verified ?? true
+            };
+            signedBadge.Click += (_, _) =>
+            {
+                if (signedPackageInformation is not null)
+                    HelpSignedPackageInformationDialog.ShowPopover(signedBadge, signedPackageInformation, IsDarkTheme);
+            };
+            var signedToolTip = new ToolTip();
+            signedToolTip.SetToolTip(signedBadge, signedPackageBadgeText);
+            searchLayout.Controls.Add(signedBadge, 2, 0);
+        }
+
         _searchPreviousButton = CreateSearchButton("\u25b2", "Vorige zoekresultaat");
         _searchNextButton = CreateSearchButton("\u25bc", "Volgende zoekresultaat");
-        _searchClearButton = CreateSearchButton("\u00d7", "Zoektekst wissen");
+        _searchClearButton = CreateSearchClearButton("Zoektekst wissen");
         _searchPreviousButton.Click += (_, _) => MoveSearchResult(-1);
         _searchNextButton.Click += (_, _) => MoveSearchResult(1);
         _searchClearButton.Click += (_, _) => _searchBox.Clear();
-        searchLayout.Controls.Add(_searchPreviousButton, 2, 0);
-        searchLayout.Controls.Add(_searchNextButton, 3, 0);
-        searchLayout.Controls.Add(_searchClearButton, 4, 0);
+        searchLayout.Controls.Add(_searchPreviousButton, 3, 0);
+        searchLayout.Controls.Add(_searchNextButton, 4, 0);
+        searchLayout.Controls.Add(_searchClearButton, 5, 0);
         searchHost.Controls.Add(searchLayout);
 
         var contentOuter = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(0)
         };
         var contentHost = new Panel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(1),
-            BackColor = Color.FromArgb(203, 213, 225)
+            BackColor = BorderColor
         };
         var contentInner = new Panel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(8, 7, 11, 0),
-            BackColor = Color.White
+            BackColor = PanelBackColor
         };
         contentInner.Controls.Add(_browser);
         contentInner.Controls.Add(searchHost);
@@ -282,7 +322,7 @@ public sealed class NodHelpForm : Form
     }
 
     // Zoek/commentaar: Maakt duidelijke helpnavigatie-knoppen.
-    private static Button CreateNavigationButton(string text, HelpNavigationIcon icon, AnchorStyles anchor)
+    private Button CreateNavigationButton(string text, HelpNavigationIcon icon, AnchorStyles anchor)
     {
         return new HelpNavigationButton(text, icon)
         {
@@ -290,11 +330,12 @@ public sealed class NodHelpForm : Form
             Height = 36,
             Margin = new Padding(0),
             Anchor = anchor,
+            DarkMode = IsDarkTheme
         };
     }
 
     // Zoek/commentaar: Maakt compacte knoppen voor zoeken binnen de helptekst.
-    private static Button CreateSearchButton(string text, string tooltip)
+    private Button CreateSearchButton(string text, string tooltip)
     {
         var button = new Button
         {
@@ -302,14 +343,26 @@ public sealed class NodHelpForm : Form
             Dock = DockStyle.Fill,
             Margin = new Padding(2, 0, 0, 0),
             FlatStyle = FlatStyle.Flat,
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(15, 63, 143),
+            BackColor = IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White,
+            ForeColor = IsDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(15, 63, 143),
             Font = new Font("Segoe UI", 9),
             UseVisualStyleBackColor = false
         };
-        button.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-        button.FlatAppearance.MouseOverBackColor = Color.FromArgb(239, 246, 255);
-        button.FlatAppearance.MouseDownBackColor = Color.FromArgb(219, 234, 254);
+        button.FlatAppearance.BorderColor = IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(203, 213, 225);
+        button.FlatAppearance.MouseOverBackColor = IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(239, 246, 255);
+        button.FlatAppearance.MouseDownBackColor = IsDarkTheme ? Color.FromArgb(37, 99, 235) : Color.FromArgb(219, 234, 254);
+        new ToolTip().SetToolTip(button, tooltip);
+        return button;
+    }
+
+    private Button CreateSearchClearButton(string tooltip)
+    {
+        var button = new HelpNavigationButton(string.Empty, HelpNavigationIcon.Close)
+        {
+            Dock = DockStyle.Fill,
+            Margin = new Padding(2, 0, 0, 0),
+            DarkMode = IsDarkTheme
+        };
         new ToolTip().SetToolTip(button, tooltip);
         return button;
     }
@@ -705,6 +758,332 @@ public sealed class NodHelpForm : Form
 
 }
 
+public sealed class HelpSignedPackageBadge : Control
+{
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public bool Verified { get; set; } = true;
+
+    public HelpSignedPackageBadge()
+    {
+        SetStyle(
+            ControlStyles.AllPaintingInWmPaint |
+            ControlStyles.OptimizedDoubleBuffer |
+            ControlStyles.ResizeRedraw |
+            ControlStyles.UserPaint,
+            true);
+        TabStop = false;
+        Cursor = Cursors.Hand;
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        var color = Verified ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+        HelpSignedLockSvg.Draw(e.Graphics, new Rectangle(2, 1, Width - 4, Height - 2), color);
+    }
+}
+
+internal sealed class HelpSignedPackageInformationDialog : Form
+{
+    private readonly bool _dark;
+    private readonly Color _windowBack;
+    private readonly Color _panelBack;
+    private readonly Color _text;
+    private readonly Color _muted;
+    private readonly Color _border;
+    private readonly Color _success = Color.FromArgb(34, 197, 94);
+    private readonly Color _danger = Color.FromArgb(239, 68, 68);
+
+    private HelpSignedPackageInformationDialog(HelpSignedPackageInformation information, bool dark)
+    {
+        _dark = dark;
+        _windowBack = dark ? Color.FromArgb(18, 24, 32) : Color.FromArgb(246, 248, 252);
+        _panelBack = dark ? Color.FromArgb(31, 41, 55) : Color.White;
+        _text = dark ? Color.FromArgb(226, 232, 240) : Color.FromArgb(20, 30, 46);
+        _muted = dark ? Color.FromArgb(148, 163, 184) : Color.DimGray;
+        _border = dark ? Color.FromArgb(71, 85, 105) : Color.FromArgb(226, 232, 240);
+
+        Text = information.Title;
+        StartPosition = FormStartPosition.Manual;
+        FormBorderStyle = FormBorderStyle.None;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        ShowInTaskbar = false;
+        ClientSize = new Size(440, 500);
+        BackColor = _windowBack;
+        ForeColor = _text;
+        Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+        Deactivate += (_, _) => Close();
+
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            Padding = new Padding(14),
+            BackColor = _windowBack
+        };
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 104));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+
+        var header = new Panel { Dock = DockStyle.Fill, BackColor = _windowBack };
+        var badge = new HelpSignedPackageBadge { BackColor = _windowBack, Location = new Point(0, 6), Size = new Size(44, 44), Verified = information.Verified };
+        var name = new Label
+        {
+            AutoSize = false,
+            Text = information.Name,
+            Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+            ForeColor = _text,
+            BackColor = _windowBack,
+            Location = new Point(58, 8),
+            Size = new Size(260, 24)
+        };
+        var status = new Label
+        {
+            AutoSize = false,
+            Text = information.Status,
+            ForeColor = information.Verified ? _success : _danger,
+            BackColor = _windowBack,
+            Location = new Point(59, 32),
+            Size = new Size(260, 22)
+        };
+        header.Controls.Add(badge);
+        header.Controls.Add(name);
+        header.Controls.Add(status);
+        header.Controls.Add(new Label
+        {
+            AutoSize = false,
+            Text = information.Tip,
+            ForeColor = _text,
+            BackColor = _panelBack,
+            Location = new Point(0, 62),
+            Size = new Size(410, 34),
+            Padding = new Padding(10, 7, 10, 0)
+        });
+        root.Controls.Add(header, 0, 0);
+
+        var details = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = Math.Min(information.Rows.Count, 7),
+            BackColor = _panelBack,
+            Padding = new Padding(10),
+            CellBorderStyle = TableLayoutPanelCellBorderStyle.None
+        };
+        details.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92));
+        details.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        var visibleRows = information.Rows.ToList();
+        for (var rowIndex = 0; rowIndex < visibleRows.Count; rowIndex++)
+        {
+            var row = visibleRows[rowIndex];
+            details.RowStyles.Add(new RowStyle(SizeType.Absolute, 23));
+            details.Controls.Add(new Label { Text = row.Label, Dock = DockStyle.Fill, ForeColor = _muted, BackColor = _panelBack, TextAlign = ContentAlignment.MiddleLeft }, 0, rowIndex);
+            details.Controls.Add(new Label { Text = row.Value, Dock = DockStyle.Fill, ForeColor = _text, BackColor = _panelBack, TextAlign = ContentAlignment.MiddleLeft, AutoEllipsis = true }, 1, rowIndex);
+        }
+
+        var borderPanel = new Panel { Dock = DockStyle.Fill, BackColor = _border, Padding = new Padding(1) };
+        borderPanel.Controls.Add(details);
+        root.Controls.Add(borderPanel, 0, 1);
+
+        var footer = new Label
+        {
+            Dock = DockStyle.Fill,
+            Text = information.Title,
+            ForeColor = dark ? Color.FromArgb(191, 219, 254) : Color.FromArgb(29, 78, 216),
+            BackColor = _windowBack,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Padding = new Padding(4, 8, 0, 0)
+        };
+        root.Controls.Add(footer, 0, 2);
+
+        Controls.Add(root);
+    }
+
+    public static void Show(IWin32Window owner, HelpSignedPackageInformation information, bool dark)
+    {
+        var dialog = new HelpSignedPackageInformationDialog(information, dark);
+        if (owner is Form ownerForm && ownerForm.Icon is not null)
+            dialog.Icon = (Icon)ownerForm.Icon.Clone();
+        if (owner is Control control)
+        {
+            var screen = control.PointToScreen(new Point(24, 24));
+            dialog.Location = screen;
+        }
+        else
+        {
+            dialog.StartPosition = FormStartPosition.CenterParent;
+        }
+        dialog.Show(owner);
+    }
+
+    public static void ShowPopover(Control anchor, HelpSignedPackageInformation information, bool dark)
+    {
+        var dialog = new HelpSignedPackageInformationDialog(information, dark);
+        var owner = anchor.FindForm();
+        if (owner?.Icon is not null)
+            dialog.Icon = (Icon)owner.Icon.Clone();
+
+        var screenPoint = anchor.PointToScreen(new Point(anchor.Width - 18, anchor.Height + 8));
+        var workingArea = Screen.FromControl(anchor).WorkingArea;
+        var x = Math.Min(Math.Max(workingArea.Left + 8, screenPoint.X - dialog.Width + 24), workingArea.Right - dialog.Width - 8);
+        var y = Math.Min(Math.Max(workingArea.Top + 8, screenPoint.Y), workingArea.Bottom - dialog.Height - 8);
+        dialog.Location = new Point(x, y);
+        dialog.Show(owner);
+    }
+
+    private static void ApplyNativeDarkTitleBar(Form form, bool dark)
+    {
+        if (!dark || !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763))
+            return;
+
+        try
+        {
+            var value = 1;
+            _ = DwmSetWindowAttribute(form.Handle, 20, ref value, sizeof(int));
+        }
+        catch
+        {
+            // Title bar theming is cosmetic.
+        }
+    }
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
+}
+
+internal static class HelpSignedLockSvg
+{
+    private const float SvgLeft = 5485f;
+    private const float SvgTop = 545f;
+    private const float SvgWidth = 1059f;
+    private const float SvgHeight = 1411f;
+    private static readonly Regex SvgPathTokenRegex = new(@"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly SvgPathPart[] SourceSvgPaths =
+    [
+        new(true, "M 5597.109375 1096.890625 L 6431.089844 1096.890625 C 6492.738281 1096.890625 6543.171875 1147.328125 6543.171875 1208.96875 L 6543.171875 1842.980469 C 6543.171875 1904.621094 6492.738281 1955.054688 6431.089844 1955.054688 L 5597.109375 1955.054688 C 5535.46875 1955.054688 5485.039062 1904.621094 5485.039062 1842.980469 L 5485.039062 1208.96875 C 5485.039062 1147.328125 5535.46875 1096.890625 5597.109375 1096.890625"),
+        new(true, "M 6014.101562 545.269531 C 6236.058594 545.269531 6417.660156 726.859375 6417.660156 948.828125 L 6417.660156 1120.898438 L 6267.699219 1120.898438 L 6267.699219 948.828125 C 6267.699219 809.339844 6153.589844 695.230469 6014.101562 695.230469 C 5874.609375 695.230469 5760.488281 809.339844 5760.488281 948.828125 L 5760.488281 1120.898438 L 5610.53125 1120.898438 L 5610.53125 948.828125 C 5610.53125 726.859375 5792.128906 545.269531 6014.101562 545.269531"),
+        new(false, "M 5791.21875 1488.179688 C 5812.539062 1466.859375 5847.410156 1466.859375 5868.738281 1488.179688 L 5952.078125 1571.523438 L 6159.460938 1364.140625 C 6180.78125 1342.820312 6215.660156 1342.820312 6236.980469 1364.140625 C 6258.300781 1385.460938 6258.300781 1420.339844 6236.980469 1441.660156 L 5990.839844 1687.804688 C 5969.519531 1709.125 5934.640625 1709.125 5913.320312 1687.804688 L 5791.21875 1565.695312 C 5769.898438 1544.375 5769.898438 1509.496094 5791.21875 1488.179688")
+    ];
+    private static readonly Lazy<IReadOnlyList<SvgPathShape>> SvgShapes = new(() => SourceSvgPaths
+        .Select(part => new SvgPathShape(part.UseBadgeColor, BuildSvgPath(part.Data)))
+        .ToArray());
+
+    public static void Draw(Graphics graphics, Rectangle bounds, Color badgeColor)
+    {
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+            return;
+
+        var state = graphics.Save();
+        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+        var scale = Math.Min(bounds.Width / SvgWidth, bounds.Height / SvgHeight);
+        var left = bounds.Left + (bounds.Width - SvgWidth * scale) / 2f;
+        var top = bounds.Top + (bounds.Height - SvgHeight * scale) / 2f;
+        graphics.TranslateTransform(left, top);
+        graphics.ScaleTransform(scale, scale);
+        graphics.TranslateTransform(-SvgLeft, -SvgTop);
+
+        foreach (var shape in SvgShapes.Value)
+        {
+            using var brush = new SolidBrush(shape.UseBadgeColor ? badgeColor : Color.White);
+            graphics.FillPath(brush, shape.Path);
+        }
+
+        graphics.Restore(state);
+    }
+
+    private static GraphicsPath BuildSvgPath(string data)
+    {
+        var tokens = SvgPathTokenRegex.Matches(data).Select(match => match.Value).ToArray();
+        var path = new GraphicsPath(FillMode.Alternate);
+        var index = 0;
+        var command = '\0';
+        var current = PointF.Empty;
+        var figureStart = PointF.Empty;
+
+        while (index < tokens.Length)
+        {
+            if (IsCommand(tokens[index]))
+                command = tokens[index++][0];
+            if (command == '\0')
+                break;
+
+            var relative = char.IsLower(command);
+            switch (char.ToUpperInvariant(command))
+            {
+                case 'M':
+                    current = ReadPoint(tokens, ref index, current, relative);
+                    figureStart = current;
+                    path.StartFigure();
+                    command = relative ? 'l' : 'L';
+                    break;
+                case 'L':
+                    while (CanReadNumbers(tokens, index, 2))
+                    {
+                        var next = ReadPoint(tokens, ref index, current, relative);
+                        path.AddLine(current, next);
+                        current = next;
+                    }
+                    break;
+                case 'C':
+                    while (CanReadNumbers(tokens, index, 6))
+                    {
+                        var control1 = ReadPoint(tokens, ref index, current, relative);
+                        var control2 = ReadPoint(tokens, ref index, current, relative);
+                        var end = ReadPoint(tokens, ref index, current, relative);
+                        path.AddBezier(current, control1, control2, end);
+                        current = end;
+                    }
+                    break;
+                case 'Z':
+                    path.CloseFigure();
+                    current = figureStart;
+                    command = '\0';
+                    break;
+                default:
+                    index++;
+                    break;
+            }
+        }
+
+        return path;
+    }
+
+    private static PointF ReadPoint(string[] tokens, ref int index, PointF current, bool relative)
+    {
+        var x = float.Parse(tokens[index++], CultureInfo.InvariantCulture);
+        var y = float.Parse(tokens[index++], CultureInfo.InvariantCulture);
+        return relative ? new PointF(current.X + x, current.Y + y) : new PointF(x, y);
+    }
+
+    private static bool CanReadNumbers(string[] tokens, int index, int count)
+    {
+        if (index + count > tokens.Length)
+            return false;
+
+        for (var i = 0; i < count; i++)
+        {
+            if (IsCommand(tokens[index + i]))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsCommand(string token)
+    {
+        return token.Length == 1 && char.IsLetter(token[0]);
+    }
+
+    private sealed record SvgPathPart(bool UseBadgeColor, string Data);
+
+    private sealed record SvgPathShape(bool UseBadgeColor, GraphicsPath Path);
+}
+
 public sealed class HelpNavigationButton : Button
 {
     private readonly HelpNavigationIcon _icon;
@@ -724,6 +1103,10 @@ public sealed class HelpNavigationButton : Button
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
     }
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public bool DarkMode { get; set; }
+
     protected override void OnPaint(PaintEventArgs pevent)
     {
         var g = pevent.Graphics;
@@ -732,15 +1115,21 @@ public sealed class HelpNavigationButton : Button
 
         var rect = new RectangleF(0.5f, 0.5f, ClientSize.Width - 1, ClientSize.Height - 1);
         var backgroundColor = !Enabled
-            ? Color.FromArgb(232, 240, 254)
+            ? (DarkMode ? Color.FromArgb(30, 41, 59) : Color.FromArgb(232, 240, 254))
             : _pressed
-                ? Color.FromArgb(191, 219, 254)
+                ? (DarkMode ? Color.FromArgb(37, 99, 235) : Color.FromArgb(191, 219, 254))
                 : _hover
-                    ? Color.FromArgb(219, 234, 254)
-                    : Color.FromArgb(239, 246, 255);
-        var borderColor = Enabled ? Color.FromArgb(59, 130, 246) : Color.FromArgb(147, 197, 253);
-        var iconColor = Enabled ? Color.FromArgb(29, 78, 216) : Color.FromArgb(75, 105, 150);
-        var textColor = Enabled ? Color.FromArgb(15, 63, 143) : Color.FromArgb(75, 105, 150);
+                    ? (DarkMode ? Color.FromArgb(30, 64, 175) : Color.FromArgb(219, 234, 254))
+                    : (DarkMode ? Color.FromArgb(17, 24, 39) : Color.FromArgb(239, 246, 255));
+        var borderColor = Enabled
+            ? (DarkMode ? Color.FromArgb(96, 165, 250) : Color.FromArgb(59, 130, 246))
+            : (DarkMode ? Color.FromArgb(51, 65, 85) : Color.FromArgb(147, 197, 253));
+        var iconColor = Enabled
+            ? (DarkMode ? Color.FromArgb(147, 197, 253) : Color.FromArgb(29, 78, 216))
+            : (DarkMode ? Color.FromArgb(100, 116, 139) : Color.FromArgb(75, 105, 150));
+        var textColor = Enabled
+            ? (DarkMode ? Color.FromArgb(191, 219, 254) : Color.FromArgb(15, 63, 143))
+            : (DarkMode ? Color.FromArgb(100, 116, 139) : Color.FromArgb(75, 105, 150));
 
         using var background = new SolidBrush(backgroundColor);
         using var borderPen = new Pen(borderColor, 1f);
@@ -754,11 +1143,12 @@ public sealed class HelpNavigationButton : Button
             EndCap = LineCap.Round,
             LineJoin = LineJoin.Round
         };
-        using var iconFill = new SolidBrush(Enabled ? Color.FromArgb(239, 246, 255) : Color.FromArgb(241, 245, 249));
+        using var iconFill = new SolidBrush(DarkMode ? Color.FromArgb(17, 24, 39) : Enabled ? Color.FromArgb(239, 246, 255) : Color.FromArgb(241, 245, 249));
         if (_icon != HelpNavigationIcon.None)
         {
             var iconRect = _icon switch
             {
+                _ when string.IsNullOrEmpty(Text) => new RectangleF((ClientSize.Width - 20) / 2f, (ClientSize.Height - 20) / 2f, 20, 20),
                 HelpNavigationIcon.Next => new RectangleF(ClientSize.Width - 42, 5, 24, 24),
                 _ => new RectangleF(18, 5, 24, 24)
             };
@@ -933,6 +1323,19 @@ internal sealed class HelpTopicsList : Control
     public List<NodHelpPage> Items => _items;
 
     public event EventHandler? SelectedIndexChanged;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public bool DarkMode { get; set; }
+
+    private Color SelectedBackColor => DarkMode ? Color.FromArgb(30, 64, 175) : Color.FromArgb(219, 234, 254);
+    private Color GroupBackColor => DarkMode ? Color.FromArgb(15, 23, 42) : Color.FromArgb(248, 250, 252);
+    private Color ChildBackColor => DarkMode ? Color.FromArgb(17, 24, 39) : Color.FromArgb(252, 253, 255);
+    private Color SelectedTextColor => DarkMode ? Color.FromArgb(239, 246, 255) : Color.FromArgb(15, 63, 143);
+    private Color GroupTextColor => DarkMode ? Color.FromArgb(147, 197, 253) : Color.FromArgb(15, 63, 143);
+    private Color BorderColor => DarkMode ? Color.FromArgb(51, 65, 85) : Color.FromArgb(203, 213, 225);
+    private Color IconBackColor => DarkMode ? Color.FromArgb(15, 23, 42) : Color.White;
+    private Color IconBorderColor => DarkMode ? Color.FromArgb(100, 116, 139) : Color.FromArgb(148, 163, 184);
 
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -1195,25 +1598,25 @@ internal sealed class HelpTopicsList : Control
         var collapsed = isGroup && _collapsedGroups.Contains(groupTitle);
         var text = isChild ? titleParts[1] : titleParts[0];
         var backgroundColor = selected
-            ? Color.FromArgb(219, 234, 254)
-            : isGroup ? Color.FromArgb(248, 250, 252)
-            : isChild ? Color.FromArgb(252, 253, 255) : BackColor;
+            ? SelectedBackColor
+            : isGroup ? GroupBackColor
+            : isChild ? ChildBackColor : BackColor;
         var textColor = selected
-            ? Color.FromArgb(15, 63, 143)
-            : isGroup ? Color.FromArgb(15, 63, 143) : ForeColor;
+            ? SelectedTextColor
+            : isGroup ? GroupTextColor : ForeColor;
 
         using (var background = new SolidBrush(backgroundColor))
             g.FillRectangle(background, rect);
 
         if (isGroup)
         {
-            using var separator = new Pen(Color.FromArgb(226, 232, 240));
+            using var separator = new Pen(BorderColor);
             g.DrawLine(separator, rect.Left + 8, rect.Bottom - 1, rect.Right - 8, rect.Bottom - 1);
         }
 
         if (isChild)
         {
-            using var guide = new Pen(Color.FromArgb(203, 213, 225), 1);
+            using var guide = new Pen(BorderColor, 1);
             var x = rect.Left + 24;
             var hasNextSibling = index + 1 < _items.Count
                 && IsSameChildGroup(_items[index].Title, _items[index + 1].Title);
@@ -1224,7 +1627,7 @@ internal sealed class HelpTopicsList : Control
 
         if (selected)
         {
-            using var accent = new SolidBrush(Color.FromArgb(37, 99, 235));
+            using var accent = new SolidBrush(DarkMode ? Color.FromArgb(96, 165, 250) : Color.FromArgb(37, 99, 235));
             g.FillRectangle(accent, rect.Left, rect.Top + 3, 3, rect.Height - 6);
         }
 
@@ -1340,14 +1743,14 @@ internal sealed class HelpTopicsList : Control
             ToggleGroup(group);
     }
 
-    private static void DrawToggle(Graphics g, Rectangle rect, bool collapsed)
+    private void DrawToggle(Graphics g, Rectangle rect, bool collapsed)
     {
-        using var border = new Pen(Color.FromArgb(96, 120, 160), 1);
-        using var fill = new SolidBrush(Color.White);
+        using var border = new Pen(DarkMode ? Color.FromArgb(100, 116, 139) : Color.FromArgb(96, 120, 160), 1);
+        using var fill = new SolidBrush(IconBackColor);
         g.FillRectangle(fill, rect);
         g.DrawRectangle(border, rect);
 
-        using var pen = new Pen(Color.FromArgb(71, 85, 105), 1.4f)
+        using var pen = new Pen(DarkMode ? Color.FromArgb(203, 213, 225) : Color.FromArgb(71, 85, 105), 1.4f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round
@@ -1359,10 +1762,12 @@ internal sealed class HelpTopicsList : Control
             g.DrawLine(pen, midX, rect.Top + 3, midX, rect.Bottom - 3);
     }
 
-    private static void DrawFolder(Graphics g, Rectangle rect, bool collapsed)
+    private void DrawFolder(Graphics g, Rectangle rect, bool collapsed)
     {
-        using var fill = new SolidBrush(collapsed ? Color.FromArgb(239, 246, 255) : Color.FromArgb(219, 234, 254));
-        using var border = new Pen(Color.FromArgb(37, 99, 235), 1);
+        using var fill = new SolidBrush(DarkMode
+            ? collapsed ? Color.FromArgb(30, 41, 59) : Color.FromArgb(30, 64, 175)
+            : collapsed ? Color.FromArgb(239, 246, 255) : Color.FromArgb(219, 234, 254));
+        using var border = new Pen(DarkMode ? Color.FromArgb(96, 165, 250) : Color.FromArgb(37, 99, 235), 1);
         using var path = new GraphicsPath();
         path.AddLine(rect.Left, rect.Top + 4, rect.Left + 5, rect.Top + 4);
         path.AddLine(rect.Left + 7, rect.Top + 1, rect.Left + 12, rect.Top + 1);
@@ -1375,26 +1780,28 @@ internal sealed class HelpTopicsList : Control
         g.SmoothingMode = SmoothingMode.None;
     }
 
-    private static void DrawLeaf(Graphics g, Rectangle rect)
+    private void DrawLeaf(Graphics g, Rectangle rect)
     {
-        using var fill = new SolidBrush(Color.White);
-        using var border = new Pen(Color.FromArgb(148, 163, 184), 1);
+        using var fill = new SolidBrush(IconBackColor);
+        using var border = new Pen(IconBorderColor, 1);
         g.FillRectangle(fill, rect);
         g.DrawRectangle(border, rect);
-        using var line = new Pen(Color.FromArgb(148, 163, 184), 1);
+        using var line = new Pen(IconBorderColor, 1);
         g.DrawLine(line, rect.Left + 3, rect.Top + 4, rect.Right - 2, rect.Top + 4);
         g.DrawLine(line, rect.Left + 3, rect.Top + 7, rect.Right - 2, rect.Top + 7);
     }
 
     private void DrawScrollbar(Graphics g, Rectangle rect)
     {
-        using var track = new SolidBrush(Color.FromArgb(248, 250, 252));
-        using var trackBorder = new Pen(Color.FromArgb(215, 221, 231));
+        using var track = new SolidBrush(DarkMode ? Color.FromArgb(15, 23, 42) : Color.FromArgb(248, 250, 252));
+        using var trackBorder = new Pen(DarkMode ? Color.FromArgb(51, 65, 85) : Color.FromArgb(215, 221, 231));
         g.FillRectangle(track, rect);
         g.DrawLine(trackBorder, rect.Left, rect.Top, rect.Left, rect.Bottom);
 
         var thumb = GetThumbRectangle();
-        using var thumbBrush = new SolidBrush(_scrollbarHover || _scrollbarDragging ? Color.FromArgb(107, 114, 128) : Color.FromArgb(139, 148, 158));
+        using var thumbBrush = new SolidBrush(_scrollbarHover || _scrollbarDragging
+            ? DarkMode ? Color.FromArgb(100, 116, 139) : Color.FromArgb(107, 114, 128)
+            : DarkMode ? Color.FromArgb(71, 85, 105) : Color.FromArgb(139, 148, 158));
         using var path = RoundedRect(thumb, thumb.Width / 2f);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.FillPath(thumbBrush, path);
