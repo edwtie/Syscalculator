@@ -2241,11 +2241,25 @@ public sealed class NodEditorForm : Form
 
     private void SetGraph3DZView(double minZ, double maxZ)
     {
-        if (minZ >= maxZ)
+        if (minZ > maxZ)
             return;
+
+        if (Math.Abs(maxZ - minZ) < GraphSurfaceApi.MinimumViewSpan)
+        {
+            var expanded = ExpandFlatGraph3DRange(minZ, maxZ);
+            minZ = expanded.Min;
+            maxZ = expanded.Max;
+        }
 
         _graph3DViewMinZ = minZ;
         _graph3DViewMaxZ = maxZ;
+    }
+
+    private static (double Min, double Max) ExpandFlatGraph3DRange(double min, double max)
+    {
+        var center = (min + max) / 2d;
+        var half = Math.Max(Graph3DDefaultHalfRange, Math.Abs(center) * 0.1d);
+        return (center - half, center + half);
     }
 
     private void ResetGraph3DSpaceView()
@@ -2424,6 +2438,10 @@ public sealed class NodEditorForm : Form
             {
                 _updatingGraphZRangeControls = false;
             }
+        }
+        else if (linesEditable && Math.Abs(GraphSurfaceApi.GetNumberBoxValue(_graphZMax) - GraphSurfaceApi.GetNumberBoxValue(_graphZMin)) < GraphSurfaceApi.MinimumViewSpan)
+        {
+            SetGraph3DRangeControls(GetGraph3DView());
         }
 
         var zEditable = linesEditable && !flat2D;
