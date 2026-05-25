@@ -37,6 +37,7 @@ public static class Graph3DRenderer
         GraphCamera3D camera,
         bool showGrid,
         bool showBoundaryFields,
+        bool showLines,
         double? gridStep,
         string disabledMessage,
         string emptyMessage,
@@ -65,7 +66,7 @@ public static class Graph3DRenderer
         if (showBoundaryFields)
             DrawMinimumBoundaryFields(graphics, plot, view, camera, showGrid);
         DrawAxisLabels(graphics, labelScene, plot, view, camera);
-        DrawData(graphics, linePoints, highlightPoints, plot, view, camera);
+        DrawData(graphics, linePoints, highlightPoints, plot, view, camera, showLines);
 
         if (!string.IsNullOrWhiteSpace(disabledMessage))
         {
@@ -319,9 +320,10 @@ public static class Graph3DRenderer
         IReadOnlyList<PointF> highlightPoints,
         Rectangle plot,
         GraphPlotView3D view,
-        GraphCamera3D camera)
+        GraphCamera3D camera,
+        bool showLines)
     {
-        if (linePoints.Count >= 2)
+        if (showLines && linePoints.Count >= 2)
         {
             var points3D = Graph3DApi.From2D(linePoints, z: 0d);
             var projected = Graph3DApi.ProjectToScreen(points3D, plot, view, camera)

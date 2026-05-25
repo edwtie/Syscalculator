@@ -541,6 +541,7 @@ internal sealed class Graph3DPreviewForm : Form
             _view,
             _camera,
             _grid.Checked,
+            showBoundaryFields: true,
             _lines.Checked,
             _gridStep,
             _disabledMessage,
