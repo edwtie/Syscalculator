@@ -977,6 +977,7 @@ public sealed class ToolEditorForm : Form
             ? value
             : null;
         string T(string key, string fallback) => HelpApi.Text(ResolveText, key, fallback);
+        var signedPackageInformation = BuildToolEditorLanguageSignedPackageInformation(language, T);
 
         HelpApi.ShowDialog(this, new HelpDialogOptions(
             T("tool_editor.help.title", "ToolEditor help"),
@@ -986,7 +987,88 @@ public sealed class ToolEditorForm : Form
                 T("help.nav.home", "Start"),
                 T("help.nav.previous", "Vorige"),
                 T("help.nav.next", "Volgende")),
-            PreferredColorScheme: PreferredWebViewColorScheme));
+            PreferredColorScheme: PreferredWebViewColorScheme,
+            ShowSignedPackageBadge: signedPackageInformation is not null,
+            SignedPackageBadgeText: signedPackageInformation?.Status ?? T("help.unsigned_language_file", "Unsigned language file"),
+            SignedPackageInformation: signedPackageInformation));
+    }
+
+    private HelpSignedPackageInformation BuildToolEditorLanguageSignedPackageInformation(
+        ToolEditorLanguageInfo language,
+        Func<string, string, string> text)
+    {
+        var displayName = string.IsNullOrWhiteSpace(language.DisplayName)
+            ? LanguageDisplayName(language.Code)
+            : language.DisplayName;
+        var code = string.IsNullOrWhiteSpace(language.Code)
+            ? "eng"
+            : language.Code;
+        var author = text("dialog.language.info.local_author", "Local file");
+        var product = "Syscalculator";
+        var packageId = string.IsNullOrWhiteSpace(language.PackageKey) ? "-" : language.PackageKey;
+        var fileName = code + ".lng";
+        var version = "-";
+        var signed = false;
+        var algorithm = "-";
+        var keyId = "-";
+        var keySha256 = "-";
+
+        if (!string.IsNullOrWhiteSpace(language.PackagePath) && File.Exists(language.PackagePath))
+        {
+            fileName = Path.GetFileName(language.PackagePath);
+            try
+            {
+                var payload = ReadLanguagePackagePayload(language.PackagePath, out var header);
+                signed = header?.Signed == true;
+                algorithm = string.IsNullOrWhiteSpace(header?.SignatureAlgorithm) ? "-" : header.SignatureAlgorithm;
+                keyId = string.IsNullOrWhiteSpace(header?.SignatureKeyId) ? "-" : header.SignatureKeyId;
+                keySha256 = string.IsNullOrWhiteSpace(header?.SignatureKeyId) || string.IsNullOrWhiteSpace(header?.SignatureAlgorithm)
+                    ? "-"
+                    : LanguagePackageSignatureVerifier.GetTrustedPublicKeySha256(header.SignatureKeyId, header.SignatureAlgorithm);
+                if (string.IsNullOrWhiteSpace(keySha256))
+                    keySha256 = "-";
+
+                if (TryReadManifestProperties(payload, out var manifest))
+                {
+                    if (!string.IsNullOrWhiteSpace(manifest.Producer))
+                        author = manifest.Producer;
+                    if (!string.IsNullOrWhiteSpace(manifest.Product))
+                        product = manifest.Product;
+                    if (!string.IsNullOrWhiteSpace(manifest.Id))
+                        packageId = manifest.Id;
+                    if (!string.IsNullOrWhiteSpace(manifest.PackageVersion))
+                        version = manifest.PackageVersion;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or JsonException or UnauthorizedAccessException)
+            {
+                signed = false;
+            }
+        }
+
+        return new HelpSignedPackageInformation(
+            text("dialog.language.info.title", "Language information"),
+            displayName,
+            signed
+                ? text("help.signed_package_verified", "Signed package verified")
+                : text("help.unsigned_language_file", "Unsigned language file"),
+            [
+                new(text("dialog.language.info.name", "Language"), displayName),
+                new(text("dialog.language.info.code", "Code"), code),
+                new(text("dialog.language.info.author", "Author"), author),
+                new(text("dialog.language.info.product", "Product"), product),
+                new(text("dialog.language.info.package", "Package"), packageId),
+                new(text("dialog.language.info.file", "File"), fileName),
+                new(text("dialog.language.info.version", "Version"), version),
+                new(text("dialog.language.info.signed", "Signed"), signed ? text("common.yes", "Yes") : text("common.no", "No")),
+                new(text("dialog.language.info.algorithm", "Algorithm"), algorithm),
+                new(text("dialog.language.info.key", "Key"), keyId),
+                new("SHA-256", keySha256)
+            ],
+            signed
+                ? text("help.signed_package_tip", "This help comes from a verified signed language package.")
+                : text("help.unsigned_language_tip", "This help comes from a loose language file and is not signed."),
+            signed);
     }
 
     private void ShowAboutSyscalculator()
@@ -2743,6 +2825,33 @@ public sealed class ToolEditorForm : Form
         catch (JsonException)
         {
             return new ManifestProperties("", "", "", "", "", "Ongeldig manifest", "", "", "");
+        }
+    }
+
+    private static bool TryReadManifestProperties(byte[] payload, out ManifestProperties properties)
+    {
+        properties = new ManifestProperties("", "", "", "", "", "", "", "", "");
+        try
+        {
+            using var memory = new MemoryStream(payload);
+            using var archive = new ZipArchive(memory, ZipArchiveMode.Read);
+            var entry = archive.Entries.FirstOrDefault(entry =>
+                NormalizePackagePath(entry.FullName).Equals("manifest.json", StringComparison.OrdinalIgnoreCase));
+            if (entry is null)
+                return false;
+
+            using var stream = entry.Open();
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            properties = ReadManifestProperties(reader.ReadToEnd());
+            return true;
+        }
+        catch (InvalidDataException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
         }
     }
 
