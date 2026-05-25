@@ -33,6 +33,8 @@ git status --short
 - Update `docs/BETA_ROADMAP.md` with what changed from the previous Beta.
 - State clearly whether this Beta has the updater package enabled.
 - State known limitations and what testers should focus on.
+- Keep `README.md` channel-specific. It is marked `merge=ours` in `.gitattributes`;
+  when merging Daily into Beta, the Beta README must stay the Beta front page.
 
 ## 3. Update Beta Manifest
 
