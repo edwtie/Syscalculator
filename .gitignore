@@ -14,6 +14,7 @@ artifacts/
 
 # .NET temporary files
 .dotnet/
+.dotnet-sdk/
 TestResults/
 *.nupkg
 *.snupkg
