@@ -1,29 +1,52 @@
-# NOD System 2.0 Full Tested Source
+# Syscalculator Production Source
 
-Deze broncode werkt het NOD-systeem verder uit met:
+Deze branch is de production-lijn van Syscalculator. Production is bedoeld als
+stabiele bron voor een geteste publieke release. Nieuwe ontwikkeling begint in
+Daily, wordt samengebracht in Beta, en komt pas daarna in Production.
 
-- NOD 1.0 legacy: `chg`, `trans`, `math ans + - * /`
-- NOD 2.0 Math: complexe sommen met `ans`, `e`, `pi`, `ln`, `log`, `abs`, `sqrt`, `pow`
-- NOD 2.0 Equation: `given`, `equation`, `solve`, `constraint`
-- NOD Data: `table`, `field`, `phoneformat`, `output`, `preview`, `backup`, `lookup` als model
-- In-memory DataTransformEngine voor testbare veldtransformaties
-- Testproject zonder externe packages
+Syscalculator bestaat nu uit vier duidelijke wegen:
+
+```text
+Syscalculator 2.0 Daily       actieve ontwikkel- en testlijn
+Syscalculator 2.0 Beta        prerelease voor testers
+Syscalculator 2.0 Production  stabiele publieke 2.0-lijn
+Syscalculator 1.74            VB6 legacy-onderhoudslijn
+```
+
+De vierde weg, Syscalculator 1.74, is dus geen oude tekst in deze README maar
+een aparte onderhoudslijn voor bestaande VB6/NOD 1.0 gebruikers. Die lijn blijft
+alleen voor legacy fixes, CHM-help, installeronderhoud en compatibiliteit.
+
+Production richt zich op Syscalculator 2.0:
+
+- WinForms app voor converteren, calculator, NOD Editor en help.
+- NOD 1.0 compatibility voor bestaande converters zoals `chg`, `trans` en `math ans + - * /`.
+- NOD 2.0 Math met `ans`, `e`, `pi`, `ln`, `log`, `abs`, `sqrt`, `pow`, trigonometrie en auto-reverse.
+- NOD 2.0 Equation met `given`, `equation`, `solve` en `constraint`.
+- NOD Data als model voor `table`, `field`, `phoneformat`, `output`, `preview`, `backup` en `lookup`.
+- Testbare engine-lagen voor parser, berekening, trace en document/data-transformaties.
 
 ## Ontwikkellijnen
 
 ```text
-Syscalculator 1.74 = VB6 onderhoudslijn voor NOD 1.0 legacy fixes
-Syscalculator 2.0 = C#/.NET beta-opvolger met NOD 1.0 compatibility en NOD 2.0 functies
+Daily      = snelste ontwikkellijn, mag breken tijdens werk
+Beta       = geteste prerelease voor gebruikers/testers
+Production = stabiele publieke 2.0-lijn
+1.74       = aparte VB6 onderhoudslijn voor oude installaties
 ```
 
-Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels voor de oude VB6-lijn.
+Zie `docs/SYSCALCULATOR_1_74_MAINTENANCE.md` voor de onderhoudsregels van de
+1.74 legacy-lijn. Zie `docs/GIT_RELEASE_BRANCH_WORKFLOW.md` voor de branch- en
+releaseworkflow.
 
 ## Projecten
 
 ```text
-src/NodSystem.Core   library
-src/NodSystem.Demo   demo-console
-src/NodSystem.Tests  simpele test-console zonder NuGet
+src/Syscalculator.UI.WinForms  production-app
+src/NodSystem.Core             NOD parser, engine en modellen
+src/NodSystem.Demo             demo-console
+src/NodSystem.Tests            simpele test-console zonder NuGet
+src/Syscalculator.UI.Uwp       UWP placeholder/experiment
 ```
 
 ## Run demo
