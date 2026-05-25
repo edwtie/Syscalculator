@@ -7,12 +7,15 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using Tiedragon.Help;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
 // Zoek/commentaar: Type-overzicht: class AboutForm bevat de hoofdlogica/data voor dit onderdeel.
 internal sealed class AboutForm : Form
 {
+    private readonly ToolEditorUiTheme _uiTheme;
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
     private LanguageCatalog _language;
     private ComboBox? _languageCombo;
     private readonly IReadOnlyList<LanguageCatalog.LanguageInfo> _languages;
@@ -42,6 +45,7 @@ internal sealed class AboutForm : Form
         _currentLanguageFile = currentLanguageFile;
         _currentLanguagePackageId = currentLanguagePackageId;
         _updateChannel = UpdateChecker.NormalizeChannel(updateChannel);
+        _uiTheme = ToolEditorUiThemeSettings.Load();
 
         ClientSize = new Size(1320, 700);
         MinimumSize = ClientSize;
@@ -52,6 +56,7 @@ internal sealed class AboutForm : Form
         StartPosition = FormStartPosition.CenterParent;
         AppWindowIcon.ApplyTo(this);
         _aboutImage = LoadAboutImage();
+        HandleCreated += (_, _) => ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
 
         RebuildContent();
     }
@@ -99,6 +104,75 @@ internal sealed class AboutForm : Form
         root.Controls.Add(bottom, 0, 1);
 
         Controls.Add(root);
+        ApplyThemeToAbout(this);
+    }
+
+    private void ApplyThemeToAbout(Control control)
+    {
+        var back = IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(246, 248, 252);
+        var panelBack = IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White;
+        var sectionBack = IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White;
+        var bottomBack = IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(238, 242, 248);
+        var text = IsDarkTheme ? Color.FromArgb(229, 236, 246) : Color.FromArgb(39, 51, 69);
+        var strong = IsDarkTheme ? Color.FromArgb(147, 197, 253) : Color.FromArgb(0, 65, 170);
+        var border = IsDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(103, 158, 216);
+        var border2 = IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(200, 220, 241);
+
+        switch (control)
+        {
+            case RoundedTableLayoutPanel roundedTable:
+                roundedTable.BackColor = panelBack;
+                roundedTable.BorderColor = border;
+                roundedTable.SecondaryBorderColor = border2;
+                break;
+            case RoundedPanel roundedPanel:
+                roundedPanel.BackColor = panelBack;
+                roundedPanel.BorderColor = border;
+                roundedPanel.SecondaryBorderColor = border2;
+                break;
+            case TableLayoutPanel table:
+                table.BackColor = table.RowCount == 1 && table.ColumnCount == 2 ? bottomBack : sectionBack;
+                break;
+            case FlowLayoutPanel flow:
+                flow.BackColor = bottomBack;
+                break;
+            case LinkLabel link:
+                link.BackColor = sectionBack;
+                link.ForeColor = text;
+                link.LinkColor = IsDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(0, 80, 180);
+                link.ActiveLinkColor = IsDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(0, 50, 130);
+                link.VisitedLinkColor = link.LinkColor;
+                break;
+            case Label label:
+                label.BackColor = Color.Transparent;
+                if (label.Font.Bold || label.Font.FontFamily.Name.Contains("Symbol", StringComparison.OrdinalIgnoreCase))
+                    label.ForeColor = strong;
+                else
+                    label.ForeColor = text;
+                break;
+            case ComboBox combo:
+                combo.BackColor = IsDarkTheme ? Color.FromArgb(31, 41, 55) : SystemColors.Window;
+                combo.ForeColor = IsDarkTheme ? Color.White : SystemColors.WindowText;
+                break;
+            case Button button:
+                button.FlatStyle = IsDarkTheme ? FlatStyle.Flat : FlatStyle.Standard;
+                button.BackColor = IsDarkTheme ? Color.FromArgb(39, 39, 42) : SystemColors.Control;
+                button.ForeColor = IsDarkTheme ? Color.White : SystemColors.ControlText;
+                button.UseVisualStyleBackColor = !IsDarkTheme;
+                if (IsDarkTheme)
+                    button.FlatAppearance.BorderColor = Color.FromArgb(82, 82, 91);
+                break;
+            case PictureBox picture:
+                picture.BackColor = IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White;
+                break;
+            default:
+                control.BackColor = back;
+                control.ForeColor = text;
+                break;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyThemeToAbout(child);
     }
 
     // Zoek/commentaar: Bouwt de UI of data-opbouw voor BuildHeroControl.
