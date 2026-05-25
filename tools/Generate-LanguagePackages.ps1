@@ -37,7 +37,12 @@ if ($signingEnabled) {
         throw "Signing requires both -SigningPrivateKey and -SigningKeyId."
     }
 
-    $signingPrivateKeyPath = Join-Path $repoRoot $SigningPrivateKey
+    $signingPrivateKeyPath = if ([System.IO.Path]::IsPathRooted($SigningPrivateKey)) {
+        $SigningPrivateKey
+    }
+    else {
+        Join-Path $repoRoot $SigningPrivateKey
+    }
     if (-not (Test-Path $signingPrivateKeyPath)) {
         throw "Signing private key not found: $signingPrivateKeyPath"
     }
