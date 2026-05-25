@@ -1,6 +1,6 @@
 {
   "product": "Syscalculator",
-  "generatedAtUtc": "2026-05-25T12:48:02Z",
+  "generatedAtUtc": "2026-05-25T13:56:49Z",
   "channels": {
     "daily": {
       "version": "2026.05.25.3",
@@ -23,12 +23,12 @@
       "title": "Syscalculator 2.0 Beta 2",
       "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.25-beta/Syscalculator-2.0-beta-2.0.2026.05.25.exe",
       "packageUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.25-beta/Syscalculator-2.0-beta-2.0.2026.05.25.zip",
-      "packageId": "beta-2026.05.25-installer-001",
-      "sha256": "ea3e0e3c0709a620418bed69f8a65fe027a25826be46e41ef1e6015cbdfd6932",
+      "packageId": "beta-2026.05.25-beta2-003",
+      "sha256": "03848ddf69713833df59e9dd98cc8cfa9a42dc08e89b723b352c598af312f33e",
       "languagePackagesUrl": "https://www.tiedragon.com/packages/languages/language-packages.json",
       "languagePackagesActive": true,
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.25-beta",
-      "summary": "Beta 2 includes signed language packages, package verification badges, dark/light theme polish across help, preview, editor, media and About dialogs, improved Graph2D/Graph3D interaction, and updated language package documentation."
+      "summary": "Beta 2 includes signed language packages with the Beta 2 signing key, package verification badges, dark/light theme polish across help, preview, editor, media and About dialogs, improved Graph2D/Graph3D interaction, and updated language package documentation."
     },
     "stable": {
       "version": "",
