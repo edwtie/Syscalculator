@@ -31,7 +31,12 @@ internal static class AppVersionInfo
     {
         var packageId = ReadInstalledPackageId();
         if (packageId.StartsWith("beta-", StringComparison.OrdinalIgnoreCase))
-            return "Beta";
+        {
+            return packageId.Contains("beta2", StringComparison.OrdinalIgnoreCase) ||
+                   packageId.Contains("beta-2", StringComparison.OrdinalIgnoreCase)
+                ? "Beta 2"
+                : "Beta";
+        }
 
         if (packageId.StartsWith("production-", StringComparison.OrdinalIgnoreCase) ||
             packageId.StartsWith("stable-", StringComparison.OrdinalIgnoreCase))

@@ -43,9 +43,15 @@ internal static class UpdateChecker
 
     public static string NormalizeChannel(string? channel)
     {
-        return channel?.Trim().ToLowerInvariant() switch
+        var normalized = channel?.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+            return "daily";
+
+        if (normalized.StartsWith("beta", StringComparison.Ordinal))
+            return "beta";
+
+        return normalized switch
         {
-            "beta" => "beta",
             "stable" or "production" => "stable",
             _ => "daily"
         };
