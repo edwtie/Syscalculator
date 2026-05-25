@@ -1,20 +1,20 @@
 {
   "product": "Syscalculator",
-  "generatedAtUtc": "2026-05-25T11:55:59Z",
+  "generatedAtUtc": "2026-05-25T12:40:02Z",
   "channels": {
     "daily": {
-      "version": "2026.05.25.1",
+      "version": "2026.05.25.3",
       "displayVersion": "2026.05.25",
       "date": "2026-05-25",
       "title": "Syscalculator 2.0 Daily 2026-05-25",
       "downloadUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.25-daily/Syscalculator-2.0-daily-2.0.2026.05.25.exe",
       "packageUrl": "https://github.com/edwtie/Syscalculator/releases/download/v2.0.2026.05.25-daily/Syscalculator-2.0-daily-2.0.2026.05.25.zip",
-      "packageId": "daily-2026.05.25-installer-001",
-      "sha256": "323da80b9e738d391922094ecfe04bfb58e56531e25db964cab2bd658dd30e0a",
+      "packageId": "daily-2026.05.25-media-theme-003",
+      "sha256": "2639142808012af944fb08c2a414b1e0edaf358ad717e5f3f1028aaa06ef872d",
       "languagePackagesUrl": "https://www.tiedragon.com/packages/languages/language-packages.json",
       "languagePackagesActive": true,
       "releaseNotesUrl": "https://github.com/edwtie/Syscalculator/releases/tag/v2.0.2026.05.25-daily",
-      "summary": "Daily build with signed language packages, package verification badges, dark/light theme polish across help, preview and editor dialogs, improved Graph2D/Graph3D interaction, and updated language package documentation."
+      "summary": "Daily build with signed language packages, package verification badges, dark/light theme polish across help, preview, editor, media and About dialogs, improved Graph2D/Graph3D interaction, and updated language package documentation."
     },
     "beta": {
       "version": "2.0.2026.05.16",

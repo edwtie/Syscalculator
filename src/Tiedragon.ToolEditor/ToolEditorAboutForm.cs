@@ -13,6 +13,8 @@ internal sealed class ToolEditorAboutForm : Form
     private const string Email = "info@tiedragon.com";
     private const string DefaultLanguageFile = "ned.lng";
 
+    private readonly ToolEditorUiTheme _uiTheme;
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
     private ComboBox? _languageCombo;
     private string _selectedLanguageFile = DefaultLanguageFile;
     private Dictionary<string, string> _selectedLanguage = [];
@@ -22,6 +24,7 @@ internal sealed class ToolEditorAboutForm : Form
     {
         _englishLanguage = LoadLanguageFile("eng.lng");
         _selectedLanguage = LoadLanguageFile(DefaultLanguageFile);
+        _uiTheme = ToolEditorUiThemeSettings.Load();
 
         Text = "About Syscalculator 2.0";
         ClientSize = new Size(980, 735);
@@ -31,7 +34,8 @@ internal sealed class ToolEditorAboutForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         StartPosition = FormStartPosition.CenterParent;
-        BackColor = Color.FromArgb(246, 248, 252);
+        BackColor = IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(246, 248, 252);
+        HandleCreated += (_, _) => ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
 
         BuildContent();
     }
@@ -59,6 +63,76 @@ internal sealed class ToolEditorAboutForm : Form
         root.Controls.Add(bottom, 0, 1);
 
         Controls.Add(root);
+        ApplyThemeToAbout(this);
+    }
+
+    private void ApplyThemeToAbout(Control control)
+    {
+        var back = IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(246, 248, 252);
+        var panelBack = IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White;
+        var bottomBack = IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(238, 242, 248);
+        var text = IsDarkTheme ? Color.FromArgb(229, 236, 246) : Color.FromArgb(39, 51, 69);
+        var strong = IsDarkTheme ? Color.FromArgb(147, 197, 253) : Color.FromArgb(0, 65, 170);
+        var mutedPanel = IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(232, 241, 252);
+        var border = IsDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(103, 158, 216);
+        var border2 = IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(198, 218, 240);
+
+        switch (control)
+        {
+            case AboutRoundedTableLayoutPanel roundedTable:
+                roundedTable.BackColor = panelBack;
+                roundedTable.BorderColor = border;
+                roundedTable.SecondaryBorderColor = border2;
+                break;
+            case AboutRoundedPanel roundedPanel:
+                roundedPanel.BackColor = roundedPanel.Controls.OfType<Label>().Any(label => label.Font.Bold)
+                    ? mutedPanel
+                    : panelBack;
+                roundedPanel.BorderColor = roundedPanel.BorderColor == Color.Transparent ? Color.Transparent : border;
+                roundedPanel.SecondaryBorderColor = roundedPanel.SecondaryBorderColor == Color.Transparent ? Color.Transparent : border2;
+                break;
+            case TableLayoutPanel table:
+                table.BackColor = table.RowCount == 1 && table.ColumnCount == 2 ? bottomBack : panelBack;
+                break;
+            case FlowLayoutPanel flow:
+                flow.BackColor = bottomBack;
+                break;
+            case LinkLabel link:
+                link.BackColor = panelBack;
+                link.ForeColor = text;
+                link.LinkColor = IsDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(0, 80, 180);
+                link.ActiveLinkColor = IsDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(0, 50, 130);
+                link.VisitedLinkColor = link.LinkColor;
+                break;
+            case Label label:
+                label.BackColor = Color.Transparent;
+                label.ForeColor = label.Font.Bold || label.Font.FontFamily.Name.Contains("Symbol", StringComparison.OrdinalIgnoreCase)
+                    ? strong
+                    : text;
+                break;
+            case ComboBox combo:
+                combo.BackColor = IsDarkTheme ? Color.FromArgb(31, 41, 55) : SystemColors.Window;
+                combo.ForeColor = IsDarkTheme ? Color.White : SystemColors.WindowText;
+                break;
+            case Button button:
+                button.FlatStyle = IsDarkTheme ? FlatStyle.Flat : FlatStyle.Standard;
+                button.BackColor = IsDarkTheme ? Color.FromArgb(39, 39, 42) : SystemColors.Control;
+                button.ForeColor = IsDarkTheme ? Color.White : SystemColors.ControlText;
+                button.UseVisualStyleBackColor = !IsDarkTheme;
+                if (IsDarkTheme)
+                    button.FlatAppearance.BorderColor = Color.FromArgb(82, 82, 91);
+                break;
+            case PictureBox picture:
+                picture.BackColor = panelBack;
+                break;
+            default:
+                control.BackColor = back;
+                control.ForeColor = text;
+                break;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyThemeToAbout(child);
     }
 
     private static Control BuildHero()
