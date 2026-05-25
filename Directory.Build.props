@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)' == '' and !Exists('$(MSBuildToolsPath)\NuGet.targets') and Exists('$(MSBuildToolsPath)\runtimes\any\native\NuGet.targets')">$(MSBuildToolsPath)\runtimes\any\native\NuGet.targets</NuGetRestoreTargets>
+    <RestoreTaskAssemblyFile Condition="'$(RestoreTaskAssemblyFile)' == '' and !Exists('$(MSBuildToolsPath)\NuGet.targets') and Exists('$(MSBuildToolsPath)\NuGet.Build.Tasks.dll')">$(MSBuildToolsPath)\NuGet.Build.Tasks.dll</RestoreTaskAssemblyFile>
+  </PropertyGroup>
+</Project>
