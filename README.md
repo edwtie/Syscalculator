@@ -1,8 +1,10 @@
-# Syscalculator 2.0 Daily Source
+# Syscalculator 2.0 Beta 2 Source
 
 Syscalculator is de nieuwe C#/.NET lijn van de oude Syscalculator/NOD software. De repository bevat nu meer dan alleen de NOD-engine: de WinForms app, Tiedragon graph-libraries, de nieuwe language-package toolchain, help/HTML tooling, updater en de onderhoudslijn voor Syscalculator 1.74.
 
-De daily-lijn is bedoeld als actieve ontwikkelbron voor Beta 2. Belangrijke onderdelen zijn al beschikbaar, maar daily blijft een testkanaal.
+De beta-lijn is bedoeld als geteste prerelease voor gebruikers die nieuwer willen
+testen dan production, maar stabieler dan daily. Deze branch bevat Beta 2 met de
+wijzigingen sinds Beta 1.
 
 ## Release 2026-05-25
 
@@ -18,7 +20,8 @@ Nieuw sinds Beta 1:
 - Language Package: alle 9 `.lngpdk` taalpackages zijn signed; Beta 2 gebruikt `tiedragon-language-beta-2026`.
 - Build/installer: daily/beta/release weigert nu te bouwen wanneer package signing ontbreekt.
 
-Daily blijft het ontwikkelkanaal en gebruikt `tiedragon-language-dev-2026`.
+Daily blijft het ontwikkelkanaal en gebruikt `tiedragon-language-dev-2026`; deze
+beta gebruikt `tiedragon-language-beta-2026`.
 
 De updater gebruikt de Tiedragon manifest-route:
 
