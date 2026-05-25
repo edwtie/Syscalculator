@@ -13,12 +13,19 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..\..')
 $project = Join-Path $repoRoot 'src\syscalculator\Syscalculator.UI.WinForms.csproj'
 $updaterProject = Join-Path $repoRoot 'src\Syscalculator.Updater\Syscalculator.Updater.csproj'
 $languagePackageScript = Join-Path $repoRoot 'tools\Generate-LanguagePackages.ps1'
-$defaultLanguageSigningPrivateKey = Join-Path $repoRoot 'artifacts\signing\language\tiedragon-language-dev-2026.private.pem'
+$defaultLanguageSigningKeyId = if ($Channel -eq 'beta') {
+    'tiedragon-language-beta-2026'
+}
+else {
+    'tiedragon-language-dev-2026'
+}
+$defaultLanguageSigningPrivateKeyName = $defaultLanguageSigningKeyId + '.private.pem'
+$defaultLanguageSigningPrivateKey = Join-Path $repoRoot (Join-Path 'artifacts\signing\language' $defaultLanguageSigningPrivateKeyName)
 $languageSigningPrivateKey = if (-not [string]::IsNullOrWhiteSpace($env:SYSCALC_LANGUAGE_SIGNING_PRIVATE_KEY)) {
     $env:SYSCALC_LANGUAGE_SIGNING_PRIVATE_KEY
 }
 elseif (Test-Path -LiteralPath $defaultLanguageSigningPrivateKey) {
-    'artifacts\signing\language\tiedragon-language-dev-2026.private.pem'
+    Join-Path 'artifacts\signing\language' $defaultLanguageSigningPrivateKeyName
 }
 else {
     ''
@@ -27,7 +34,7 @@ $languageSigningKeyId = if (-not [string]::IsNullOrWhiteSpace($env:SYSCALC_LANGU
     $env:SYSCALC_LANGUAGE_SIGNING_KEY_ID
 }
 elseif (-not [string]::IsNullOrWhiteSpace($languageSigningPrivateKey)) {
-    'tiedragon-language-dev-2026'
+    $defaultLanguageSigningKeyId
 }
 else {
     ''
