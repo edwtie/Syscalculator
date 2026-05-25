@@ -159,6 +159,7 @@ internal sealed class Graph3DPreviewForm : Form
         _lines.CheckedChanged += (_, _) =>
         {
             UpdateRangeInputMode();
+            Update3DViewportRangeControlsIfNeeded();
             InvalidateCanvas();
             NotifySyncStateChanged();
         };
@@ -724,8 +725,32 @@ internal sealed class Graph3DPreviewForm : Form
     {
         _camera = Graph3DApi.ZoomCamera(_camera, factor);
         _rotationDial.Camera = _camera;
+        Update3DViewportRangeControlsIfNeeded();
         _canvas.Invalidate();
         NotifySyncStateChanged();
+    }
+
+    private void Update3DViewportRangeControlsIfNeeded()
+    {
+        if (_lines.Checked)
+            return;
+
+        var plot = GraphSurfaceApi.GetPlotRectangle(_canvas);
+        var view = Graph3DApi.CreateCameraAdjustedView(plot, _view, _camera);
+        _applyingData = true;
+        try
+        {
+            SetNumberBox(_xMin, view.MinX);
+            SetNumberBox(_xMax, view.MaxX);
+            SetNumberBox(_yMin, view.MinY);
+            SetNumberBox(_yMax, view.MaxY);
+            SetNumberBox(_zMin, view.MinZ);
+            SetNumberBox(_zMax, view.MaxZ);
+        }
+        finally
+        {
+            _applyingData = false;
+        }
     }
 
     private GraphPlotView Get2DView()
@@ -810,6 +835,7 @@ internal sealed class Graph3DPreviewForm : Form
             PanY = _camera.PanY + dy
         };
         _rotationDial.Camera = _camera;
+        Update3DViewportRangeControlsIfNeeded();
         _canvas.Invalidate();
         NotifySyncStateChanged();
     }
