@@ -228,35 +228,54 @@ public static class GraphGeometry3D
         var centerX = (view.MinX + view.MaxX) / 2d;
         var centerY = (view.MinY + view.MaxY) / 2d;
         var centerZ = (view.MinZ + view.MaxZ) / 2d;
+        var referenceSpan = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Max(Math.Abs(spanX), Math.Max(Math.Abs(spanY), Math.Abs(spanZ))));
+        var graphScale = referenceSpan / 2d;
+        var cameraHalfX = 1d / zoom;
+        var cameraHalfY = 1d / zoom;
+        var cameraHalfZ = 1d / zoom;
 
         if (plot.Width > 0 && plot.Height > 0)
         {
-            var referenceSpan = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Max(Math.Abs(spanX), Math.Max(Math.Abs(spanY), Math.Abs(spanZ))));
             var projectionScale = Math.Min(plot.Width, plot.Height) * 0.50d * zoom;
             if (projectionScale > 0d)
             {
+                cameraHalfX = plot.Width / 2d / projectionScale;
+                cameraHalfY = plot.Height / 2d / projectionScale;
+                cameraHalfZ = Math.Max(GraphGeometry2D.MinimumViewSpan / referenceSpan, Math.Abs(spanZ) / referenceSpan / zoom);
                 var rotatedOffset = new GraphPoint3D(
                     -camera.PanX / projectionScale,
                     camera.PanY / projectionScale,
                     0d);
                 var graphOffset = InverseRotate(rotatedOffset, camera);
-                var graphScale = referenceSpan / 2d;
                 centerX += graphOffset.X * graphScale;
                 centerY += graphOffset.Y * graphScale;
                 centerZ += graphOffset.Z * graphScale;
             }
         }
 
-        var halfX = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanX) / zoom) / 2d;
-        var halfY = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanY) / zoom) / 2d;
-        var halfZ = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanZ) / zoom) / 2d;
+        var corners = BuildCameraBoxCorners(cameraHalfX, cameraHalfY, cameraHalfZ)
+            .Select(point => InverseRotate(point, camera))
+            .Select(point => new GraphPoint3D(
+                centerX + point.X * graphScale,
+                centerY + point.Y * graphScale,
+                centerZ + point.Z * graphScale))
+            .ToArray();
+
         return new GraphPlotView3D(
-            centerX - halfX,
-            centerX + halfX,
-            centerY - halfY,
-            centerY + halfY,
-            centerZ - halfZ,
-            centerZ + halfZ);
+            corners.Min(point => point.X),
+            corners.Max(point => point.X),
+            corners.Min(point => point.Y),
+            corners.Max(point => point.Y),
+            corners.Min(point => point.Z),
+            corners.Max(point => point.Z));
+    }
+
+    private static IEnumerable<GraphPoint3D> BuildCameraBoxCorners(double halfX, double halfY, double halfZ)
+    {
+        foreach (var x in new[] { -halfX, halfX })
+        foreach (var y in new[] { -halfY, halfY })
+        foreach (var z in new[] { -halfZ, halfZ })
+            yield return new GraphPoint3D(x, y, z);
     }
 
     private static GraphPoint3D InverseRotate(GraphPoint3D point, GraphCamera3D camera)
