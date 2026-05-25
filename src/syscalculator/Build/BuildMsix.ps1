@@ -28,11 +28,16 @@ $isSelfContained = $true
 
 if ([string]::IsNullOrWhiteSpace($PackageVersion)) {
     $today = Get-Date
-    $PackageVersion = '2.0.{0}.0' -f $today.Year
+    $PackageVersion = '2.0.{0}.0' -f ($today.Year + 1)
 }
 
 if ($PackageVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
-    throw "MSIX package version must have four numeric parts, for example 2.0.2026.518. Current value: $PackageVersion"
+    throw "MSIX package version must have four numeric parts, for example 2.0.2027.0. Current value: $PackageVersion"
+}
+
+$versionParts = $PackageVersion.Split('.') | ForEach-Object { [int]$_ }
+if ($versionParts[3] -ne 0) {
+    throw "Microsoft Store MSIX packages must use revision 0. Increment the third version part instead, for example 2.0.2027.0. Current value: $PackageVersion"
 }
 
 function Find-MakeAppx {
@@ -53,6 +58,23 @@ function Find-MakeAppx {
     }
 
     throw 'makeappx.exe was not found. Install the Windows SDK first.'
+}
+
+function Get-Sha256Hash {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $hashBytes = $sha256.ComputeHash($stream)
+        return -join ($hashBytes | ForEach-Object { $_.ToString('x2') })
+    }
+    finally {
+        $stream.Dispose()
+        $sha256.Dispose()
+    }
 }
 
 function New-MsixLogo {
@@ -193,7 +215,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "makeappx pack failed with exit code $LASTEXITCODE."
 }
 
-$hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $packagePath).Hash
+$hash = Get-Sha256Hash -Path $packagePath
 Write-Host "MSIX created: $packagePath"
 Write-Host "MSIX version: $PackageVersion"
 Write-Host "MSIX sha256: $hash"

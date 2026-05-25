@@ -18,6 +18,7 @@ public static class ToolEditorApi
         {
             GripStyle = ToolStripGripStyle.Hidden,
             BackColor = colors.ToolbarBack,
+            ForeColor = colors.Text,
             Padding = new Padding(5, 3, 5, 3),
             Dock = DockStyle.Top,
             ImageScalingSize = new Size(20, 20),
@@ -35,6 +36,7 @@ public static class ToolEditorApi
         string? tooltip = null,
         ToolEditorPalette? palette = null)
     {
+        var colors = palette ?? ToolEditorPalette.Default;
         var button = new ToolStripButton(text)
         {
             DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
@@ -43,7 +45,9 @@ public static class ToolEditorApi
             Image = CreateIcon(icon, palette),
             ImageTransparentColor = Color.Transparent,
             Padding = new Padding(2, 1, 2, 1),
-            ToolTipText = string.IsNullOrWhiteSpace(tooltip) ? text : tooltip
+            ToolTipText = string.IsNullOrWhiteSpace(tooltip) ? text : tooltip,
+            BackColor = colors.ToolbarBack,
+            ForeColor = colors.Text
         };
 
         button.Click += click;

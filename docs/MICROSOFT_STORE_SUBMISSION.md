@@ -37,12 +37,16 @@ Official Microsoft references:
 - Distribute Win32 apps: https://learn.microsoft.com/en-us/windows/apps/distribute-through-store/how-to-distribute-your-win32-app-through-microsoft-store
 - MSI/EXE package upload: https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/upload-app-packages
 - MSI/EXE package requirements: https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/app-package-requirements
+- App capability declarations and restricted capabilities: https://learn.microsoft.com/en-us/windows/uwp/packaging/app-capability-declarations#restricted-capabilities
 
 ## Production Rules
 
 - Channel: `production`
 - Do not submit Daily packages.
 - Submit Beta MSIX only when using a deliberate tester/private-audience submission.
+- Keep Appx/MSIX capabilities minimal. The UWP manifest declares no capabilities until code needs them.
+- The WinForms MSIX generator keeps `internetClient` because updater and feedback use HTTPS.
+- The WinForms MSIX generator keeps `runFullTrust` because `Syscalculator.exe` starts through `Windows.FullTrustApplication`; removing it creates a package that cannot run as the desktop app. Microsoft documents `runFullTrust` as a restricted capability, so Store submission must include a clear justification for the desktop/full-trust scenario.
 - Use a versioned HTTPS installer URL, not a mutable generic file name.
 - Keep the installer version date-only when possible, for example `2.0.2026.05.17`.
 - Keep Store release notes user-facing and short.

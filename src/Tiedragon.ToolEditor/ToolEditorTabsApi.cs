@@ -9,6 +9,12 @@ namespace Tiedragon.ToolEditor;
 /// </summary>
 public static class ToolEditorTabsApi
 {
+    private static readonly Color TabSelectedBack = Color.FromArgb(31, 41, 55);
+    private static readonly Color TabInactiveBack = Color.FromArgb(15, 23, 42);
+    private static readonly Color TabBorder = Color.FromArgb(55, 65, 81);
+    private static readonly Color TabSelectedText = Color.FromArgb(248, 250, 252);
+    private static readonly Color TabInactiveText = Color.FromArgb(203, 213, 225);
+
     /// <summary>
     /// Creates the visual tab strip used above editor content.
     /// </summary>
@@ -62,6 +68,57 @@ public static class ToolEditorTabsApi
     }
 
     /// <summary>
+    /// Creates the shared close glyph button used by tabs and lightweight panels.
+    /// </summary>
+    public static Button CreateCloseButton(EventHandler close)
+    {
+        var button = new ToolEditorTabCloseButton();
+        button.Click += close;
+        return button;
+    }
+
+    /// <summary>
+    /// Creates the shared close glyph button with custom hover colors for non-tab surfaces.
+    /// </summary>
+    public static Button CreateCloseButton(
+        EventHandler close,
+        Color glyphColor,
+        Color hoverGlyphColor,
+        Color hoverBackColor,
+        Color pressedBackColor)
+    {
+        var button = new ToolEditorTabCloseButton
+        {
+            GlyphColor = glyphColor,
+            HoverGlyphColor = hoverGlyphColor,
+            HoverBackColor = hoverBackColor,
+            PressedBackColor = pressedBackColor
+        };
+        button.Click += close;
+        return button;
+    }
+
+    /// <summary>
+    /// Applies shared close glyph colors after a lightweight panel changes state.
+    /// </summary>
+    public static void ConfigureCloseButtonColors(
+        Button button,
+        Color glyphColor,
+        Color hoverGlyphColor,
+        Color hoverBackColor,
+        Color pressedBackColor)
+    {
+        if (button is not ToolEditorTabCloseButton closeButton)
+            return;
+
+        closeButton.GlyphColor = glyphColor;
+        closeButton.HoverGlyphColor = hoverGlyphColor;
+        closeButton.HoverBackColor = hoverBackColor;
+        closeButton.PressedBackColor = pressedBackColor;
+        closeButton.Invalidate();
+    }
+
+    /// <summary>
     /// Applies selected/dirty state and title text to a tab header.
     /// </summary>
     public static void SetHeaderState(Control headerPanel, Label title, string text, bool selected, bool dirty, Font baseFont)
@@ -74,8 +131,34 @@ public static class ToolEditorTabsApi
         }
 
         title.Text = text;
-        title.ForeColor = selected ? Color.Black : Color.FromArgb(40, 55, 75);
+        title.ForeColor = selected ? TabSelectedText : TabInactiveText;
         title.Font = new Font(baseFont, selected ? FontStyle.Bold : FontStyle.Regular);
+    }
+
+    /// <summary>
+    /// Attaches a tab context menu that opens on right-click without selecting or opening the tab.
+    /// </summary>
+    public static void AttachContextMenu(ContextMenuStrip menu, params Control[] controls)
+    {
+        foreach (var control in controls)
+        {
+            control.ContextMenuStrip = null;
+            control.MouseDown += (_, e) =>
+            {
+                if (e.Button != MouseButtons.Right)
+                    return;
+
+                var screenLocation = control.PointToScreen(e.Location);
+                control.BeginInvoke(() =>
+                {
+                    if (control.IsDisposed || menu.IsDisposed)
+                        return;
+
+                    var target = controls.FirstOrDefault(item => !item.IsDisposed && item.Visible) ?? control;
+                    menu.Show(target, target.PointToClient(screenLocation));
+                });
+            };
+        }
     }
 
     private sealed class ToolEditorTabHeaderPanel : Panel
@@ -100,14 +183,14 @@ public static class ToolEditorTabsApi
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             var rect = new Rectangle(0, 0, Width - 1, Height - 1);
             using var path = RoundedTopRect(rect, 5);
-            using var fill = new SolidBrush(Selected ? Color.White : Color.FromArgb(242, 246, 252));
-            using var border = new Pen(Color.FromArgb(190, 200, 214));
+            using var fill = new SolidBrush(Selected ? TabSelectedBack : TabInactiveBack);
+            using var border = new Pen(TabBorder);
             e.Graphics.FillPath(fill, path);
             e.Graphics.DrawPath(border, path);
 
             if (Selected)
             {
-                using var cover = new Pen(Color.White, 2);
+                using var cover = new Pen(TabSelectedBack, 2);
                 e.Graphics.DrawLine(cover, 1, Height - 2, Width - 2, Height - 2);
                 e.Graphics.DrawLine(cover, 1, Height - 1, Width - 2, Height - 1);
             }
@@ -135,7 +218,7 @@ public static class ToolEditorTabsApi
         {
             base.OnPaint(e);
             var y = Height - 1;
-            using var border = new Pen(Color.FromArgb(205, 212, 222));
+            using var border = new Pen(TabBorder);
             var x = 0;
 
             foreach (Control control in Controls)
@@ -172,6 +255,26 @@ public static class ToolEditorTabsApi
             UseVisualStyleBackColor = false;
         }
 
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color GlyphColor { get; set; } = Color.FromArgb(45, 67, 98);
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color HoverGlyphColor { get; set; } = Color.FromArgb(0, 74, 173);
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color PressedGlyphColor { get; set; } = Color.White;
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color HoverBackColor { get; set; } = Color.FromArgb(226, 238, 255);
+
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Color PressedBackColor { get; set; } = Color.FromArgb(40, 94, 170);
+
         protected override void OnMouseEnter(EventArgs e)
         {
             _hovered = true;
@@ -204,18 +307,22 @@ public static class ToolEditorTabsApi
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            var tabBackColor = Parent is ToolEditorTabHeaderPanel { Selected: true }
-                ? Color.White
-                : Color.FromArgb(242, 246, 252);
+            var tabBackColor = Parent switch
+            {
+                ToolEditorTabHeaderPanel { Selected: true } => TabSelectedBack,
+                ToolEditorTabHeaderPanel => TabInactiveBack,
+                { } parent => parent.BackColor,
+                _ => BackColor
+            };
             e.Graphics.Clear(tabBackColor);
 
-            var glyphColor = Color.FromArgb(45, 67, 98);
+            var glyphColor = GlyphColor;
             if (_hovered)
             {
-                var back = _pressed ? Color.FromArgb(40, 94, 170) : Color.FromArgb(226, 238, 255);
+                var back = _pressed ? PressedBackColor : HoverBackColor;
                 using var fill = new SolidBrush(back);
                 e.Graphics.FillRectangle(fill, new Rectangle(2, 3, Width - 4, Height - 6));
-                glyphColor = _pressed ? Color.White : Color.FromArgb(0, 74, 173);
+                glyphColor = _pressed ? PressedGlyphColor : HoverGlyphColor;
             }
 
             using var pen = new Pen(glyphColor, 2.1f)
@@ -226,7 +333,7 @@ public static class ToolEditorTabsApi
 
             var cx = Width / 2;
             var cy = Height / 2;
-            const int r = 4;
+            var r = Math.Max(4, Math.Min(Width, Height) / 4);
             e.Graphics.DrawLine(pen, cx - r, cy - r, cx + r, cy + r);
             e.Graphics.DrawLine(pen, cx + r, cy - r, cx - r, cy + r);
         }
