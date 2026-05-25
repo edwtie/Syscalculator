@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Tiedragon.ClipboardConvert;
 using Tiedragon.NodSystem.Core;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -19,6 +20,10 @@ namespace Syscalculator.UI.WinForms;
 /// </summary>
 public sealed class WizardExpressForm : Form
 {
+    private static readonly Color DarkWindowBackColor = Color.FromArgb(18, 24, 32);
+    private static readonly Color DarkPanelBackColor = Color.FromArgb(31, 41, 55);
+    private static readonly Color DarkEditorTextColor = Color.FromArgb(226, 232, 240);
+    private static readonly Color DarkBorderColor = Color.FromArgb(55, 65, 81);
     private static readonly Regex NumericFragmentRegex = new(
         @"[-+]?(?:\d+(?:[.,]\d+)?|\d*[.,]\d+)",
         RegexOptions.Compiled);
@@ -51,6 +56,15 @@ public sealed class WizardExpressForm : Form
     private bool _clipboardListenerRegistered;
     private uint _lastObservedClipboardSequence;
     private WizardStatus _status = WizardStatus.Empty;
+    private ToolEditorUiTheme _uiTheme;
+
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? DarkWindowBackColor : Color.FromArgb(244, 246, 249);
+    private Color PanelBackColor => IsDarkTheme ? DarkPanelBackColor : Color.White;
+    private Color MenuBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(242, 242, 242);
+    private Color TextColor => IsDarkTheme ? DarkEditorTextColor : Color.Black;
+    private Color ButtonBackColor => IsDarkTheme ? Color.FromArgb(37, 99, 235) : SystemColors.Control;
+    private Color ButtonTextColor => IsDarkTheme ? Color.White : SystemColors.ControlText;
 
     private enum WizardStatus { Empty, Ready, Done, ClipboardOverwritten, Error }
 
@@ -58,6 +72,7 @@ public sealed class WizardExpressForm : Form
 
     public WizardExpressForm(NodDocument document, NodUiMetadata? meta = null)
     {
+        _uiTheme = ToolEditorUiThemeSettings.Load();
         _document = document;
         _meta = meta ?? new NodUiMetadata
         {
@@ -78,16 +93,19 @@ public sealed class WizardExpressForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
-        BackColor = Color.FromArgb(244, 246, 249);
+        BackColor = WindowBackColor;
 
         BuildMenu();
         BuildLayout();
+        ApplyWizardTheme();
+        ToolEditorUiThemeSettings.ThemeChanged += ToolEditorThemeChanged;
         Shown += (_, _) =>
         {
             LoadInputFromClipboard();
         };
         FormClosed += (_, _) =>
         {
+            ToolEditorUiThemeSettings.ThemeChanged -= ToolEditorThemeChanged;
             _stateTimer.Stop();
             _debugForm?.Close();
             _debugForm?.Dispose();
@@ -96,9 +114,29 @@ public sealed class WizardExpressForm : Form
         _stateTimer.Start();
     }
 
+    private void ToolEditorThemeChanged(ToolEditorUiTheme theme)
+    {
+        if (IsDisposed || Disposing)
+            return;
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => ToolEditorThemeChanged(theme)));
+            return;
+        }
+
+        if (_uiTheme == theme)
+            return;
+
+        _uiTheme = theme;
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, theme);
+        ApplyWizardTheme();
+    }
+
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
         _clipboardListenerRegistered = ClipboardConvertApi.TryAddClipboardFormatListener(Handle);
     }
 
@@ -129,8 +167,8 @@ public sealed class WizardExpressForm : Form
 
     private void BuildLayout()
     {
-        _forward = new RadioButton { Text = BuildDirectionCaption(forward: true), Checked = true, AutoSize = true, Font = new Font("Segoe UI", 8f) };
-        _reverse = new RadioButton { Text = BuildDirectionCaption(forward: false), AutoSize = true, Font = new Font("Segoe UI", 8f) };
+        _forward = new RadioButton { Text = BuildDirectionCaption(forward: true), Checked = true, AutoSize = true, Font = new Font("Segoe UI", 8f), BackColor = WindowBackColor, ForeColor = TextColor, UseVisualStyleBackColor = false };
+        _reverse = new RadioButton { Text = BuildDirectionCaption(forward: false), AutoSize = true, Font = new Font("Segoe UI", 8f), BackColor = WindowBackColor, ForeColor = TextColor, UseVisualStyleBackColor = false };
         _forward.CheckedChanged += (_, _) => RefreshWizardState(forceReady: true);
         _reverse.CheckedChanged += (_, _) => RefreshWizardState(forceReady: true);
 
@@ -139,7 +177,9 @@ public sealed class WizardExpressForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
-            Padding = new Padding(8, 32, 8, 8)
+            Padding = new Padding(8, 32, 8, 8),
+            BackColor = WindowBackColor,
+            ForeColor = TextColor
         };
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 88));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
@@ -164,7 +204,8 @@ public sealed class WizardExpressForm : Form
         _menuStrip = new MenuStrip
         {
             Dock = DockStyle.Top,
-            BackColor = Color.FromArgb(242, 242, 242)
+            BackColor = MenuBackColor,
+            ForeColor = TextColor
         };
 
         var file = new ToolStripMenuItem(T("wizard.menu.file", "File"));
@@ -214,6 +255,92 @@ public sealed class WizardExpressForm : Form
         _menuStrip.BringToFront();
     }
 
+    private void ApplyWizardTheme()
+    {
+        BackColor = WindowBackColor;
+        ApplyThemeToControl(this);
+        ApplyThemeToToolStrip(_menuStrip);
+        _statusLabel.ForeColor = Color.Black;
+        _trafficLight.Invalidate();
+    }
+
+    private void ApplyThemeToControl(Control control)
+    {
+        if (control is MenuStrip)
+        {
+            control.BackColor = MenuBackColor;
+            control.ForeColor = TextColor;
+        }
+        else if (control is TextBox)
+        {
+            control.BackColor = IsDarkTheme ? Color.FromArgb(39, 39, 39) : SystemColors.Window;
+            control.ForeColor = TextColor;
+        }
+        else if (control is RadioButton radioButton)
+        {
+            radioButton.BackColor = WindowBackColor;
+            radioButton.ForeColor = TextColor;
+            radioButton.UseVisualStyleBackColor = false;
+        }
+        else if (control is Button button)
+        {
+            button.BackColor = ButtonBackColor;
+            button.ForeColor = ButtonTextColor;
+            button.UseVisualStyleBackColor = false;
+            if (button.FlatStyle == FlatStyle.Flat)
+            {
+                button.FlatAppearance.BorderColor = IsDarkTheme ? DarkBorderColor : SystemColors.ControlDark;
+                button.FlatAppearance.MouseOverBackColor = IsDarkTheme ? Color.FromArgb(30, 64, 175) : SystemColors.ControlLight;
+                button.FlatAppearance.MouseDownBackColor = IsDarkTheme ? Color.FromArgb(30, 58, 138) : SystemColors.ControlDark;
+            }
+        }
+        else if (control is Label)
+        {
+            control.ForeColor = TextColor;
+            if (control.BackColor != Color.Transparent)
+                control.BackColor = control.Parent == _trafficLight ? control.BackColor : WindowBackColor;
+        }
+        else if (control is Panel { BorderStyle: BorderStyle.FixedSingle })
+        {
+            control.BackColor = PanelBackColor;
+            control.ForeColor = TextColor;
+        }
+        else if (control is TableLayoutPanel or FlowLayoutPanel or Panel)
+        {
+            if (control.BackColor != Color.Transparent)
+                control.BackColor = WindowBackColor;
+            control.ForeColor = TextColor;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyThemeToControl(child);
+    }
+
+    private void ApplyThemeToToolStrip(ToolStrip? toolStrip)
+    {
+        if (toolStrip is null)
+            return;
+
+        toolStrip.BackColor = MenuBackColor;
+        toolStrip.ForeColor = TextColor;
+        foreach (ToolStripItem item in toolStrip.Items)
+            ApplyThemeToToolStripItem(item);
+    }
+
+    private void ApplyThemeToToolStripItem(ToolStripItem item)
+    {
+        item.BackColor = MenuBackColor;
+        item.ForeColor = TextColor;
+
+        if (item is ToolStripDropDownItem dropDown)
+        {
+            dropDown.DropDown.BackColor = MenuBackColor;
+            dropDown.DropDown.ForeColor = TextColor;
+            foreach (ToolStripItem child in dropDown.DropDownItems)
+                ApplyThemeToToolStripItem(child);
+        }
+    }
+
     private void SetAdvancedMode(bool enabled)
     {
         _advancedMode = enabled;
@@ -258,7 +385,8 @@ public sealed class WizardExpressForm : Form
             Text = T("wizard.title", "WizardExpress"),
             AutoSize = true,
             Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
-            ForeColor = Color.Black,
+            ForeColor = TextColor,
+            BackColor = WindowBackColor,
             Margin = new Padding(0, 0, 0, 2)
         };
         intro.Controls.Add(title, 0, 0);
@@ -272,6 +400,7 @@ public sealed class WizardExpressForm : Form
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
             Anchor = AnchorStyles.Left | AnchorStyles.Top,
+            BackColor = WindowBackColor,
             Margin = new Padding(0, 6, 0, 0)
         };
         directionPanel.Controls.Add(_forward);
@@ -290,7 +419,10 @@ public sealed class WizardExpressForm : Form
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             MinimumSize = new Size(96, 28),
             Padding = new Padding(8, 3, 8, 3),
-            Margin = Padding.Empty
+            Margin = Padding.Empty,
+            BackColor = ButtonBackColor,
+            ForeColor = ButtonTextColor,
+            UseVisualStyleBackColor = false
         };
         convert.Click += (_, _) => ConvertText();
 
@@ -302,7 +434,8 @@ public sealed class WizardExpressForm : Form
             WrapContents = false,
             Anchor = AnchorStyles.None,
             Margin = Padding.Empty,
-            Padding = Padding.Empty
+            Padding = Padding.Empty,
+            BackColor = WindowBackColor
         };
         actions.Controls.Add(convert);
         actions.Controls[0].Margin = new Padding(60, 0, 0, 0);
@@ -315,7 +448,8 @@ public sealed class WizardExpressForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            Margin = Padding.Empty
+            Margin = Padding.Empty,
+            BackColor = WindowBackColor
         };
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -323,7 +457,7 @@ public sealed class WizardExpressForm : Form
         var statusCard = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.White,
+            BackColor = PanelBackColor,
             BorderStyle = BorderStyle.FixedSingle,
             Padding = new Padding(8, 6, 8, 6),
             Margin = new Padding(0, 4, 0, 0)
@@ -333,7 +467,8 @@ public sealed class WizardExpressForm : Form
         {
             Text = T("wizard.status.caption", "Status"),
             AutoSize = true,
-            ForeColor = Color.Black,
+            BackColor = PanelBackColor,
+            ForeColor = TextColor,
             Location = new Point(6, -1)
         };
         statusCard.Controls.Add(statusTitle);

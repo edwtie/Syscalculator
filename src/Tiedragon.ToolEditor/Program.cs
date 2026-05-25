@@ -12,9 +12,9 @@ internal static class Program
     {
         try
         {
-            ApplicationConfiguration.Initialize();
-            ApplySystemColorMode();
             ToolEditorDebugger.Initialize();
+            ApplicationConfiguration.Initialize();
+            ToolEditorUiThemeSettings.ApplyApplicationColorMode(ToolEditorUiThemeSettings.Load());
             ToolEditorDebugger.Log("Startup mode: Standalone ToolEditor.");
             Application.Run(new ToolEditorForm());
         }
@@ -25,10 +25,4 @@ internal static class Program
         }
     }
 
-    private static void ApplySystemColorMode()
-    {
-#pragma warning disable WFO5001
-        Application.SetColorMode(SystemColorMode.Dark);
-#pragma warning restore WFO5001
-    }
 }

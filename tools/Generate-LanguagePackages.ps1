@@ -5,7 +5,9 @@
     [string]$OutputDirectory = "web/packages/languages",
     [string]$ConceptDirectory = "artifacts/language-package-concepts",
     [string]$ObjectPackageDirectory = "artifacts/language-package-objects",
-    [string]$PackageVersion = (Get-Date -Format "yyyy.MM.dd") + ".001"
+    [string]$PackageVersion = (Get-Date -Format "yyyy.MM.dd") + ".001",
+    [string]$SigningPrivateKey = "",
+    [string]$SigningKeyId = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,6 +30,18 @@ $conceptRoot = Join-Path $repoRoot $ConceptDirectory
 $objectPackageRoot = Join-Path $repoRoot $ObjectPackageDirectory
 $project = Join-Path $repoRoot "src/Tiedragon.LanguagePackage/Tiedragon.LanguagePackage.csproj"
 $policyPath = Join-Path $repoRoot "src/Tiedragon.LanguagePackage/language-package-policy.ini"
+$signingEnabled = -not [string]::IsNullOrWhiteSpace($SigningPrivateKey) -or -not [string]::IsNullOrWhiteSpace($SigningKeyId)
+
+if ($signingEnabled) {
+    if ([string]::IsNullOrWhiteSpace($SigningPrivateKey) -or [string]::IsNullOrWhiteSpace($SigningKeyId)) {
+        throw "Signing requires both -SigningPrivateKey and -SigningKeyId."
+    }
+
+    $signingPrivateKeyPath = Join-Path $repoRoot $SigningPrivateKey
+    if (-not (Test-Path $signingPrivateKeyPath)) {
+        throw "Signing private key not found: $signingPrivateKeyPath"
+    }
+}
 
 if (-not (Test-Path $languageRoot)) {
     throw "Language directory not found: $languageRoot"
@@ -720,7 +734,11 @@ foreach ($languageFile in $languageFiles) {
     Move-Item -Path $objectPackageZip -Destination $objectPackage -Force
 
     $outputPackage = Join-Path $outputRoot ("Syscalculator.Language." + $code + ".lngpdk")
-    $json = dotnet run --project $project --no-restore -- agent-compile $objectPackage $outputPackage
+    if ($signingEnabled) {
+        $json = dotnet run --project $project --no-restore -- agent-compile-signed $objectPackage $outputPackage $signingPrivateKeyPath $SigningKeyId
+    } else {
+        $json = dotnet run --project $project --no-restore -- agent-compile $objectPackage $outputPackage
+    }
     $result = $json | ConvertFrom-Json
     if (-not $result.success) {
         throw "Language package compile failed for $code`: $json"
@@ -739,6 +757,7 @@ foreach ($languageFile in $languageFiles) {
 $manifestPath = Join-Path $outputRoot "language-packages.json"
 $indexJson = $results |
     Select-Object packageKey, languageCode, displayName, packageSha256, payloadSha256, entryCount,
+        signed, signatureAlgorithm, signatureKeyId,
         @{ Name = "fileName"; Expression = { [System.IO.Path]::GetFileName($_.outputPath) } },
         @{ Name = "downloadPath"; Expression = { "packages/languages/" + [System.IO.Path]::GetFileName($_.outputPath) } },
         active, translationComplete, missingRequiredKeyCount, missingRequiredKeys |

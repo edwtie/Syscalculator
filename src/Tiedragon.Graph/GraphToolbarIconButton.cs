@@ -47,7 +47,7 @@ public sealed class GraphToolbarIconButton : Button
             ControlStyles.OptimizedDoubleBuffer |
             ControlStyles.ResizeRedraw,
             true);
-        BackColor = Color.White;
+        BackColor = GraphOverlayStyle.PanelFill(translucent: false);
         _toolTip.SetToolTip(this, tooltip);
     }
 
@@ -100,7 +100,7 @@ public sealed class GraphToolbarIconButton : Button
             EndCap = LineCap.Round,
             LineJoin = LineJoin.Round
         };
-        using var fill = new SolidBrush(Enabled ? Color.FromArgb(170, 239, 246, 255) : Color.FromArgb(120, 241, 245, 249));
+        using var fill = new SolidBrush(Enabled ? GraphOverlayStyle.IconFill : GraphOverlayStyle.ButtonFill(GraphOverlayVisualState.Disabled, translucent: true));
 
         var cx = ClientSize.Width / 2f;
         var cy = ClientSize.Height / 2f;
@@ -169,7 +169,7 @@ public sealed class GraphToolbarIconButton : Button
         var front = new RectangleF(cx - 4, cy - 4, 12, 14);
         g.FillRectangle(fill, back);
         g.DrawRectangle(pen, back.X, back.Y, back.Width, back.Height);
-        using var frontFill = new SolidBrush(Color.FromArgb(185, 255, 255, 255));
+        using var frontFill = new SolidBrush(GraphOverlayStyle.IconFrontFill);
         g.FillRectangle(frontFill, front);
         g.DrawRectangle(pen, front.X, front.Y, front.Width, front.Height);
     }

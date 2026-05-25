@@ -1,6 +1,6 @@
 # Help-architectuur
 
-![Help-architectuur](TIEDRAGON_HELP_ARCHITECTURE.svg)
+<img src="TIEDRAGON_HELP_ARCHITECTURE.svg" alt="Help-architectuur" width="150%">
 
 ## Doel
 

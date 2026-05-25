@@ -31,7 +31,12 @@ public readonly record struct GraphPlotView3D(
 /// <remarks>
 /// Yaw and pitch are degrees. Zoom is a screen-space multiplier where 1 is the default fit.
 /// </remarks>
-public readonly record struct GraphCamera3D(double YawDegrees = 35d, double PitchDegrees = 28d, double Zoom = 1d);
+public readonly record struct GraphCamera3D(
+    double YawDegrees = 35d,
+    double PitchDegrees = 28d,
+    double Zoom = 1d,
+    double PanX = 0d,
+    double PanY = 0d);
 
 /// <summary>
 /// Render-independent 3D graph geometry and projection API.
@@ -182,8 +187,8 @@ public static class GraphGeometry3D
         var rotated = Rotate(centered, camera);
         var zoom = double.IsFinite(camera.Zoom) && camera.Zoom > 0d ? camera.Zoom : 1d;
         var scale = Math.Min(plot.Width, plot.Height) * 0.50d * zoom;
-        var screenX = plot.Left + plot.Width / 2d + rotated.X * scale;
-        var screenY = plot.Top + plot.Height / 2d - rotated.Y * scale;
+        var screenX = plot.Left + plot.Width / 2d + rotated.X * scale + camera.PanX;
+        var screenY = plot.Top + plot.Height / 2d - rotated.Y * scale + camera.PanY;
 
         return new GraphProjectedPoint(new PointF((float)screenX, (float)screenY), rotated.Z);
     }

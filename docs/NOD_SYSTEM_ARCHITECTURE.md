@@ -1,6 +1,6 @@
 # NOD systeem-architectuur
 
-![NOD systeem-architectuur](NOD_SYSTEM_ARCHITECTURE.svg)
+<img src="NOD_SYSTEM_ARCHITECTURE.svg" alt="NOD systeem-architectuur" width="150%">
 
 ## Doel
 

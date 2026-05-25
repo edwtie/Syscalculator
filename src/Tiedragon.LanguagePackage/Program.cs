@@ -109,6 +109,27 @@ internal static class Program
         "<div\\s+class\\s*=\\s*[\"'][^\"']*(concept-banner|help-warning)[^\"']*[\"'][\\s\\S]*?\\bConcept\\b[\\s\\S]*?</div>",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private static readonly string[] RequiredSignedLanguageKeys =
+    [
+        "help.signed_package_verified",
+        "help.signed_package_tip",
+        "dialog.language.info.title",
+        "dialog.language.info.name",
+        "dialog.language.info.code",
+        "dialog.language.info.author",
+        "dialog.language.info.product",
+        "dialog.language.info.package",
+        "dialog.language.info.file",
+        "dialog.language.info.version",
+        "dialog.language.info.signed",
+        "dialog.language.info.algorithm",
+        "dialog.language.info.key",
+        "dialog.language.info.local_author",
+        "dialog.language.info.unsigned",
+        "common.yes",
+        "common.no",
+    ];
+
     public static int Main(string[] args)
     {
         try
@@ -497,6 +518,8 @@ internal static class Program
             JsonOptions) ?? throw new InvalidDataException("manifest.json is invalid.");
         ValidateManifest(manifest);
         ValidateSourceFolder(inputFolder, manifest);
+        if (signing is not null)
+            ValidateSignedPackageLanguageKeys(inputFolder, manifest);
 
         var payload = BuildZipPayload(inputFolder, manifest);
         var payloadHash = Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
@@ -1385,6 +1408,23 @@ internal static class Program
             throw new InvalidDataException($"language/{manifest.LanguageCode}.lng is required.");
 
         ValidateSourceQuality(inputFolder, entries);
+    }
+
+    private static void ValidateSignedPackageLanguageKeys(string inputFolder, LanguagePackageManifest manifest)
+    {
+        var languagePath = Path.Combine(inputFolder, "language", manifest.LanguageCode + ".lng");
+        var languageMap = ReadLanguageMap(languagePath);
+        var missingKeys = RequiredSignedLanguageKeys
+            .Where(key => !languageMap.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
+            .ToArray();
+
+        if (missingKeys.Length == 0)
+            return;
+
+        throw new InvalidDataException(
+            "Signed language package is missing required language keys: " +
+            string.Join(", ", missingKeys) +
+            ". Add these keys before compiling/signing.");
     }
 
     private static void ValidateArchiveEntries(byte[] payload)

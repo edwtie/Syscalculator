@@ -47,7 +47,8 @@ public static class ToolEditorApi
             Padding = new Padding(2, 1, 2, 1),
             ToolTipText = string.IsNullOrWhiteSpace(tooltip) ? text : tooltip,
             BackColor = colors.ToolbarBack,
-            ForeColor = colors.Text
+            ForeColor = colors.Text,
+            Tag = icon
         };
 
         button.Click += click;

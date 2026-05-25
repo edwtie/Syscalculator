@@ -48,7 +48,7 @@ public static class GraphPointTableOverlay
         {
             Width = tableWidth + padding * 2,
             Height = titleHeight + tableHeight + padding * 2,
-            BackColor = Color.White,
+            BackColor = GraphOverlayStyle.PanelFill(translucent: false),
             Padding = new Padding(padding)
         };
         overlay.Paint += PaintOverlay;
@@ -60,7 +60,7 @@ public static class GraphPointTableOverlay
         {
             Location = new Point(padding, padding),
             Size = new Size(tableWidth, titleHeight),
-            BackColor = Color.FromArgb(239, 246, 255),
+            BackColor = GraphOverlayStyle.TitleFill,
             Cursor = Cursors.Hand
         };
         titleBar.Paint += (_, e) => DrawTitleBar(e.Graphics, titleBar.ClientRectangle, titleProvider?.Invoke() ?? title, detailProvider(), density);
@@ -108,21 +108,27 @@ public static class GraphPointTableOverlay
             ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
             ColumnHeadersHeight = compact ? 18 : 21,
             ScrollBars = ScrollBars.Vertical,
-            GridColor = Color.FromArgb(225, 232, 242),
+            GridColor = GraphOverlayStyle.TableGrid,
             Font = new Font("Consolas", compact ? 7.5f : 8f),
             RowTemplate = { Height = compact ? 17 : 20 }
         };
 
         table.EnableHeadersVisualStyles = false;
-        table.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(239, 246, 255);
-        table.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(15, 63, 143);
+        table.BackgroundColor = GraphOverlayStyle.TableBack;
+        table.DefaultCellStyle.BackColor = GraphOverlayStyle.TableBack;
+        table.DefaultCellStyle.ForeColor = GraphOverlayStyle.TableText;
+        table.ColumnHeadersDefaultCellStyle.BackColor = GraphOverlayStyle.TitleFill;
+        table.ColumnHeadersDefaultCellStyle.ForeColor = GraphOverlayStyle.TitleText;
         table.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", compact ? 7.5f : 8f, FontStyle.Bold);
         table.ColumnHeadersDefaultCellStyle.Padding = new Padding(compact ? 1 : 2, 0, compact ? 1 : 2, 0);
         table.DefaultCellStyle.Padding = new Padding(compact ? 1 : 2, 0, compact ? 1 : 2, 0);
-        table.DefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
-        table.DefaultCellStyle.SelectionForeColor = Color.FromArgb(17, 24, 39);
+        table.DefaultCellStyle.SelectionBackColor = GraphOverlayStyle.TableSelectionBack;
+        table.DefaultCellStyle.SelectionForeColor = GraphOverlayStyle.TableSelectionText;
         if (compact)
-            table.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 251, 255);
+        {
+            table.AlternatingRowsDefaultCellStyle.BackColor = GraphOverlayStyle.TableAlternateBack;
+            table.AlternatingRowsDefaultCellStyle.ForeColor = GraphOverlayStyle.TableText;
+        }
 
         var tableColumns = columns is { Count: > 0 }
             ? columns
@@ -145,8 +151,8 @@ public static class GraphPointTableOverlay
     {
         var compact = density == GraphOverlayButtonDensity.Compact;
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using var titleBrush = new SolidBrush(Color.FromArgb(15, 63, 143));
-        using var detailBrush = new SolidBrush(Color.FromArgb(71, 85, 105));
+        using var titleBrush = new SolidBrush(GraphOverlayStyle.TitleText);
+        using var detailBrush = new SolidBrush(GraphOverlayStyle.DetailText);
         using var font = new Font("Segoe UI", compact ? 7.5f : 8f, FontStyle.Bold);
         using var detailFont = new Font("Segoe UI", 7f);
         using var format = new StringFormat
@@ -169,7 +175,7 @@ public static class GraphPointTableOverlay
         }
 
         var closeRect = GetCloseRect(rect, density);
-        using var closePen = new Pen(Color.FromArgb(15, 63, 143), compact ? 1.7f : 1.8f)
+        using var closePen = new Pen(GraphOverlayStyle.TitleText, compact ? 1.7f : 1.8f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round

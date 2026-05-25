@@ -39,7 +39,7 @@ public sealed class NodEditorForm : Form
     private const int MaxDockedLivePreviewWidth = 250;
     private const int DockedSimulatorWidth = 360;
     private const int NodHelpPopupMinWidth = 330;
-    private const int NodHelpPopupMaxWidth = 390;
+    private const int NodHelpPopupMaxWidth = 520;
     private const int NodHelpPopupMinHeight = 72;
     private const int NodHelpPopupMaxHeight = 360;
     private const int RecentFilesLimit = 5;
@@ -51,7 +51,19 @@ public sealed class NodEditorForm : Form
     private const int GraphPreviewMaxVisibleStepPoints = 350;
     private const decimal GraphPreviewRangeLimit = 1_000_000_000_000_000_000_000_000m;
     private const decimal GraphPreviewStepMinimum = 0.0000000000000000000000000001m;
-    private static readonly Color NodHelpBubbleBackColor = Color.FromArgb(247, 251, 255);
+    private static readonly Color DarkWindowBackColor = Color.FromArgb(18, 24, 32);
+    private static readonly Color DarkPanelBackColor = Color.FromArgb(31, 41, 55);
+    private static readonly Color DarkEditorBackColor = Color.FromArgb(39, 39, 39);
+    private static readonly Color DarkEditorTextColor = Color.FromArgb(226, 232, 240);
+    private static readonly Color DarkMutedTextColor = Color.FromArgb(148, 163, 184);
+    private static readonly Color DarkBorderColor = Color.FromArgb(55, 65, 81);
+    private static readonly Color LightSyntaxCommandColor = Color.RoyalBlue;
+    private static readonly Color LightSyntaxFunctionColor = Color.DarkCyan;
+    private static readonly Color LightSyntaxNumberColor = Color.DarkOrange;
+    private static readonly Color DarkSyntaxCommandColor = Color.FromArgb(96, 165, 250);
+    private static readonly Color DarkSyntaxFunctionColor = Color.FromArgb(45, 212, 191);
+    private static readonly Color DarkSyntaxNumberColor = Color.FromArgb(251, 191, 36);
+    private static readonly Color DarkSyntaxCommentColor = Color.FromArgb(74, 222, 128);
     private static string RecentFilesConfigDirectory => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Tiedragon",
@@ -81,6 +93,10 @@ public sealed class NodEditorForm : Form
 
     private sealed class NodHelpPopupPanel : Panel
     {
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public bool DarkMode { get; set; }
+
         public NodHelpPopupPanel()
         {
             DoubleBuffered = true;
@@ -100,8 +116,8 @@ public sealed class NodEditorForm : Form
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             using var path = CreateNodHelpBubblePath(Width, Height, inset: 2.2f);
-            using var fill = new SolidBrush(NodHelpBubbleBackColor);
-            using var border = new Pen(Color.FromArgb(115, 164, 232), 2.3f);
+            using var fill = new SolidBrush(DarkMode ? Color.FromArgb(17, 24, 39) : Color.FromArgb(247, 251, 255));
+            using var border = new Pen(DarkMode ? Color.FromArgb(59, 130, 246) : Color.FromArgb(115, 164, 232), 2.3f);
             PaintNodHelpBubbleShadow(e.Graphics, path);
             e.Graphics.FillPath(fill, path);
             e.Graphics.DrawPath(border, path);
@@ -439,6 +455,7 @@ public sealed class NodEditorForm : Form
     private GraphCamera3D _graph3DCamera = Graph3DApi.DefaultCamera;
     private Graph3DRotationDial _graph3DRotationDial = null!;
     private bool _graph3DDragging;
+    private MouseButtons _graph3DDragButton;
     private Point _graph3DDragStart;
     private bool _solverPreviewActive;
     private bool _panelsHiddenForSolver;
@@ -467,6 +484,28 @@ public sealed class NodEditorForm : Form
     private ToolStripStatusLabel _lineCountLabel = null!;
     private ToolStripStatusLabel _encodingLabel = null!;
     private ToolStripStatusLabel _lineEndingLabel = null!;
+    private ToolStripMenuItem? _darkThemeMenuItem;
+    private ToolStripMenuItem? _classicThemeMenuItem;
+    private ToolEditorUiTheme _uiTheme;
+    private ToolEditorPalette _palette;
+
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? DarkWindowBackColor : SystemColors.Control;
+    private Color PanelBackColor => IsDarkTheme ? DarkPanelBackColor : SystemColors.Control;
+    private Color ContentBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.White;
+    private Color EditorBackColor => IsDarkTheme ? DarkEditorBackColor : Color.White;
+    private Color EditorTextColor => IsDarkTheme ? DarkEditorTextColor : Color.Black;
+    private Color MutedTextColor => IsDarkTheme ? DarkMutedTextColor : Color.FromArgb(120, 120, 120);
+    private Color BorderColor => IsDarkTheme ? DarkBorderColor : Color.FromArgb(205, 212, 222);
+    private Color SoftPanelBackColor => IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.FromArgb(250, 250, 250);
+    private Color PreviewCardBackColor => IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(239, 246, 255);
+    private Color PreviewCardBorderColor => IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(199, 219, 248);
+    private Color SyntaxCommandColor => IsDarkTheme ? DarkSyntaxCommandColor : LightSyntaxCommandColor;
+    private Color SyntaxFunctionColor => IsDarkTheme ? DarkSyntaxFunctionColor : LightSyntaxFunctionColor;
+    private Color SyntaxNumberColor => IsDarkTheme ? DarkSyntaxNumberColor : LightSyntaxNumberColor;
+    private Color SyntaxCommentColor => IsDarkTheme ? DarkSyntaxCommentColor : Color.ForestGreen;
+    private CoreWebView2PreferredColorScheme PreferredWebViewColorScheme =>
+        IsDarkTheme ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light;
 
     private static readonly string[] NodKeywords =
     [
@@ -538,6 +577,10 @@ public sealed class NodEditorForm : Form
     // Startpunt van het editorvenster: bouwt de UI en opent eventueel direct een .nod-bestand.
     public NodEditorForm(string? path = null, bool openTemplateWizard = false)
     {
+        _uiTheme = ToolEditorUiThemeSettings.Load();
+        _palette = _uiTheme == ToolEditorUiTheme.Dark ? ToolEditorPalette.Dark : ToolEditorPalette.Default;
+        GraphOverlayStyle.UseDarkTheme = IsDarkTheme;
+        ToolEditorTabsApi.ConfigureTheme(_uiTheme);
         _englishLanguage = LanguageCatalog.Load(AppContext.BaseDirectory, "eng.lng");
         _language = LanguageCatalog.LoadConfigured(AppContext.BaseDirectory);
 
@@ -547,6 +590,7 @@ public sealed class NodEditorForm : Form
         Height = 780;
         MinimumSize = new Size(860, 580);
         StartPosition = FormStartPosition.CenterParent;
+        BackColor = WindowBackColor;
         _syntaxHighlightTimer.Tick += (_, _) =>
         {
             _syntaxHighlightTimer.Stop();
@@ -582,6 +626,7 @@ public sealed class NodEditorForm : Form
         BuildLayout();
         BuildStatusbar();
         BuildNodHelpPopup();
+        ApplyNodEditorTheme();
         Deactivate += (_, _) => HideNodHelpPopup();
         Move += (_, _) => HideNodHelpPopup();
         Resize += (_, _) => HideNodHelpPopup();
@@ -651,6 +696,12 @@ public sealed class NodEditorForm : Form
         }
 
         return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
     }
 
     private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
@@ -840,7 +891,7 @@ public sealed class NodEditorForm : Form
         {
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            BackColor = Color.FromArgb(245, 245, 245),
+            BackColor = PanelBackColor,
             Dock = DockStyle.Fill,
             Margin = Padding.Empty,
             Padding = Padding.Empty
@@ -854,7 +905,8 @@ public sealed class NodEditorForm : Form
     {
         _menuStrip = new MenuStrip
         {
-            BackColor = Color.FromArgb(245, 245, 245),
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor,
             Dock = DockStyle.Top
         };
         _menuStrip.MenuActivate += (_, _) => HideNodHelpPopup();
@@ -912,6 +964,13 @@ public sealed class NodEditorForm : Form
         AddMenuItem(view, T("editor.menu.view.dock_live_preview", "Dock live preview"), (_, _) => DockLivePreview(showPanel: true));
         AddMenuItem(view, T("editor.menu.view.undock_simulator", "Undock simulator"), (_, _) => UndockSimulatorPreview());
         AddMenuItem(view, T("editor.menu.view.dock_simulator", "Dock simulator"), (_, _) => DockSimulatorPreview(showPanel: true));
+        view.DropDownItems.Add(new ToolStripSeparator());
+        var theme = new ToolStripMenuItem(T("tool_editor.menu.extra.theme", "Theme"));
+        _darkThemeMenuItem = CreateThemeMenuItem(T("tool_editor.menu.extra.theme.dark", "Dark"), ToolEditorUiTheme.Dark);
+        _classicThemeMenuItem = CreateThemeMenuItem(T("tool_editor.menu.extra.theme.classic", "Classic"), ToolEditorUiTheme.Classic);
+        theme.DropDownItems.Add(_darkThemeMenuItem);
+        theme.DropDownItems.Add(_classicThemeMenuItem);
+        view.DropDownItems.Add(theme);
 
         var help = new ToolStripMenuItem(T("editor.menu.help", "Help"));
         AddMenuItem(help, T("editor.menu.help.nod", "NOD help"), (_, _) => ShowNodHelp(), Keys.F1);
@@ -929,6 +988,317 @@ public sealed class NodEditorForm : Form
         _topStripPanel.Controls.Add(_menuStrip);
         PopulateRecentFilesMenu();
         UpdateViewMenuChecks();
+    }
+
+    private ToolStripMenuItem CreateThemeMenuItem(string text, ToolEditorUiTheme theme)
+    {
+        var item = new ToolStripMenuItem(text)
+        {
+            Checked = _uiTheme == theme,
+            CheckOnClick = false
+        };
+        item.Click += (_, _) => ApplyAndSaveTheme(theme);
+        return item;
+    }
+
+    private void ApplyAndSaveTheme(ToolEditorUiTheme theme)
+    {
+        if (_uiTheme == theme)
+            return;
+
+        _uiTheme = theme;
+        _palette = theme == ToolEditorUiTheme.Dark ? ToolEditorPalette.Dark : ToolEditorPalette.Default;
+        ToolEditorUiThemeSettings.Save(theme);
+        ToolEditorUiThemeSettings.ApplyApplicationColorMode(theme);
+        ToolEditorTabsApi.ConfigureTheme(theme);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, theme);
+        ApplyNodEditorTheme();
+        ApplySharedThemeToOpenMainForms(theme);
+        UpdateThemeMenuChecks();
+        SetStatus(T("tool_editor.theme.saved", "Theme saved."));
+    }
+
+    private static void ApplySharedThemeToOpenMainForms(ToolEditorUiTheme theme)
+    {
+        foreach (Form form in Application.OpenForms)
+        {
+            if (form is MainForm mainForm)
+                mainForm.ApplySharedTheme(theme);
+        }
+    }
+
+    private void UpdateThemeMenuChecks()
+    {
+        if (_darkThemeMenuItem is not null)
+            _darkThemeMenuItem.Checked = _uiTheme == ToolEditorUiTheme.Dark;
+        if (_classicThemeMenuItem is not null)
+            _classicThemeMenuItem.Checked = _uiTheme == ToolEditorUiTheme.Classic;
+    }
+
+    private void ApplyNodEditorTheme()
+    {
+        GraphOverlayStyle.UseDarkTheme = IsDarkTheme;
+        BackColor = WindowBackColor;
+        _rootLayout.BackColor = WindowBackColor;
+        _topStripPanel.BackColor = PanelBackColor;
+        _mainSplit.BackColor = BorderColor;
+        _mainSplit.Panel1.BackColor = WindowBackColor;
+        _mainSplit.Panel2.BackColor = WindowBackColor;
+        _bottomPanel.BackColor = SoftPanelBackColor;
+        _editorTabStrip.BackColor = PanelBackColor;
+        _editorContentPanel.BackColor = BorderColor;
+        _testTabs.BackColor = SoftPanelBackColor;
+        _statusStrip.BackColor = PanelBackColor;
+        _statusStrip.ForeColor = EditorTextColor;
+        if (_nodHelpPopup is NodHelpPopupPanel popup)
+        {
+            popup.DarkMode = IsDarkTheme;
+            popup.Invalidate();
+        }
+
+        ApplyThemeToControl(this);
+        RefreshToolbarThemes(this);
+        RefreshGraphOverlayThemes();
+        RefreshSimulatorTheme();
+        RefreshMathPreviewThemes();
+        RefreshNodHelpBrowserTheme();
+
+        foreach (var tab in _tabs.Values)
+        {
+            ApplyEditorTheme(tab);
+            ScheduleSyntaxHighlight(tab);
+        }
+
+        RefreshEditorTabStrip();
+        _graphCanvas?.Invalidate();
+        _graph3DCanvas?.Invalidate();
+    }
+
+    private void ApplyThemeToControl(Control control)
+    {
+        if (control is RichTextBox or TextBox or NumericUpDown or ComboBox or ListBox)
+        {
+            control.BackColor = EditorBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+        else if (control is DataGridView grid)
+        {
+            ApplyDataGridViewTheme(grid);
+        }
+        else if (control is Label or CheckBox or RadioButton or GroupBox)
+        {
+            control.ForeColor = EditorTextColor;
+            if (control.BackColor != Color.Transparent)
+                control.BackColor = SoftPanelBackColor;
+        }
+        else if (control is TabPage or TableLayoutPanel or Panel or SplitContainer or TabControl)
+        {
+            if (control.BackColor != Color.Transparent)
+                control.BackColor = control == _editorContentPanel ? BorderColor : SoftPanelBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyThemeToControl(child);
+    }
+
+    private void ApplyDataGridViewTheme(DataGridView grid)
+    {
+        grid.BackgroundColor = EditorBackColor;
+        grid.BackColor = EditorBackColor;
+        grid.ForeColor = EditorTextColor;
+        grid.GridColor = BorderColor;
+        grid.EnableHeadersVisualStyles = false;
+        grid.ColumnHeadersDefaultCellStyle.BackColor = PreviewCardBackColor;
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = EditorTextColor;
+        grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = PreviewCardBackColor;
+        grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = EditorTextColor;
+        grid.DefaultCellStyle.BackColor = EditorBackColor;
+        grid.DefaultCellStyle.ForeColor = EditorTextColor;
+        grid.DefaultCellStyle.SelectionBackColor = IsDarkTheme ? Color.FromArgb(37, 99, 235) : SystemColors.Highlight;
+        grid.DefaultCellStyle.SelectionForeColor = IsDarkTheme ? Color.White : SystemColors.HighlightText;
+        grid.AlternatingRowsDefaultCellStyle.BackColor = IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(248, 251, 255);
+        grid.AlternatingRowsDefaultCellStyle.ForeColor = EditorTextColor;
+    }
+
+    private void RefreshGraphOverlayThemes()
+    {
+        ApplyGraphOverlayPanelTheme(_graphPointPanel);
+        ApplyGraphOverlayPanelTheme(_graph3DPointPanel);
+        ApplyGraphOverlayPanelTheme(_graph3DCommandPanel);
+        ApplyGraphOverlayPanelTheme(_graph3DNavigationPanel);
+        ApplyGraphOverlayPanelTheme(_graph3DRotationDial);
+
+        if (_graphPointTitleBar is not null)
+        {
+            _graphPointTitleBar.BackColor = GraphOverlayStyle.TitleFill;
+            _graphPointTitleBar.Invalidate();
+        }
+        if (_graph3DPointTitleBar is not null)
+        {
+            _graph3DPointTitleBar.BackColor = GraphOverlayStyle.TitleFill;
+            _graph3DPointTitleBar.Invalidate();
+        }
+        if (_graphPointTable is not null)
+            ApplyDataGridViewTheme(_graphPointTable);
+        if (_graph3DPointTable is not null)
+            ApplyDataGridViewTheme(_graph3DPointTable);
+    }
+
+    private static void ApplyGraphOverlayPanelTheme(Control? control)
+    {
+        if (control is null)
+            return;
+
+        control.BackColor = GraphOverlayStyle.PanelFill(translucent: false);
+        control.ForeColor = GraphOverlayStyle.TitleText;
+        control.Invalidate();
+        foreach (Control child in control.Controls)
+            ApplyGraphOverlayPanelTheme(child);
+    }
+
+    private void RefreshSimulatorTheme()
+    {
+        if (_simulatorPreviewGroup is null || _simWindow is null)
+            return;
+
+        _simulatorPreviewGroup.BackColor = SoftPanelBackColor;
+        _simulatorPreviewGroup.ForeColor = EditorTextColor;
+        ApplySimulatorTheme(_simulatorPreviewGroup);
+
+        _simTitle.ForeColor = EditorTextColor;
+        _simFileLabel.ForeColor = EditorTextColor;
+        _simInputLabel.ForeColor = EditorTextColor;
+        _simOutputLabel.ForeColor = EditorTextColor;
+        _simDigitGroup.ForeColor = MutedTextColor;
+        _simDecimals.ForeColor = MutedTextColor;
+        _simDecimalCount.ForeColor = MutedTextColor;
+        _simDecimalCount.BackColor = EditorBackColor;
+        _simFileBox.BackColor = EditorBackColor;
+        _simFileBox.ForeColor = EditorTextColor;
+    }
+
+    private void ApplySimulatorTheme(Control control)
+    {
+        switch (control)
+        {
+            case PictureBox picture when picture.Tag is ToolbarIcon icon:
+                picture.BackColor = PanelBackColor;
+                picture.Image?.Dispose();
+                picture.Image = CreateSimulatorToolbarImage(icon);
+                break;
+            case MenuStrip menu:
+                menu.BackColor = PanelBackColor;
+                menu.ForeColor = EditorTextColor;
+                break;
+            case ToolStrip toolStrip:
+                toolStrip.BackColor = PanelBackColor;
+                toolStrip.ForeColor = EditorTextColor;
+                break;
+            case TextBox textBox:
+                textBox.BackColor = EditorBackColor;
+                textBox.ForeColor = EditorTextColor;
+                break;
+            case ComboBox comboBox:
+                comboBox.BackColor = EditorBackColor;
+                comboBox.ForeColor = EditorTextColor;
+                break;
+            case NumericUpDown numberBox:
+                numberBox.BackColor = EditorBackColor;
+                numberBox.ForeColor = MutedTextColor;
+                break;
+            case CheckBox checkBox:
+                checkBox.BackColor = SoftPanelBackColor;
+                checkBox.ForeColor = checkBox.AutoCheck ? EditorTextColor : MutedTextColor;
+                break;
+            case RadioButton radio:
+                radio.BackColor = SoftPanelBackColor;
+                radio.ForeColor = MutedTextColor;
+                break;
+            case Label label:
+                label.BackColor = SoftPanelBackColor;
+                label.ForeColor = EditorTextColor;
+                break;
+            case TableLayoutPanel table:
+                table.BackColor = SoftPanelBackColor;
+                table.ForeColor = EditorTextColor;
+                break;
+            case FlowLayoutPanel flow:
+                flow.BackColor = ReferenceEquals(flow.Parent, _simWindow) ? PanelBackColor : SoftPanelBackColor;
+                flow.ForeColor = EditorTextColor;
+                break;
+            case Panel panel:
+                panel.BackColor = ReferenceEquals(panel, _simWindow) ? SoftPanelBackColor : PanelBackColor;
+                panel.ForeColor = EditorTextColor;
+                break;
+        }
+
+        foreach (Control child in control.Controls)
+            ApplySimulatorTheme(child);
+    }
+
+    private void RefreshToolbarThemes(Control control)
+    {
+        if (control is ToolStrip toolStrip)
+        {
+            toolStrip.BackColor = PanelBackColor;
+            toolStrip.ForeColor = EditorTextColor;
+            toolStrip.RenderMode = IsDarkTheme ? ToolStripRenderMode.ManagerRenderMode : ToolStripRenderMode.System;
+            foreach (ToolStripItem item in toolStrip.Items)
+                RefreshToolStripItemTheme(item);
+        }
+
+        foreach (Control child in control.Controls)
+            RefreshToolbarThemes(child);
+    }
+
+    private void RefreshToolStripItemTheme(ToolStripItem item)
+    {
+        item.BackColor = PanelBackColor;
+        item.ForeColor = EditorTextColor;
+        if (item is ToolStripButton button && button.Tag is ToolEditorIcon icon)
+            button.Image = ToolEditorApi.CreateIcon(icon, _palette);
+        if (item is ToolStripDropDownItem dropDown)
+        {
+            dropDown.DropDown.BackColor = PanelBackColor;
+            dropDown.DropDown.ForeColor = EditorTextColor;
+            foreach (ToolStripItem child in dropDown.DropDownItems)
+                RefreshToolStripItemTheme(child);
+        }
+    }
+
+    private void RefreshMathPreviewThemes()
+    {
+        ApplyMathPreviewTheme(_testFormulaView);
+        ApplyMathPreviewTheme(_testCalculationView);
+    }
+
+    private void ApplyMathPreviewTheme(HtmlMathPreviewControl? view)
+    {
+        if (view is null)
+            return;
+
+        if (view.Parent is Panel card)
+        {
+            card.BackColor = PreviewCardBackColor;
+            card.Invalidate();
+        }
+        view.BackColor = PreviewCardBackColor;
+        view.ForeColor = IsDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(0, 74, 173);
+        view.PreferredColorScheme = PreferredWebViewColorScheme;
+    }
+
+    private void RefreshNodHelpBrowserTheme()
+    {
+        if (_nodHelpBrowser?.CoreWebView2 is not null)
+            _nodHelpBrowser.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
+
+        if (_lastRenderedNodHelpHtml is not null)
+        {
+            _pendingNodHelpHtml = _lastRenderedNodHelpHtml;
+            _lastRenderedNodHelpHtml = null;
+            ShowPendingNodHelpHtmlIfReady();
+        }
     }
 
     // Helper om snel menu-items met click-handler en sneltoets toe te voegen.
@@ -963,7 +1333,7 @@ public sealed class NodEditorForm : Form
     // Bouwt de toolbar met knoppen voor nieuw, openen, opslaan, zoeken, valideren, testen en herstellen.
     private void BuildToolbar()
     {
-        _toolStrip = ToolEditorApi.CreateToolbar();
+        _toolStrip = ToolEditorApi.CreateToolbar(_palette);
 
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.new", "New"), (_, _) => AddBlankNewTab(), ToolEditorIcon.New));
         _toolStrip.Items.Add(MakeButton(T("editor.toolbar.open", "Open"), Open_Click, ToolEditorIcon.Open));
@@ -988,14 +1358,14 @@ public sealed class NodEditorForm : Form
     }
 
     // Maakt een toolbar-knop met tekst, icoon en click-handler.
-    private static ToolStripButton MakeButton(string text, EventHandler handler, ToolEditorIcon icon)
+    private ToolStripButton MakeButton(string text, EventHandler handler, ToolEditorIcon icon)
     {
-        return ToolEditorApi.CreateButton(text, icon, handler, tooltip: text);
+        return ToolEditorApi.CreateButton(text, icon, handler, tooltip: text, palette: _palette);
     }
 
-    private static ToolStripButton MakeIconButton(string tooltip, EventHandler handler, ToolEditorIcon icon)
+    private ToolStripButton MakeIconButton(string tooltip, EventHandler handler, ToolEditorIcon icon)
     {
-        var button = ToolEditorApi.CreateButton("", icon, handler, tooltip: tooltip);
+        var button = ToolEditorApi.CreateButton("", icon, handler, tooltip: tooltip, palette: _palette);
         button.DisplayStyle = ToolStripItemDisplayStyle.Image;
         button.AutoSize = false;
         button.Size = new Size(28, 26);
@@ -1847,22 +2217,7 @@ public sealed class NodEditorForm : Form
 
     private GraphPlotView GetGraph3DXYView()
     {
-        if (_graph3DXMin is null || _graph3DXMax is null || _graph3DYMin is null || _graph3DYMax is null)
-        {
-            return GetStoredGraph3DXYView();
-        }
-
-        if (IsGraph3DFlat2DView())
-            return GetStoredGraph3DXYView();
-
-        var minX = GraphSurfaceApi.GetNumberBoxValue(_graph3DXMin);
-        var maxX = GraphSurfaceApi.GetNumberBoxValue(_graph3DXMax);
-        var minY = GraphSurfaceApi.GetNumberBoxValue(_graph3DYMin);
-        var maxY = GraphSurfaceApi.GetNumberBoxValue(_graph3DYMax);
-        if (minX >= maxX || minY >= maxY)
-            return GetStoredGraph3DXYView();
-
-        return new GraphPlotView(minX, maxX, minY, maxY);
+        return GetStoredGraph3DXYView();
     }
 
     private GraphPlotView GetStoredGraph3DXYView()
@@ -2077,14 +2432,15 @@ public sealed class NodEditorForm : Form
 
     private void Graph3DCanvas_MouseDown(object? sender, MouseEventArgs e)
     {
-        if (e.Button != MouseButtons.Left)
+        if (e.Button is not (MouseButtons.Left or MouseButtons.Right))
             return;
 
         _graph3DDragging = true;
+        _graph3DDragButton = e.Button;
         _graph3DDragStart = e.Location;
-        if (IsGraph3DFlat2DView())
+        if (IsGraph3DFlat2DView() || e.Button == MouseButtons.Right)
         {
-            if (!EnsureGraphPreviewGeneratedForInteraction())
+            if (IsGraph3DFlat2DView() && !EnsureGraphPreviewGeneratedForInteraction())
             {
                 _graph3DDragging = false;
                 return;
@@ -2111,6 +2467,12 @@ public sealed class NodEditorForm : Form
             return;
         }
 
+        if (_graph3DDragButton == MouseButtons.Right)
+        {
+            PanGraph3DCamera(e.Location);
+            return;
+        }
+
         var dx = e.X - _graph3DDragStart.X;
         var dy = e.Y - _graph3DDragStart.Y;
         _graph3DDragStart = e.Location;
@@ -2120,6 +2482,7 @@ public sealed class NodEditorForm : Form
     private void Graph3DCanvas_MouseUp(object? sender, MouseEventArgs e)
     {
         _graph3DDragging = false;
+        _graph3DDragButton = MouseButtons.None;
         _graph3DCanvas.Cursor = _graph3DCanvas.ClientRectangle.Contains(e.Location) ? GraphCursors.Pan : GraphCursors.Default;
     }
 
@@ -2179,6 +2542,21 @@ public sealed class NodEditorForm : Form
             _graphPanStartMaxY + graphDy);
 
         ApplyGraph3DXYView(nextView, regenerate: false);
+    }
+
+    private void PanGraph3DCamera(Point location)
+    {
+        var dx = location.X - _graph3DDragStart.X;
+        var dy = location.Y - _graph3DDragStart.Y;
+        _graph3DDragStart = location;
+        _graph3DCamera = _graph3DCamera with
+        {
+            PanX = _graph3DCamera.PanX + dx,
+            PanY = _graph3DCamera.PanY + dy
+        };
+        _graph3DRotationDial.Camera = _graph3DCamera;
+        _graph3DCanvas?.Invalidate();
+        UpdateGraph3DPreviewWindowData();
     }
 
     private void InitializeGraphPreviewBaseView()
@@ -4141,8 +4519,11 @@ public sealed class NodEditorForm : Form
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var rect = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
         using var path = CreateRoundedRectanglePath(rect, 8);
-        using var fill = new SolidBrush(Color.FromArgb(239, 246, 255));
-        using var border = new Pen(Color.FromArgb(199, 219, 248), 1);
+        var borderColor = panel.BackColor.GetBrightness() < 0.4f
+            ? Color.FromArgb(51, 65, 85)
+            : Color.FromArgb(199, 219, 248);
+        using var fill = new SolidBrush(panel.BackColor);
+        using var border = new Pen(borderColor, 1);
         e.Graphics.FillPath(fill, path);
         e.Graphics.DrawPath(border, path);
     }
@@ -4431,7 +4812,7 @@ public sealed class NodEditorForm : Form
         _simWindow = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(236, 236, 236),
+            BackColor = SoftPanelBackColor,
             BorderStyle = BorderStyle.FixedSingle,
             Padding = new Padding(0)
         };
@@ -4440,7 +4821,7 @@ public sealed class NodEditorForm : Form
         {
             Dock = DockStyle.Top,
             Height = 26,
-            BackColor = Color.FromArgb(242, 242, 242)
+            BackColor = PanelBackColor
         };
 
         _simTitle = new Label
@@ -4449,7 +4830,8 @@ public sealed class NodEditorForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(8, 0, 0, 0),
-            Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            Font = new Font("Segoe UI", 9, FontStyle.Bold),
+            ForeColor = EditorTextColor
         };
 
         titlePanel.Controls.Add(_simTitle);
@@ -4459,7 +4841,8 @@ public sealed class NodEditorForm : Form
         _simMenuStrip = new MenuStrip
         {
             Dock = DockStyle.Top,
-            BackColor = Color.FromArgb(248, 248, 248),
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor,
             Height = 24,
             CanOverflow = false
         };
@@ -4474,7 +4857,7 @@ public sealed class NodEditorForm : Form
             Dock = DockStyle.Top,
             Height = 32,
             WrapContents = false,
-            BackColor = Color.FromArgb(245, 245, 245),
+            BackColor = PanelBackColor,
             Padding = new Padding(6, 4, 6, 3)
         };
 
@@ -4486,7 +4869,8 @@ public sealed class NodEditorForm : Form
             Text = T("editor.sim.file", "File:"),
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
-            Margin = new Padding(6, 5, 3, 0)
+            Margin = new Padding(6, 5, 3, 0),
+            ForeColor = EditorTextColor
         };
         toolbarPanel.Controls.Add(_simFileLabel);
 
@@ -4494,7 +4878,9 @@ public sealed class NodEditorForm : Form
         {
             Width = 198,
             DropDownStyle = ComboBoxStyle.DropDownList,
-            Margin = new Padding(0, 1, 0, 0)
+            Margin = new Padding(0, 1, 0, 0),
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
         _simFileBox.Items.Add(T("editor.sim.current_converter", "Current converter"));
         _simFileBox.SelectedIndex = 0;
@@ -4508,7 +4894,8 @@ public sealed class NodEditorForm : Form
             ColumnCount = 5,
             RowCount = 5,
             Padding = new Padding(12, 8, 12, 8),
-            BackColor = Color.FromArgb(236, 236, 236)
+            BackColor = SoftPanelBackColor,
+            ForeColor = EditorTextColor
         };
 
         body.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 26));
@@ -4527,15 +4914,18 @@ public sealed class NodEditorForm : Form
         {
             Text = "Input1",
             AutoSize = true,
-            Anchor = AnchorStyles.Left
+            Anchor = AnchorStyles.Left,
+            ForeColor = EditorTextColor
         };
         body.Controls.Add(_simInputLabel, 3, 0);
 
-        body.Controls.Add(new RadioButton { Enabled = false, Checked = true, Anchor = AnchorStyles.Left }, 0, 1);
+        body.Controls.Add(new RadioButton { Enabled = false, Checked = true, Anchor = AnchorStyles.Left, BackColor = SoftPanelBackColor, ForeColor = EditorTextColor }, 0, 1);
 
         _simInputBox = new TextBox
         {
-            Dock = DockStyle.Fill
+            Dock = DockStyle.Fill,
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
         body.Controls.Add(_simInputBox, 3, 1);
 
@@ -4544,7 +4934,8 @@ public sealed class NodEditorForm : Form
             Name = "SimInputSuffix",
             Text = "",
             AutoSize = true,
-            Anchor = AnchorStyles.Left
+            Anchor = AnchorStyles.Left,
+            ForeColor = EditorTextColor
         };
         body.Controls.Add(inputSuffix, 4, 1);
 
@@ -4552,16 +4943,19 @@ public sealed class NodEditorForm : Form
         {
             Text = "Input2",
             AutoSize = true,
-            Anchor = AnchorStyles.Left
+            Anchor = AnchorStyles.Left,
+            ForeColor = EditorTextColor
         };
         body.Controls.Add(_simOutputLabel, 3, 2);
 
-        body.Controls.Add(new RadioButton { Enabled = false, Checked = false, Anchor = AnchorStyles.Left }, 0, 3);
+        body.Controls.Add(new RadioButton { Enabled = false, Checked = false, Anchor = AnchorStyles.Left, BackColor = SoftPanelBackColor, ForeColor = EditorTextColor }, 0, 3);
 
         _simOutputBox = new TextBox
         {
             Dock = DockStyle.Fill,
-            ReadOnly = true
+            ReadOnly = true,
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
         body.Controls.Add(_simOutputBox, 3, 3);
 
@@ -4570,7 +4964,8 @@ public sealed class NodEditorForm : Form
             Name = "SimOutputSuffix",
             Text = "",
             AutoSize = true,
-            Anchor = AnchorStyles.Left
+            Anchor = AnchorStyles.Left,
+            ForeColor = EditorTextColor
         };
         body.Controls.Add(outputSuffix, 4, 3);
 
@@ -4578,12 +4973,14 @@ public sealed class NodEditorForm : Form
         {
             Dock = DockStyle.Fill,
             WrapContents = false,
-            FlowDirection = FlowDirection.LeftToRight
+            FlowDirection = FlowDirection.LeftToRight,
+            BackColor = SoftPanelBackColor,
+            ForeColor = EditorTextColor
         };
 
-        _simDigitGroup = new CheckBox { Text = T("option.digit_group", "Digit group"), AutoSize = true, Enabled = false, Margin = new Padding(0, 6, 14, 0) };
-        _simDecimals = new CheckBox { Text = T("option.decimals", "Decimals"), AutoSize = true, Enabled = false, Margin = new Padding(0, 6, 6, 0) };
-        _simDecimalCount = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 8, Enabled = false, Margin = new Padding(0, 3, 0, 0) };
+        _simDigitGroup = new CheckBox { Text = T("option.digit_group", "Digit group"), AutoSize = true, AutoCheck = false, Margin = new Padding(0, 6, 14, 0), BackColor = SoftPanelBackColor, ForeColor = MutedTextColor, TabStop = false };
+        _simDecimals = new CheckBox { Text = T("option.decimals", "Decimals"), AutoSize = true, AutoCheck = false, Margin = new Padding(0, 6, 6, 0), BackColor = SoftPanelBackColor, ForeColor = MutedTextColor, TabStop = false };
+        _simDecimalCount = new NumericUpDown { Width = 50, Minimum = 0, Maximum = 8, ReadOnly = true, InterceptArrowKeys = false, Margin = new Padding(0, 3, 0, 0), BackColor = EditorBackColor, ForeColor = MutedTextColor, TabStop = false };
 
         optionsPanel.Controls.Add(_simDigitGroup);
         optionsPanel.Controls.Add(_simDecimals);
@@ -4603,16 +5000,17 @@ public sealed class NodEditorForm : Form
     }
 
     // Maakt een kleine icon-knop voor de simulator-toolbar.
-    private static Control MakeSimIconButton(string tooltip, ToolbarIcon icon)
+    private Control MakeSimIconButton(string tooltip, ToolbarIcon icon)
     {
         var box = new PictureBox
         {
             Width = 28,
             Height = 24,
             Margin = new Padding(2, 0, 2, 0),
-            BackColor = Color.FromArgb(245, 245, 245),
+            BackColor = PanelBackColor,
             Cursor = Cursors.Hand,
-            Image = CreateToolbarImage(icon),
+            Image = CreateSimulatorToolbarImage(icon),
+            Tag = icon,
             SizeMode = PictureBoxSizeMode.CenterImage
         };
 
@@ -4620,6 +5018,23 @@ public sealed class NodEditorForm : Form
         tip.SetToolTip(box, tooltip);
 
         return box;
+    }
+
+    private Bitmap CreateSimulatorToolbarImage(ToolbarIcon icon)
+    {
+        var toolEditorIcon = icon switch
+        {
+            ToolbarIcon.Wizard => ToolEditorIcon.Wizard,
+            ToolbarIcon.Open => ToolEditorIcon.Open,
+            ToolbarIcon.Test => ToolEditorIcon.Test,
+            ToolbarIcon.Save => ToolEditorIcon.Save,
+            ToolbarIcon.Find => ToolEditorIcon.Find,
+            ToolbarIcon.Validate => ToolEditorIcon.Validate,
+            ToolbarIcon.Solver => ToolEditorIcon.Solver,
+            ToolbarIcon.Repair => ToolEditorIcon.Repair,
+            _ => ToolEditorIcon.New
+        };
+        return ToolEditorApi.CreateIcon(toolEditorIcon, _palette);
     }
 
     // Plakt symbool vóór/achter netjes om een simulatorwaarde heen.
@@ -4729,6 +5144,7 @@ public sealed class NodEditorForm : Form
             _nodHelpBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _nodHelpBrowser.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _nodHelpBrowser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            _nodHelpBrowser.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
             _nodHelpBrowser.CoreWebView2.WebMessageReceived += NodHelpBrowser_WebMessageReceived;
             ShowPendingNodHelpHtmlIfReady();
         };
@@ -4738,6 +5154,7 @@ public sealed class NodEditorForm : Form
         {
             Width = NodHelpPopupMaxWidth,
             Height = NodHelpPopupMinHeight,
+            DarkMode = IsDarkTheme,
             Visible = false
         };
         _nodHelpPopup.Controls.Add(_nodHelpBrowser);
@@ -4797,6 +5214,17 @@ public sealed class NodEditorForm : Form
     private void AddBlankNewTab(EditorTab? afterTab = null)
     {
         AddNewTab(T("editor.tab.new", "new"), "", null, dirty: false, afterTab);
+    }
+
+    private void ApplyEditorTheme(EditorTab tab)
+    {
+        tab.Content.BackColor = BorderColor;
+        tab.Editor.BackColor = EditorBackColor;
+        tab.Editor.ForeColor = EditorTextColor;
+        tab.LineNumbers.BackColor = IsDarkTheme ? Color.FromArgb(30, 41, 59) : Color.White;
+        tab.LineNumbers.ForeColor = MutedTextColor;
+        tab.Page.BackColor = ContentBackColor;
+        tab.Page.ForeColor = EditorTextColor;
     }
 
     // Maakt een nieuwe editor-tab met regelnummers, syntax highlighting en preview-updates.
@@ -4865,6 +5293,7 @@ public sealed class NodEditorForm : Form
             Dirty = dirty,
             HistoryText = normalizedText
         };
+        ApplyEditorTheme(tab);
 
         editor.TextChanged += (_, _) =>
         {
@@ -6903,12 +7332,29 @@ public sealed class NodEditorForm : Form
             return;
         }
 
+        if (uri.Scheme.Equals("nodlanginfo", StringComparison.OrdinalIgnoreCase))
+        {
+            e.Cancel = true;
+            ShowSignedPackageInformationDeferred();
+            return;
+        }
+
         if (uri.Scheme.Equals("nodpage", StringComparison.OrdinalIgnoreCase))
         {
             e.Cancel = true;
             var pageId = Uri.UnescapeDataString((uri.Host + uri.AbsolutePath).Trim('/'));
             ShowNodHelpDeferred(pageId);
         }
+    }
+
+    private void ShowSignedPackageInformationDeferred()
+    {
+        BeginInvoke(new Action(() =>
+        {
+            var information = BuildCurrentLanguageSignedPackageInformation();
+            if (information is not null)
+                HelpApi.ShowSignedPackageInformation(this, information, PreferredWebViewColorScheme);
+        }));
     }
 
     // Opent de grote NOD-help pas nadat WebView2 klaar is met het klik-event.
@@ -7038,7 +7484,13 @@ public sealed class NodEditorForm : Form
             T("editor.menu.help.nod", "NOD help"),
             BuildNodHelpPages(),
             SelectedPageId: selectedPageId,
-            Navigation: GetHelpNavigationLabels()));
+            Navigation: GetHelpNavigationLabels(),
+            PreferredColorScheme: PreferredWebViewColorScheme,
+            ShowSignedPackageBadge: BuildCurrentLanguageSignedPackageInformation() is not null,
+            SignedPackageBadgeText: CurrentLanguagePackageIsSigned()
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            SignedPackageInformation: BuildCurrentLanguageSignedPackageInformation()));
     }
 
     // Levert vertaalde labels voor de gedeelde helpnavigatie.
@@ -7048,6 +7500,59 @@ public sealed class NodEditorForm : Form
             T("help.nav.home", "Home"),
             T("help.nav.previous", "Previous"),
             T("help.nav.next", "Next"));
+    }
+
+    private bool CurrentLanguagePackageIsSigned()
+    {
+        return LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(language => language.Matches(_language.FileName, _language.PackageId))
+            ?.Signed == true;
+    }
+
+    private HelpSignedPackageInformation? BuildCurrentLanguageSignedPackageInformation()
+    {
+        var language = LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(item => item.Matches(_language.FileName, _language.PackageId));
+        if (language is null)
+            return null;
+
+        var signed = language.Signed;
+        var code = string.IsNullOrWhiteSpace(language.LanguageCode)
+            ? Path.GetFileNameWithoutExtension(language.FileName)
+            : language.LanguageCode;
+        var author = string.IsNullOrWhiteSpace(language.Producer)
+            ? T("dialog.language.info.local_author", "Local file")
+            : language.Producer;
+        var product = string.IsNullOrWhiteSpace(language.Product) ? "Syscalculator" : language.Product;
+        var packageId = string.IsNullOrWhiteSpace(language.PackageId) ? "-" : language.PackageId;
+        var version = string.IsNullOrWhiteSpace(language.PackageVersion) ? "-" : language.PackageVersion;
+        var algorithm = string.IsNullOrWhiteSpace(language.SignatureAlgorithm) ? "-" : language.SignatureAlgorithm;
+        var keyId = string.IsNullOrWhiteSpace(language.SignatureKeyId) ? "-" : language.SignatureKeyId;
+        var keySha256 = string.IsNullOrWhiteSpace(language.SignatureKeySha256) ? "-" : language.SignatureKeySha256;
+
+        return new HelpSignedPackageInformation(
+            T("dialog.language.info.title", "Language information"),
+            language.DisplayName,
+            signed
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            [
+                new(T("dialog.language.info.name", "Language"), language.DisplayName),
+                new(T("dialog.language.info.code", "Code"), code),
+                new(T("dialog.language.info.author", "Author"), author),
+                new(T("dialog.language.info.product", "Product"), product),
+                new(T("dialog.language.info.package", "Package"), packageId),
+                new(T("dialog.language.info.file", "File"), language.FileName),
+                new(T("dialog.language.info.version", "Version"), version),
+                new(T("dialog.language.info.signed", "Signed"), signed ? T("common.yes", "Yes") : T("common.no", "No")),
+                new(T("dialog.language.info.algorithm", "Algorithm"), algorithm),
+                new(T("dialog.language.info.key", "Key"), keyId),
+                new("SHA-256", keySha256)
+            ],
+            signed
+                ? T("help.signed_package_tip", "This help comes from a verified signed language package.")
+                : T("help.unsigned_language_tip", "This help comes from a loose language file and is not signed."),
+            signed);
     }
 
     private void FormulaCard_Click(object? sender, EventArgs e)
@@ -7481,7 +7986,149 @@ public sealed class NodEditorForm : Form
     // Wikkelt één help-onderwerp in volledige HTML-opmaak.
     private string WrapNodHelpPage(string title, string body)
     {
-        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapTopicPage(title, body, HelpApi.NodHelpCss(), HelpHtml.NodCopyButtonsScript()));
+        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapTopicPage(title, body, NodHelpCss(), HelpHtml.NodCopyButtonsScript()));
+    }
+
+    private string NodHelpCss()
+    {
+        return HelpApi.NodHelpCss() + Environment.NewLine + NodEditorDocumentThemeCss();
+    }
+
+    private string NodPopupCss()
+    {
+        return HelpApi.NodPopupCss() + Environment.NewLine + NodEditorDocumentThemeCss();
+    }
+
+    private string NodEditorDocumentThemeCss()
+    {
+        if (!IsDarkTheme)
+            return "";
+
+        return """
+        :root { color-scheme: dark; }
+        html, body { background:#111827 !important; color:#e5e7eb !important; }
+        body { background:#111827 !important; }
+        h1, h2, h3, b, .title { color:#93c5fd !important; }
+        h2 { border-bottom-color:#334155 !important; }
+        p, li, td, .muted, summary { color:#d1d5db !important; }
+        a, .cmd-link, .suggest { color:#bfdbfe !important; }
+        code, pre, .syntax, .formula, .mathml-formula, .graph-mathml {
+          background:#0f1f36 !important; border-color:#60a5fa !important; color:#ffffff !important;
+          overflow-wrap:normal !important;
+          word-break:normal !important;
+        }
+        .syntax {
+          font-weight:700 !important;
+          box-shadow:none !important;
+          white-space:pre-wrap !important;
+        }
+        input, textarea, select {
+          background:#1f2937 !important;
+          border:1px solid #60a5fa !important;
+          color:#ffffff !important;
+          caret-color:#ffffff !important;
+        }
+        input::placeholder,
+        textarea::placeholder {
+          color:#dbeafe !important;
+          opacity:1 !important;
+        }
+        .cmd-link code,
+        a code {
+          background:#172554 !important;
+          border-color:#3b82f6 !important;
+          color:#ffffff !important;
+          font-weight:700 !important;
+          white-space:nowrap !important;
+          overflow-wrap:normal !important;
+          word-break:normal !important;
+        }
+        .cmd-link:hover code,
+        a:hover code {
+          background:#1d4ed8 !important;
+          border-color:#93c5fd !important;
+          color:#ffffff !important;
+        }
+        pre { background:#020617 !important; color:#e5e7eb !important; }
+        table, details, .example-card, .formula-card, .math-card, .graph-card {
+          background:#111827 !important; border-color:#334155 !important; box-shadow:none !important;
+        }
+        th, summary { background:#1e293b !important; color:#bfdbfe !important; border-color:#334155 !important; }
+        td { border-color:#334155 !important; }
+        tr:nth-child(even) td { background:#0f172a !important; }
+        .notice, .help-info, .help-tip {
+          background:#172554 !important; border-color:#2563eb !important; color:#dbeafe !important;
+        }
+        .warning, .warning-sign {
+          background:#3b1d0a !important; border-color:#b45309 !important; color:#fed7aa !important;
+        }
+        a.insert, .actions a.insert {
+          background:#1d4ed8 !important; border-color:#3b82f6 !important; color:#ffffff !important;
+        }
+        a.more, .actions a.more {
+          background:transparent !important;
+          border-color:transparent !important;
+          color:#bfdbfe !important;
+          padding:0 !important;
+          box-shadow:none !important;
+          text-decoration:none !important;
+        }
+        a.more:hover, .actions a.more:hover,
+        a.more:focus, .actions a.more:focus {
+          color:#ffffff !important;
+          text-decoration:underline !important;
+        }
+        .actions a.signed-package-badge,
+        .actions a.signed-package-badge:link,
+        .actions a.signed-package-badge:visited,
+        .actions a.signed-package-badge:hover,
+        .actions a.signed-package-badge:active,
+        .actions a.signed-package-badge:focus {
+          display:inline-flex !important;
+          align-items:center !important;
+          justify-content:center !important;
+          flex:0 0 22px !important;
+          width:22px !important;
+          height:22px !important;
+          margin:0 !important;
+          color:#22c55e !important;
+          background:transparent !important;
+          border:1px solid transparent !important;
+          padding:0 !important;
+          border-radius:4px !important;
+          box-shadow:none !important;
+          line-height:0 !important;
+          text-decoration:none !important;
+          outline-offset:2px !important;
+        }
+        .actions a.signed-package-badge.unsigned,
+        .actions a.signed-package-badge.unsigned:link,
+        .actions a.signed-package-badge.unsigned:visited,
+        .actions a.signed-package-badge.unsigned:hover,
+        .actions a.signed-package-badge.unsigned:active,
+        .actions a.signed-package-badge.unsigned:focus {
+          color:#ef4444 !important;
+        }
+        .actions a.signed-package-badge:hover,
+        .actions a.signed-package-badge:focus {
+          background:#052e16 !important;
+          border-color:#166534 !important;
+        }
+        .actions a.signed-package-badge.unsigned:hover,
+        .actions a.signed-package-badge.unsigned:focus {
+          background:#450a0a !important;
+          border-color:#991b1b !important;
+        }
+        .signed-package-badge svg {
+          display:block !important;
+          width:18px !important;
+          height:18px !important;
+          flex:0 0 18px !important;
+        }
+        .graph-frame, .screenshot-frame { background:#0f172a !important; border-color:#334155 !important; box-shadow:none !important; }
+        .graph-caption, .shot-caption { color:#9ca3af !important; }
+        ::selection { background:#2563eb; color:#ffffff; }
+        """;
     }
 
     // Toont HTML-help voor het NOD-keyword op de regel waar met rechts is geklikt.
@@ -7510,7 +8157,7 @@ public sealed class NodEditorForm : Form
             : BuildSuggestionHtml(matches);
         _pendingNodHelpWidth = EstimateNodHelpPopupWidth(body);
 
-        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapBodyPage(body, HelpApi.NodPopupCss(), HelpHtml.NodPopupHeightScript()));
+        return ApplyHelpLanguagePlaceholders(HelpHtml.WrapBodyPage(body, NodPopupCss(), HelpHtml.NodPopupHeightScript()));
     }
 
     // Bouwt de HTML voor één keyword plus een klikbare invoegactie.
@@ -7526,7 +8173,26 @@ public sealed class NodEditorForm : Form
             : T("editor.nod_help.insert", "Invoegen");
         var moreText = T("editor.nod_help.more", "Meer help");
         var link = $"nodinsert:///{Uri.EscapeDataString(keyword)}";
-        return body + $"<div class=\"actions\"><a class=\"insert\" href=\"{link}\">{WebUtility.HtmlEncode(insertText)}</a><a class=\"more\" href=\"nodhelp:///full\">{WebUtility.HtmlEncode(moreText)}</a></div>";
+        return body + $"<div class=\"actions\"><a class=\"insert\" href=\"{link}\">{WebUtility.HtmlEncode(insertText)}</a><a class=\"more\" href=\"nodhelp:///full\">{WebUtility.HtmlEncode(moreText)}</a>{BuildSignedPackageBadgeHtml()}</div>";
+    }
+
+    private string BuildSignedPackageBadgeHtml()
+    {
+        var information = BuildCurrentLanguageSignedPackageInformation();
+        if (information is null)
+            return "";
+
+        var title = WebUtility.HtmlEncode(information.Status);
+        var unsignedClass = information.Verified ? "" : " unsigned";
+        return $"""
+        <a class="signed-package-badge{unsignedClass}" href="nodlanginfo:///signed" title="{title}" aria-label="{title}">
+          <svg width="18" height="18" viewBox="5485 545 1059 1411" focusable="false" aria-hidden="true">
+            <path fill="currentColor" fill-rule="evenodd" d="M 5597.109375 1096.890625 L 6431.089844 1096.890625 C 6492.738281 1096.890625 6543.171875 1147.328125 6543.171875 1208.96875 L 6543.171875 1842.980469 C 6543.171875 1904.621094 6492.738281 1955.054688 6431.089844 1955.054688 L 5597.109375 1955.054688 C 5535.46875 1955.054688 5485.039062 1904.621094 5485.039062 1842.980469 L 5485.039062 1208.96875 C 5485.039062 1147.328125 5535.46875 1096.890625 5597.109375 1096.890625"/>
+            <path fill="currentColor" fill-rule="evenodd" d="M 6014.101562 545.269531 C 6236.058594 545.269531 6417.660156 726.859375 6417.660156 948.828125 L 6417.660156 1120.898438 L 6267.699219 1120.898438 L 6267.699219 948.828125 C 6267.699219 809.339844 6153.589844 695.230469 6014.101562 695.230469 C 5874.609375 695.230469 5760.488281 809.339844 5760.488281 948.828125 L 5760.488281 1120.898438 L 5610.53125 1120.898438 L 5610.53125 948.828125 C 5610.53125 726.859375 5792.128906 545.269531 6014.101562 545.269531"/>
+            <path fill="#ffffff" fill-rule="evenodd" d="M 5791.21875 1488.179688 C 5812.539062 1466.859375 5847.410156 1466.859375 5868.738281 1488.179688 L 5952.078125 1571.523438 L 6159.460938 1364.140625 C 6180.78125 1342.820312 6215.660156 1342.820312 6236.980469 1364.140625 C 6258.300781 1385.460938 6258.300781 1420.339844 6236.980469 1441.660156 L 5990.839844 1687.804688 C 5969.519531 1709.125 5934.640625 1709.125 5913.320312 1687.804688 L 5791.21875 1565.695312 C 5769.898438 1544.375 5769.898438 1509.496094 5791.21875 1488.179688"/>
+          </svg>
+        </a>
+        """;
     }
 
     private static bool IsLegacyInputKeyword(string keyword)
@@ -7790,23 +8456,23 @@ public sealed class NodEditorForm : Form
 
         editor.SuspendLayout();
         editor.SelectAll();
-        editor.SelectionColor = Color.Black;
+        editor.SelectionColor = EditorTextColor;
         editor.SelectionFont = new Font(editor.Font, FontStyle.Regular);
 
         // Comments starting with apostrophe.
-        HighlightPattern(editor, @"'.*$", Color.ForestGreen, FontStyle.Italic, RegexOptions.Multiline);
+        HighlightPattern(editor, @"'.*$", SyntaxCommentColor, FontStyle.Italic, RegexOptions.Multiline);
 
         // Commands at line start.
-        HighlightPattern(editor, @"^\s*(Name|URLN|input1|input2|input|inputr|Result|Resfou|Symb1|Symb2|Symb3|Symb4|format|mode|math|chg|trans|reverse|field|table|output|phoneformat|lookup|match|given|equation|solve|constraint|preview|backup|indoprint|indoend|end)\b", Color.RoyalBlue, FontStyle.Bold, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        HighlightPattern(editor, @"^\s*(Name|URLN|input1|input2|input|inputr|Result|Resfou|Symb1|Symb2|Symb3|Symb4|format|mode|math|chg|trans|reverse|field|table|output|phoneformat|lookup|match|given|equation|solve|constraint|preview|backup|indoprint|indoend|end)\b", SyntaxCommandColor, FontStyle.Bold, RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
         // Functions/constants.
-        HighlightPattern(editor, @"\b(ans|e|pi|π|sqrt|abs|ln|log|sin|cos|tan|asin|acos|atan|sind|cosd|tand|asind|acosd|atand|rad|deg|mod|rem|diff|integral|limit)\b", Color.DarkCyan, FontStyle.Regular, RegexOptions.IgnoreCase);
+        HighlightPattern(editor, @"\b(ans|e|pi|π|sqrt|abs|ln|log|sin|cos|tan|asin|acos|atan|sind|cosd|tand|asind|acosd|atand|rad|deg|mod|rem|diff|integral|limit)\b", SyntaxFunctionColor, FontStyle.Regular, RegexOptions.IgnoreCase);
 
         // Numbers.
-        HighlightPattern(editor, @"(?<!\w)\d+([,.]\d+)?(?!\w)", Color.DarkOrange, FontStyle.Regular, RegexOptions.None);
+        HighlightPattern(editor, @"(?<!\w)\d+([,.]\d+)?(?!\w)", SyntaxNumberColor, FontStyle.Regular, RegexOptions.None);
 
         editor.Select(Math.Min(selectionStart, editor.TextLength), Math.Min(selectionLength, Math.Max(0, editor.TextLength - selectionStart)));
-        editor.SelectionColor = Color.Black;
+        editor.SelectionColor = EditorTextColor;
         editor.ResumeLayout();
 
         _highlighting = false;

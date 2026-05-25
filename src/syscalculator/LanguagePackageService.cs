@@ -311,12 +311,12 @@ internal static class LanguagePackageService
                 return false;
 
             ValidateManifest(manifest);
-            ValidatePackageEntries(zipPath);
+            var header = ValidatePackageEntries(zipPath);
 
             if (!ContainsEntry(zipPath, "language/" + manifest.LanguageCode + ".lng"))
                 return false;
 
-            package = LanguagePackageInfo.FromArchive(manifest, zipPath);
+            package = LanguagePackageInfo.FromArchive(manifest, zipPath, header);
             return true;
         }
         catch
@@ -366,9 +366,9 @@ internal static class LanguagePackageService
             NormalizeArchiveEntryName(entry.Key).Equals(entryName, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static void ValidatePackageEntries(string packagePath)
+    private static LanguagePackageContainerHeader? ValidatePackageEntries(string packagePath)
     {
-        using var packageStream = OpenArchivePayloadStream(packagePath);
+        using var packageStream = OpenArchivePayloadStream(packagePath, out var header);
         using var archive = ArchiveFactory.OpenArchive(packageStream);
         var count = 0;
         long totalBytes = 0;
@@ -389,21 +389,32 @@ internal static class LanguagePackageService
 
             ValidateEntryName(NormalizeArchiveEntryName(entry.Key));
         }
+
+        return header;
     }
 
     private static Stream OpenArchivePayloadStream(string packagePath)
     {
+        return OpenArchivePayloadStream(packagePath, out _);
+    }
+
+    private static Stream OpenArchivePayloadStream(string packagePath, out LanguagePackageContainerHeader? header)
+    {
         var source = File.OpenRead(packagePath);
-        if (!TryReadWrappedPayload(source, out var payload))
+        if (!TryReadWrappedPayload(source, out var payload, out header))
             return source;
 
         source.Dispose();
         return new MemoryStream(payload, writable: false);
     }
 
-    private static bool TryReadWrappedPayload(Stream source, out byte[] payload)
+    private static bool TryReadWrappedPayload(
+        Stream source,
+        out byte[] payload,
+        out LanguagePackageContainerHeader? header)
     {
         payload = [];
+        header = null;
         if (!source.CanSeek || source.Length < PackageMagic.Length + sizeof(int) + sizeof(int))
             return false;
 
@@ -428,7 +439,7 @@ internal static class LanguagePackageService
         if (headerBytes.Length != headerLength)
             throw new InvalidDataException("Language package header is incomplete.");
 
-        var header = JsonSerializer.Deserialize<LanguagePackageContainerHeader>(
+        header = JsonSerializer.Deserialize<LanguagePackageContainerHeader>(
             Encoding.UTF8.GetString(headerBytes),
             JsonOptions) ?? throw new InvalidDataException("Language package header is invalid.");
         ValidateContainerHeader(header);
@@ -566,19 +577,44 @@ internal sealed record LanguagePackageInfo(
     LanguagePackageManifest Manifest,
     string PackagePath,
     string LanguageFileName,
-    bool IsArchive)
+    bool IsArchive,
+    bool Signed,
+    string SignatureAlgorithm,
+    string SignatureKeyId,
+    string SignatureKeySha256)
 {
     public static LanguagePackageInfo FromDirectory(
         LanguagePackageManifest manifest,
         string directoryPath,
         string languageFilePath)
     {
-        return new LanguagePackageInfo(manifest, directoryPath, Path.GetFileName(languageFilePath), IsArchive: false);
+        return new LanguagePackageInfo(
+            manifest,
+            directoryPath,
+            Path.GetFileName(languageFilePath),
+            IsArchive: false,
+            Signed: false,
+            SignatureAlgorithm: "",
+            SignatureKeyId: "",
+            SignatureKeySha256: "");
     }
 
-    public static LanguagePackageInfo FromArchive(LanguagePackageManifest manifest, string archivePath)
+    public static LanguagePackageInfo FromArchive(
+        LanguagePackageManifest manifest,
+        string archivePath,
+        LanguagePackageContainerHeader? header)
     {
-        return new LanguagePackageInfo(manifest, archivePath, manifest.LanguageCode + ".lng", IsArchive: true);
+        return new LanguagePackageInfo(
+            manifest,
+            archivePath,
+            manifest.LanguageCode + ".lng",
+            IsArchive: true,
+            Signed: header?.Signed == true,
+            SignatureAlgorithm: header?.SignatureAlgorithm ?? "",
+            SignatureKeyId: header?.SignatureKeyId ?? "",
+            SignatureKeySha256: header?.Signed == true
+                ? LanguagePackageSignatureVerifier.GetTrustedPublicKeySha256(header.SignatureKeyId, header.SignatureAlgorithm)
+                : "");
     }
 }
 

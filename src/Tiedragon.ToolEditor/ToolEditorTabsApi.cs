@@ -9,11 +9,42 @@ namespace Tiedragon.ToolEditor;
 /// </summary>
 public static class ToolEditorTabsApi
 {
-    private static readonly Color TabSelectedBack = Color.FromArgb(31, 41, 55);
-    private static readonly Color TabInactiveBack = Color.FromArgb(15, 23, 42);
-    private static readonly Color TabBorder = Color.FromArgb(55, 65, 81);
-    private static readonly Color TabSelectedText = Color.FromArgb(248, 250, 252);
-    private static readonly Color TabInactiveText = Color.FromArgb(203, 213, 225);
+    private static Color TabSelectedBack = Color.FromArgb(31, 41, 55);
+    private static Color TabInactiveBack = Color.FromArgb(15, 23, 42);
+    private static Color TabBorder = Color.FromArgb(55, 65, 81);
+    private static Color TabSelectedText = Color.FromArgb(248, 250, 252);
+    private static Color TabInactiveText = Color.FromArgb(203, 213, 225);
+    private static Color ModeActiveBack = Color.FromArgb(37, 99, 235);
+    private static Color ModeInactiveBack = Color.FromArgb(31, 41, 55);
+    private static Color ModeActiveText = Color.White;
+    private static Color ModeInactiveText = Color.FromArgb(248, 250, 252);
+
+    public static void ConfigureTheme(ToolEditorUiTheme theme)
+    {
+        if (theme == ToolEditorUiTheme.Dark)
+        {
+            TabSelectedBack = Color.FromArgb(31, 41, 55);
+            TabInactiveBack = Color.FromArgb(15, 23, 42);
+            TabBorder = Color.FromArgb(55, 65, 81);
+            TabSelectedText = Color.FromArgb(248, 250, 252);
+            TabInactiveText = Color.FromArgb(203, 213, 225);
+            ModeActiveBack = Color.FromArgb(37, 99, 235);
+            ModeInactiveBack = Color.FromArgb(31, 41, 55);
+            ModeActiveText = Color.White;
+            ModeInactiveText = Color.FromArgb(248, 250, 252);
+            return;
+        }
+
+        TabSelectedBack = SystemColors.Window;
+        TabInactiveBack = SystemColors.Control;
+        TabBorder = SystemColors.ControlDark;
+        TabSelectedText = SystemColors.ControlText;
+        TabInactiveText = SystemColors.GrayText;
+        ModeActiveBack = Color.FromArgb(219, 234, 254);
+        ModeInactiveBack = SystemColors.Control;
+        ModeActiveText = Color.FromArgb(15, 63, 143);
+        ModeInactiveText = SystemColors.ControlText;
+    }
 
     /// <summary>
     /// Creates the visual tab strip used above editor content.
@@ -133,6 +164,43 @@ public static class ToolEditorTabsApi
         title.Text = text;
         title.ForeColor = selected ? TabSelectedText : TabInactiveText;
         title.Font = new Font(baseFont, selected ? FontStyle.Bold : FontStyle.Regular);
+    }
+
+    /// <summary>
+    /// Creates a compact source/edit mode tab for the HTML editor toolbar.
+    /// </summary>
+    public static ToolStripButton CreateModeButton(string text, string tooltip, EventHandler click)
+    {
+        var button = new ToolStripButton(text)
+        {
+            DisplayStyle = ToolStripItemDisplayStyle.Text,
+            AutoSize = false,
+            Width = 68,
+            Height = 26,
+            CheckOnClick = false,
+            ToolTipText = tooltip,
+            Padding = new Padding(6, 1, 6, 1),
+            Margin = new Padding(1, 1, 1, 1),
+            BackColor = ModeInactiveBack,
+            ForeColor = ModeInactiveText
+        };
+        button.Click += click;
+        return button;
+    }
+
+    /// <summary>
+    /// Applies the active/inactive visual state to a source/edit mode tab.
+    /// </summary>
+    public static void SetModeButtonState(ToolStripButton button, bool active)
+    {
+        var style = active ? FontStyle.Bold : FontStyle.Regular;
+        if (button.Font.Style != style)
+            button.Font = new Font(button.Font, style);
+
+        button.Checked = active;
+        button.BackColor = active ? ModeActiveBack : ModeInactiveBack;
+        button.ForeColor = active ? ModeActiveText : ModeInactiveText;
+        button.DisplayStyle = ToolStripItemDisplayStyle.Text;
     }
 
     /// <summary>
@@ -317,12 +385,27 @@ public static class ToolEditorTabsApi
             e.Graphics.Clear(tabBackColor);
 
             var glyphColor = GlyphColor;
+            if (Parent is ToolEditorTabHeaderPanel header)
+            {
+                var darkTabs = TabSelectedBack.GetBrightness() < 0.35f;
+                glyphColor = darkTabs
+                    ? header.Selected ? Color.FromArgb(148, 163, 184) : Color.FromArgb(100, 116, 139)
+                    : GlyphColor;
+            }
+
             if (_hovered)
             {
                 var back = _pressed ? PressedBackColor : HoverBackColor;
+                if (Parent is ToolEditorTabHeaderPanel && TabSelectedBack.GetBrightness() < 0.35f)
+                    back = _pressed ? Color.FromArgb(37, 99, 235) : Color.FromArgb(30, 64, 175);
+
                 using var fill = new SolidBrush(back);
                 e.Graphics.FillRectangle(fill, new Rectangle(2, 3, Width - 4, Height - 6));
-                glyphColor = _pressed ? PressedGlyphColor : HoverGlyphColor;
+                glyphColor = _pressed
+                    ? PressedGlyphColor
+                    : Parent is ToolEditorTabHeaderPanel && TabSelectedBack.GetBrightness() < 0.35f
+                        ? Color.FromArgb(219, 234, 254)
+                        : HoverGlyphColor;
             }
 
             using var pen = new Pen(glyphColor, 2.1f)

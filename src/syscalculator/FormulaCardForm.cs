@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using Tiedragon.Help;
 using Tiedragon.NodSystem.Core;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -56,12 +57,23 @@ internal sealed class FormulaCardForm : Form
     private readonly LanguageCatalog _language;
     private readonly LanguageCatalog _englishLanguage;
     private readonly bool _enableFormulaFilmExperiment;
+    private readonly ToolEditorUiTheme _uiTheme;
     private bool _browserFailed;
     private string? _pendingHtml;
     private int _currentSearchIndex = -1;
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color ShellBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(248, 250, 252);
+    private Color PanelBackColor => IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White;
+    private Color NavigationBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(241, 245, 249);
+    private Color BorderColor => IsDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(203, 213, 225);
+    private Color TextColor => IsDarkTheme ? Color.FromArgb(229, 231, 235) : Color.FromArgb(31, 41, 55);
+    private Color SearchBackColor => IsDarkTheme ? Color.FromArgb(31, 41, 55) : Color.White;
+    private CoreWebView2PreferredColorScheme PreferredWebViewColorScheme =>
+        IsDarkTheme ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light;
 
     public FormulaCardForm(LanguageCatalog language, bool enableFormulaFilmExperiment = false)
     {
+        _uiTheme = ToolEditorUiThemeSettings.Load();
         _language = language;
         _englishLanguage = LanguageCatalog.Load(AppContext.BaseDirectory, "eng.lng");
         _enableFormulaFilmExperiment = enableFormulaFilmExperiment;
@@ -74,9 +86,11 @@ internal sealed class FormulaCardForm : Form
         MinimizeBox = false;
         StartPosition = FormStartPosition.CenterParent;
         MinimumSize = new Size(920, 560);
-        BackColor = Color.FromArgb(248, 250, 252);
+        BackColor = ShellBackColor;
+        ForeColor = TextColor;
         KeyPreview = true;
         KeyDown += FormulaCardForm_KeyDown;
+        HandleCreated += (_, _) => ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
 
         var split = new SplitContainer
         {
@@ -84,7 +98,7 @@ internal sealed class FormulaCardForm : Form
             FixedPanel = FixedPanel.Panel1,
             SplitterWidth = 1,
             BorderStyle = BorderStyle.None,
-            BackColor = Color.FromArgb(226, 232, 240)
+            BackColor = BorderColor
         };
 
         _countLabel = new Label
@@ -92,27 +106,28 @@ internal sealed class FormulaCardForm : Form
             Dock = DockStyle.Fill,
             Text = $"{T("formula_card.count", "Formula cards")} ({_cards.Count})",
             Font = new Font("Segoe UI", 9, FontStyle.Bold),
-            ForeColor = Color.FromArgb(30, 45, 65),
+            ForeColor = TextColor,
             TextAlign = ContentAlignment.MiddleLeft,
-            BackColor = Color.FromArgb(248, 250, 252)
+            BackColor = ShellBackColor
         };
 
         var searchHost = new Panel
         {
             Dock = DockStyle.Top,
             Height = 38,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(10, 6, 10, 6)
         };
         var searchLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 5,
+            ColumnCount = 6,
             RowCount = 1,
-            BackColor = Color.FromArgb(248, 250, 252)
+            BackColor = ShellBackColor
         };
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, BuildCurrentLanguageSignedPackageInformation() is not null ? 32 : 0));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 34));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 34));
         searchLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 34));
@@ -122,7 +137,8 @@ internal sealed class FormulaCardForm : Form
             AutoSize = true,
             Text = "Zoek",
             Font = new Font("Segoe UI", 9),
-            ForeColor = Color.FromArgb(31, 41, 55),
+            ForeColor = TextColor,
+            BackColor = ShellBackColor,
             Margin = new Padding(0, 4, 8, 0)
         }, 0, 0);
 
@@ -131,28 +147,53 @@ internal sealed class FormulaCardForm : Form
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.FixedSingle,
             Font = new Font("Segoe UI", 9),
+            BackColor = SearchBackColor,
+            ForeColor = TextColor,
             Margin = new Padding(0, 0, 8, 0)
         };
         _searchBox.TextChanged += (_, _) => SearchCurrentCard(resetIndex: true);
         _searchBox.KeyDown += SearchBox_KeyDown;
         searchLayout.Controls.Add(_searchBox, 1, 0);
 
+        if (BuildCurrentLanguageSignedPackageInformation() is not null)
+        {
+            var signedBadge = new HelpSignedPackageBadge
+            {
+                Dock = DockStyle.Fill,
+                BackColor = ShellBackColor,
+                Margin = new Padding(0, 0, 8, 0),
+                Verified = CurrentLanguagePackageIsSigned()
+            };
+            signedBadge.Click += (_, _) =>
+            {
+                var information = BuildCurrentLanguageSignedPackageInformation();
+                if (information is not null)
+                    HelpApi.ShowSignedPackageInformation(this, information, PreferredWebViewColorScheme);
+            };
+            new ToolTip().SetToolTip(signedBadge, CurrentLanguagePackageIsSigned()
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"));
+            searchLayout.Controls.Add(signedBadge, 2, 0);
+        }
+
         _searchPreviousButton = CreateSearchButton("\u25b2", "Vorige zoekresultaat");
         _searchNextButton = CreateSearchButton("\u25bc", "Volgende zoekresultaat");
-        _searchClearButton = CreateSearchButton("\u00d7", "Zoektekst wissen");
+        _searchClearButton = CreateSearchClearButton("Zoektekst wissen");
         _searchPreviousButton.Click += (_, _) => MoveSearchResult(-1);
         _searchNextButton.Click += (_, _) => MoveSearchResult(1);
         _searchClearButton.Click += (_, _) => _searchBox.Clear();
-        searchLayout.Controls.Add(_searchPreviousButton, 2, 0);
-        searchLayout.Controls.Add(_searchNextButton, 3, 0);
-        searchLayout.Controls.Add(_searchClearButton, 4, 0);
+        searchLayout.Controls.Add(_searchPreviousButton, 3, 0);
+        searchLayout.Controls.Add(_searchNextButton, 4, 0);
+        searchLayout.Controls.Add(_searchClearButton, 5, 0);
         searchHost.Controls.Add(searchLayout);
 
         _cardsTree = new TreeView
         {
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.None,
-            BackColor = Color.White,
+            BackColor = PanelBackColor,
+            ForeColor = TextColor,
+            LineColor = IsDarkTheme ? Color.FromArgb(100, 116, 139) : SystemColors.GrayText,
             Font = new Font(Font.FontFamily, 9.2f),
             HideSelection = false,
             Margin = new Padding(0),
@@ -188,6 +229,7 @@ internal sealed class FormulaCardForm : Form
             _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
             _browser.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            _browser.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
             _browser.CoreWebView2.WebMessageReceived += Browser_WebMessageReceived;
             _browser.CoreWebView2.NavigationStarting += Browser_NavigationStarting;
             ShowPendingHtmlIfReady();
@@ -197,14 +239,14 @@ internal sealed class FormulaCardForm : Form
         {
             Dock = DockStyle.Bottom,
             Height = 60,
-            BackColor = Color.FromArgb(241, 245, 249),
+            BackColor = NavigationBackColor,
             Padding = new Padding(0)
         };
         navigationHost.Controls.Add(new Panel
         {
             Dock = DockStyle.Top,
             Height = 1,
-            BackColor = Color.FromArgb(203, 213, 225)
+            BackColor = BorderColor
         });
 
         var navigation = new TableLayoutPanel
@@ -213,7 +255,7 @@ internal sealed class FormulaCardForm : Form
             Padding = new Padding(16, 10, 16, 10),
             ColumnCount = 4,
             RowCount = 1,
-            BackColor = Color.FromArgb(241, 245, 249)
+            BackColor = NavigationBackColor
         };
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
         navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
@@ -239,14 +281,14 @@ internal sealed class FormulaCardForm : Form
         var cardsHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(6, 0, 5, 6)
         };
         var cardsHeader = new Panel
         {
             Dock = DockStyle.Top,
             Height = 38,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(0, 6, 0, 6)
         };
         cardsHeader.Controls.Add(_countLabel);
@@ -254,7 +296,7 @@ internal sealed class FormulaCardForm : Form
         var treeBorder = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(203, 213, 225),
+            BackColor = BorderColor,
             Padding = new Padding(1)
         };
         treeBorder.Controls.Add(_cardsTree);
@@ -265,20 +307,20 @@ internal sealed class FormulaCardForm : Form
         var contentOuter = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(248, 250, 252),
+            BackColor = ShellBackColor,
             Padding = new Padding(0)
         };
         var contentHost = new Panel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(1),
-            BackColor = Color.FromArgb(203, 213, 225)
+            BackColor = BorderColor
         };
         var contentInner = new Panel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(8, 7, 11, 0),
-            BackColor = Color.White
+            BackColor = PanelBackColor
         };
         contentInner.Controls.Add(_browser);
         contentInner.Controls.Add(searchHost);
@@ -394,18 +436,19 @@ internal sealed class FormulaCardForm : Form
         return button;
     }
 
-    private static HelpNavigationButton CreateNavigationButton(string text, HelpNavigationIcon icon, AnchorStyles anchor)
+    private HelpNavigationButton CreateNavigationButton(string text, HelpNavigationIcon icon, AnchorStyles anchor)
     {
         return new HelpNavigationButton(text, icon)
         {
             Width = 148,
             Height = 36,
             Anchor = anchor,
-            Margin = new Padding(0)
+            Margin = new Padding(0),
+            DarkMode = IsDarkTheme
         };
     }
 
-    private static Button CreateSearchButton(string text, string tooltip)
+    private Button CreateSearchButton(string text, string tooltip)
     {
         var button = new Button
         {
@@ -413,14 +456,26 @@ internal sealed class FormulaCardForm : Form
             Dock = DockStyle.Fill,
             Margin = new Padding(2, 0, 0, 0),
             FlatStyle = FlatStyle.Flat,
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(15, 63, 143),
+            BackColor = IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.White,
+            ForeColor = IsDarkTheme ? Color.FromArgb(191, 219, 254) : Color.FromArgb(15, 63, 143),
             Font = new Font("Segoe UI", 9),
             UseVisualStyleBackColor = false
         };
-        button.FlatAppearance.BorderColor = Color.FromArgb(203, 213, 225);
-        button.FlatAppearance.MouseOverBackColor = Color.FromArgb(239, 246, 255);
-        button.FlatAppearance.MouseDownBackColor = Color.FromArgb(219, 234, 254);
+        button.FlatAppearance.BorderColor = BorderColor;
+        button.FlatAppearance.MouseOverBackColor = IsDarkTheme ? Color.FromArgb(30, 64, 175) : Color.FromArgb(239, 246, 255);
+        button.FlatAppearance.MouseDownBackColor = IsDarkTheme ? Color.FromArgb(37, 99, 235) : Color.FromArgb(219, 234, 254);
+        new ToolTip().SetToolTip(button, tooltip);
+        return button;
+    }
+
+    private Button CreateSearchClearButton(string tooltip)
+    {
+        var button = new HelpNavigationButton(string.Empty, HelpNavigationIcon.Close)
+        {
+            Dock = DockStyle.Fill,
+            Margin = new Padding(2, 0, 0, 0),
+            DarkMode = IsDarkTheme
+        };
         new ToolTip().SetToolTip(button, tooltip);
         return button;
     }
@@ -447,6 +502,59 @@ internal sealed class FormulaCardForm : Form
 
     private string T(string key, string fallback) => HelpApi.Text(ResolveHelpLanguageText, key, fallback);
 
+    private bool CurrentLanguagePackageIsSigned()
+    {
+        return LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(language => language.Matches(_language.FileName, _language.PackageId))
+            ?.Signed == true;
+    }
+
+    private HelpSignedPackageInformation? BuildCurrentLanguageSignedPackageInformation()
+    {
+        var language = LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(item => item.Matches(_language.FileName, _language.PackageId));
+        if (language is null)
+            return null;
+
+        var signed = language.Signed;
+        var code = string.IsNullOrWhiteSpace(language.LanguageCode)
+            ? Path.GetFileNameWithoutExtension(language.FileName)
+            : language.LanguageCode;
+        var author = string.IsNullOrWhiteSpace(language.Producer)
+            ? T("dialog.language.info.local_author", "Local file")
+            : language.Producer;
+        var product = string.IsNullOrWhiteSpace(language.Product) ? "Syscalculator" : language.Product;
+        var packageId = string.IsNullOrWhiteSpace(language.PackageId) ? "-" : language.PackageId;
+        var version = string.IsNullOrWhiteSpace(language.PackageVersion) ? "-" : language.PackageVersion;
+        var algorithm = string.IsNullOrWhiteSpace(language.SignatureAlgorithm) ? "-" : language.SignatureAlgorithm;
+        var keyId = string.IsNullOrWhiteSpace(language.SignatureKeyId) ? "-" : language.SignatureKeyId;
+        var keySha256 = string.IsNullOrWhiteSpace(language.SignatureKeySha256) ? "-" : language.SignatureKeySha256;
+
+        return new HelpSignedPackageInformation(
+            T("dialog.language.info.title", "Language information"),
+            language.DisplayName,
+            signed
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            [
+                new(T("dialog.language.info.name", "Language"), language.DisplayName),
+                new(T("dialog.language.info.code", "Code"), code),
+                new(T("dialog.language.info.author", "Author"), author),
+                new(T("dialog.language.info.product", "Product"), product),
+                new(T("dialog.language.info.package", "Package"), packageId),
+                new(T("dialog.language.info.file", "File"), language.FileName),
+                new(T("dialog.language.info.version", "Version"), version),
+                new(T("dialog.language.info.signed", "Signed"), signed ? T("common.yes", "Yes") : T("common.no", "No")),
+                new(T("dialog.language.info.algorithm", "Algorithm"), algorithm),
+                new(T("dialog.language.info.key", "Key"), keyId),
+                new("SHA-256", keySha256)
+            ],
+            signed
+                ? T("help.signed_package_tip", "This help comes from a verified signed language package.")
+                : T("help.unsigned_language_tip", "This help comes from a loose language file and is not signed."),
+            signed);
+    }
+
     private void ShowSelectedCard()
     {
         if (_cardsTree.SelectedNode?.Tag is string special &&
@@ -465,6 +573,8 @@ internal sealed class FormulaCardForm : Form
     private string BuildFormulaFilmHtml()
     {
         var css = HelpHtml.Css("formula-film.css", FormulaFilmFallbackCss());
+        if (IsDarkTheme)
+            css += Environment.NewLine + FormulaCardDarkCss();
         var body = HelpHtml.RenderTemplate("formula-film.html", new Dictionary<string, string?>
         {
             ["title"] = Html(T("formula_card.formula_film_title", "Formula film 2.1 experiment")),
@@ -1315,6 +1425,9 @@ internal sealed class FormulaCardForm : Form
           border-color: #83aeda;
         }
         """;
+        if (IsDarkTheme)
+            css += Environment.NewLine + FormulaCardDarkCss();
+
         var body = HelpHtml.RenderTemplate("formula-card.html", new Dictionary<string, string?>
         {
             ["title"] = Html(CardTitle(card)),
@@ -1339,6 +1452,75 @@ internal sealed class FormulaCardForm : Form
         });
 
         return HelpHtml.WrapBodyPage(body, css, bodyTail: HelpHtml.FormulaCardCopyButtonsScript());
+    }
+
+    private static string FormulaCardDarkCss()
+    {
+        return """
+        :root { color-scheme: dark; background:#111827 !important; color:#e5e7eb !important; }
+        html, body { background:#111827 !important; color:#e5e7eb !important; }
+        h1, h2, h3, b { color:#93c5fd !important; }
+        .subtitle, .overview-summary, .formula-caption, .method-note, .relation-label, .cycle-legend, .cycle-caption, .plain-formula, .math-note, p {
+          color:#d1d5db !important;
+        }
+        .tag {
+          background:#172554 !important; border-color:#2563eb !important; color:#bfdbfe !important;
+        }
+        .section, .overview-table, .method-board, .method-card, .relation-card, .relation-box, .cycle-node, .study-step {
+          background:#111827 !important; border-color:#334155 !important; box-shadow:none !important;
+        }
+        .overview-table th, .relation-title {
+          background:#1e293b !important; color:#bfdbfe !important; border-color:#334155 !important;
+        }
+        .overview-table td, .overview-table th, .method-board-header {
+          border-color:#334155 !important;
+        }
+        .current-row td {
+          background:#3b2f13 !important;
+        }
+        .subtopic-row td {
+          background:#0f172a !important; color:#cbd5e1 !important;
+        }
+        .method-board-header {
+          background:#0f172a !important;
+        }
+        .method-board-title, .standard-form, .formula, .method-steps {
+          color:#e5e7eb !important;
+        }
+        .summary-stamp {
+          background:#052e16 !important; color:#86efac !important; border-color:#22c55e !important;
+        }
+        .method-label, .method-chip {
+          background:#172554 !important; color:#bfdbfe !important; border-color:#2563eb !important;
+        }
+        .method-label.red {
+          background:#3b0a17 !important; color:#fecdd3 !important; border-color:#fb7185 !important;
+        }
+        .method-label.brown {
+          background:#3b2f13 !important; color:#fde68a !important; border-color:#ca8a04 !important;
+        }
+        .mathml-card, code, pre {
+          background:#0f172a !important; border-color:#334155 !important; color:#e5e7eb !important;
+        }
+        .vector-frame {
+          background:#0f172a !important; border-color:#334155 !important;
+        }
+        .grid {
+          stroke:#23324a !important;
+        }
+        .axis, .graph-label {
+          stroke:#94a3b8 !important;
+          fill:#cbd5e1 !important;
+        }
+        button {
+          background:#1f2937 !important; border-color:#475569 !important; color:#e5e7eb !important;
+        }
+        button:hover {
+          background:#1e40af !important; border-color:#3b82f6 !important;
+        }
+        a { color:#bfdbfe !important; }
+        ::selection { background:#2563eb; color:#ffffff; }
+        """;
     }
 
     private string BuildOverviewHtml(FormulaCard current, IReadOnlyList<FormulaCard> cards)

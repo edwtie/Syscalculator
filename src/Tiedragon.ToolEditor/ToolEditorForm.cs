@@ -103,6 +103,7 @@ public sealed class ToolEditorForm : Form
     private static readonly Color DarkEditorBackColor = Color.FromArgb(39, 39, 39);
     private static readonly Color DarkEditorTextColor = Color.FromArgb(226, 232, 240);
     private static readonly Color DarkMutedTextColor = Color.FromArgb(148, 163, 184);
+    private static readonly Color DarkDisabledTextColor = Color.FromArgb(100, 116, 139);
     private static readonly Color DarkBorderColor = Color.FromArgb(55, 65, 81);
     private static readonly Color SyntaxDefaultColor = Color.FromArgb(226, 232, 240);
     private static readonly Color SyntaxKeywordColor = Color.FromArgb(96, 165, 250);
@@ -110,6 +111,11 @@ public sealed class ToolEditorForm : Form
     private static readonly Color SyntaxStringColor = Color.FromArgb(253, 186, 116);
     private static readonly Color SyntaxCommentColor = Color.FromArgb(74, 222, 128);
     private static readonly Color SyntaxSelectorColor = Color.FromArgb(196, 181, 253);
+    private static readonly Color LightSyntaxKeywordColor = Color.FromArgb(0, 86, 184);
+    private static readonly Color LightSyntaxAttributeColor = Color.FromArgb(180, 83, 9);
+    private static readonly Color LightSyntaxStringColor = Color.FromArgb(15, 118, 110);
+    private static readonly Color LightSyntaxCommentColor = Color.FromArgb(22, 163, 74);
+    private static readonly Color LightSyntaxSelectorColor = Color.FromArgb(126, 34, 206);
 
     private static readonly byte[] LanguagePackageMagic = Encoding.ASCII.GetBytes(LanguagePackageMagicText);
     private static readonly JsonSerializerOptions LanguagePackageJsonOptions = new()
@@ -159,6 +165,10 @@ public sealed class ToolEditorForm : Form
     private readonly ToolStripButton _saveButton;
     private readonly ToolStripButton _validateButton;
     private readonly ToolStripButton _previewButton;
+    private ToolStripMenuItem? _darkThemeMenuItem;
+    private ToolStripMenuItem? _classicThemeMenuItem;
+    private ToolEditorUiTheme _uiTheme;
+    private ToolEditorPalette _palette;
     private readonly List<ToolEditorDocument> _documents = [];
     private string _manifestText = "";
     private string? _pendingHtml;
@@ -190,11 +200,34 @@ public sealed class ToolEditorForm : Form
     private string _openedPackageSignatureKeyId = "";
     private ToolEditorDocument? _current;
 
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? DarkWindowBackColor : SystemColors.Control;
+    private Color PanelBackColor => IsDarkTheme ? DarkPanelBackColor : SystemColors.Window;
+    private Color EditorBackColor => IsDarkTheme ? DarkEditorBackColor : SystemColors.Window;
+    private Color EditorTextColor => IsDarkTheme ? DarkEditorTextColor : SystemColors.ControlText;
+    private Color MutedTextColor => IsDarkTheme ? DarkMutedTextColor : SystemColors.GrayText;
+    private Color BorderColor => IsDarkTheme ? DarkBorderColor : SystemColors.ControlDark;
+    private Color TreeBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : SystemColors.Window;
+    private Color TreeTextColor => IsDarkTheme ? DarkEditorTextColor : SystemColors.ControlText;
+    private Color SyntaxDefaultTextColor => EditorTextColor;
+    private Color SyntaxKeywordTextColor => IsDarkTheme ? SyntaxKeywordColor : LightSyntaxKeywordColor;
+    private Color SyntaxAttributeTextColor => IsDarkTheme ? SyntaxAttributeColor : LightSyntaxAttributeColor;
+    private Color SyntaxStringTextColor => IsDarkTheme ? SyntaxStringColor : LightSyntaxStringColor;
+    private Color SyntaxCommentTextColor => IsDarkTheme ? SyntaxCommentColor : LightSyntaxCommentColor;
+    private Color SyntaxSelectorTextColor => IsDarkTheme ? SyntaxSelectorColor : LightSyntaxSelectorColor;
+    private Color LineNumberBackColor => IsDarkTheme ? Color.FromArgb(30, 41, 59) : SystemColors.Control;
+    private Color LineNumberTextColor => IsDarkTheme ? DarkMutedTextColor : SystemColors.GrayText;
+    private CoreWebView2PreferredColorScheme PreferredWebViewColorScheme =>
+        IsDarkTheme ? CoreWebView2PreferredColorScheme.Dark : CoreWebView2PreferredColorScheme.Light;
+
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
     public ToolEditorForm()
     {
+        _uiTheme = ToolEditorUiThemeSettings.Load();
+        _palette = _uiTheme == ToolEditorUiTheme.Dark ? ToolEditorPalette.Dark : ToolEditorPalette.Default;
+        ToolEditorTabsApi.ConfigureTheme(_uiTheme);
         ToolEditorDebugger.InitializeEmbedded();
         ToolEditorDebugger.Log("ToolEditorForm constructor started.");
         Text = TToolEditor("tool_editor.window.title", "Tiedragon ToolEditor");
@@ -202,7 +235,7 @@ public sealed class ToolEditorForm : Form
         Height = 760;
         MinimumSize = new Size(900, 560);
         StartPosition = FormStartPosition.CenterParent;
-        BackColor = DarkWindowBackColor;
+        BackColor = WindowBackColor;
         KeyPreview = true;
         KeyDown += ToolEditorForm_KeyDown;
         FormClosing += ToolEditorForm_FormClosing;
@@ -213,14 +246,14 @@ public sealed class ToolEditorForm : Form
 
         ToolEditorDebugger.Log("ToolEditorForm building menu and toolbar.");
         var menu = BuildMenu();
-        var toolbar = ToolEditorApi.CreateToolbar(ToolEditorPalette.Dark);
-        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.new_package", "New package"), ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.new_package.tip", "Create a package from the configured Syscalculator language"), ToolEditorPalette.Dark));
-        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.open", "Open"), ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.open.tip", "Open language package or concept"), ToolEditorPalette.Dark));
+        var toolbar = ToolEditorApi.CreateToolbar(_palette);
+        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.new_package", "New package"), ToolEditorIcon.New, async (_, _) => await NewLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.new_package.tip", "Create a package from the configured Syscalculator language"), _palette));
+        toolbar.Items.Add(ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.open", "Open"), ToolEditorIcon.Open, async (_, _) => await OpenLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.open.tip", "Open language package or concept"), _palette));
         toolbar.Items.Add(new ToolStripSeparator());
-        _saveButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.save_concept", "Save concept"), ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.save_concept.tip", "Save concept language package"), ToolEditorPalette.Dark);
-        _validateButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.validate", "Validate"), ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), TToolEditor("tool_editor.toolbar.validate.tip", "Validate current document"), ToolEditorPalette.Dark);
-        _previewButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.preview", "Preview"), ToolEditorIcon.Test, (_, _) => ShowPreviewPane(), TToolEditor("tool_editor.toolbar.preview.tip", "Refresh HTML preview"), ToolEditorPalette.Dark);
-        var compileButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.compile", "Compile"), ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.compile.tip", "Compile language package to .lngpdk"), ToolEditorPalette.Dark);
+        _saveButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.save_concept", "Save concept"), ToolEditorIcon.Save, async (_, _) => await SaveConceptLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.save_concept.tip", "Save concept language package"), _palette);
+        _validateButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.validate", "Validate"), ToolEditorIcon.Validate, (_, _) => ValidateCurrent(showMessage: true), TToolEditor("tool_editor.toolbar.validate.tip", "Validate current document"), _palette);
+        _previewButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.preview", "Preview"), ToolEditorIcon.Test, (_, _) => ShowPreviewPane(), TToolEditor("tool_editor.toolbar.preview.tip", "Refresh HTML preview"), _palette);
+        var compileButton = ToolEditorApi.CreateButton(TToolEditor("tool_editor.toolbar.compile", "Compile"), ToolEditorIcon.Solver, async (_, _) => await CompileLanguagePackageAsync(), TToolEditor("tool_editor.toolbar.compile.tip", "Compile language package to .lngpdk"), _palette);
         toolbar.Items.Add(_saveButton);
         toolbar.Items.Add(new ToolStripSeparator());
         toolbar.Items.Add(_validateButton);
@@ -239,8 +272,8 @@ public sealed class ToolEditorForm : Form
             ShowRootLines = true,
             ShowNodeToolTips = true,
             Font = new Font("Segoe UI", 9),
-            BackColor = Color.FromArgb(15, 23, 42),
-            ForeColor = Color.FromArgb(226, 232, 240)
+            BackColor = TreeBackColor,
+            ForeColor = TreeTextColor
         };
         _fileTree.AfterSelect += FileTree_AfterSelect;
         _fileTree.AllowDrop = true;
@@ -250,7 +283,7 @@ public sealed class ToolEditorForm : Form
         var fileTreeHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = DarkBorderColor,
+            BackColor = BorderColor,
             Padding = new Padding(1)
         };
         fileTreeHost.Controls.Add(_fileTree);
@@ -264,8 +297,8 @@ public sealed class ToolEditorForm : Form
             MultiSelect = false,
             View = View.Details,
             Font = new Font("Segoe UI", 9),
-            BackColor = DarkPanelBackColor,
-            ForeColor = DarkEditorTextColor
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor
         };
         _documentList.Columns.Add(TToolEditor("tool_editor.document.column.type", "Type"), 150);
         _documentList.Columns.Add(TToolEditor("tool_editor.document.column.topic", "Topic"), 240);
@@ -279,7 +312,7 @@ public sealed class ToolEditorForm : Form
         _tabStrip.Dock = DockStyle.Fill;
         _tabStrip.WrapContents = false;
         _tabStrip.AutoScroll = false;
-        _tabStrip.BackColor = DarkPanelBackColor;
+        _tabStrip.BackColor = PanelBackColor;
         _tabStrip.Padding = new Padding(0, 2, 0, 0);
         _tabStrip.Margin = Padding.Empty;
 
@@ -307,7 +340,7 @@ public sealed class ToolEditorForm : Form
             _htmlEditor.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _htmlEditor.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _htmlEditor.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            _htmlEditor.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Dark;
+            _htmlEditor.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
             _htmlEditor.CoreWebView2.WebMessageReceived += (_, args) => HandleHtmlEditorMessage(args);
             ShowPendingHtmlEditorIfReady();
         };
@@ -322,7 +355,7 @@ public sealed class ToolEditorForm : Form
         _editorContent = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = DarkBorderColor,
+            BackColor = BorderColor,
             Padding = new Padding(1, 0, 1, 1)
         };
         _htmlEditHost = new TableLayoutPanel
@@ -330,7 +363,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 2,
-            BackColor = DarkPanelBackColor,
+            BackColor = PanelBackColor,
             Padding = Padding.Empty
         };
         _editConceptRow = new RowStyle(SizeType.Absolute, 0);
@@ -343,7 +376,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
-            BackColor = DarkPanelBackColor,
+            BackColor = PanelBackColor,
             Padding = new Padding(4, 4, 4, 0)
         };
         _htmlToolbarRow = new RowStyle(SizeType.Absolute, 0);
@@ -374,7 +407,7 @@ public sealed class ToolEditorForm : Form
             _preview.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             _preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
             _preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            _preview.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Dark;
+            _preview.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
             _preview.CoreWebView2.WebMessageReceived += (_, args) => HandlePreviewMessage(args);
             ShowPendingHtmlIfReady();
         };
@@ -384,7 +417,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
-            BackColor = DarkBorderColor,
+            BackColor = BorderColor,
             Padding = Padding.Empty
         };
         previewHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -398,14 +431,14 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             Height = 24,
             Margin = Padding.Empty,
-            BackColor = DarkPanelBackColor,
+            BackColor = PanelBackColor,
             Padding = new Padding(8, 1, 8, 1)
         };
         var previewHeaderLine = new Panel
         {
             Dock = DockStyle.Bottom,
             Height = 1,
-            BackColor = DarkBorderColor,
+            BackColor = BorderColor,
             Margin = Padding.Empty
         };
 
@@ -414,14 +447,14 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             Margin = Padding.Empty,
             Padding = Padding.Empty,
-            BackColor = DarkPanelBackColor
+            BackColor = PanelBackColor
         };
 
         var previewTitle = new Label
         {
             AutoSize = true,
             Text = TToolEditor("tool_editor.preview.title", "Preview"),
-            ForeColor = DarkMutedTextColor,
+            ForeColor = MutedTextColor,
             Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
             Location = new Point(8, 3)
         };
@@ -430,8 +463,8 @@ public sealed class ToolEditorForm : Form
             Text = "×",
             Dock = DockStyle.Right,
             Width = 30,
-            BackColor = DarkPanelBackColor,
-            ForeColor = DarkEditorTextColor,
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor,
             Font = new Font("Segoe UI", 11f, FontStyle.Regular),
             Padding = Padding.Empty,
             Margin = Padding.Empty,
@@ -439,7 +472,7 @@ public sealed class ToolEditorForm : Form
             Cursor = Cursors.Hand
         };
         _previewCloseButton.MouseEnter += (_, _) => _previewCloseButton.BackColor = Color.FromArgb(37, 99, 235);
-        _previewCloseButton.MouseLeave += (_, _) => _previewCloseButton.BackColor = DarkPanelBackColor;
+        _previewCloseButton.MouseLeave += (_, _) => _previewCloseButton.BackColor = PanelBackColor;
         _previewCloseButton.Click += (_, _) => ClosePreviewPane();
 
         _previewConceptBanner = new ToolEditorConceptBanner
@@ -482,7 +515,7 @@ public sealed class ToolEditorForm : Form
             Orientation = Orientation.Horizontal,
             BorderStyle = BorderStyle.None,
             SplitterWidth = 1,
-            BackColor = DarkBorderColor,
+            BackColor = BorderColor,
             Panel1MinSize = 1,
             Panel2MinSize = 1
         };
@@ -501,7 +534,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.None,
             SplitterWidth = 5,
-            BackColor = DarkBorderColor,
+            BackColor = BorderColor,
             FixedPanel = FixedPanel.Panel1,
             Panel1MinSize = 1,
             Panel2MinSize = 1
@@ -520,7 +553,7 @@ public sealed class ToolEditorForm : Form
         {
             Dock = DockStyle.Bottom,
             Height = 24,
-            BackColor = DarkWindowBackColor
+            BackColor = WindowBackColor
         };
         _statusInfoLabel = new Label
         {
@@ -528,8 +561,8 @@ public sealed class ToolEditorForm : Form
             Width = 520,
             TextAlign = ContentAlignment.MiddleRight,
             Padding = new Padding(8, 0, 8, 0),
-            BackColor = DarkWindowBackColor,
-            ForeColor = DarkMutedTextColor,
+            BackColor = WindowBackColor,
+            ForeColor = MutedTextColor,
             Text = ""
         };
         _statusLabel = new Label
@@ -537,8 +570,8 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(8, 0, 8, 0),
-            BackColor = DarkWindowBackColor,
-            ForeColor = DarkEditorTextColor,
+            BackColor = WindowBackColor,
+            ForeColor = EditorTextColor,
             Text = TToolEditor("tool_editor.status.ready", "Ready")
         };
         statusBar.Controls.Add(_statusLabel);
@@ -549,9 +582,17 @@ public sealed class ToolEditorForm : Form
         Controls.Add(toolbar);
         Controls.Add(menu);
         MainMenuStrip = menu;
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
+        RefreshToolbarThemes(this);
 
         UpdateUiState();
         ToolEditorDebugger.Log("ToolEditorForm constructor completed.");
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
     }
 
     private void QueueStarterPackageInitialization()
@@ -646,6 +687,12 @@ public sealed class ToolEditorForm : Form
 
         var extra = new ToolStripMenuItem(TToolEditor("tool_editor.menu.extra", "Extra"));
         extra.DropDownItems.Add(TToolEditor("tool_editor.security.menu", "Security settings..."), null, (_, _) => ShowSecurityOptions());
+        var theme = new ToolStripMenuItem(TToolEditor("tool_editor.menu.extra.theme", "Theme"));
+        _darkThemeMenuItem = CreateThemeMenuItem(TToolEditor("tool_editor.menu.extra.theme.dark", "Dark"), ToolEditorUiTheme.Dark);
+        _classicThemeMenuItem = CreateThemeMenuItem(TToolEditor("tool_editor.menu.extra.theme.classic", "Classic"), ToolEditorUiTheme.Classic);
+        theme.DropDownItems.Add(_darkThemeMenuItem);
+        theme.DropDownItems.Add(_classicThemeMenuItem);
+        extra.DropDownItems.Add(theme);
         if (ToolEditorDebugger.IsEnabled)
             extra.DropDownItems.Add(TToolEditor("tool_editor.menu.extra.open_debug_log", "Open debug log"), null, (_, _) => ToolEditorDebugger.OpenLogFolder());
 
@@ -671,6 +718,228 @@ public sealed class ToolEditorForm : Form
         };
         item.Click += click;
         return item;
+    }
+
+    private ToolStripMenuItem CreateThemeMenuItem(string text, ToolEditorUiTheme theme)
+    {
+        var item = new ToolStripMenuItem(text)
+        {
+            Checked = _uiTheme == theme,
+            CheckOnClick = false
+        };
+        item.Click += (_, _) => ApplyAndSaveTheme(theme);
+        return item;
+    }
+
+    private void ApplyAndSaveTheme(ToolEditorUiTheme theme)
+    {
+        if (_uiTheme == theme)
+            return;
+
+        var previousTheme = _uiTheme;
+        ToolEditorUiThemeSettings.Save(theme);
+        _uiTheme = theme;
+        _palette = theme == ToolEditorUiTheme.Dark ? ToolEditorPalette.Dark : ToolEditorPalette.Default;
+        ToolEditorTabsApi.ConfigureTheme(theme);
+        ToolEditorUiThemeSettings.ApplyApplicationColorMode(theme);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, theme);
+        ApplyThemeToOpenForm(previousTheme);
+        UpdateThemeMenuChecks();
+        SetStatus(TToolEditor("tool_editor.theme.saved", "Theme saved."), isError: false);
+    }
+
+    private void UpdateThemeMenuChecks()
+    {
+        if (_darkThemeMenuItem is not null)
+            _darkThemeMenuItem.Checked = _uiTheme == ToolEditorUiTheme.Dark;
+        if (_classicThemeMenuItem is not null)
+            _classicThemeMenuItem.Checked = _uiTheme == ToolEditorUiTheme.Classic;
+    }
+
+    private void ApplyThemeToOpenForm(ToolEditorUiTheme previousTheme)
+    {
+        ApplyThemeToControl(this, previousTheme);
+        RefreshToolbarThemes(this);
+        RefreshWebViewThemes();
+        RefreshActiveWebViewDocuments();
+
+        foreach (var document in _documents)
+        {
+            ApplyEditorColors(document.Editor);
+            if (document.LineNumbers is not null)
+                ConfigureLineNumbers(document.LineNumbers);
+            document.SyntaxHighlightVersion = null;
+            if (document.Editor.IsHandleCreated)
+                ApplySyntaxHighlight(document);
+        }
+
+        if (_current is not null)
+            SelectDocument(_current);
+
+        RefreshTabStrip();
+        UpdateHtmlToolbarState(_current);
+        Invalidate(true);
+    }
+
+    private void ApplyThemeToControl(Control control, ToolEditorUiTheme previousTheme)
+    {
+        if (control is RichTextBox editor)
+            ApplyEditorColors(editor);
+        else if (control is LineNumberPanel lineNumbers)
+            ConfigureLineNumbers(lineNumbers);
+        else if (ReferenceEquals(control, _fileTree))
+        {
+            control.BackColor = TreeBackColor;
+            control.ForeColor = TreeTextColor;
+        }
+        else if (ReferenceEquals(control, _documentList))
+        {
+            control.BackColor = PanelBackColor;
+            control.ForeColor = EditorTextColor;
+        }
+        else
+        {
+            control.BackColor = TranslateThemeColor(control.BackColor, previousTheme, forBackColor: true);
+            control.ForeColor = TranslateThemeColor(control.ForeColor, previousTheme, forBackColor: false);
+        }
+
+        foreach (Control child in control.Controls)
+            ApplyThemeToControl(child, previousTheme);
+    }
+
+    private Color TranslateThemeColor(Color color, ToolEditorUiTheme previousTheme, bool forBackColor)
+    {
+        if (color == ThemeWindowBackColor(previousTheme))
+            return WindowBackColor;
+        if (color == ThemePanelBackColor(previousTheme))
+            return PanelBackColor;
+        if (color == ThemeBorderColor(previousTheme))
+            return BorderColor;
+        if (color == ThemeLineNumberBackColor(previousTheme))
+            return LineNumberBackColor;
+        if (color == ThemeEditorBackColor(previousTheme))
+            return EditorBackColor;
+        if (color == ThemeMutedTextColor(previousTheme))
+            return MutedTextColor;
+        if (color == ThemeEditorTextColor(previousTheme))
+            return EditorTextColor;
+
+        return forBackColor && previousTheme == ToolEditorUiTheme.Classic && color == SystemColors.Window
+            ? PanelBackColor
+            : color;
+    }
+
+    private static Color ThemeWindowBackColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? DarkWindowBackColor : SystemColors.Control;
+
+    private static Color ThemePanelBackColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? DarkPanelBackColor : SystemColors.Window;
+
+    private static Color ThemeEditorBackColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? DarkEditorBackColor : SystemColors.Window;
+
+    private static Color ThemeEditorTextColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? DarkEditorTextColor : SystemColors.ControlText;
+
+    private static Color ThemeMutedTextColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? DarkMutedTextColor : SystemColors.GrayText;
+
+    private static Color ThemeBorderColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? DarkBorderColor : SystemColors.ControlDark;
+
+    private static Color ThemeLineNumberBackColor(ToolEditorUiTheme theme) =>
+        theme == ToolEditorUiTheme.Dark ? Color.FromArgb(30, 41, 59) : SystemColors.Control;
+
+    private void RefreshToolbarThemes(Control control)
+    {
+        if (control is ToolStrip toolStrip)
+        {
+            var isHtmlToolbar = ReferenceEquals(toolStrip, _htmlToolbar);
+            var isMenuStrip = toolStrip is MenuStrip;
+            toolStrip.BackColor = isHtmlToolbar || isMenuStrip ? PanelBackColor : _palette.ToolbarBack;
+            toolStrip.ForeColor = isHtmlToolbar || isMenuStrip ? EditorTextColor : _palette.Text;
+            toolStrip.Renderer = IsDarkTheme
+                ? new DarkToolStripRenderer()
+                : new ToolStripProfessionalRenderer();
+            toolStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
+
+            foreach (ToolStripItem item in toolStrip.Items)
+                RefreshToolStripItemTheme(item, toolStrip.BackColor, toolStrip.ForeColor);
+        }
+
+        foreach (Control child in control.Controls)
+            RefreshToolbarThemes(child);
+    }
+
+    private void RefreshToolStripItemTheme(ToolStripItem item, Color backColor, Color foreColor)
+    {
+        item.BackColor = backColor;
+        item.ForeColor = item.Enabled || !IsDarkTheme ? foreColor : DarkDisabledTextColor;
+        if (item is ToolStripButton button && button.Tag is ToolEditorIcon icon)
+            button.Image = ToolEditorApi.CreateIcon(icon, _palette);
+
+        if (item is ToolStripDropDownItem dropDown)
+        {
+            dropDown.DropDown.BackColor = PanelBackColor;
+            dropDown.DropDown.ForeColor = EditorTextColor;
+            dropDown.DropDown.RenderMode = ToolStripRenderMode.ManagerRenderMode;
+            dropDown.DropDown.Renderer = IsDarkTheme
+                ? new DarkToolStripRenderer()
+                : new ToolStripProfessionalRenderer();
+
+            foreach (ToolStripItem child in dropDown.DropDownItems)
+                RefreshToolStripItemTheme(child, PanelBackColor, EditorTextColor);
+        }
+    }
+
+    private void RefreshWebViewThemes()
+    {
+        if (_htmlEditor.CoreWebView2 is not null)
+        {
+            _htmlEditor.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
+            InjectToolEditorThemeCss(_htmlEditor.CoreWebView2);
+        }
+        if (_preview.CoreWebView2 is not null)
+        {
+            _preview.CoreWebView2.Profile.PreferredColorScheme = PreferredWebViewColorScheme;
+            InjectToolEditorThemeCss(_preview.CoreWebView2);
+        }
+    }
+
+    private void InjectToolEditorThemeCss(CoreWebView2 webView)
+    {
+        var css = ToolEditorDocumentThemeCss();
+        var script = """
+            (() => {
+              let style = document.getElementById('tooleditor-theme-css');
+              if (!style) {
+                style = document.createElement('style');
+                style.id = 'tooleditor-theme-css';
+                document.head.appendChild(style);
+              }
+              style.textContent = 
+            """ + WebText.JavaScriptString(css) + """
+            ;
+            })();
+            """;
+        _ = webView.ExecuteScriptAsync(script);
+    }
+
+    private void RefreshActiveWebViewDocuments()
+    {
+        if (_current is null)
+        {
+            UpdatePreview(initializePreview: _webViewInitializationStarted);
+            return;
+        }
+
+        if (_current.HtmlEditMode)
+        {
+            SetHtmlEditor(_current.Editor.Text);
+            return;
+        }
+
+        UpdatePreview(initializePreview: _webViewInitializationStarted);
     }
 
     private void ShowSecurityOptions()
@@ -716,7 +985,8 @@ public sealed class ToolEditorForm : Form
             new HelpNavigationLabels(
                 T("help.nav.home", "Start"),
                 T("help.nav.previous", "Vorige"),
-                T("help.nav.next", "Volgende"))));
+                T("help.nav.next", "Volgende")),
+            PreferredColorScheme: PreferredWebViewColorScheme));
     }
 
     private void ShowAboutSyscalculator()
@@ -725,7 +995,7 @@ public sealed class ToolEditorForm : Form
         form.ShowDialog(this);
     }
 
-    private static IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages(
+    private IReadOnlyList<NodHelpPage> BuildToolEditorHelpPages(
         string languageCode,
         HelpTextResolver resolveText,
         HelpContentResolver resolveContent)
@@ -740,7 +1010,7 @@ public sealed class ToolEditorForm : Form
         ];
     }
 
-    private static NodHelpPage BuildToolEditorHelpPage(
+    private NodHelpPage BuildToolEditorHelpPage(
         string languageCode,
         HelpTextResolver resolveText,
         HelpContentResolver resolveContent,
@@ -758,7 +1028,7 @@ public sealed class ToolEditorForm : Form
             "tool-editor/" + fileName,
             fallback,
             resolveContent);
-        return new NodHelpPage(id, title, HelpHtml.WrapTopicPage(title, body, HelpApi.NodHelpCss(), ToolEditorHelpPreviewScript()));
+        return new NodHelpPage(id, title, HelpHtml.WrapTopicPage(title, body, ToolEditorHelpCss(), ToolEditorHelpPreviewScript()));
     }
 
     private static string BuildToolEditorOverviewFallback()
@@ -835,6 +1105,7 @@ public sealed class ToolEditorForm : Form
             NormalizePackagePath(document.PackagePath).Equals(packagePath, StringComparison.OrdinalIgnoreCase));
         if (document is not null)
         {
+            EnsureDocumentTextLoaded(document);
             text = document.Editor.Text;
             return true;
         }
@@ -850,7 +1121,10 @@ public sealed class ToolEditorForm : Form
         var openDocument = _documents.FirstOrDefault(document =>
             NormalizePackagePath(document.PackagePath).Equals(packagePath, StringComparison.OrdinalIgnoreCase));
         if (openDocument is not null)
+        {
+            EnsureDocumentTextLoaded(openDocument);
             return openDocument.Editor.Text;
+        }
 
         if (!string.IsNullOrWhiteSpace(language.PackagePath) &&
             TryReadPackageTextEntry(language.PackagePath, packagePath, out var packageContent))
@@ -930,11 +1204,11 @@ public sealed class ToolEditorForm : Form
         {
             GripStyle = ToolStripGripStyle.Hidden,
             Dock = DockStyle.Fill,
-            BackColor = DarkPanelBackColor,
-            ForeColor = DarkEditorTextColor,
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor,
             Padding = new Padding(2, 2, 2, 2),
             RenderMode = ToolStripRenderMode.ManagerRenderMode,
-            Renderer = new DarkToolStripRenderer()
+            Renderer = IsDarkTheme ? new DarkToolStripRenderer() : new ToolStripProfessionalRenderer()
         };
 
         toolbar.Items.Add(_sourceModeButton);
@@ -982,26 +1256,12 @@ public sealed class ToolEditorForm : Form
         return toolbar;
     }
 
-    private static ToolStripButton CreateHtmlModeButton(string text, string tooltip, EventHandler click)
+    private ToolStripButton CreateHtmlModeButton(string text, string tooltip, EventHandler click)
     {
-        var button = new ToolStripButton(text)
-        {
-            DisplayStyle = ToolStripItemDisplayStyle.Text,
-            AutoSize = false,
-            Width = 68,
-            Height = 26,
-            CheckOnClick = false,
-            ToolTipText = tooltip,
-            Padding = new Padding(6, 1, 6, 1),
-            Margin = new Padding(1, 1, 1, 1),
-            BackColor = DarkPanelBackColor,
-            ForeColor = DarkEditorTextColor
-        };
-        button.Click += click;
-        return button;
+        return ToolEditorTabsApi.CreateModeButton(text, tooltip, click);
     }
 
-    private static ToolStripButton CreateHtmlButton(string text, string tooltip, EventHandler click)
+    private ToolStripButton CreateHtmlButton(string text, string tooltip, EventHandler click)
     {
         var button = new ToolStripButton(text)
         {
@@ -1009,14 +1269,14 @@ public sealed class ToolEditorForm : Form
             AutoSize = true,
             ToolTipText = tooltip,
             Padding = new Padding(4, 1, 4, 1),
-            BackColor = DarkPanelBackColor,
-            ForeColor = DarkEditorTextColor
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor
         };
         button.Click += click;
         return button;
     }
 
-    private static ToolStripDropDownButton CreateHtmlDropDown(
+    private ToolStripDropDownButton CreateHtmlDropDown(
         string text,
         string tooltip,
         IEnumerable<(string Text, string Tooltip, Action Action)> items)
@@ -1027,8 +1287,8 @@ public sealed class ToolEditorForm : Form
             AutoSize = true,
             ToolTipText = tooltip,
             Padding = new Padding(4, 1, 4, 1),
-            BackColor = DarkPanelBackColor,
-            ForeColor = DarkEditorTextColor
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor
         };
 
         foreach (var item in items)
@@ -1036,8 +1296,8 @@ public sealed class ToolEditorForm : Form
             var menuItem = new ToolStripMenuItem(item.Text)
             {
                 ToolTipText = item.Tooltip,
-                BackColor = DarkPanelBackColor,
-                ForeColor = DarkEditorTextColor
+                BackColor = PanelBackColor,
+                ForeColor = EditorTextColor
             };
             menuItem.Click += (_, _) => item.Action();
             button.DropDownItems.Add(menuItem);
@@ -3280,6 +3540,7 @@ public sealed class ToolEditorForm : Form
             HideSelection = false,
             Text = text
         };
+        editor.HandleCreated += (_, _) => ToolEditorUiThemeSettings.ApplyNativeWindowTheme(editor, _uiTheme);
         ApplyEditorColors(editor);
         document.Editor = editor;
         if (createLineNumbers)
@@ -3313,21 +3574,32 @@ public sealed class ToolEditorForm : Form
         return editor;
     }
 
-    private static void ApplyEditorColors(RichTextBox editor)
+    private void ApplyEditorColors(RichTextBox editor)
     {
-        editor.BackColor = DarkEditorBackColor;
-        editor.ForeColor = DarkEditorTextColor;
+        editor.BackColor = EditorBackColor;
+        editor.ForeColor = EditorTextColor;
         editor.SelectionBackColor = Color.FromArgb(37, 99, 235);
     }
 
-    private static void EnsureLineNumbersAttached(ToolEditorDocument document)
+    private void EnsureLineNumbersAttached(ToolEditorDocument document)
     {
         if (document.LineNumbers is not null)
+        {
+            ConfigureLineNumbers(document.LineNumbers);
             return;
+        }
 
         var lineNumbers = new LineNumberPanel();
         document.LineNumbers = lineNumbers;
+        ConfigureLineNumbers(lineNumbers);
         lineNumbers.Attach(document.Editor);
+    }
+
+    private void ConfigureLineNumbers(LineNumberPanel lineNumbers)
+    {
+        lineNumbers.BackColor = LineNumberBackColor;
+        lineNumbers.ForeColor = LineNumberTextColor;
+        lineNumbers.BorderColor = BorderColor;
     }
 
     private async void SelectDocument(ToolEditorDocument document)
@@ -3377,6 +3649,7 @@ public sealed class ToolEditorForm : Form
             };
             ApplyEditorColors(renderedEditor);
             var lineNumbers = new LineNumberPanel();
+            ConfigureLineNumbers(lineNumbers);
             lineNumbers.Attach(renderedEditor);
             renderedEditor.VScroll += (_, _) => lineNumbers.Invalidate();
             renderedEditor.Resize += (_, _) => lineNumbers.Invalidate();
@@ -3384,7 +3657,7 @@ public sealed class ToolEditorForm : Form
             var host = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = DarkBorderColor
+                BackColor = BorderColor
             };
             host.Controls.Add(renderedEditor);
             host.Controls.Add(lineNumbers);
@@ -3395,7 +3668,7 @@ public sealed class ToolEditorForm : Form
             var host = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = DarkBorderColor
+                BackColor = BorderColor
             };
             host.Controls.Add(document.Editor);
             host.Controls.Add(document.LineNumbers);
@@ -3691,20 +3964,13 @@ public sealed class ToolEditorForm : Form
     private void UpdateHtmlModeButtons(ToolEditorDocument? document)
     {
         var editMode = document?.HtmlEditMode == true;
-        _sourceModeButton.Checked = !editMode;
-        _editModeButton.Checked = editMode;
         StyleHtmlModeButton(_sourceModeButton, !editMode);
         StyleHtmlModeButton(_editModeButton, editMode);
     }
 
-    private static void StyleHtmlModeButton(ToolStripButton button, bool active)
+    private void StyleHtmlModeButton(ToolStripButton button, bool active)
     {
-        button.Font = active
-            ? new Font(button.Font, FontStyle.Bold)
-            : new Font(button.Font, FontStyle.Regular);
-        button.BackColor = active ? Color.FromArgb(37, 99, 235) : DarkPanelBackColor;
-        button.ForeColor = active ? Color.White : DarkEditorTextColor;
-        button.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        ToolEditorTabsApi.SetModeButtonState(button, active);
     }
 
     private void UpdatePreviewPaneState(ToolEditorDocument? document)
@@ -5537,7 +5803,7 @@ public sealed class ToolEditorForm : Form
             ApplySyntaxHighlight(document);
     }
 
-    private static void ApplySyntaxHighlight(ToolEditorDocument document)
+    private void ApplySyntaxHighlight(ToolEditorDocument document)
     {
         var editor = document.Editor;
         if (editor.IsDisposed ||
@@ -5573,7 +5839,7 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath)
+    private void ApplySyntaxHighlight(RichTextBox editor, string packagePath)
     {
         if (editor.IsDisposed ||
             !editor.IsHandleCreated ||
@@ -5592,7 +5858,7 @@ public sealed class ToolEditorForm : Form
         ApplySyntaxHighlight(editor, packagePath, range, visibleText, extension);
     }
 
-    private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath, SyntaxHighlightRange range, string visibleText)
+    private void ApplySyntaxHighlight(RichTextBox editor, string packagePath, SyntaxHighlightRange range, string visibleText)
     {
         if (!IsSyntaxHighlightedSource(packagePath, out var extension))
             return;
@@ -5600,7 +5866,7 @@ public sealed class ToolEditorForm : Form
         ApplySyntaxHighlight(editor, packagePath, range, visibleText, extension);
     }
 
-    private static void ApplySyntaxHighlight(RichTextBox editor, string packagePath, SyntaxHighlightRange range, string visibleText, string extension)
+    private void ApplySyntaxHighlight(RichTextBox editor, string packagePath, SyntaxHighlightRange range, string visibleText, string extension)
     {
         var selectionStart = editor.SelectionStart;
         var selectionLength = editor.SelectionLength;
@@ -5610,7 +5876,7 @@ public sealed class ToolEditorForm : Form
         {
             editor.SuspendLayout();
             editor.Select(range.Start, visibleText.Length);
-            editor.SelectionColor = SyntaxDefaultColor;
+            editor.SelectionColor = SyntaxDefaultTextColor;
 
             if (extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
                 extension.Equals(".htm", StringComparison.OrdinalIgnoreCase))
@@ -5680,38 +5946,38 @@ public sealed class ToolEditorForm : Form
             : MaxSourceSyntaxHighlightChars;
     }
 
-    private static void HighlightHtml(RichTextBox editor, string text, int offset)
+    private void HighlightHtml(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, HtmlCommentRegex, SyntaxCommentColor, offset);
-        ApplyMatches(editor, text, HtmlTagRegex, SyntaxKeywordColor, offset);
-        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, offset, groupIndex: 1);
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
+        ApplyMatches(editor, text, HtmlCommentRegex, SyntaxCommentTextColor, offset);
+        ApplyMatches(editor, text, HtmlTagRegex, SyntaxKeywordTextColor, offset);
+        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeTextColor, offset, groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringTextColor, offset);
     }
 
-    private static void HighlightCss(RichTextBox editor, string text, int offset)
+    private void HighlightCss(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, CssSelectorRegex, SyntaxSelectorColor, offset, groupIndex: 2);
-        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeColor, offset, groupIndex: 1);
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
+        ApplyMatches(editor, text, CssSelectorRegex, SyntaxSelectorTextColor, offset, groupIndex: 2);
+        ApplyMatches(editor, text, HtmlAttributeRegex, SyntaxAttributeTextColor, offset, groupIndex: 1);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringTextColor, offset);
     }
 
-    private static void HighlightLanguage(RichTextBox editor, string text, int offset)
+    private void HighlightLanguage(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, LanguageKeyRegex, SyntaxKeywordColor, offset);
-        ApplyMatches(editor, text, LanguageCommentRegex, SyntaxCommentColor, offset);
+        ApplyMatches(editor, text, LanguageKeyRegex, SyntaxKeywordTextColor, offset);
+        ApplyMatches(editor, text, LanguageCommentRegex, SyntaxCommentTextColor, offset);
     }
 
-    private static void HighlightJavaScript(RichTextBox editor, string text, int offset)
+    private void HighlightJavaScript(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
-        ApplyMatches(editor, text, JavaScriptKeywordRegex, SyntaxKeywordColor, offset);
-        ApplyMatches(editor, text, JavaScriptCommentRegex, SyntaxCommentColor, offset);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringTextColor, offset);
+        ApplyMatches(editor, text, JavaScriptKeywordRegex, SyntaxKeywordTextColor, offset);
+        ApplyMatches(editor, text, JavaScriptCommentRegex, SyntaxCommentTextColor, offset);
     }
 
-    private static void HighlightJson(RichTextBox editor, string text, int offset)
+    private void HighlightJson(RichTextBox editor, string text, int offset)
     {
-        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringColor, offset);
-        ApplyMatches(editor, text, JsonPropertyRegex, SyntaxKeywordColor, offset);
+        ApplyMatches(editor, text, QuotedStringRegex, SyntaxStringTextColor, offset);
+        ApplyMatches(editor, text, JsonPropertyRegex, SyntaxKeywordTextColor, offset);
     }
 
     private static void SetControlRedraw(Control control, bool enabled)
@@ -5919,7 +6185,7 @@ public sealed class ToolEditorForm : Form
 
     private string BuildEditableHtml(string body)
     {
-        var css = HelpApi.NodHelpCss() + Environment.NewLine +
+        var css = ToolEditorHelpCss() + Environment.NewLine +
             ToolEditorConceptBannerCss() + Environment.NewLine +
             "body:focus { outline: 2px solid #9cc4ff; outline-offset: 4px; }";
 
@@ -6074,7 +6340,7 @@ public sealed class ToolEditorForm : Form
 
     private string WrapHtml(string title, string body)
     {
-        var css = HelpApi.NodHelpCss() + Environment.NewLine + """
+        var css = ToolEditorHelpCss() + Environment.NewLine + """
         .media-meta { color: #334155; margin-bottom: 14px; }
         .image-preview { min-height: 360px; border: 1px solid #d7e0ec; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 18px; }
         .image-preview img { max-width: 100%; max-height: 70vh; object-fit: contain; box-shadow: 0 8px 24px rgba(15, 23, 42, .15); background: white; }
@@ -6084,8 +6350,54 @@ public sealed class ToolEditorForm : Form
 
     private string WrapContentHtml(string body)
     {
-        var css = HelpApi.NodHelpCss() + Environment.NewLine + ToolEditorConceptBannerCss();
+        var css = ToolEditorHelpCss() + Environment.NewLine + ToolEditorConceptBannerCss();
         return ApplyToolEditorHelpPlaceholders(HelpHtml.WrapBodyPage(body, css, bodyTail: ToolEditorHelpPreviewScript()));
+    }
+
+    private string ToolEditorHelpCss()
+    {
+        return HelpApi.NodHelpCss() + Environment.NewLine + ToolEditorDocumentThemeCss();
+    }
+
+    private string ToolEditorDocumentThemeCss()
+    {
+        if (!IsDarkTheme)
+            return "";
+
+        return """
+        :root { color-scheme: dark; }
+        html, body { background:#111827 !important; color:#e5e7eb !important; }
+        body { background:linear-gradient(180deg,#111827 0,#0f172a 140px) !important; }
+        h1, h2, h3, b, .title, .topic-link b { color:#93c5fd !important; }
+        h2 { border-bottom-color:#334155 !important; }
+        p, li, td, .topic-link, .history-step span, .math-card p, .formula-card p, .graph-caption { color:#d1d5db !important; }
+        a, .cmd-link { color:#bfdbfe !important; }
+        code, .formula, .formula-large, .mathml-formula, .graph-mathml, .math-pill, .syntax {
+          background:#1f2937 !important; border-color:#374151 !important; color:#bfdbfe !important;
+        }
+        pre { background:#020617 !important; border-color:#334155 !important; color:#e5e7eb !important; }
+        table, .topic-link, .math-card, .formula-card, .graph-card, details, .example-card, .history-step {
+          background:#111827 !important; border-color:#334155 !important; box-shadow:none !important;
+        }
+        th, summary { background:#1e293b !important; color:#bfdbfe !important; border-color:#334155 !important; }
+        td { border-color:#334155 !important; }
+        tr:nth-child(even) td { background:#0f172a !important; }
+        .notice, .help-info, .help-tip {
+          background:#172554 !important; border-color:#2563eb !important; color:#dbeafe !important;
+        }
+        .warning, .warning-sign {
+          background:#3b1d0a !important; border-color:#b45309 !important; color:#fed7aa !important;
+        }
+        .warning b, .warning-sign b { color:#fdba74 !important; }
+        .screenshot-frame, .graph-frame, .image-preview {
+          background:#0f172a !important; border-color:#334155 !important; box-shadow:none !important;
+        }
+        .image-preview img { background:#111827 !important; box-shadow:0 8px 24px rgba(0,0,0,.45) !important; }
+        .media-meta, .shot-caption { color:#9ca3af !important; }
+        ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background:#111827 !important; }
+        ::-webkit-scrollbar-thumb { background:#4b5563 !important; border-color:#111827 !important; }
+        ::selection { background:#2563eb; color:#ffffff; }
+        """;
     }
 
     private bool ShouldShowConceptBanner()
@@ -6768,7 +7080,7 @@ public sealed class ToolEditorForm : Form
     private void SetStatus(string text, bool isError)
     {
         _statusLabel.Text = text;
-        _statusLabel.ForeColor = isError ? Color.FromArgb(252, 165, 165) : DarkEditorTextColor;
+        _statusLabel.ForeColor = isError ? Color.FromArgb(252, 165, 165) : EditorTextColor;
         UpdateStatusMetrics(_current);
     }
 
@@ -7132,6 +7444,12 @@ public sealed class ToolEditorForm : Form
         {
             OnRenderButtonBackground(e);
         }
+
+        protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+        {
+            e.TextColor = e.Item.Enabled ? DarkEditorTextColor : DarkDisabledTextColor;
+            base.OnRenderItemText(e);
+        }
     }
 
     private sealed class DarkToolStripColorTable : ProfessionalColorTable
@@ -7171,6 +7489,10 @@ public sealed class ToolEditorForm : Form
             DoubleBuffered = true;
         }
 
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Color BorderColor { get; set; } = DarkBorderColor;
+
         public void Attach(RichTextBox editor)
         {
             _editor = editor;
@@ -7201,7 +7523,7 @@ public sealed class ToolEditorForm : Form
             if (_editor is null || _editor.IsDisposed)
                 return;
 
-            using var border = new Pen(DarkBorderColor);
+            using var border = new Pen(BorderColor);
             e.Graphics.DrawLine(border, Width - 1, 0, Width - 1, Height);
 
             using var brush = new SolidBrush(ForeColor);

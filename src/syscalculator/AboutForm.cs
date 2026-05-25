@@ -400,7 +400,12 @@ internal sealed class AboutForm : Form
             SelectedPageId: pageId,
             Navigation: GetHelpNavigationLabels(),
             OkOnly: true,
-            ShowTopics: false));
+            ShowTopics: false,
+            ShowSignedPackageBadge: BuildCurrentLanguageSignedPackageInformation() is not null,
+            SignedPackageBadgeText: CurrentLanguagePackageIsSigned()
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            SignedPackageInformation: BuildCurrentLanguageSignedPackageInformation()));
     }
 
     private HelpNavigationLabels GetHelpNavigationLabels()
@@ -409,6 +414,59 @@ internal sealed class AboutForm : Form
             T("help.nav.home", "Home"),
             T("help.nav.previous", "Previous"),
             T("help.nav.next", "Next"));
+    }
+
+    private bool CurrentLanguagePackageIsSigned()
+    {
+        return LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(language => language.Matches(_language.FileName, _language.PackageId))
+            ?.Signed == true;
+    }
+
+    private HelpSignedPackageInformation? BuildCurrentLanguageSignedPackageInformation()
+    {
+        var language = LanguageCatalog.ListAvailable(AppContext.BaseDirectory)
+            .FirstOrDefault(item => item.Matches(_language.FileName, _language.PackageId));
+        if (language is null)
+            return null;
+
+        var signed = language.Signed;
+        var code = string.IsNullOrWhiteSpace(language.LanguageCode)
+            ? Path.GetFileNameWithoutExtension(language.FileName)
+            : language.LanguageCode;
+        var author = string.IsNullOrWhiteSpace(language.Producer)
+            ? T("dialog.language.info.local_author", "Local file")
+            : language.Producer;
+        var product = string.IsNullOrWhiteSpace(language.Product) ? "Syscalculator" : language.Product;
+        var packageId = string.IsNullOrWhiteSpace(language.PackageId) ? "-" : language.PackageId;
+        var version = string.IsNullOrWhiteSpace(language.PackageVersion) ? "-" : language.PackageVersion;
+        var algorithm = string.IsNullOrWhiteSpace(language.SignatureAlgorithm) ? "-" : language.SignatureAlgorithm;
+        var keyId = string.IsNullOrWhiteSpace(language.SignatureKeyId) ? "-" : language.SignatureKeyId;
+        var keySha256 = string.IsNullOrWhiteSpace(language.SignatureKeySha256) ? "-" : language.SignatureKeySha256;
+
+        return new HelpSignedPackageInformation(
+            T("dialog.language.info.title", "Language information"),
+            language.DisplayName,
+            signed
+                ? T("help.signed_package_verified", "Signed package verified")
+                : T("help.unsigned_language_file", "Unsigned language file"),
+            [
+                new(T("dialog.language.info.name", "Language"), language.DisplayName),
+                new(T("dialog.language.info.code", "Code"), code),
+                new(T("dialog.language.info.author", "Author"), author),
+                new(T("dialog.language.info.product", "Product"), product),
+                new(T("dialog.language.info.package", "Package"), packageId),
+                new(T("dialog.language.info.file", "File"), language.FileName),
+                new(T("dialog.language.info.version", "Version"), version),
+                new(T("dialog.language.info.signed", "Signed"), signed ? T("common.yes", "Yes") : T("common.no", "No")),
+                new(T("dialog.language.info.algorithm", "Algorithm"), algorithm),
+                new(T("dialog.language.info.key", "Key"), keyId),
+                new("SHA-256", keySha256)
+            ],
+            signed
+                ? T("help.signed_package_tip", "This help comes from a verified signed language package.")
+                : T("help.unsigned_language_tip", "This help comes from a loose language file and is not signed."),
+            signed);
     }
 
     private string HelpLanguageCode() => HelpApi.LanguageCodeFromFileName(_language.FileName);

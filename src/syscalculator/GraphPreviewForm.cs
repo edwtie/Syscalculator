@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Tiedragon.Graph;
 using Tiedragon.Graph.G2D;
 using Tiedragon.NodSystem.Core;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -20,6 +21,7 @@ public sealed class GraphPreviewForm : Form
 
     private readonly Func<string> _getNodText;
     private readonly LanguageCatalog? _language;
+    private readonly ToolEditorUiTheme _uiTheme;
     private readonly NumericUpDown _xMin;
     private readonly NumericUpDown _xMax;
     private readonly NumericUpDown _yMin;
@@ -68,6 +70,14 @@ public sealed class GraphPreviewForm : Form
     private double _panStartMaxY;
     private double _userStep = 1d;
     private bool _updatingStepDisplay;
+    private bool IsDarkTheme => _uiTheme == ToolEditorUiTheme.Dark;
+    private Color WindowBackColor => IsDarkTheme ? Color.FromArgb(18, 24, 32) : SystemColors.Control;
+    private Color PanelBackColor => IsDarkTheme ? Color.FromArgb(17, 24, 39) : Color.FromArgb(250, 250, 250);
+    private Color ToolbarBackColor => IsDarkTheme ? Color.FromArgb(31, 41, 55) : Color.FromArgb(250, 250, 250);
+    private Color GraphHostBackColor => IsDarkTheme ? Color.FromArgb(15, 23, 42) : Color.FromArgb(240, 244, 249);
+    private Color TextColor => IsDarkTheme ? Color.FromArgb(226, 232, 240) : SystemColors.ControlText;
+    private Color EditorBackColor => IsDarkTheme ? Color.FromArgb(39, 39, 39) : SystemColors.Window;
+    private Color BorderColor => IsDarkTheme ? Color.FromArgb(55, 65, 81) : Color.FromArgb(205, 212, 222);
 
     public GraphPreviewForm(Func<string> getNodText)
         : this(getNodText, null)
@@ -78,9 +88,13 @@ public sealed class GraphPreviewForm : Form
     {
         _getNodText = getNodText;
         _language = language;
+        _uiTheme = ToolEditorUiThemeSettings.Load();
+        GraphOverlayStyle.UseDarkTheme = IsDarkTheme;
 
         Text = T("editor.graph.title", "Graph 2D");
         AppWindowIcon.ApplyTo(this);
+        BackColor = WindowBackColor;
+        ForeColor = TextColor;
         Width = 920;
         Height = 560;
         MinimumSize = new Size(700, 420);
@@ -94,7 +108,8 @@ public sealed class GraphPreviewForm : Form
             RowCount = 2,
             ColumnCount = 1,
             Padding = new Padding(10),
-            BackColor = Color.FromArgb(250, 250, 250)
+            BackColor = PanelBackColor,
+            ForeColor = TextColor
         };
         _root.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
         _root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -104,7 +119,9 @@ public sealed class GraphPreviewForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 14,
             RowCount = 1,
-            Padding = new Padding(0, 5, 0, 0)
+            Padding = new Padding(0, 5, 0, 0),
+            BackColor = ToolbarBackColor,
+            ForeColor = TextColor
         };
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44));
         controls.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 82));
@@ -191,7 +208,9 @@ public sealed class GraphPreviewForm : Form
             Checked = true,
             AutoSize = true,
             Anchor = AnchorStyles.Left,
-            Margin = new Padding(6, 0, 0, 0)
+            Margin = new Padding(6, 0, 0, 0),
+            BackColor = ToolbarBackColor,
+            ForeColor = TextColor
         };
         controls.Controls.Add(_showRangeLines, 12, 0);
 
@@ -200,7 +219,7 @@ public sealed class GraphPreviewForm : Form
         var graphHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(240, 244, 249),
+            BackColor = GraphHostBackColor,
             Padding = new Padding(0)
         };
 
@@ -267,14 +286,14 @@ public sealed class GraphPreviewForm : Form
             AutoEllipsis = true,
             Padding = new Padding(6, 0, 6, 1),
             BackColor = Color.Transparent,
-            ForeColor = Color.FromArgb(15, 23, 42),
+            ForeColor = GraphOverlayStyle.TitleText,
             Font = new Font("Segoe UI", 7.5f)
         };
         _statusPanel = new Panel
         {
             Width = 52,
             Height = 20,
-            BackColor = Color.White
+            BackColor = GraphOverlayStyle.PanelFill(translucent: false)
         };
         _statusPanel.Paint += CompactStatusPanel_Paint;
         _statusPanel.Controls.Add(_status);
@@ -315,8 +334,15 @@ public sealed class GraphPreviewForm : Form
         _root.Controls.Add(graphHost, 0, 1);
 
         Controls.Add(_root);
+        ApplyThemeToChildren(this);
         InitializeBaseView();
         UpdateRangeInputMode();
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(this, _uiTheme);
     }
 
     internal event EventHandler<GraphPreviewSyncState>? SyncStateChanged;
@@ -381,14 +407,16 @@ public sealed class GraphPreviewForm : Form
 
     private string T(string key, string fallback) => _language?.Text(key, fallback) ?? fallback;
 
-    private static Label MakeToolbarLabel(string text)
+    private Label MakeToolbarLabel(string text)
     {
         return new Label
         {
             Text = text,
             AutoSize = true,
             Anchor = AnchorStyles.Left,
-            Margin = new Padding(0)
+            Margin = new Padding(0),
+            BackColor = ToolbarBackColor,
+            ForeColor = TextColor
         };
     }
 
@@ -412,6 +440,71 @@ public sealed class GraphPreviewForm : Form
             Width = 86,
             Margin = new Padding(0)
         };
+    }
+
+    private void ApplyThemeToChildren(Control control)
+    {
+        foreach (Control child in control.Controls)
+        {
+            switch (child)
+            {
+                case NumericUpDown numberBox:
+                    numberBox.BackColor = EditorBackColor;
+                    numberBox.ForeColor = TextColor;
+                    break;
+                case DataGridView grid:
+                    ApplyGridTheme(grid);
+                    break;
+                case CheckBox checkBox:
+                    checkBox.BackColor = ToolbarBackColor;
+                    checkBox.ForeColor = TextColor;
+                    break;
+                case Label label when !ReferenceEquals(label, _status):
+                    label.BackColor = ToolbarBackColor;
+                    label.ForeColor = TextColor;
+                    break;
+                case TableLayoutPanel table:
+                    table.BackColor = ReferenceEquals(table, _root) ? PanelBackColor : ToolbarBackColor;
+                    table.ForeColor = TextColor;
+                    break;
+                case Panel panel when !ReferenceEquals(panel, _canvas):
+                    panel.BackColor = ReferenceEquals(panel, _statusPanel) || ReferenceEquals(panel, _pointsPanel)
+                        ? GraphOverlayStyle.PanelFill(translucent: false)
+                        : GraphHostBackColor;
+                    panel.ForeColor = TextColor;
+                    break;
+            }
+
+            ApplyThemeToChildren(child);
+        }
+
+        if (_pointsTitleBar is not null)
+        {
+            _pointsTitleBar.BackColor = GraphOverlayStyle.TitleFill;
+            _pointsTitleBar.Invalidate();
+        }
+
+        _status.ForeColor = GraphOverlayStyle.TitleText;
+        _statusPanel.BackColor = GraphOverlayStyle.PanelFill(translucent: false);
+    }
+
+    private void ApplyGridTheme(DataGridView grid)
+    {
+        grid.BackgroundColor = GraphOverlayStyle.TableBack;
+        grid.BackColor = GraphOverlayStyle.TableBack;
+        grid.ForeColor = GraphOverlayStyle.TableText;
+        grid.GridColor = GraphOverlayStyle.TableGrid;
+        grid.EnableHeadersVisualStyles = false;
+        grid.ColumnHeadersDefaultCellStyle.BackColor = GraphOverlayStyle.TitleFill;
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = GraphOverlayStyle.TitleText;
+        grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = GraphOverlayStyle.TitleFill;
+        grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = GraphOverlayStyle.TitleText;
+        grid.DefaultCellStyle.BackColor = GraphOverlayStyle.TableBack;
+        grid.DefaultCellStyle.ForeColor = GraphOverlayStyle.TableText;
+        grid.DefaultCellStyle.SelectionBackColor = GraphOverlayStyle.TableSelectionBack;
+        grid.DefaultCellStyle.SelectionForeColor = GraphOverlayStyle.TableSelectionText;
+        grid.AlternatingRowsDefaultCellStyle.BackColor = GraphOverlayStyle.TableAlternateBack;
+        grid.AlternatingRowsDefaultCellStyle.ForeColor = GraphOverlayStyle.TableText;
     }
 
     private void ApplyInputTooltips(params Control[] controls)
@@ -646,8 +739,8 @@ public sealed class GraphPreviewForm : Form
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var rect = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
         using var path = UiGeometry.CreateRoundedRectangle(rect, 9);
-        using var fill = new SolidBrush(Color.FromArgb(253, 254, 255));
-        using var border = new Pen(Color.FromArgb(225, 234, 247), 1);
+        using var fill = new SolidBrush(GraphOverlayStyle.PanelFill(translucent: false));
+        using var border = new Pen(GraphOverlayStyle.PanelBorder(translucent: false), 1);
         e.Graphics.FillPath(fill, path);
         e.Graphics.DrawPath(border, path);
     }

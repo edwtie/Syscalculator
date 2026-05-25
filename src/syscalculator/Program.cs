@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
+using Tiedragon.ToolEditor;
 
 namespace Syscalculator.UI.WinForms;
 
@@ -22,9 +23,9 @@ internal static class Program
                 return;
             }
 
-            ApplicationConfiguration.Initialize();
-            ApplySystemColorMode();
             SyscalculatorDebugger.Initialize(args);
+            ApplicationConfiguration.Initialize();
+            ToolEditorUiThemeSettings.ApplyApplicationColorMode(ToolEditorUiThemeSettings.Load());
 
             if (ShouldOpenNodTool(args, out var editorPath, out var openTemplateWizard))
             {
@@ -63,13 +64,6 @@ internal static class Program
             SyscalculatorDebugger.ReportException("Fatal Syscalculator exception", ex, showDialog: true);
             throw;
         }
-    }
-
-    private static void ApplySystemColorMode()
-    {
-#pragma warning disable WFO5001
-        Application.SetColorMode(SystemColorMode.Dark);
-#pragma warning restore WFO5001
     }
 
     private static bool ShouldOpenNodTool(string[] args, out string? editorPath, out bool openTemplateWizard)
