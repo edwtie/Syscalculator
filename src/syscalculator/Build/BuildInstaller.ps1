@@ -13,6 +13,25 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..\..')
 $project = Join-Path $repoRoot 'src\syscalculator\Syscalculator.UI.WinForms.csproj'
 $updaterProject = Join-Path $repoRoot 'src\Syscalculator.Updater\Syscalculator.Updater.csproj'
 $languagePackageScript = Join-Path $repoRoot 'tools\Generate-LanguagePackages.ps1'
+$defaultLanguageSigningPrivateKey = Join-Path $repoRoot 'artifacts\signing\language\tiedragon-language-dev-2026.private.pem'
+$languageSigningPrivateKey = if (-not [string]::IsNullOrWhiteSpace($env:SYSCALC_LANGUAGE_SIGNING_PRIVATE_KEY)) {
+    $env:SYSCALC_LANGUAGE_SIGNING_PRIVATE_KEY
+}
+elseif (Test-Path -LiteralPath $defaultLanguageSigningPrivateKey) {
+    'artifacts\signing\language\tiedragon-language-dev-2026.private.pem'
+}
+else {
+    ''
+}
+$languageSigningKeyId = if (-not [string]::IsNullOrWhiteSpace($env:SYSCALC_LANGUAGE_SIGNING_KEY_ID)) {
+    $env:SYSCALC_LANGUAGE_SIGNING_KEY_ID
+}
+elseif (-not [string]::IsNullOrWhiteSpace($languageSigningPrivateKey)) {
+    'tiedragon-language-dev-2026'
+}
+else {
+    ''
+}
 $publishDir = Join-Path $repoRoot 'artifacts\publish\Syscalculator\win-x64'
 $updaterPublishDir = Join-Path $publishDir 'Updater'
 $installerScript = Join-Path $repoRoot 'installer\Syscalculator.iss'
@@ -57,7 +76,15 @@ if (-not $isccPath) {
     throw 'Inno Setup compiler ISCC.exe was not found. Install Inno Setup 6 first.'
 }
 
-& $pwshPath -NoProfile -ExecutionPolicy Bypass -File $languagePackageScript
+$languagePackageArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $languagePackageScript)
+if (-not [string]::IsNullOrWhiteSpace($languageSigningPrivateKey) -or
+    -not [string]::IsNullOrWhiteSpace($languageSigningKeyId)) {
+    $languagePackageArgs += @(
+        '-SigningPrivateKey', $languageSigningPrivateKey,
+        '-SigningKeyId', $languageSigningKeyId)
+}
+
+& $pwshPath @languagePackageArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Language package generation failed with exit code $LASTEXITCODE."
 }
