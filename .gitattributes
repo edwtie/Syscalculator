@@ -18,3 +18,7 @@
 *.dll binary
 *.exe binary
 *.pdb binary
+
+# Channel-specific front page. Keep the target branch README during merges
+# between daily, beta and production.
+README.md merge=ours
