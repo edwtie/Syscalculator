@@ -235,9 +235,15 @@ public static class GraphGeometry3D
             var projectionScale = Math.Min(plot.Width, plot.Height) * 0.50d * zoom;
             if (projectionScale > 0d)
             {
-                var graphUnitsPerPixel = referenceSpan / (2d * projectionScale);
-                centerX -= camera.PanX * graphUnitsPerPixel;
-                centerY += camera.PanY * graphUnitsPerPixel;
+                var rotatedOffset = new GraphPoint3D(
+                    -camera.PanX / projectionScale,
+                    camera.PanY / projectionScale,
+                    0d);
+                var graphOffset = InverseRotate(rotatedOffset, camera);
+                var graphScale = referenceSpan / 2d;
+                centerX += graphOffset.X * graphScale;
+                centerY += graphOffset.Y * graphScale;
+                centerZ += graphOffset.Z * graphScale;
             }
         }
 
@@ -251,6 +257,23 @@ public static class GraphGeometry3D
             centerY + halfY,
             centerZ - halfZ,
             centerZ + halfZ);
+    }
+
+    private static GraphPoint3D InverseRotate(GraphPoint3D point, GraphCamera3D camera)
+    {
+        var yaw = camera.YawDegrees * DegreesToRadians;
+        var pitch = camera.PitchDegrees * DegreesToRadians;
+        var cosYaw = Math.Cos(yaw);
+        var sinYaw = Math.Sin(yaw);
+        var cosPitch = Math.Cos(pitch);
+        var sinPitch = Math.Sin(pitch);
+
+        var y = point.Y * cosPitch + point.Z * sinPitch;
+        var zAfterYaw = -point.Y * sinPitch + point.Z * cosPitch;
+        var x = point.X * cosYaw + zAfterYaw * sinYaw;
+        var z = -point.X * sinYaw + zAfterYaw * cosYaw;
+
+        return new GraphPoint3D(x, y, z);
     }
 
     private static GraphPoint3D NormalizeToCenteredCube(GraphPoint3D point, GraphPlotView3D view)
