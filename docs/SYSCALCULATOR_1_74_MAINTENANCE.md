@@ -90,9 +90,17 @@ Release-gate:
 ## Releasevorm
 
 ```text
-Syscalculator 1.74.x = onderhoud / legacy fix
-Syscalculator 2.0 beta = moderne opvolger
+Syscalculator 2.0 Daily      actieve C#/.NET ontwikkel- en testlijn
+Syscalculator 2.0 Beta       prerelease voor testers
+Syscalculator 2.0 Production stabiele publieke 2.0-lijn
+Syscalculator 1.74.x         VB6/NOD 1.0 onderhoud / legacy fix
 ```
+
+Syscalculator 1.74 is de vierde releaseweg. Deze lijn staat naast Daily, Beta
+en Production, maar hoort inhoudelijk niet bij Syscalculator 2.0. Nieuwe
+features zoals NOD 2.0, Graph3D, Language Package 1.0 en package signing blijven
+in de 2.0-lijn. De 1.74-lijn blijft klein: klassieke `.nod` bestanden,
+VB6-compatibiliteit, CHM-help, installeronderhoud en veilige bugfixes.
 
 ### Euro NOD Candidate
 
