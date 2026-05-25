@@ -858,7 +858,15 @@ public sealed class ToolEditorForm : Form
             return packageContent;
         }
 
-        return null;
+        return ReadToolEditorHelpResource(normalized);
+    }
+
+    private static string? ReadToolEditorHelpResource(string normalizedFileName)
+    {
+        var resourcePath = "Resources/Help/Content/" + normalizedFileName;
+        var sourcePath = FindToolEditorResourcePath(resourcePath) ??
+            FindRepositoryPath("src/syscalculator/Resources/Help/Content/" + normalizedFileName);
+        return sourcePath is null ? null : File.ReadAllText(sourcePath, Encoding.UTF8);
     }
 
     private static bool TryReadPackageTextEntry(string packagePath, string entryName, out string content)
