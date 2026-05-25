@@ -200,7 +200,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MinX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MinY, view.MaxZ)
                 ],
-                "X min",
+                FormatBoundaryLabel("X min", view.MinX, view.MaxX - view.MinX),
                 isMinimum: true),
             CreateBoundaryField(
                 [
@@ -209,7 +209,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MaxX, view.MinY, view.MaxZ)
                 ],
-                "X max",
+                FormatBoundaryLabel("X max", view.MaxX, view.MaxX - view.MinX),
                 isMinimum: false),
             CreateBoundaryField(
                 [
@@ -218,7 +218,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MinY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MinY, view.MaxZ)
                 ],
-                "Y min",
+                FormatBoundaryLabel("Y min", view.MinY, view.MaxY - view.MinY),
                 isMinimum: true),
             CreateBoundaryField(
                 [
@@ -227,7 +227,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MaxY, view.MaxZ)
                 ],
-                "Y max",
+                FormatBoundaryLabel("Y max", view.MaxY, view.MaxY - view.MinY),
                 isMinimum: false),
             CreateBoundaryField(
                 [
@@ -236,7 +236,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MinZ),
                     new GraphPoint3D(view.MinX, view.MaxY, view.MinZ)
                 ],
-                "Z min",
+                FormatBoundaryLabel("Z min", view.MinZ, view.MaxZ - view.MinZ),
                 isMinimum: true),
             CreateBoundaryField(
                 [
@@ -245,7 +245,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MaxY, view.MaxZ)
                 ],
-                "Z max",
+                FormatBoundaryLabel("Z max", view.MaxZ, view.MaxZ - view.MinZ),
                 isMinimum: false)
         };
 
@@ -284,6 +284,12 @@ public static class Graph3DRenderer
                 .First();
             graphics.DrawString(field.Label, labelFont, field.IsMinimum ? minLabelBrush : maxLabelBrush, labelAnchor.X + 4f, labelAnchor.Y + 4f);
         }
+    }
+
+    private static string FormatBoundaryLabel(string caption, double value, double span)
+    {
+        var step = double.IsFinite(span) && Math.Abs(span) > 0d ? Math.Abs(span) / 10d : 0d;
+        return caption + " " + GraphNumberFormatter.FormatTick(value, step);
     }
 
     private static (IReadOnlyList<GraphPoint3D> Points, string Label, bool IsMinimum) CreateBoundaryField(
