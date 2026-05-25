@@ -2298,6 +2298,7 @@ public sealed class NodEditorForm : Form
             GetGraph3DView(),
             _graph3DCamera,
             _graph3DGridVisible,
+            showBoundaryFields: true,
             _graph3DShowRangeLines?.Checked ?? true,
             GraphSurfaceApi.GetNumberBoxValue(_graphZStep),
             _graphDisabledMessage,

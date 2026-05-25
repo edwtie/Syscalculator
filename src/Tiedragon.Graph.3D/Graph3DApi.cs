@@ -218,7 +218,7 @@ public static class Graph3DApi
     }
 
     /// <summary>
-    /// Draws the complete Graph3D surface: grid, axes, boundary markers, line, and red points.
+    /// Draws the complete Graph3D surface: grid, axes, boundary markers, optional line, and red points.
     /// </summary>
     public static void Draw(
         Graphics graphics,
@@ -229,6 +229,7 @@ public static class Graph3DApi
         GraphCamera3D camera,
         bool showGrid,
         bool showBoundaryFields,
+        bool showLines,
         double? gridStep,
         string disabledMessage,
         string emptyMessage,
@@ -243,6 +244,7 @@ public static class Graph3DApi
             camera,
             showGrid,
             showBoundaryFields,
+            showLines,
             gridStep,
             disabledMessage,
             emptyMessage,
