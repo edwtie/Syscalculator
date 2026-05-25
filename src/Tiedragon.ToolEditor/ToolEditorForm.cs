@@ -384,7 +384,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
-            BackColor = Color.FromArgb(226, 232, 240),
+            BackColor = DarkBorderColor,
             Padding = Padding.Empty
         };
         previewHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -398,14 +398,14 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             Height = 24,
             Margin = Padding.Empty,
-            BackColor = Color.FromArgb(226, 232, 240),
+            BackColor = DarkPanelBackColor,
             Padding = new Padding(8, 1, 8, 1)
         };
         var previewHeaderLine = new Panel
         {
             Dock = DockStyle.Bottom,
             Height = 1,
-            BackColor = Color.FromArgb(203, 213, 225),
+            BackColor = DarkBorderColor,
             Margin = Padding.Empty
         };
 
@@ -421,7 +421,7 @@ public sealed class ToolEditorForm : Form
         {
             AutoSize = true,
             Text = TToolEditor("tool_editor.preview.title", "Preview"),
-            ForeColor = Color.FromArgb(71, 85, 105),
+            ForeColor = DarkMutedTextColor,
             Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
             Location = new Point(8, 3)
         };
@@ -430,16 +430,16 @@ public sealed class ToolEditorForm : Form
             Text = "×",
             Dock = DockStyle.Right,
             Width = 30,
-            BackColor = Color.FromArgb(226, 232, 240),
-            ForeColor = Color.FromArgb(51, 65, 85),
+            BackColor = DarkPanelBackColor,
+            ForeColor = DarkEditorTextColor,
             Font = new Font("Segoe UI", 11f, FontStyle.Regular),
             Padding = Padding.Empty,
             Margin = Padding.Empty,
             TextAlign = ContentAlignment.MiddleCenter,
             Cursor = Cursors.Hand
         };
-        _previewCloseButton.MouseEnter += (_, _) => _previewCloseButton.BackColor = Color.FromArgb(203, 213, 225);
-        _previewCloseButton.MouseLeave += (_, _) => _previewCloseButton.BackColor = Color.FromArgb(226, 232, 240);
+        _previewCloseButton.MouseEnter += (_, _) => _previewCloseButton.BackColor = Color.FromArgb(37, 99, 235);
+        _previewCloseButton.MouseLeave += (_, _) => _previewCloseButton.BackColor = DarkPanelBackColor;
         _previewCloseButton.Click += (_, _) => ClosePreviewPane();
 
         _previewConceptBanner = new ToolEditorConceptBanner
