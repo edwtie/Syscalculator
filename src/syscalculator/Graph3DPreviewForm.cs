@@ -462,9 +462,16 @@ internal sealed class Graph3DPreviewForm : Form
             NotifySyncStateChanged();
             return;
         }
-        else if (minZ >= maxZ)
+        else if (minZ > maxZ)
         {
             return;
+        }
+        else if (Math.Abs(maxZ - minZ) < GraphSurfaceApi.MinimumViewSpan)
+        {
+            var z = ExpandFlat3DRange(minZ, maxZ);
+            minZ = z.Min;
+            maxZ = z.Max;
+            Set3DRangeControls(new GraphPlotView3D(minX, maxX, minY, maxY, minZ, maxZ));
         }
 
         _view = new GraphPlotView3D(minX, maxX, minY, maxY, minZ, maxZ);
@@ -746,6 +753,13 @@ internal sealed class Graph3DPreviewForm : Form
     private void Restore3DRangeControls()
     {
         Set3DRangeControls(_view);
+    }
+
+    private static (double Min, double Max) ExpandFlat3DRange(double min, double max)
+    {
+        var center = (min + max) / 2d;
+        var half = Math.Max(100d, Math.Abs(center) * 0.1d);
+        return (center - half, center + half);
     }
 
     private void Set3DRangeControls(GraphPlotView3D view)
