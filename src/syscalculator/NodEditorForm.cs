@@ -2147,6 +2147,7 @@ public sealed class NodEditorForm : Form
         _graph3DCamera = Graph3DApi.ZoomCamera(_graph3DCamera, factor);
         if (_graph3DRotationDial is not null)
             _graph3DRotationDial.Camera = _graph3DCamera;
+        UpdateGraph3DViewportRangeControlsIfNeeded();
         UpdateGraph3DModeButtons();
         _graph3DCanvas?.Invalidate();
         UpdateGraph3DPreviewWindowData();
@@ -2275,6 +2276,35 @@ public sealed class NodEditorForm : Form
         }
     }
 
+    private void UpdateGraph3DViewportRangeControlsIfNeeded()
+    {
+        if ((_graph3DShowRangeLines?.Checked ?? true) || _graph3DCanvas is null)
+            return;
+
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graph3DCanvas);
+        var view = Graph3DApi.CreateCameraAdjustedView(plot, GetGraph3DView(), _graph3DCamera);
+        _applyingGraph3DRangeControls = true;
+        _updatingGraphXRangeControls = true;
+        _updatingGraphYRangeControls = true;
+        _updatingGraphZRangeControls = true;
+        try
+        {
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DXMin, view.MinX);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DXMax, view.MaxX);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DYMin, view.MinY);
+            GraphSurfaceApi.SetNumberBoxValue(_graph3DYMax, view.MaxY);
+            GraphSurfaceApi.SetNumberBoxValue(_graphZMin, view.MinZ);
+            GraphSurfaceApi.SetNumberBoxValue(_graphZMax, view.MaxZ);
+        }
+        finally
+        {
+            _updatingGraphZRangeControls = false;
+            _updatingGraphYRangeControls = false;
+            _updatingGraphXRangeControls = false;
+            _applyingGraph3DRangeControls = false;
+        }
+    }
+
     private void Graph3DCanvas_Paint(object? sender, PaintEventArgs e)
     {
         e.Graphics.Clear(_graph3DCanvas.BackColor);
@@ -2385,7 +2415,12 @@ public sealed class NodEditorForm : Form
         var editable = _graph3DShowRangeLines?.Checked ?? true;
         var flat2D = IsGraph3DFlat2DView();
         if (!editable)
-            SetGraph3DXYRangeControls(GetGraph3DXYView());
+        {
+            if (flat2D)
+                SetGraph3DXYRangeControls(GetGraph3DXYView());
+            else
+                UpdateGraph3DViewportRangeControlsIfNeeded();
+        }
 
         foreach (var box in new[] { _graph3DXMin, _graph3DXMax, _graph3DYMin, _graph3DYMax, _graph3DStep })
         {
@@ -2556,6 +2591,7 @@ public sealed class NodEditorForm : Form
             PanY = _graph3DCamera.PanY + dy
         };
         _graph3DRotationDial.Camera = _graph3DCamera;
+        UpdateGraph3DViewportRangeControlsIfNeeded();
         _graph3DCanvas?.Invalidate();
         UpdateGraph3DPreviewWindowData();
     }

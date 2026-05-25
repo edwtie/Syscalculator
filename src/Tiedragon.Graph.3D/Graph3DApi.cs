@@ -218,6 +218,14 @@ public static class Graph3DApi
     }
 
     /// <summary>
+    /// Converts camera zoom and pan to the graph-coordinate range currently visible to the user.
+    /// </summary>
+    public static GraphPlotView3D CreateCameraAdjustedView(Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
+    {
+        return GraphGeometry3D.CreateCameraAdjustedView(plot, view, camera);
+    }
+
+    /// <summary>
     /// Draws the complete Graph3D surface: grid, axes, boundary markers, optional line, and red points.
     /// </summary>
     public static void Draw(

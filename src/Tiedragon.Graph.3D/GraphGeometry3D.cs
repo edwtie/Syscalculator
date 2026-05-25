@@ -216,6 +216,43 @@ public static class GraphGeometry3D
             (view.MinZ + view.MaxZ) / 2d);
     }
 
+    /// <summary>
+    /// Converts screen-space camera zoom and pan to the graph-coordinate range currently visible to the user.
+    /// </summary>
+    public static GraphPlotView3D CreateCameraAdjustedView(Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
+    {
+        var zoom = double.IsFinite(camera.Zoom) && camera.Zoom > 0d ? camera.Zoom : 1d;
+        var spanX = view.MaxX - view.MinX;
+        var spanY = view.MaxY - view.MinY;
+        var spanZ = view.MaxZ - view.MinZ;
+        var centerX = (view.MinX + view.MaxX) / 2d;
+        var centerY = (view.MinY + view.MaxY) / 2d;
+        var centerZ = (view.MinZ + view.MaxZ) / 2d;
+
+        if (plot.Width > 0 && plot.Height > 0)
+        {
+            var referenceSpan = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Max(Math.Abs(spanX), Math.Max(Math.Abs(spanY), Math.Abs(spanZ))));
+            var projectionScale = Math.Min(plot.Width, plot.Height) * 0.50d * zoom;
+            if (projectionScale > 0d)
+            {
+                var graphUnitsPerPixel = referenceSpan / (2d * projectionScale);
+                centerX -= camera.PanX * graphUnitsPerPixel;
+                centerY += camera.PanY * graphUnitsPerPixel;
+            }
+        }
+
+        var halfX = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanX) / zoom) / 2d;
+        var halfY = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanY) / zoom) / 2d;
+        var halfZ = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanZ) / zoom) / 2d;
+        return new GraphPlotView3D(
+            centerX - halfX,
+            centerX + halfX,
+            centerY - halfY,
+            centerY + halfY,
+            centerZ - halfZ,
+            centerZ + halfZ);
+    }
+
     private static GraphPoint3D NormalizeToCenteredCube(GraphPoint3D point, GraphPlotView3D view)
     {
         var centerX = (view.MinX + view.MaxX) / 2d;
