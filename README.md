@@ -57,6 +57,7 @@ De actuele architectuur staat in:
 - `docs/SYSCALCULATOR_HISTORY.md`
 - `docs/TIEDRAGON_GRAPH_ARCHITECTURE.svg`
 - `docs/LANGUAGE_PACKAGE_DESIGN.md`
+- `docs/LNGPDK_PACKAGE_MODEL.md`
 - `docs/LANGUAGE_PACKAGE_TOOL.md`
 
 ## Graph2D en Graph3D

@@ -104,6 +104,9 @@ the answer must be visible in the source package or in the compile report.
 
 ## Package Kinds
 
+For a compact practical overview of the compiled package model, see
+[`LNGPDK_PACKAGE_MODEL.md`](LNGPDK_PACKAGE_MODEL.md).
+
 The file extension must show whether a package is editable source material or a
 compiled distribution artifact.
 
