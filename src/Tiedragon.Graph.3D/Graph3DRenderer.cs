@@ -18,6 +18,8 @@ public static class Graph3DRenderer
     private static Color AxisGuideColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(220, 226, 235);
     private static Color AxisLabelColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(226, 232, 240) : Color.FromArgb(51, 65, 85);
     private static Color NumberLabelColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(203, 213, 225) : Color.FromArgb(71, 85, 105);
+    private static Color DataLineColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(96, 165, 250) : Color.FromArgb(15, 63, 143);
+    private static Color DataPointColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(248, 113, 113) : Color.FromArgb(220, 38, 38);
     private static Color NeutralMajorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(51, 65, 85) : Color.FromArgb(215, 222, 232);
     private static Color NeutralMinorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(30, 41, 59) : Color.FromArgb(240, 244, 248);
     private static Color XyMajorGridColor => GraphOverlayStyle.UseDarkTheme ? Color.FromArgb(49, 70, 104) : Color.FromArgb(198, 213, 234);
@@ -373,7 +375,7 @@ public static class Graph3DRenderer
                 .ToArray();
             if (projected.Length >= 2)
             {
-                using var linePen = new Pen(Color.FromArgb(15, 63, 143), 2.2f)
+                using var linePen = new Pen(DataLineColor, GraphOverlayStyle.UseDarkTheme ? 2.8f : 2.2f)
                 {
                     StartCap = LineCap.Round,
                     EndCap = LineCap.Round,
@@ -383,15 +385,16 @@ public static class Graph3DRenderer
             }
         }
 
-        using var pointBrush = new SolidBrush(Color.FromArgb(220, 38, 38));
-        using var pointBorder = new Pen(PointBorderColor, 1.2f);
+        var pointRadius = GraphOverlayStyle.UseDarkTheme ? 4.1f : 3.4f;
+        using var pointBrush = new SolidBrush(DataPointColor);
+        using var pointBorder = new Pen(PointBorderColor, GraphOverlayStyle.UseDarkTheme ? 1.5f : 1.2f);
         foreach (var point in Graph3DApi.ProjectToScreen(Graph3DApi.From2D(highlightPoints, z: 0d), plot, view, camera).Select(p => p.Screen))
         {
             if (!float.IsFinite(point.X) || !float.IsFinite(point.Y))
                 continue;
 
-            graphics.FillEllipse(pointBrush, point.X - 3.4f, point.Y - 3.4f, 6.8f, 6.8f);
-            graphics.DrawEllipse(pointBorder, point.X - 3.4f, point.Y - 3.4f, 6.8f, 6.8f);
+            graphics.FillEllipse(pointBrush, point.X - pointRadius, point.Y - pointRadius, pointRadius * 2f, pointRadius * 2f);
+            graphics.DrawEllipse(pointBorder, point.X - pointRadius, point.Y - pointRadius, pointRadius * 2f, pointRadius * 2f);
         }
     }
 
