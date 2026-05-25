@@ -159,7 +159,10 @@ internal sealed class Graph3DPreviewForm : Form
         _lines.CheckedChanged += (_, _) =>
         {
             UpdateRangeInputMode();
-            Update3DViewportRangeControlsIfNeeded();
+            if (_lines.Checked)
+                Restore3DRangeControls();
+            else
+                Update3DViewportRangeControlsIfNeeded();
             InvalidateCanvas();
             NotifySyncStateChanged();
         };
@@ -737,6 +740,16 @@ internal sealed class Graph3DPreviewForm : Form
 
         var plot = GraphSurfaceApi.GetPlotRectangle(_canvas);
         var view = Graph3DApi.CreateCameraAdjustedView(plot, _view, _camera);
+        Set3DRangeControls(view);
+    }
+
+    private void Restore3DRangeControls()
+    {
+        Set3DRangeControls(_view);
+    }
+
+    private void Set3DRangeControls(GraphPlotView3D view)
+    {
         _applyingData = true;
         try
         {
