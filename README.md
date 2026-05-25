@@ -6,11 +6,19 @@ De daily-lijn is bedoeld als actieve ontwikkelbron voor Beta 2. Belangrijke onde
 
 ## Release 2026-05-25
 
-Beta 2 en Daily van 25 mei 2026 bevatten de Graph3D/help-fixes en gesigneerde
-taalpackages. Daily gebruikt `tiedragon-language-dev-2026`; Beta 2 gebruikt
-`tiedragon-language-beta-2026`. De installer-build weigert daily/beta/release
-nu wanneer package signing ontbreekt, zodat een release niet ongemerkt met rood
-slot kan worden gepubliceerd.
+Beta 2 beschrijft de wijzigingen sinds Beta 1. De oudere Beta 1-assets zijn
+opgeruimd; deze release draait om de nieuwe Graph3D/help-fixes, gesigneerde
+taalpackages en updater-route.
+
+Nieuw sinds Beta 1:
+
+- Graph3D: camera/viewpoint-cijfers, grid/line toggles, Z-lijn en sleep/draai-gedrag zijn verder uitgewerkt.
+- Help en ToolEditor: verified-language slot in help, taalkeuze en NOD/ToolEditor-help.
+- Theme: dark/light fixes voor help, preview, editor, media en About-dialogs.
+- Language Package: alle 9 `.lngpdk` taalpackages zijn signed; Beta 2 gebruikt `tiedragon-language-beta-2026`.
+- Build/installer: daily/beta/release weigert nu te bouwen wanneer package signing ontbreekt.
+
+Daily blijft het ontwikkelkanaal en gebruikt `tiedragon-language-dev-2026`.
 
 De updater gebruikt de Tiedragon manifest-route:
 
