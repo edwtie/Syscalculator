@@ -39,6 +39,12 @@ elseif (-not [string]::IsNullOrWhiteSpace($languageSigningPrivateKey)) {
 else {
     ''
 }
+
+if ($Channel -in @('daily', 'beta', 'production') -and
+    ([string]::IsNullOrWhiteSpace($languageSigningPrivateKey) -or
+        [string]::IsNullOrWhiteSpace($languageSigningKeyId))) {
+    throw "Language package signing key is required for '$Channel' builds. Set SYSCALC_LANGUAGE_SIGNING_PRIVATE_KEY or place the key at $defaultLanguageSigningPrivateKey."
+}
 $publishDir = Join-Path $repoRoot 'artifacts\publish\Syscalculator\win-x64'
 $updaterPublishDir = Join-Path $publishDir 'Updater'
 $installerScript = Join-Path $repoRoot 'installer\Syscalculator.iss'
@@ -94,6 +100,14 @@ if (-not [string]::IsNullOrWhiteSpace($languageSigningPrivateKey) -or
 & $pwshPath @languagePackageArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Language package generation failed with exit code $LASTEXITCODE."
+}
+
+$languagePackageManifest = Join-Path $repoRoot 'web\packages\languages\language-packages.json'
+$languagePackageIndex = Get-Content -LiteralPath $languagePackageManifest -Raw | ConvertFrom-Json
+$unsignedLanguagePackages = @($languagePackageIndex | Where-Object { -not $_.signed })
+if ($Channel -in @('daily', 'beta', 'production') -and $unsignedLanguagePackages.Count -gt 0) {
+    $unsignedCodes = ($unsignedLanguagePackages | ForEach-Object { $_.languageCode }) -join ', '
+    throw "Language package generation produced unsigned packages for '$Channel': $unsignedCodes."
 }
 
 if (Test-Path $publishDir) {
