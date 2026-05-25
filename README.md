@@ -4,6 +4,23 @@ Syscalculator is de nieuwe C#/.NET lijn van de oude Syscalculator/NOD software. 
 
 De daily-lijn is bedoeld als actieve ontwikkelbron voor Beta 2. Belangrijke onderdelen zijn al beschikbaar, maar daily blijft een testkanaal.
 
+## Release 2026-05-25
+
+Beta 2 en Daily van 25 mei 2026 bevatten de Graph3D/help-fixes en gesigneerde
+taalpackages. Daily gebruikt `tiedragon-language-dev-2026`; Beta 2 gebruikt
+`tiedragon-language-beta-2026`. De installer-build weigert daily/beta/release
+nu wanneer package signing ontbreekt, zodat een release niet ongemerkt met rood
+slot kan worden gepubliceerd.
+
+De updater gebruikt de Tiedragon manifest-route:
+
+```text
+https://www.tiedragon.nl/api/syscalculator-updates/syscalculator.json
+```
+
+De 25-mei assets staan als GitHub prerelease en zijn bedoeld om ook onder
+`www.tiedragon.nl/downloads/syscalculator/...` te publiceren voor de updater.
+
 Historisch loopt de lijn terug naar Tiedos/Nodelistomzetter, Nodomzet en
 Hong-technologie uit 1997: gegevens converteren of omzetten als kernidee. Zie
 `docs/SYSCALCULATOR_HISTORY.md` voor de teruggevonden Wayback-bron en de relatie
