@@ -7,7 +7,7 @@ namespace Syscalculator.UI.WinForms;
 
 internal static class UpdateChecker
 {
-    public const string DefaultManifestUrl = "https://www.tiedragon.nl/api/syscalculator-updates/syscalculator.json";
+    public const string DefaultManifestUrl = "https://tiedragon.nl/api/syscalculator-updates/syscalculator.json";
 
     private static readonly HttpClient HttpClient = new()
     {

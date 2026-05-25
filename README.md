@@ -23,11 +23,11 @@ Daily blijft het ontwikkelkanaal en gebruikt `tiedragon-language-dev-2026`.
 De updater gebruikt de Tiedragon manifest-route:
 
 ```text
-https://www.tiedragon.nl/api/syscalculator-updates/syscalculator.json
+https://tiedragon.nl/api/syscalculator-updates/syscalculator.json
 ```
 
 De 25-mei assets staan als GitHub prerelease en zijn bedoeld om ook onder
-`www.tiedragon.nl/downloads/syscalculator/...` te publiceren voor de updater.
+`tiedragon.nl/downloads/syscalculator/...` te publiceren voor de updater.
 
 Historisch loopt de lijn terug naar Tiedos/Nodelistomzetter, Nodomzet en
 Hong-technologie uit 1997: gegevens converteren of omzetten als kernidee. Zie
