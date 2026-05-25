@@ -60,7 +60,7 @@ public static class Graph3DRenderer
         }
         else
         {
-            DrawNeutralGrid(graphics, gridScene, plot, view, camera);
+            DrawAxes(graphics, labelScene, plot, view, camera);
         }
 
         if (showBoundaryFields)
