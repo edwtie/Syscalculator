@@ -191,6 +191,7 @@ public static class Graph3DRenderer
 
     private static void DrawMinimumBoundaryFields(Graphics graphics, Rectangle plot, GraphPlotView3D view, GraphCamera3D camera, bool coloredGrid)
     {
+        var labelView = CreateCameraAdjustedLabelView(plot, view, camera);
         var fields = new[]
         {
             CreateBoundaryField(
@@ -200,7 +201,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MinX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MinY, view.MaxZ)
                 ],
-                FormatBoundaryLabel("X min", view.MinX, view.MaxX - view.MinX),
+                FormatBoundaryLabel("X min", labelView.MinX, labelView.MaxX - labelView.MinX),
                 isMinimum: true),
             CreateBoundaryField(
                 [
@@ -209,7 +210,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MaxX, view.MinY, view.MaxZ)
                 ],
-                FormatBoundaryLabel("X max", view.MaxX, view.MaxX - view.MinX),
+                FormatBoundaryLabel("X max", labelView.MaxX, labelView.MaxX - labelView.MinX),
                 isMinimum: false),
             CreateBoundaryField(
                 [
@@ -218,7 +219,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MinY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MinY, view.MaxZ)
                 ],
-                FormatBoundaryLabel("Y min", view.MinY, view.MaxY - view.MinY),
+                FormatBoundaryLabel("Y min", labelView.MinY, labelView.MaxY - labelView.MinY),
                 isMinimum: true),
             CreateBoundaryField(
                 [
@@ -227,7 +228,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MaxY, view.MaxZ)
                 ],
-                FormatBoundaryLabel("Y max", view.MaxY, view.MaxY - view.MinY),
+                FormatBoundaryLabel("Y max", labelView.MaxY, labelView.MaxY - labelView.MinY),
                 isMinimum: false),
             CreateBoundaryField(
                 [
@@ -236,7 +237,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MinZ),
                     new GraphPoint3D(view.MinX, view.MaxY, view.MinZ)
                 ],
-                FormatBoundaryLabel("Z min", view.MinZ, view.MaxZ - view.MinZ),
+                FormatBoundaryLabel("Z min", labelView.MinZ, labelView.MaxZ - labelView.MinZ),
                 isMinimum: true),
             CreateBoundaryField(
                 [
@@ -245,7 +246,7 @@ public static class Graph3DRenderer
                     new GraphPoint3D(view.MaxX, view.MaxY, view.MaxZ),
                     new GraphPoint3D(view.MinX, view.MaxY, view.MaxZ)
                 ],
-                FormatBoundaryLabel("Z max", view.MaxZ, view.MaxZ - view.MinZ),
+                FormatBoundaryLabel("Z max", labelView.MaxZ, labelView.MaxZ - labelView.MinZ),
                 isMinimum: false)
         };
 
@@ -284,6 +285,40 @@ public static class Graph3DRenderer
                 .First();
             graphics.DrawString(field.Label, labelFont, field.IsMinimum ? minLabelBrush : maxLabelBrush, labelAnchor.X + 4f, labelAnchor.Y + 4f);
         }
+    }
+
+    private static GraphPlotView3D CreateCameraAdjustedLabelView(Rectangle plot, GraphPlotView3D view, GraphCamera3D camera)
+    {
+        var zoom = double.IsFinite(camera.Zoom) && camera.Zoom > 0d ? camera.Zoom : 1d;
+        var spanX = view.MaxX - view.MinX;
+        var spanY = view.MaxY - view.MinY;
+        var spanZ = view.MaxZ - view.MinZ;
+        var centerX = (view.MinX + view.MaxX) / 2d;
+        var centerY = (view.MinY + view.MaxY) / 2d;
+        var centerZ = (view.MinZ + view.MaxZ) / 2d;
+
+        if (plot.Width > 0 && plot.Height > 0)
+        {
+            var referenceSpan = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Max(Math.Abs(spanX), Math.Max(Math.Abs(spanY), Math.Abs(spanZ))));
+            var projectionScale = Math.Min(plot.Width, plot.Height) * 0.50d * zoom;
+            if (projectionScale > 0d)
+            {
+                var graphUnitsPerPixel = referenceSpan / (2d * projectionScale);
+                centerX -= camera.PanX * graphUnitsPerPixel;
+                centerY += camera.PanY * graphUnitsPerPixel;
+            }
+        }
+
+        var halfX = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanX) / zoom) / 2d;
+        var halfY = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanY) / zoom) / 2d;
+        var halfZ = Math.Max(GraphGeometry2D.MinimumViewSpan, Math.Abs(spanZ) / zoom) / 2d;
+        return new GraphPlotView3D(
+            centerX - halfX,
+            centerX + halfX,
+            centerY - halfY,
+            centerY + halfY,
+            centerZ - halfZ,
+            centerZ + halfZ);
     }
 
     private static string FormatBoundaryLabel(string caption, double value, double span)
