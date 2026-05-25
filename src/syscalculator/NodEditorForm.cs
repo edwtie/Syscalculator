@@ -429,6 +429,8 @@ public sealed class NodEditorForm : Form
     private double _graph3DViewMaxX = Graph3DDefaultHalfRange;
     private double _graph3DViewMinY = -Graph3DDefaultHalfRange;
     private double _graph3DViewMaxY = Graph3DDefaultHalfRange;
+    private double _graph3DViewMinZ = -Graph3DDefaultHalfRange;
+    private double _graph3DViewMaxZ = Graph3DDefaultHalfRange;
     private bool _updatingGraphStepDisplay;
     private string _pendingFormulaMathMarkup = "";
     private string _pendingCalculationMathMarkup = "";
@@ -2205,8 +2207,8 @@ public sealed class NodEditorForm : Form
     private GraphPlotView3D GetGraph3DView()
     {
         var view = GetGraph3DXYView();
-        var minZ = GraphSurfaceApi.GetNumberBoxValue(_graphZMin);
-        var maxZ = GraphSurfaceApi.GetNumberBoxValue(_graphZMax);
+        var minZ = _graph3DViewMinZ;
+        var maxZ = _graph3DViewMaxZ;
         if (minZ >= maxZ)
         {
             minZ = -Graph3DDefaultHalfRange;
@@ -2237,6 +2239,15 @@ public sealed class NodEditorForm : Form
         _graph3DViewMaxY = view.MaxY;
     }
 
+    private void SetGraph3DZView(double minZ, double maxZ)
+    {
+        if (minZ >= maxZ)
+            return;
+
+        _graph3DViewMinZ = minZ;
+        _graph3DViewMaxZ = maxZ;
+    }
+
     private void ResetGraph3DSpaceView()
     {
         var view = new GraphPlotView(
@@ -2245,6 +2256,7 @@ public sealed class NodEditorForm : Form
             -Graph3DDefaultHalfRange,
             Graph3DDefaultHalfRange);
         SetGraph3DXYView(view);
+        SetGraph3DZView(-Graph3DDefaultHalfRange, Graph3DDefaultHalfRange);
         SetGraph3DXYRangeControls(view);
     }
 
@@ -2276,14 +2288,11 @@ public sealed class NodEditorForm : Form
         }
     }
 
-    private void UpdateGraph3DViewportRangeControlsIfNeeded()
+    private void SetGraph3DRangeControls(GraphPlotView3D view)
     {
-        if ((_graph3DShowRangeLines?.Checked ?? true) || _graph3DCanvas is null)
+        if (_graph3DXMin is null || _graph3DXMax is null || _graph3DYMin is null || _graph3DYMax is null || _graphZMin is null || _graphZMax is null)
             return;
 
-        var plot = GraphSurfaceApi.GetPlotRectangle(_graph3DCanvas);
-        var view = Graph3DApi.CreateCameraAdjustedView(plot, GetGraph3DView(), _graph3DCamera);
-        _applyingGraph3DRangeControls = true;
         _updatingGraphXRangeControls = true;
         _updatingGraphYRangeControls = true;
         _updatingGraphZRangeControls = true;
@@ -2301,6 +2310,23 @@ public sealed class NodEditorForm : Form
             _updatingGraphZRangeControls = false;
             _updatingGraphYRangeControls = false;
             _updatingGraphXRangeControls = false;
+        }
+    }
+
+    private void UpdateGraph3DViewportRangeControlsIfNeeded()
+    {
+        if ((_graph3DShowRangeLines?.Checked ?? true) || _graph3DCanvas is null)
+            return;
+
+        var plot = GraphSurfaceApi.GetPlotRectangle(_graph3DCanvas);
+        var view = Graph3DApi.CreateCameraAdjustedView(plot, GetGraph3DView(), _graph3DCamera);
+        _applyingGraph3DRangeControls = true;
+        try
+        {
+            SetGraph3DRangeControls(view);
+        }
+        finally
+        {
             _applyingGraph3DRangeControls = false;
         }
     }
@@ -2414,7 +2440,11 @@ public sealed class NodEditorForm : Form
 
         var editable = _graph3DShowRangeLines?.Checked ?? true;
         var flat2D = IsGraph3DFlat2DView();
-        if (!editable)
+        if (editable)
+        {
+            SetGraph3DRangeControls(GetGraph3DView());
+        }
+        else
         {
             if (flat2D)
                 SetGraph3DXYRangeControls(GetGraph3DXYView());
@@ -3737,6 +3767,7 @@ public sealed class NodEditorForm : Form
             return;
         }
 
+        SetGraph3DZView(GraphSurfaceApi.GetNumberBoxValue(_graphZMin), GraphSurfaceApi.GetNumberBoxValue(_graphZMax));
         _graph3DCanvas?.Invalidate();
     }
 
@@ -3812,6 +3843,7 @@ public sealed class NodEditorForm : Form
                 _graph3DRotationDial.Camera = _graph3DCamera;
 
             SetGraph3DXYView(new GraphPlotView(state.View.MinX, state.View.MaxX, state.View.MinY, state.View.MaxY));
+            SetGraph3DZView(state.View.MinZ, state.View.MaxZ);
             GraphSurfaceApi.SetNumberBoxValue(_graph3DXMin, state.View.MinX);
             GraphSurfaceApi.SetNumberBoxValue(_graph3DXMax, state.View.MaxX);
             GraphSurfaceApi.SetNumberBoxValue(_graph3DYMin, state.View.MinY);
@@ -3893,6 +3925,7 @@ public sealed class NodEditorForm : Form
             GraphSurfaceApi.SetRangeControlValues(new GraphRangeControls(_graphXMin, _graphXMax, _graphYMin, _graphYMax), view);
             if (_graphZMin is not null && _graphZMax is not null)
             {
+                SetGraph3DZView(-Graph3DDefaultHalfRange, Graph3DDefaultHalfRange);
                 GraphSurfaceApi.SetNumberBoxValue(_graphZMin, -Graph3DDefaultHalfRange);
                 GraphSurfaceApi.SetNumberBoxValue(_graphZMax, Graph3DDefaultHalfRange);
             }
