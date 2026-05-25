@@ -2691,7 +2691,9 @@ public sealed class ToolEditorForm : Form
         {
             Dock = DockStyle.Bottom,
             Height = 42,
-            Padding = new Padding(8)
+            Padding = new Padding(8),
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor
         };
         buttons.Controls.Add(close);
 
@@ -2819,6 +2821,10 @@ public sealed class ToolEditorForm : Form
 
         dialog.Controls.Add(list);
         dialog.Controls.Add(buttons);
+        dialog.BackColor = WindowBackColor;
+        dialog.ForeColor = EditorTextColor;
+        ToolEditorUiThemeSettings.ApplyNativeWindowTheme(dialog, _uiTheme);
+        ApplyThemeToControl(dialog, _uiTheme == ToolEditorUiTheme.Dark ? ToolEditorUiTheme.Classic : ToolEditorUiTheme.Dark);
         dialog.ShowDialog(this);
     }
 
@@ -2832,8 +2838,8 @@ public sealed class ToolEditorForm : Form
             MultiSelect = false,
             View = View.Details,
             Font = new Font("Segoe UI", 9),
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(31, 41, 55)
+            BackColor = EditorBackColor,
+            ForeColor = EditorTextColor
         };
         list.Columns.Add(TToolEditor("tool_editor.media.column.file", "File"), 220);
         list.Columns.Add("Type", 90);
@@ -2855,6 +2861,8 @@ public sealed class ToolEditorForm : Form
             item.SubItems.Add(string.IsNullOrWhiteSpace(metadata.Source) ? "-" : metadata.Source);
             item.SubItems.Add(document.PackagePath);
             item.Tag = document;
+            item.BackColor = EditorBackColor;
+            item.ForeColor = EditorTextColor;
             list.Items.Add(item);
         }
 
@@ -3739,7 +3747,7 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 2,
-            BackColor = Color.White,
+            BackColor = PanelBackColor,
             Padding = new Padding(12)
         };
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
@@ -3750,7 +3758,8 @@ public sealed class ToolEditorForm : Form
             Dock = DockStyle.Fill,
             Text = TToolEditor("tool_editor.tree.media", "Media and images"),
             Font = new Font("Segoe UI", 15, FontStyle.Bold),
-            ForeColor = Color.FromArgb(0, 65, 170),
+            ForeColor = IsDarkTheme ? Color.FromArgb(147, 197, 253) : Color.FromArgb(0, 65, 170),
+            BackColor = PanelBackColor,
             TextAlign = ContentAlignment.MiddleLeft
         };
 
@@ -3773,7 +3782,13 @@ public sealed class ToolEditorForm : Form
 
     private void AttachMediaListContextMenu(ListView list)
     {
-        var menu = new ContextMenuStrip();
+        var menu = new ContextMenuStrip
+        {
+            BackColor = PanelBackColor,
+            ForeColor = EditorTextColor,
+            RenderMode = ToolStripRenderMode.ManagerRenderMode,
+            Renderer = IsDarkTheme ? new DarkToolStripRenderer() : new ToolStripProfessionalRenderer()
+        };
         var open = menu.Items.Add(TToolEditor("tool_editor.button.open", "Open"));
         var copy = menu.Items.Add(TToolEditor("tool_editor.menu.edit.copy", "Copy"));
         var cut = menu.Items.Add(TToolEditor("tool_editor.menu.edit.cut", "Cut"));
@@ -6632,8 +6647,19 @@ public sealed class ToolEditorForm : Form
         }
     }
 
-    private static string WrapImageHtml(string body)
+    private string WrapImageHtml(string body)
     {
+        var themeCss = IsDarkTheme
+            ? """
+            html, body { color-scheme: dark; color: #e5e7eb; background: #0f172a; }
+            .image-preview { background: #0f172a !important; }
+            .image-preview img { background: #111827 !important; box-shadow: 0 8px 24px rgba(0, 0, 0, .45) !important; }
+            .image-tools { border-color: #334155 !important; background: rgba(15, 23, 42, .92) !important; box-shadow: 0 8px 18px rgba(0, 0, 0, .35) !important; }
+            .image-tools button { border-color: #334155 !important; background: #111827 !important; color: #bfdbfe !important; }
+            .image-tools button:hover { background: #1e293b !important; border-color: #60a5fa !important; }
+            """
+            : "";
+
         return $$"""
         <!doctype html>
         <html>
@@ -6649,6 +6675,7 @@ public sealed class ToolEditorForm : Form
             .image-tools button { width: 38px; height: 34px; border: 1px solid #cfe0f5; border-radius: 14px; background: #fff; color: #123f73; font: 700 15px "Segoe UI", Arial, sans-serif; cursor: pointer; }
             .image-tools button:hover { background: #edf6ff; border-color: #8abcf4; }
             .fit-icon { display: inline-block; width: 15px; height: 15px; border: 2px solid currentColor; border-radius: 3px; box-sizing: border-box; vertical-align: middle; }
+            {{themeCss}}
           </style>
         </head>
         <body>
