@@ -5280,7 +5280,7 @@ public sealed class ToolEditorForm : Form
             Directory.CreateDirectory(tempFolder);
             var objectPackagePath = Path.Combine(tempFolder, "source" + ObjectPackageExtension);
             WriteObjectPackageArchive(objectPackagePath);
-            var result = BuildLanguagePackage(objectPackagePath, outputPath);
+            var result = LanguagePackageCompiler.Compile(objectPackagePath, outputPath);
             SetStatus(TToolEditor("tool_editor.status.package_compiled", "Package compiled. SHA-256: ") + result.PackageSha256, isError: false);
             MessageBox.Show(
                 this,

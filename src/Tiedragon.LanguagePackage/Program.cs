@@ -498,7 +498,7 @@ internal static class Program
         return "E_PACKAGE_INVALID";
     }
 
-    private static LanguagePackageBuildResult BuildLanguagePackage(
+    internal static LanguagePackageBuildResult BuildLanguagePackage(
         string inputFolderValue,
         string outputPathValue,
         LanguagePackageSigningOptions? signing = null)
@@ -563,7 +563,7 @@ internal static class Program
             AddedLanguageKeys: []);
     }
 
-    private static LanguagePackageBuildResult BuildLanguagePackageWithBase(
+    internal static LanguagePackageBuildResult BuildLanguagePackageWithBase(
         string basePackageValue,
         string inputFolderValue,
         string outputPathValue,
@@ -1288,7 +1288,7 @@ internal static class Program
         writer.Write(payload);
     }
 
-    private static PackageInspection Inspect(string packagePath)
+    internal static PackageInspection Inspect(string packagePath)
     {
         if (!File.Exists(packagePath))
             throw new FileNotFoundException(packagePath);
@@ -1358,7 +1358,7 @@ internal static class Program
         return true;
     }
 
-    private static string? ReadArchiveEntry(byte[] payload, string entryName)
+    internal static string? ReadArchiveEntry(byte[] payload, string entryName)
     {
         using var archive = ArchiveFactory.OpenArchive(new MemoryStream(payload, writable: false));
         var entry = archive.Entries.FirstOrDefault(entry =>
@@ -1374,7 +1374,7 @@ internal static class Program
         return reader.ReadToEnd();
     }
 
-    private static IReadOnlyList<string> ListEntries(byte[] payload)
+    internal static IReadOnlyList<string> ListEntries(byte[] payload)
     {
         using var archive = ArchiveFactory.OpenArchive(new MemoryStream(payload, writable: false));
         return archive.Entries
@@ -1427,7 +1427,7 @@ internal static class Program
             ". Add these keys before compiling/signing.");
     }
 
-    private static void ValidateArchiveEntries(byte[] payload)
+    internal static void ValidateArchiveEntries(byte[] payload)
     {
         using var archive = ArchiveFactory.OpenArchive(new MemoryStream(payload, writable: false));
         var count = 0;
@@ -1659,7 +1659,7 @@ internal static class Program
     }
 }
 
-internal sealed record PackageInspection(
+public sealed record PackageInspection(
     bool IsWrapped,
     LanguagePackageContainerHeader? Header,
     string PackageSha256,
@@ -1674,7 +1674,7 @@ internal sealed record LocalizedFormulaCard(
     string Description,
     string ExampleNod);
 
-internal sealed record LanguagePackageBuildResult(
+public sealed record LanguagePackageBuildResult(
     bool Success,
     string OutputPath,
     string PackageKey,
@@ -1693,10 +1693,109 @@ internal sealed record LanguagePackageBuildResult(
     IReadOnlyList<string> AddedEntries,
     IReadOnlyList<string> AddedLanguageKeys);
 
-internal sealed record LanguagePackageSigningOptions(
+public sealed record LanguagePackageSigningOptions(
     string Algorithm,
     string KeyId,
     string PrivateKeyPem);
+
+public static class LanguagePackageCompiler
+{
+    public static LanguagePackageBuildResult Compile(string inputFolderOrObjectPackage, string outputPackagePath)
+    {
+        return Program.BuildLanguagePackage(inputFolderOrObjectPackage, outputPackagePath);
+    }
+
+    public static LanguagePackageBuildResult CompileSigned(
+        string inputFolderOrObjectPackage,
+        string outputPackagePath,
+        LanguagePackageSigningOptions signingOptions)
+    {
+        return Program.BuildLanguagePackage(inputFolderOrObjectPackage, outputPackagePath, signingOptions);
+    }
+
+    public static LanguagePackageBuildResult CompileWithBase(
+        string baseFolderOrPackage,
+        string inputFolderOrObjectPackage,
+        string outputPackagePath)
+    {
+        return Program.BuildLanguagePackageWithBase(baseFolderOrPackage, inputFolderOrObjectPackage, outputPackagePath);
+    }
+
+    public static LanguagePackageBuildResult CompileSignedWithBase(
+        string baseFolderOrPackage,
+        string inputFolderOrObjectPackage,
+        string outputPackagePath,
+        LanguagePackageSigningOptions signingOptions)
+    {
+        return Program.BuildLanguagePackageWithBase(
+            baseFolderOrPackage,
+            inputFolderOrObjectPackage,
+            outputPackagePath,
+            signingOptions);
+    }
+}
+
+public static class LanguagePackageReader
+{
+    public static PackageInspection Inspect(string packagePath)
+    {
+        return Program.Inspect(packagePath);
+    }
+
+    public static IReadOnlyList<string> ListEntries(string packagePath)
+    {
+        return Program.ListEntries(Program.Inspect(packagePath).Payload);
+    }
+
+    public static void ValidateEntries(string packagePath)
+    {
+        Program.ValidateArchiveEntries(Program.Inspect(packagePath).Payload);
+    }
+
+    public static bool ContainsEntry(string packagePath, string entryName)
+    {
+        return Program.ReadArchiveEntry(Program.Inspect(packagePath).Payload, entryName) is not null;
+    }
+
+    public static bool TryReadEntry(string packagePath, string entryName, out string content)
+    {
+        content = "";
+        try
+        {
+            var value = Program.ReadArchiveEntry(Program.Inspect(packagePath).Payload, entryName);
+            if (value is null)
+                return false;
+
+            content = value;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool TryReadManifest(string packagePath, out LanguagePackageManifest manifest)
+    {
+        manifest = null!;
+        if (!TryReadEntry(packagePath, "manifest.json", out var manifestText))
+            return false;
+
+        try
+        {
+            manifest = JsonSerializer.Deserialize<LanguagePackageManifest>(
+                    manifestText,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ??
+                throw new InvalidDataException("manifest.json is invalid.");
+            return true;
+        }
+        catch
+        {
+            manifest = null!;
+            return false;
+        }
+    }
+}
 
 internal sealed class PreparedSourceFolder(string folder, string? temporaryFolder) : IDisposable
 {
@@ -1739,7 +1838,7 @@ internal sealed record LanguagePackageAgentError(
     string Code,
     string Error);
 
-internal sealed class LanguagePackageManifest
+public sealed class LanguagePackageManifest
 {
     public int Format { get; set; }
     public string Key { get; set; } = "";
@@ -1757,7 +1856,7 @@ internal sealed class LanguagePackageManifest
     public string PackageKey => string.IsNullOrWhiteSpace(Key) ? Id : Key;
 }
 
-internal sealed class LanguagePackageContainerHeader
+public sealed class LanguagePackageContainerHeader
 {
     public int Format { get; set; }
     public string SoftwareId { get; set; } = "";

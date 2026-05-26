@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Tiedragon.LanguagePackage;
 
-internal static class LanguagePackageSignatureVerifier
+public static class LanguagePackageSignatureVerifier
 {
     private const string TrustedKeysFileName = "language-package-trusted-keys.json";
     private static readonly HashSet<string> KnownAlgorithms = new(StringComparer.OrdinalIgnoreCase)

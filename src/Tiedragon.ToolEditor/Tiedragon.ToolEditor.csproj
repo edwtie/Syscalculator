@@ -22,11 +22,10 @@
     <ProjectReference Include="..\Tiedragon.NodSystem.Core\Tiedragon.NodSystem.Core.csproj" />
     <ProjectReference Include="..\Tiedragon.Help\Tiedragon.Help.csproj" />
     <ProjectReference Include="..\Tiedragon.Graph.Image\Tiedragon.Graph.Image.csproj" />
+    <ProjectReference Include="..\Tiedragon.LanguagePackage\Tiedragon.LanguagePackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Tiedragon.LanguagePackage\LanguagePackagePolicy.cs" Link="LanguagePackagePolicy.cs" />
-    <Compile Include="..\Tiedragon.LanguagePackage\LanguagePackageSignatureVerifier.cs" Link="LanguagePackageSignatureVerifier.cs" />
     <None Include="..\Tiedragon.LanguagePackage\language-package-policy.ini" Link="language-package-policy.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

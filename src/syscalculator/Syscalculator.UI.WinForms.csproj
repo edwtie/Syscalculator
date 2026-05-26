@@ -74,13 +74,13 @@
     <ProjectReference Include="../Tiedragon.NodSystem.Core/Tiedragon.NodSystem.Core.csproj" />
     <ProjectReference Include="../Tiedragon.ToolEditor/Tiedragon.ToolEditor.csproj" />
     <ProjectReference Include="../Tiedragon.Help/Tiedragon.Help.csproj" />
+    <ProjectReference Include="../Tiedragon.LanguagePackage/Tiedragon.LanguagePackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="*.lng">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Include="..\Tiedragon.LanguagePackage\LanguagePackageSignatureVerifier.cs" Link="LanguagePackageSignatureVerifier.cs" />
     <None Include="..\Tiedragon.LanguagePackage\language-package-trusted-keys.json" Link="language-package-trusted-keys.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

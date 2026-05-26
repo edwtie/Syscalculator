@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Tiedragon.LanguagePackage;
 
-internal sealed class LanguagePackagePolicy
+public sealed class LanguagePackagePolicy
 {
     private const string PolicyFileName = "language-package-policy.ini";
     private static Lazy<LanguagePackagePolicy> CurrentPolicy = new(Load);
