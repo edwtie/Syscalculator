@@ -8,10 +8,10 @@ Default topic=index_nl.htm
 Display compile progress=No
 Full-text search=Yes
 Language=0x413 Dutch (Netherlands)
-Title=Syscalculator 1.74 Help - Nederlands
+Title=Syscalculator 1.8 Help - Nederlands
 
 [WINDOWS]
-main="Syscalculator 1.74 Help - Nederlands","Syscalculator174-nl.hhc","Syscalculator174-nl.hhk","index_nl.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+main="Syscalculator 1.8 Help - Nederlands","Syscalculator174-nl.hhc","Syscalculator174-nl.hhk","index_nl.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
 
 [FILES]
 index_nl.htm

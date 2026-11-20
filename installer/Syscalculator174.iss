@@ -1,7 +1,7 @@
-; Syscalculator 1.74 RC2 installer.
+; Syscalculator 1.8 RC3 installer.
 ; Build with BUILD_SYSCALCULATOR174_INSTALLER.bat.
 
-#define MyAppName "Syscalculator 1.74"
+#define MyAppName "Syscalculator 1.8"
 #define MyAppPublisher "Tiedragon"
 #define MyAppURL "https://www.tiedragon.com"
 #define Vb6RuntimeURL "https://support.microsoft.com/en-us/topic/description-of-the-cumulative-update-rollup-for-the-visual-basic-6-0-service-pack-6-runtime-extended-files-e02acc79-217b-fc0a-6edc-540403af2081"
@@ -11,27 +11,35 @@
 
 #define MyAppVersion GetEnv("SYSCALC174_INSTALL_VERSION")
 #if MyAppVersion == ""
-  #define MyAppVersion "1.74.0"
+  #define MyAppVersion "1.8.0"
 #endif
 
 #define MyBuildChannel GetEnv("SYSCALC174_INSTALL_CHANNEL")
 #if MyBuildChannel == ""
-  #define MyBuildChannel "rc2"
+  #define MyBuildChannel "production"
 #endif
 
 [Setup]
 AppId={{B71AEF2C-9E1E-4B0E-AC68-F31D1740A7F1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+#if MyBuildChannel == "production"
+AppVerName={#MyAppName}
+#else
 AppVerName={#MyAppName} {#MyBuildChannel}
+#endif
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={localappdata}\Programs\Syscalculator 1.74
-DefaultGroupName=Syscalculator 1.74
+DefaultDirName={localappdata}\Programs\Syscalculator 1.8
+DefaultGroupName=Syscalculator 1.8
 OutputDir=..\artifacts\legacy\installer
-OutputBaseFilename=Syscalculator-1.74-{#MyBuildChannel}-{#MyAppVersion}
+#if MyBuildChannel == "production"
+OutputBaseFilename=Syscalculator-{#MyAppVersion}
+#else
+OutputBaseFilename=Syscalculator-{#MyAppVersion}-{#MyBuildChannel}
+#endif
 SetupIconFile={#MySourceRoot}\syscal.ico
 PrivilegesRequired=lowest
 Compression=lzma2
@@ -47,10 +55,10 @@ Name: "es"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "cat"; MessagesFile: "compiler:Languages\Catalan.isl"
 
 [CustomMessages]
-en.Vb6RuntimeMissing=Syscalculator 1.74 requires the Visual Basic 6 Runtime. Missing file: msvbvm60.dll.%n%nOpen the official Microsoft download page now?
-nl.Vb6RuntimeMissing=Syscalculator 1.74 heeft de Visual Basic 6 Runtime nodig. Ontbrekend bestand: msvbvm60.dll.%n%nOfficiele Microsoft-downloadpagina nu openen?
-es.Vb6RuntimeMissing=Syscalculator 1.74 necesita Visual Basic 6 Runtime. Falta el archivo: msvbvm60.dll.%n%nAbrir ahora la pagina oficial de descarga de Microsoft?
-cat.Vb6RuntimeMissing=Syscalculator 1.74 necessita Visual Basic 6 Runtime. Falta el fitxer: msvbvm60.dll.%n%nVoleu obrir ara la pagina oficial de descarrega de Microsoft?
+en.Vb6RuntimeMissing=Syscalculator 1.8 requires the Visual Basic 6 Runtime. Missing file: msvbvm60.dll.%n%nOpen the official Microsoft download page now?
+nl.Vb6RuntimeMissing=Syscalculator 1.8 heeft de Visual Basic 6 Runtime nodig. Ontbrekend bestand: msvbvm60.dll.%n%nOfficiele Microsoft-downloadpagina nu openen?
+es.Vb6RuntimeMissing=Syscalculator 1.8 necesita Visual Basic 6 Runtime. Falta el archivo: msvbvm60.dll.%n%nAbrir ahora la pagina oficial de descarga de Microsoft?
+cat.Vb6RuntimeMissing=Syscalculator 1.8 necessita Visual Basic 6 Runtime. Falta el fitxer: msvbvm60.dll.%n%nVoleu obrir ara la pagina oficial de descarrega de Microsoft?
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -61,9 +69,9 @@ Source: "{#MySourceRoot}\{#MyAppEditorExeName}"; DestDir: "{app}"; Flags: ignore
 Source: "{#MySourceRoot}\*.lng"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceRoot}\*.lng"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion
 Source: "{#MySourceRoot}\freesyscal.cfg"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MySourceRoot}\freesyscal.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion
+Source: "{#MySourceRoot}\freesyscal.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: onlyifdoesntexist
 Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: onlyifdoesntexist skipifsourcedoesntexist
 Source: "{#MySourceRoot}\readme.rtf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MySourceRoot}\readme.txt"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MySourceRoot}\help\*.chm"; DestDir: "{app}\help"; Flags: ignoreversion skipifsourcedoesntexist
@@ -77,31 +85,31 @@ Source: "{#MySourceRoot}\Text\*"; DestDir: "{app}\Text"; Flags: ignoreversion re
 Source: "{#MySourceRoot}\Volume\*"; DestDir: "{app}\Volume"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
 [Icons]
-Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Languages: en
-Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Languages: nl
-Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Languages: es
-Name: "{group}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Languages: cat
-Name: "{group}\Syscalculator 1.74 Editor"; Filename: "{app}\{#MyAppEditorExeName}"; Check: FileExists(ExpandConstant('{app}\{#MyAppEditorExeName}'))
-Name: "{group}\{cm:UninstallProgram,Syscalculator 1.74}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Tasks: desktopicon; Languages: en
-Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Tasks: desktopicon; Languages: nl
-Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Tasks: desktopicon; Languages: es
-Name: "{autodesktop}\Syscalculator 1.74"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Tasks: desktopicon; Languages: cat
+Name: "{group}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Languages: en
+Name: "{group}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Languages: nl
+Name: "{group}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Languages: es
+Name: "{group}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Languages: cat
+Name: "{group}\Syscalculator 1.8 Editor"; Filename: "{app}\{#MyAppEditorExeName}"; Check: FileExists(ExpandConstant('{app}\{#MyAppEditorExeName}'))
+Name: "{group}\{cm:UninstallProgram,Syscalculator 1.8}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Tasks: desktopicon; Languages: en
+Name: "{autodesktop}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Tasks: desktopicon; Languages: nl
+Name: "{autodesktop}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Tasks: desktopicon; Languages: es
+Name: "{autodesktop}\Syscalculator 1.8"; Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Tasks: desktopicon; Languages: cat
 
 [Registry]
 Root: HKCU; Subkey: "Software\Tiedragon\Syscalculator Euro Edition"; ValueType: string; ValueName: "first"; ValueData: "1"; Flags: createvalueifdoesntexist uninsdeletekey
 Root: HKCU; Subkey: "Software\Tiedragon\Syscalculator Euro Edition"; ValueType: string; ValueName: "Migration"; ValueData: "1"; Flags: createvalueifdoesntexist
 Root: HKCU; Subkey: "Software\Classes\.nod"; ValueType: string; ValueName: ""; ValueData: "Syscalculator174.Nod"; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\Classes\Syscalculator174.Nod"; ValueType: string; ValueName: ""; ValueData: "Syscalculator 1.74 NOD document"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\Syscalculator174.Nod"; ValueType: string; ValueName: ""; ValueData: "Syscalculator 1.8 NOD document"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Syscalculator174.Nod\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
 Root: HKCU; Subkey: "Software\Classes\Syscalculator174.Nod\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
 Root: HKCU; Subkey: "Software\Classes\Syscalculator174.Nod\shell\edit\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppEditorExeName}"" ""%1"""; Check: FileExists(ExpandConstant('{app}\{#MyAppEditorExeName}'))
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: en
-Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: nl
-Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: es
-Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.74}"; Flags: nowait postinstall skipifsilent; Languages: cat
+Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng eng.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.8}"; Flags: nowait postinstall skipifsilent; Languages: en
+Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng ned.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.8}"; Flags: nowait postinstall skipifsilent; Languages: nl
+Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng esp.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.8}"; Flags: nowait postinstall skipifsilent; Languages: es
+Filename: "{app}\{#MyAppExeName}"; Parameters: "/lng cat.lng"; Description: "{cm:LaunchProgram,Syscalculator 1.8}"; Flags: nowait postinstall skipifsilent; Languages: cat
 
 [Code]
 function IsVb6RuntimeInstalled(): Boolean;

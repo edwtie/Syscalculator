@@ -31,7 +31,7 @@ Open ename For Input As #1
 Do Until EOF(1)
 teller = teller + 1
 Input #1, ncode, comm, Data, url
-If teller = 1 Then ncode = Mid(ncode, 3)
+If teller = 1 And Left$(ncode, 2) = Chr$(255) & Chr$(254) Then ncode = Mid$(ncode, 3)
 If Left$(url, 5) = "[App]" Then url = App.Path + Mid$(url, 6)
 If ncode = "end" Then Exit Do
 If ncode = "0" Then

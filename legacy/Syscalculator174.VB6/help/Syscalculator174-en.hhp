@@ -8,10 +8,10 @@ Default topic=index_en.htm
 Display compile progress=No
 Full-text search=Yes
 Language=0x409 English (United States)
-Title=Syscalculator 1.74 Help - English
+Title=Syscalculator 1.8 Help - English
 
 [WINDOWS]
-main="Syscalculator 1.74 Help - English","Syscalculator174-en.hhc","Syscalculator174-en.hhk","index_en.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+main="Syscalculator 1.8 Help - English","Syscalculator174-en.hhc","Syscalculator174-en.hhk","index_en.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
 
 [FILES]
 index_en.htm

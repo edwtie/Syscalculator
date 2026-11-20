@@ -1,6 +1,6 @@
 param(
-    [ValidateSet("rc1", "rc2", "candidate", "production")]
-    [string]$Channel = "rc2",
+    [ValidateSet("rc1", "rc2", "rc3", "candidate", "production")]
+    [string]$Channel = "production",
     [string]$Vb6Path = "",
     [switch]$Compile
 )
@@ -25,7 +25,7 @@ function Get-VersionFromExecutable {
         $versionText = $versionInfo.FileVersion
     }
 
-    $versionMatch = [regex]::Match($versionText, "^(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)")
+    $versionMatch = [regex]::Match($versionText, "^(?<major>\d+)\.(?<minor>\d+)(?:\.(?<revision>\d+))?(?:\s|$)")
     if (-not $versionMatch.Success) {
         return $null
     }
@@ -97,5 +97,6 @@ $env:SYSCALC174_INSTALL_VERSION = $installerVersion
 $env:SYSCALC174_INSTALL_CHANNEL = $Channel
 
 & $isccPath $installerScript
+if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
 
-Write-Host "Syscalculator 1.74 installer created in artifacts\legacy\installer for channel '$Channel' version '$env:SYSCALC174_INSTALL_VERSION'."
+Write-Host "Syscalculator 1.8 installer created in artifacts\legacy\installer for channel '$Channel' version '$env:SYSCALC174_INSTALL_VERSION'."

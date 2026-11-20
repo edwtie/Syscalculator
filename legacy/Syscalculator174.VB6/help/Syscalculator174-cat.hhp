@@ -8,10 +8,10 @@ Default topic=index_cat.htm
 Display compile progress=No
 Full-text search=Yes
 Language=0x403 Catalan
-Title=Syscalculator 1.74 Help - Catala
+Title=Syscalculator 1.8 Help - Catala
 
 [WINDOWS]
-main="Syscalculator 1.74 Help - Catala","Syscalculator174-cat.hhc","Syscalculator174-cat.hhk","index_cat.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+main="Syscalculator 1.8 Help - Catala","Syscalculator174-cat.hhc","Syscalculator174-cat.hhk","index_cat.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
 
 [FILES]
 index_cat.htm
