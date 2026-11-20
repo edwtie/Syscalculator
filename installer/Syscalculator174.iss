@@ -1,4 +1,4 @@
-; Syscalculator 1.74 RC2 installer.
+; Syscalculator 1.74 RC3 installer.
 ; Build with BUILD_SYSCALCULATOR174_INSTALLER.bat.
 
 #define MyAppName "Syscalculator 1.74"
@@ -16,7 +16,7 @@
 
 #define MyBuildChannel GetEnv("SYSCALC174_INSTALL_CHANNEL")
 #if MyBuildChannel == ""
-  #define MyBuildChannel "rc2"
+  #define MyBuildChannel "rc3"
 #endif
 
 [Setup]
@@ -61,9 +61,9 @@ Source: "{#MySourceRoot}\{#MyAppEditorExeName}"; DestDir: "{app}"; Flags: ignore
 Source: "{#MySourceRoot}\*.lng"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MySourceRoot}\*.lng"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion
 Source: "{#MySourceRoot}\freesyscal.cfg"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#MySourceRoot}\freesyscal.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion
+Source: "{#MySourceRoot}\freesyscal.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: onlyifdoesntexist
 Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "{#MySourceRoot}\freesysc.cfg"; DestDir: "{userappdata}\Syscalculator"; Flags: onlyifdoesntexist skipifsourcedoesntexist
 Source: "{#MySourceRoot}\readme.rtf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MySourceRoot}\readme.txt"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "{#MySourceRoot}\help\*.chm"; DestDir: "{app}\help"; Flags: ignoreversion skipifsourcedoesntexist

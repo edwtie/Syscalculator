@@ -817,11 +817,13 @@ If App.PrevInstance Then
 Apppaths = GetDataFolder(Form1, "Syscalculator")
 If Trim$(Apppaths) = "" Then Apppaths = App.Path
 MakeDirectory (Apppaths)
+migration = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration")
+Firsttime = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
+If Firsttime = "" Then Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
+If Firsttime = "" Then Firsttime = "1"
+If migration = "" And Firsttime = "1" And Dir$(Apppaths + "\freesyscal.cfg") = "" And Dir$(Apppaths + "\freesysc.cfg") = "" Then migration = "1"
 If Dir$(Apppaths + "\freesyscal.cfg") = "" And Dir$(App.Path + "\freesyscal.cfg") <> "" Then FileCopy App.Path + "\freesyscal.cfg", Apppaths + "\freesyscal.cfg"
 If Dir$(Apppaths + "\freesysc.cfg") = "" And Dir$(App.Path + "\freesysc.cfg") <> "" Then FileCopy App.Path + "\freesysc.cfg", Apppaths + "\freesysc.cfg"
-migration = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration")
-Firsttime = bGetRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
-If Firsttime = "" Then Firsttime = "1"
 
 
 If Firsttime = "0" And migration = "1" Then
@@ -860,8 +862,8 @@ If Not Firsttime = "" Then First = bDeleteRegValue(HKEY_LOCAL_MACHINE, "SOFTWARE
 If Firsttime = "0" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first", "0")
 If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration", "0")
 
+Firsttime = "0"
 End If
-Firsttime = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first")
 
 If Firsttime = "1" And migration = "1" Then
  Switchs = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Switch", "0")
@@ -876,13 +878,12 @@ If Firsttime = "1" And migration = "1" Then
  traysn = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Tray", "1")
  Form1.Top = (Screen.Height * 0.85) / 2 - Form1.Height / 2
     Form1.Left = Screen.Width / 2 - Form1.Width / 2
-    If Addcombo = -1 Then
-    MakeDirectory (Apppaths)
-    Call savefirstconfig
-    End If
     If Firsttime = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "first", "0")
     If migration = "1" Then Firsttime = bSetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", "Migration", "0")
 End If
+
+
+If Dir$(Apppaths + "\freesyscal.cfg") = "" And Dir$(Apppaths + "\freesysc.cfg") = "" Then Call savefirstconfig
 
 
 Ontop = bGetRegValue(HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition", "Ontop")

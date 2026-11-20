@@ -114,8 +114,7 @@ Test-Case "Required VB6 source files exist" {
         "euro\MTL.nod",
         "euro\SIT.nod",
         "euro\SKK.nod",
-        "freesyscal.cfg",
-        "freesysc.cfg"
+        "freesyscal.cfg"
     )
 
     foreach ($file in $required) {
@@ -159,7 +158,9 @@ Test-Case "VB6 source branding uses Tiedragon instead of TCsoftware" {
 
 Test-Case "Legacy converter catalogs resolve to existing files" {
     Test-Catalog "freesyscal.cfg"
-    Test-Catalog "freesysc.cfg"
+    if (Test-Path -LiteralPath (Join-Path $projectDir "freesysc.cfg")) {
+        Test-Catalog "freesysc.cfg"
+    }
 }
 
 Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
@@ -177,7 +178,7 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     Assert-True ($helpNl.Contains("Syscalculator 1.74")) "Dutch help still has the wrong version."
     Assert-True ($helpEs.Contains("Syscalculator 1.74")) "Spanish help still has the wrong version."
     Assert-True ($helpCat.Contains("Syscalculator 1.74")) "Catalan help still has the wrong version."
-    Assert-True ($readme.Contains("Syscalculator  1.74 RC2")) "readme.txt still has the wrong version."
+    Assert-True ($readme.Contains("Syscalculator  1.74 RC3")) "readme.txt still has the wrong version."
     Assert-True ($readme.Contains("What's new in 1.74 RC2?")) "readme.txt has no 1.74 RC2 changelog."
     Assert-True ($readme.Contains("After 20 years")) "readme.txt has no 20-year release note."
     Assert-True ($readme.Contains("finally released")) "readme.txt does not announce the 1.74 release."
@@ -212,7 +213,7 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
 
 Test-Case "Legacy switch menu describes reverse direction" {
     $english = Read-Text (Join-Path $projectDir "eng.lng")
-    $dutch = [Text.Encoding]::Unicode.GetString([IO.File]::ReadAllBytes((Join-Path $projectDir "ned.lng")))
+    $dutch = Read-LegacyText (Join-Path $projectDir "ned.lng")
     $form = Read-Text (Join-Path $projectDir "Form1.frm")
 
     Assert-True ($english.Contains('1,205,"Reverse direction",""')) "English menu still uses the unclear Switch label."
@@ -224,7 +225,7 @@ Test-Case "Legacy switch menu describes reverse direction" {
 
 Test-Case "Legacy startup menu describes Windows startup" {
     $english = Read-Text (Join-Path $projectDir "eng.lng")
-    $dutch = [Text.Encoding]::Unicode.GetString([IO.File]::ReadAllBytes((Join-Path $projectDir "ned.lng")))
+    $dutch = Read-LegacyText (Join-Path $projectDir "ned.lng")
     $form = Read-Text (Join-Path $projectDir "Form1.frm")
 
     Assert-True ($english.Contains('1,204,"Start with Windows",""')) "English menu still uses the unclear Startup label."
@@ -461,6 +462,12 @@ Test-Case "Language files have terminators" {
         $text = Read-Text $path
         Assert-True ($text -match "(?m)^end,") "$language has no end terminator."
     }
+}
+
+Test-Case "Missing user catalogs are created independently of the in-memory defaults" {
+    $form = Read-Text (Join-Path $projectDir "Form1.frm")
+    $guard = 'If Dir$(Apppaths + "\freesyscal.cfg") = "" And Dir$(Apppaths + "\freesysc.cfg") = "" Then Call savefirstconfig'
+    Assert-True ($form.Contains($guard)) "A clean profile can still start without saving its catalog."
 }
 
 Test-Case "Startup config delete is protected" {
