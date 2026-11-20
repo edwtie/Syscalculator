@@ -36,9 +36,9 @@ Syscalculator still reports runtime diagnostics in About -> System information a
 
 `ISCC.exe` must be available in PATH. Install Inno Setup 6 if the command is missing.
 
-## Syscalculator 1.8 RC1 (1.8.0)
+## Syscalculator 1.8 (1.8.0)
 
-Build with `BUILD_SYSCALCULATOR174_INSTALLER.bat -Compile -Channel rc1`. The installer preserves existing user catalogs.
+Build with `BUILD_SYSCALCULATOR174_INSTALLER.bat -Compile -Channel production`. The installer preserves existing user catalogs.
 
 ## Syscalculator 1.74 RC2
 

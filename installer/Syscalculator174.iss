@@ -16,14 +16,18 @@
 
 #define MyBuildChannel GetEnv("SYSCALC174_INSTALL_CHANNEL")
 #if MyBuildChannel == ""
-  #define MyBuildChannel "rc1"
+  #define MyBuildChannel "production"
 #endif
 
 [Setup]
 AppId={{B71AEF2C-9E1E-4B0E-AC68-F31D1740A7F1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+#if MyBuildChannel == "production"
+AppVerName={#MyAppName}
+#else
 AppVerName={#MyAppName} {#MyBuildChannel}
+#endif
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -31,7 +35,11 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={localappdata}\Programs\Syscalculator 1.8
 DefaultGroupName=Syscalculator 1.8
 OutputDir=..\artifacts\legacy\installer
+#if MyBuildChannel == "production"
+OutputBaseFilename=Syscalculator-{#MyAppVersion}
+#else
 OutputBaseFilename=Syscalculator-{#MyAppVersion}-{#MyBuildChannel}
+#endif
 SetupIconFile={#MySourceRoot}\syscal.ico
 PrivilegesRequired=lowest
 Compression=lzma2

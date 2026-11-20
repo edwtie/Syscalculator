@@ -178,7 +178,7 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     Assert-True ($helpNl.Contains("Syscalculator 1.8")) "Dutch help still has the wrong version."
     Assert-True ($helpEs.Contains("Syscalculator 1.8")) "Spanish help still has the wrong version."
     Assert-True ($helpCat.Contains("Syscalculator 1.8")) "Catalan help still has the wrong version."
-    Assert-True ($readme.Contains("Syscalculator  1.8 RC1")) "readme.txt still has the wrong version."
+    Assert-True ($readme.Contains("Syscalculator  1.8")) "readme.txt still has the wrong version."
     Assert-True ($readme.Contains("What's new in 1.74 RC2?")) "readme.txt has no 1.74 RC2 changelog."
     Assert-True ($readme.Contains("After 20 years")) "readme.txt has no 20-year release note."
     Assert-True ($readme.Contains("finally released")) "readme.txt does not announce the 1.74 release."

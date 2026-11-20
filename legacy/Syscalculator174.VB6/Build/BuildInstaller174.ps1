@@ -1,6 +1,6 @@
 param(
     [ValidateSet("rc1", "rc2", "rc3", "candidate", "production")]
-    [string]$Channel = "rc1",
+    [string]$Channel = "production",
     [string]$Vb6Path = "",
     [switch]$Compile
 )
@@ -97,5 +97,6 @@ $env:SYSCALC174_INSTALL_VERSION = $installerVersion
 $env:SYSCALC174_INSTALL_CHANNEL = $Channel
 
 & $isccPath $installerScript
+if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
 
 Write-Host "Syscalculator 1.8 installer created in artifacts\legacy\installer for channel '$Channel' version '$env:SYSCALC174_INSTALL_VERSION'."
