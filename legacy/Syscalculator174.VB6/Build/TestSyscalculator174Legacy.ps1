@@ -470,6 +470,16 @@ Test-Case "Missing user catalogs are created independently of the in-memory defa
     Assert-True ($form.Contains($guard)) "A clean profile can still start without saving its catalog."
 }
 
+Test-Case "Upgrade preserves Digit and symbol preferences in the user profile" {
+    $form = Read-Text (Join-Path $projectDir "Form1.frm")
+    $wizard = Read-Text (Join-Path $projectDir "WizardExpress.frm")
+    $userKey = 'HKEY_CURRENT_USER, "SOFTWARE\Tiedragon\Syscalculator Euro Edition\", '
+    foreach ($setting in @('"Digit", digitnr', '"symbool", symbtest1')) {
+        Assert-True ($form.Contains("bSetRegValue(" + $userKey + $setting + ")")) "Migration does not preserve $setting."
+    }
+    Assert-True ($wizard.Contains("bGetRegValue(" + $userKey + '"symbool")')) "Wizard does not read the user symbol preference."
+}
+
 Test-Case "Startup config delete is protected" {
     $form = Read-Text (Join-Path $projectDir "Form1.frm")
     $guard = 'If Dir$(App.Path + "\freesyscal.cfg") <> "" Then Kill App.Path + "\freesyscal.cfg"'
