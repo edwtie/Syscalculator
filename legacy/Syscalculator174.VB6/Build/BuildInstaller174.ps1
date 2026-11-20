@@ -1,6 +1,6 @@
 param(
     [ValidateSet("rc1", "rc2", "rc3", "candidate", "production")]
-    [string]$Channel = "rc3",
+    [string]$Channel = "rc1",
     [string]$Vb6Path = "",
     [switch]$Compile
 )
@@ -25,7 +25,7 @@ function Get-VersionFromExecutable {
         $versionText = $versionInfo.FileVersion
     }
 
-    $versionMatch = [regex]::Match($versionText, "^(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)")
+    $versionMatch = [regex]::Match($versionText, "^(?<major>\d+)\.(?<minor>\d+)(?:\.(?<revision>\d+))?(?:\s|$)")
     if (-not $versionMatch.Success) {
         return $null
     }
@@ -98,4 +98,4 @@ $env:SYSCALC174_INSTALL_CHANNEL = $Channel
 
 & $isccPath $installerScript
 
-Write-Host "Syscalculator 1.74 installer created in artifacts\legacy\installer for channel '$Channel' version '$env:SYSCALC174_INSTALL_VERSION'."
+Write-Host "Syscalculator 1.8 installer created in artifacts\legacy\installer for channel '$Channel' version '$env:SYSCALC174_INSTALL_VERSION'."

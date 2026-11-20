@@ -8,10 +8,10 @@ Default topic=index_es.htm
 Display compile progress=No
 Full-text search=Yes
 Language=0xc0a Spanish (Spain)
-Title=Syscalculator 1.74 Help - Espanol
+Title=Syscalculator 1.8 Help - Espanol
 
 [WINDOWS]
-main="Syscalculator 1.74 Help - Espanol","Syscalculator174-es.hhc","Syscalculator174-es.hhk","index_es.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
+main="Syscalculator 1.8 Help - Espanol","Syscalculator174-es.hhc","Syscalculator174-es.hhk","index_es.htm",,,,,,0x63520,,0x10000c,[90,80,850,620],0x80000,,,,,,0
 
 [FILES]
 index_es.htm

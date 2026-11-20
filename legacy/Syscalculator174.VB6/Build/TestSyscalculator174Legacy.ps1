@@ -123,12 +123,12 @@ Test-Case "Required VB6 source files exist" {
     }
 }
 
-Test-Case "Project1.vbp uses 1.74 candidate settings" {
+Test-Case "Project1.vbp uses 1.8 candidate settings" {
     $project = Read-Text (Join-Path $projectDir "Project1.vbp")
 
     Assert-True ($project -match "Form=WizardExpress\.frm") "WizardExpress.frm is not included."
     Assert-True ($project -match "Module=Module1; Freesyscal\.bas") "Freesyscal.bas module is not included."
-    Assert-True ($project -match "MinorVer=74") "MinorVer is not 74."
+    Assert-True ($project -match "MinorVer=8") "MinorVer is not 8."
     Assert-True ($project -match 'Command32="/lng eng\.lng"') "Default command line language is not eng.lng."
     Assert-True ($project -match "stdole2\.tlb") "OLE Automation reference does not point to stdole2.tlb."
 }
@@ -174,11 +174,11 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     $pad = Read-Text (Join-Path $projectDir "pad_file.xml")
     $installer = Read-Text (Join-Path $projectDir "syscalculcator.iss")
 
-    Assert-True ($helpEn.Contains("Syscalculator 1.74")) "English help still has the wrong version."
-    Assert-True ($helpNl.Contains("Syscalculator 1.74")) "Dutch help still has the wrong version."
-    Assert-True ($helpEs.Contains("Syscalculator 1.74")) "Spanish help still has the wrong version."
-    Assert-True ($helpCat.Contains("Syscalculator 1.74")) "Catalan help still has the wrong version."
-    Assert-True ($readme.Contains("Syscalculator  1.74 RC3")) "readme.txt still has the wrong version."
+    Assert-True ($helpEn.Contains("Syscalculator 1.8")) "English help still has the wrong version."
+    Assert-True ($helpNl.Contains("Syscalculator 1.8")) "Dutch help still has the wrong version."
+    Assert-True ($helpEs.Contains("Syscalculator 1.8")) "Spanish help still has the wrong version."
+    Assert-True ($helpCat.Contains("Syscalculator 1.8")) "Catalan help still has the wrong version."
+    Assert-True ($readme.Contains("Syscalculator  1.8 RC1")) "readme.txt still has the wrong version."
     Assert-True ($readme.Contains("What's new in 1.74 RC2?")) "readme.txt has no 1.74 RC2 changelog."
     Assert-True ($readme.Contains("After 20 years")) "readme.txt has no 20-year release note."
     Assert-True ($readme.Contains("finally released")) "readme.txt does not announce the 1.74 release."
@@ -193,7 +193,7 @@ Test-Case "Legacy help and metadata identify Syscalculator 1.74" {
     Assert-True ($readme.Contains("Windows 7 and later")) "readme.txt does not mention the Windows 7+ startup/configuration fix."
     Assert-True ($readme.Contains("CHM start topics")) "readme.txt does not mention the RC2 CHM Start topic fix."
     Assert-True ($readme.Contains("Visual Basic 6 Runtime is required")) "readme.txt does not clearly mention the required VB6 runtime."
-    Assert-True ($pad.Contains("<Program_Version>1.74</Program_Version>")) "PAD metadata still has the wrong version."
+    Assert-True ($pad.Contains("<Program_Version>1.8</Program_Version>")) "PAD metadata still has the wrong version."
     Assert-True ($pad.Contains("<Program_Release_Year>2026</Program_Release_Year>")) "PAD metadata still has the wrong release year."
     Assert-True ($pad.Contains("<Char_Desc_2000>") -and $pad.Contains("</Char_Desc_2000>") -and $pad -notmatch "<Char_Desc_2000\s*/>") "PAD metadata has no long description."
     Assert-True ($pad.Contains("final Syscalculator 1.x legacy release")) "PAD long description does not mention the final 1.x legacy release."
@@ -303,7 +303,7 @@ Test-Case "Legacy help can be compiled as main and localized CHM files" {
     Assert-True ((Read-Text (Join-Path $projectDir "WindowsAPI.bas")).Contains("Global Const SW_SHOWNORMAL = 1")) "Main project leaves ShellExecute windows hidden because SW_SHOWNORMAL is not defined."
 }
 
-Test-Case "Syscalculator 1.74 Help menu opens localized CHM files" {
+Test-Case "Syscalculator 1.8 Help menu opens localized CHM files" {
     $form = Read-Text (Join-Path $projectDir "Form1.frm")
     $formData = Read-Text (Join-Path $projectDir "Form1Data.frm")
     $editor = Read-Text (Join-Path $projectDir "editor.frm")
@@ -360,7 +360,7 @@ Test-Case "WizardExpress help documents the Office 365 limitation" {
     Assert-True ($helpNl.Contains("LibreOffice is getest en werkt ok")) "Dutch help does not document the LibreOffice test result."
     Assert-True ($helpEs.Contains("Microsoft 365 / Office 365")) "Spanish help has no Microsoft 365 / Office 365 warning."
     Assert-True ($helpCat.Contains("Microsoft 365 / Office 365")) "Catalan help has no Microsoft 365 / Office 365 warning."
-    Assert-True ($classicHelp.Contains("Syscalculator 1.74 Help")) "Classic help index is not the help contents page."
+    Assert-True ($classicHelp.Contains("Syscalculator 1.8 Help")) "Classic help index is not the help contents page."
     Assert-True ($classicHelp.Contains("index_en.htm")) "Classic help index does not link to the English overview."
     Assert-True ($classicHelp.Contains("index_nl.htm")) "Classic help index does not link to the Dutch overview."
     Assert-True ($classicHelp.Contains("index_es.htm")) "Classic help index does not link to the Spanish overview."
